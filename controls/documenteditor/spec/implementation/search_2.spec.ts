@@ -405,23 +405,21 @@ function getJson() {
 }
 describe('Search module testing', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, Search, OptionsPane, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableOptionsPane: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -448,13 +446,13 @@ describe('Search module testing', () => {
     });
     // it('replace method validation', () => {
     //     editor.open(getJson());
-    //     viewer = editor.viewer as PageLayoutViewer;
+    //     viewer = editor.documentHelper as PageLayoutViewer;
     //     let results = editor.searchModule.replaceInternal('adventure', 'adventures', 'None');
     //     expect(results).toBe(undefined);
     // });
     // it('replaceall method validation', () => {
     //     editor.open(getJson());
-    //     viewer = editor.viewer as PageLayoutViewer;
+    //     viewer = editor.documentHelper as PageLayoutViewer;
     //     let results = editor.searchModule.replaceAllInternal('adventure', 'adventures', 'None');
     //     expect(results).toBe(undefined);
     // });

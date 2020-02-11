@@ -17,7 +17,7 @@ import { PointModel } from '../primitives/point-model';
 import { findAngle, getIntersectionPoints, getPortDirection } from '../utility/connector';
 import { Point } from '../primitives/point';
 import { NodeConstraints, BpmnActivities, ConnectorConstraints, BpmnShapes } from '../enum/enum';
-import { BpmnEventModel, BpmnSubEventModel, BpmnActivityModel } from './../objects/node-model';
+import { BpmnEventModel, BpmnSubEventModel, BpmnActivityModel, DiagramShapeModel } from './../objects/node-model';
 import { BpmnSubProcessModel, BpmnGatewayModel, BpmnTransactionSubProcessModel } from './../objects/node-model';
 import { PathModel, BpmnShapeModel, BpmnDataObjectModel, BpmnTaskModel } from './../objects/node-model';
 import { NodeModel, BpmnAnnotationModel } from './../objects/node-model';
@@ -1425,16 +1425,21 @@ export class BpmnDiagrams {
         let elementWrapper: DiagramElement = actualObject.wrapper.children[0];
         let actualShape: BpmnShapes = (actualObject.shape as BpmnShapeModel).shape;
         let sizeChanged: boolean = changedProp.width !== undefined || changedProp.height !== undefined;
-        if (newShape.shape === 'Gateway' && newShape.gateway) {
+        if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Gateway') || newShape.shape === 'Gateway') &&
+            newShape.gateway) {
             actualObject.wrapper.children[0] = this.getBPMNGatewayShape(actualObject);
-        } else if (newShape.shape === 'DataObject' && newShape.dataObject) {
+        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'DataObject') || newShape.shape === 'DataObject') &&
+            newShape.dataObject) {
             actualObject.wrapper.children[0] = this.getBPMNDataObjectShape(actualObject);
-        } else if (newShape.shape === 'Activity' && newShape.activity) {
+        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Activity') || newShape.shape === 'Activity') &&
+            newShape.activity) {
             actualObject.wrapper.children[0] = this.getBPMNActivityShape(actualObject);
-        } else if (newShape.shape === 'Event' && newShape.event) {
+        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Event') || newShape.shape === 'Event') &&
+            newShape.event) {
             let shapeEvent: Object = newShape.event;
             actualObject.wrapper.children[0] = this.getBPMNEventShape(actualObject, shapeEvent);
-        } else if (newShape.shape === 'Message' || newShape.shape === 'DataSource') {
+        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Message') || newShape.shape === 'Message') ||
+            ((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'DataSource') || newShape.shape === 'DataSource')) {
             actualObject.wrapper.children[0] = this.getBPMNShapes(actualObject);
             //} 
             // else if (newShape.shape === 'Group') {

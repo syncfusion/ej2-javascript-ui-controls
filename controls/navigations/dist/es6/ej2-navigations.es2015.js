@@ -3418,6 +3418,7 @@ let Toolbar = class Toolbar extends Component {
         }
         for (let i = 0; i < items.length; i++) {
             if (isBlazor() && this.isServerRendered) {
+                this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
                 let itemEleBlaDom = this.element.querySelector('.' + BZ_ITEMS);
                 innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
                 if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
@@ -5600,11 +5601,13 @@ let Accordion = class Accordion extends Component {
             timingFunction: this.animation.expand.easing
         };
         let icon = select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
-        eventArgs = { element: trgtItemEle,
+        eventArgs = {
+            element: trgtItemEle,
             item: items[this.getIndexByItem(trgtItemEle)],
             index: this.getIndexByItem(trgtItemEle),
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
-            isExpanded: true };
+            isExpanded: true
+        };
         let eff = animation.name;
         this.trigger('expanding', eventArgs, (expandArgs) => {
             if (!expandArgs.cancel) {
@@ -5706,11 +5709,13 @@ let Accordion = class Accordion extends Component {
             timingFunction: this.animation.collapse.easing,
         };
         let icon = select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
-        eventArgs = { element: trgtItemEle,
+        eventArgs = {
+            element: trgtItemEle,
             item: items[this.getIndexByItem(trgtItemEle)],
             index: this.getIndexByItem(trgtItemEle),
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
-            isExpanded: false };
+            isExpanded: false
+        };
         let eff = animation.name;
         this.trigger('expanding', eventArgs, (expandArgs) => {
             if (!expandArgs.cancel) {
@@ -5934,7 +5939,6 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     expandItem(isExpand, index) {
-        let root = this.element;
         let itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
@@ -10597,7 +10601,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     }
                 }
             }
-            let subChild = this.getChildNodes(this.treeData, checkedChild);
+            let subChild = this.getChildNodes([childItems[i]], checkedChild);
             if (subChild) {
                 this.childStateChange(subChild, parent, childElement, doCheck);
             }

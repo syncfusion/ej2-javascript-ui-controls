@@ -2,6 +2,7 @@ import { DocumentEditor } from '../../document-editor';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaseHistoryInfo } from './base-history-info';
 import { EditRangeStartElementBox } from '../viewer/page';
+import { DocumentHelper } from '../viewer';
 /**
  * EditorHistory preservation class
  */
@@ -9,6 +10,7 @@ import { EditRangeStartElementBox } from '../viewer/page';
  * @private
  */
 export class HistoryInfo extends BaseHistoryInfo {
+    public documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -25,7 +27,9 @@ export class HistoryInfo extends BaseHistoryInfo {
     }
     constructor(node: DocumentEditor, isChild: boolean) {
         super(node);
+        this.documentHelper = node.documentHelper;
         this.isChildHistoryInfo = isChild;
+
     }
 
     /**
@@ -72,9 +76,9 @@ export class HistoryInfo extends BaseHistoryInfo {
         if (this.action === 'RestrictEditing') {
             let user: string = this.editRangeStart.user !== '' ? this.editRangeStart.user : this.editRangeStart.group;
             if (this.editorHistory.isUndoing) {
-                let index: number = this.owner.viewer.editRanges.get(user).indexOf(this.editRangeStart);
+                let index: number = this.owner.documentHelper.editRanges.get(user).indexOf(this.editRangeStart);
                 if (index !== -1) {
-                    this.owner.viewer.editRanges.get(user).splice(index, 1);
+                    this.owner.documentHelper.editRanges.get(user).splice(index, 1);
                 }
             } else {
                 this.owner.editor.updateRangeCollection(this.editRangeStart, user);

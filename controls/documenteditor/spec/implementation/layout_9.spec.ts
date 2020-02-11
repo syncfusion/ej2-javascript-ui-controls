@@ -3301,10 +3301,10 @@ describe('Left indent on heading style validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(headingStylejson));
     });
@@ -3328,10 +3328,10 @@ describe('Left indent on list para validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(listParaJson));
     });
@@ -3355,10 +3355,10 @@ describe('Section break para style validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(sectionBreak));
     });
@@ -3371,10 +3371,10 @@ describe('Section break para style validation', () => {
         }, 1000);
     });
     it('Section break para style validation 1', () => {
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).paragraphFormat.baseStyle.name).toBe('Normal');
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).paragraphFormat.baseStyle.name).toBe('Normal');
     });
     it('Section break para style validation 2', () => {
         editor.open(JSON.stringify(sectionBrkJson));
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
     });
 });

@@ -1147,10 +1147,10 @@ describe('Word export module with row span validation', () => {
         editor.characterFormat = {
             fontSize: 12
         };
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         writer = new XmlWriter();
     });
@@ -1177,10 +1177,10 @@ describe('Table grid span validation', () => {
         document.body.appendChild(createElement('div', { id: 'container' }));
         DocumentEditor.Inject(Editor, Selection, WordExport,SfdtExport);
         editor = new DocumentEditor({ enableWordExport: true,enableSfdtExport:true, enableEditor: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         writer = new XmlWriter();
     });
@@ -1209,10 +1209,10 @@ describe('Serialize section propertes validation', () => {
         document.body.appendChild(createElement('div', { id: 'container' }));
         DocumentEditor.Inject(Editor, Selection, WordExport,SfdtExport);
         editor = new DocumentEditor({ enableWordExport: true,enableSfdtExport:true, enableEditor: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         writer = new XmlWriter();
         editor.open(JSON.stringify(sfdtText));
@@ -1228,7 +1228,7 @@ describe('Serialize section propertes validation', () => {
         }, 1000);
     });
     it('When section break inside table validation', () => {
-       let document=editor.viewer.owner.sfdtExportModule.write();
+       let document=editor.documentHelper.owner.sfdtExportModule.write();
         (editor.wordExportModule as any).setDocument(document);
         (editor.wordExportModule as any).mVerticalMerge = new Dictionary<number, number>();
         (editor.wordExportModule as any).mGridSpans = new Dictionary<number, number>();

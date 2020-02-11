@@ -7271,6 +7271,42 @@ var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
     return DiagramHtmlElement;
 }(DiagramElement));
 
+var __extends$16 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * customize the size of the individual palette items.
+ */
+var SymbolSize = /** @__PURE__ @class */ (function (_super) {
+    __extends$16(SymbolSize, _super);
+    function SymbolSize() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$9([
+        Property()
+    ], SymbolSize.prototype, "width", void 0);
+    __decorate$9([
+        Property()
+    ], SymbolSize.prototype, "height", void 0);
+    return SymbolSize;
+}(ChildProperty));
+
 var __extends$12 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -8585,6 +8621,12 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         Property(0)
     ], Connector.prototype, "sourcePadding", void 0);
     __decorate$6([
+        Complex({}, SymbolSize)
+    ], Connector.prototype, "previewSize", void 0);
+    __decorate$6([
+        Complex({}, SymbolSize)
+    ], Connector.prototype, "dragSize", void 0);
+    __decorate$6([
         Property(0)
     ], Connector.prototype, "targetPadding", void 0);
     __decorate$6([
@@ -8596,7 +8638,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     return Connector;
 }(NodeBase));
 
-var __extends$16 = (undefined && undefined.__extends) || (function () {
+var __extends$17 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -8609,7 +8651,7 @@ var __extends$16 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8628,7 +8670,7 @@ var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, 
  * ```
  */
 var Ruler = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(Ruler, _super);
+    __extends$17(Ruler, _super);
     /**
      * Constructor for creating the Ruler Component
      */
@@ -8964,28 +9006,28 @@ var Ruler = /** @__PURE__ @class */ (function (_super) {
     Ruler.prototype.unWireEvents = function () {
         //unWire Events
     };
-    __decorate$9([
+    __decorate$10([
         Property(5)
     ], Ruler.prototype, "interval", void 0);
-    __decorate$9([
+    __decorate$10([
         Property(100)
     ], Ruler.prototype, "segmentWidth", void 0);
-    __decorate$9([
+    __decorate$10([
         Property('Horizontal')
     ], Ruler.prototype, "orientation", void 0);
-    __decorate$9([
+    __decorate$10([
         Property('RightOrBottom')
     ], Ruler.prototype, "tickAlignment", void 0);
-    __decorate$9([
+    __decorate$10([
         Property('red')
     ], Ruler.prototype, "markerColor", void 0);
-    __decorate$9([
+    __decorate$10([
         Property(25)
     ], Ruler.prototype, "thickness", void 0);
-    __decorate$9([
+    __decorate$10([
         Property(null)
     ], Ruler.prototype, "arrangeTick", void 0);
-    __decorate$9([
+    __decorate$10([
         Property(400)
     ], Ruler.prototype, "length", void 0);
     return Ruler;
@@ -9483,7 +9525,7 @@ function avoidDrawSelector(rendererActions) {
     }
 }
 
-var __extends$17 = (undefined && undefined.__extends) || (function () {
+var __extends$18 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9496,7 +9538,7 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9542,7 +9584,7 @@ var __decorate$10 = (undefined && undefined.__decorate) || function (decorators,
  * @default {}
  */
 var UserHandle = /** @__PURE__ @class */ (function (_super) {
-    __extends$17(UserHandle, _super);
+    __extends$18(UserHandle, _super);
     function UserHandle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -9553,58 +9595,58 @@ var UserHandle = /** @__PURE__ @class */ (function (_super) {
     UserHandle.prototype.getClassName = function () {
         return 'UserHandle';
     };
-    __decorate$10([
+    __decorate$11([
         Property('')
     ], UserHandle.prototype, "name", void 0);
-    __decorate$10([
+    __decorate$11([
         Property('')
     ], UserHandle.prototype, "pathData", void 0);
-    __decorate$10([
+    __decorate$11([
         Property('')
     ], UserHandle.prototype, "content", void 0);
-    __decorate$10([
+    __decorate$11([
         Property('')
     ], UserHandle.prototype, "source", void 0);
-    __decorate$10([
+    __decorate$11([
         Property('#000000')
     ], UserHandle.prototype, "backgroundColor", void 0);
-    __decorate$10([
-        Property('top')
+    __decorate$11([
+        Property('Top')
     ], UserHandle.prototype, "side", void 0);
-    __decorate$10([
+    __decorate$11([
         Property('')
     ], UserHandle.prototype, "borderColor", void 0);
-    __decorate$10([
+    __decorate$11([
         Property(0.5)
     ], UserHandle.prototype, "borderWidth", void 0);
-    __decorate$10([
+    __decorate$11([
         Property(25)
     ], UserHandle.prototype, "size", void 0);
-    __decorate$10([
+    __decorate$11([
         Property('white')
     ], UserHandle.prototype, "pathColor", void 0);
-    __decorate$10([
+    __decorate$11([
         Property(10)
     ], UserHandle.prototype, "displacement", void 0);
-    __decorate$10([
+    __decorate$11([
         Property(true)
     ], UserHandle.prototype, "visible", void 0);
-    __decorate$10([
+    __decorate$11([
         Property(0)
     ], UserHandle.prototype, "offset", void 0);
-    __decorate$10([
+    __decorate$11([
         Complex({}, Margin)
     ], UserHandle.prototype, "margin", void 0);
-    __decorate$10([
+    __decorate$11([
         Property('Center')
     ], UserHandle.prototype, "horizontalAlignment", void 0);
-    __decorate$10([
+    __decorate$11([
         Property('Center')
     ], UserHandle.prototype, "verticalAlignment", void 0);
-    __decorate$10([
+    __decorate$11([
         Property(false)
     ], UserHandle.prototype, "disableNodes", void 0);
-    __decorate$10([
+    __decorate$11([
         Property(false)
     ], UserHandle.prototype, "disableConnectors", void 0);
     return UserHandle;
@@ -9646,7 +9688,7 @@ var umlActivityShapes = {
     'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
 };
 
-var __extends$18 = (undefined && undefined.__extends) || (function () {
+var __extends$19 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9659,7 +9701,7 @@ var __extends$18 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9669,14 +9711,14 @@ var __decorate$11 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the combination of keys and modifier keys
  */
 var KeyGesture = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(KeyGesture, _super);
+    __extends$19(KeyGesture, _super);
     function KeyGesture() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$11([
+    __decorate$12([
         Property()
     ], KeyGesture.prototype, "key", void 0);
-    __decorate$11([
+    __decorate$12([
         Property()
     ], KeyGesture.prototype, "keyModifiers", void 0);
     return KeyGesture;
@@ -9685,7 +9727,7 @@ var KeyGesture = /** @__PURE__ @class */ (function (_super) {
  * Defines a command and a key gesture to define when the command should be executed
  */
 var Command = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(Command, _super);
+    __extends$19(Command, _super);
     function Command() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -9696,19 +9738,19 @@ var Command = /** @__PURE__ @class */ (function (_super) {
     Command.prototype.getClassName = function () {
         return 'Command';
     };
-    __decorate$11([
+    __decorate$12([
         Property('')
     ], Command.prototype, "name", void 0);
-    __decorate$11([
+    __decorate$12([
         Property()
     ], Command.prototype, "canExecute", void 0);
-    __decorate$11([
+    __decorate$12([
         Property()
     ], Command.prototype, "execute", void 0);
-    __decorate$11([
+    __decorate$12([
         Complex({}, KeyGesture)
     ], Command.prototype, "gesture", void 0);
-    __decorate$11([
+    __decorate$12([
         Property('')
     ], Command.prototype, "parameter", void 0);
     return Command;
@@ -9717,11 +9759,11 @@ var Command = /** @__PURE__ @class */ (function (_super) {
  * Defines the collection of commands and the corresponding key gestures
  */
 var CommandManager = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(CommandManager, _super);
+    __extends$19(CommandManager, _super);
     function CommandManager() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$11([
+    __decorate$12([
         Collection([], Command)
     ], CommandManager.prototype, "commands", void 0);
     return CommandManager;
@@ -9730,23 +9772,23 @@ var CommandManager = /** @__PURE__ @class */ (function (_super) {
  * Defines the behavior of the context menu items
  */
 var ContextMenuSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(ContextMenuSettings, _super);
+    __extends$19(ContextMenuSettings, _super);
     function ContextMenuSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$11([
+    __decorate$12([
         Property()
     ], ContextMenuSettings.prototype, "show", void 0);
-    __decorate$11([
+    __decorate$12([
         Property()
     ], ContextMenuSettings.prototype, "showCustomMenuOnly", void 0);
-    __decorate$11([
+    __decorate$12([
         Property()
     ], ContextMenuSettings.prototype, "items", void 0);
     return ContextMenuSettings;
 }(ChildProperty));
 
-var __extends$19 = (undefined && undefined.__extends) || (function () {
+var __extends$20 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9763,7 +9805,7 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
  * Grid panel is used to arrange the children in a table like structure
  */
 var GridPanel = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(GridPanel, _super);
+    __extends$20(GridPanel, _super);
     function GridPanel() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.childTable = [];
@@ -10367,7 +10409,7 @@ var GridRow = /** @__PURE__ @class */ (function () {
 }());
 /** @private */
 var GridCell = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(GridCell, _super);
+    __extends$20(GridCell, _super);
     function GridCell() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.columnSpan = 1;
@@ -10377,7 +10419,7 @@ var GridCell = /** @__PURE__ @class */ (function (_super) {
     return GridCell;
 }(Canvas));
 var GridCellItem = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(GridCellItem, _super);
+    __extends$20(GridCellItem, _super);
     function GridCellItem() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.rowId = 0;
@@ -12705,6 +12747,30 @@ function setSwimLaneDefaults(child, node) {
 /**
  * @private
  */
+function getSpaceValue(intervals, isLine, i, space) {
+    space = !isLine ? ((intervals[i - 1] !== undefined) ? intervals[i - 1] + space : 0) : space;
+    return space;
+}
+/**
+ * @private
+ */
+function getInterval(intervals, isLine) {
+    var newInterval = [];
+    if (!isLine) {
+        for (var k = 0; k < intervals.length; k++) {
+            newInterval.push(intervals[k]);
+        }
+        newInterval.push(intervals[newInterval.length - 2]);
+        newInterval.push(intervals[newInterval.length - 2]);
+    }
+    else {
+        newInterval = intervals;
+    }
+    return newInterval;
+}
+/**
+ * @private
+ */
 function setUMLActivityDefaults(child, node) {
     if (node instanceof Node) {
         var shape = (isBlazor() ? child.shape.umlActivityShape :
@@ -14052,8 +14118,10 @@ function updateContent(newValues, actualObject, diagram) {
                 }
             }
         }
-        else if (actualObject.shape.type === 'Flow' && newValues.shape.shape !== undefined) {
-            actualObject.shape.shape = newValues.shape.shape;
+        else if (actualObject.shape.type === 'Flow' && ((isBlazor() && newValues.shape.flowShape !== undefined) ||
+            newValues.shape.shape !== undefined)) {
+            actualObject.shape.shape = isBlazor() ? newValues.shape.flowShape :
+                newValues.shape.shape;
             var shapes = actualObject.shape.shape;
             var flowshapedata = getFlowShape(shapes.toString());
             actualObject.wrapper.children[0].data = flowshapedata;
@@ -14066,8 +14134,10 @@ function updateContent(newValues, actualObject, diagram) {
         else if (newValues.shape.cornerRadius !== undefined) {
             actualObject.wrapper.children[0].cornerRadius = newValues.shape.cornerRadius;
         }
-        else if (newValues.shape.shape !== undefined) {
-            actualObject.shape.shape = newValues.shape.shape;
+        else if (((isBlazor() && newValues.shape.basicShape !== undefined) ||
+            newValues.shape.shape !== undefined)) {
+            actualObject.shape.shape = isBlazor() ? newValues.shape.basicShape :
+                newValues.shape.shape;
             var shapes = actualObject.shape.shape;
             var basicShapeData = getBasicShape(shapes.toString());
             actualObject.wrapper.children[0].data = basicShapeData;
@@ -14737,7 +14807,7 @@ function canMeasureDecoratorPath(objects) {
     return false;
 }
 
-var __extends$20 = (undefined && undefined.__extends) || (function () {
+var __extends$21 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14750,7 +14820,7 @@ var __extends$20 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -14760,56 +14830,56 @@ var __decorate$12 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the behavior of default IconShapes
  */
 var IconShape = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(IconShape, _super);
+    __extends$21(IconShape, _super);
     function IconShape() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$12([
+    __decorate$13([
         Property('None')
     ], IconShape.prototype, "shape", void 0);
-    __decorate$12([
+    __decorate$13([
         Property('white')
     ], IconShape.prototype, "fill", void 0);
-    __decorate$12([
+    __decorate$13([
         Property('Auto')
     ], IconShape.prototype, "horizontalAlignment", void 0);
-    __decorate$12([
+    __decorate$13([
         Property('Auto')
     ], IconShape.prototype, "verticalAlignment", void 0);
-    __decorate$12([
+    __decorate$13([
         Property(10)
     ], IconShape.prototype, "width", void 0);
-    __decorate$12([
+    __decorate$13([
         Property(10)
     ], IconShape.prototype, "height", void 0);
-    __decorate$12([
+    __decorate$13([
         Complex({ x: 0.5, y: 1 }, Point)
     ], IconShape.prototype, "offset", void 0);
-    __decorate$12([
+    __decorate$13([
         Property('#1a1a1a')
     ], IconShape.prototype, "borderColor", void 0);
-    __decorate$12([
+    __decorate$13([
         Property(1)
     ], IconShape.prototype, "borderWidth", void 0);
-    __decorate$12([
+    __decorate$13([
         Complex({}, Margin)
     ], IconShape.prototype, "margin", void 0);
-    __decorate$12([
+    __decorate$13([
         Property('')
     ], IconShape.prototype, "pathData", void 0);
-    __decorate$12([
+    __decorate$13([
         Property('')
     ], IconShape.prototype, "content", void 0);
-    __decorate$12([
+    __decorate$13([
         Property(0)
     ], IconShape.prototype, "cornerRadius", void 0);
-    __decorate$12([
+    __decorate$13([
         Complex({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
     ], IconShape.prototype, "padding", void 0);
     return IconShape;
 }(ChildProperty));
 
-var __extends$21 = (undefined && undefined.__extends) || (function () {
+var __extends$22 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -14826,7 +14896,7 @@ var __extends$21 = (undefined && undefined.__extends) || (function () {
  * StackPanel module is used to arrange its children in a line
  */
 var StackPanel = /** @__PURE__ @class */ (function (_super) {
-    __extends$21(StackPanel, _super);
+    __extends$22(StackPanel, _super);
     function StackPanel() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /**
@@ -15247,7 +15317,7 @@ function getStyle(stack, node) {
     return newStyle;
 }
 
-var __extends$22 = (undefined && undefined.__extends) || (function () {
+var __extends$23 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -15260,7 +15330,7 @@ var __extends$22 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -15271,35 +15341,35 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  * Layer is a named category of diagram shapes.
  */
 var LayoutInfo = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(LayoutInfo, _super);
+    __extends$23(LayoutInfo, _super);
     function LayoutInfo() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$13([
+    __decorate$14([
         Property('Horizontal')
     ], LayoutInfo.prototype, "orientation", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('Center')
     ], LayoutInfo.prototype, "type", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(undefined)
     ], LayoutInfo.prototype, "offset", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(false)
     ], LayoutInfo.prototype, "enableRouting", void 0);
-    __decorate$13([
+    __decorate$14([
         Property([])
     ], LayoutInfo.prototype, "children", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('')
     ], LayoutInfo.prototype, "assistants", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('')
     ], LayoutInfo.prototype, "level", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('')
     ], LayoutInfo.prototype, "hasSubTree", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('')
     ], LayoutInfo.prototype, "rows", void 0);
     return LayoutInfo;
@@ -16740,6 +16810,12 @@ var Node = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         ComplexFactory(getShapeType)
     ], Node.prototype, "shape", void 0);
+    __decorate$2([
+        Complex({}, SymbolSize)
+    ], Node.prototype, "previewSize", void 0);
+    __decorate$2([
+        Complex({}, SymbolSize)
+    ], Node.prototype, "dragSize", void 0);
     __decorate$2([
         Property(null)
     ], Node.prototype, "wrapper", void 0);
@@ -20224,7 +20300,6 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
     };
     /**   @private  */
     DiagramRenderer.prototype.renderSvgGridlines = function (snapSettings, gridSvg, t, rulerSettings, hRuler, vRuler) {
-        //render gridlines
         var pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
         var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         defs.setAttribute('id', this.diagramId + '_grid_pattern_defn');
@@ -20238,6 +20313,11 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         var vSegmentwidth = 0;
         var scale = 1;
         var isRulerGrid = false;
+        var isLine = snapSettings.gridType === 'Lines';
+        var verticalLineIntervals = isLine ?
+            snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
+        var horizontalLineIntervals = isLine ?
+            snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
         if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler && vRuler) {
             hSegmentwidth = vRuler.updateSegmentWidth(t.scale);
             vSegmentwidth = hRuler.updateSegmentWidth(t.scale);
@@ -20246,13 +20326,11 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             isRulerGrid = true;
         }
         else {
-            for (var _i = 0, _a = snapSettings.verticalGridlines.lineIntervals; _i < _a.length; _i++) {
-                var entry = _a[_i];
-                hWidth += entry;
+            for (var i = 0; i < verticalLineIntervals.length; i = i + 1) {
+                hWidth += verticalLineIntervals[i];
             }
-            for (var _b = 0, _c = snapSettings.horizontalGridlines.lineIntervals; _b < _c.length; _b++) {
-                var entry = _c[_b];
-                hHeight += entry;
+            for (var i = 0; i < horizontalLineIntervals.length; i = i + 1) {
+                hHeight += horizontalLineIntervals[i];
             }
             scale = this.scaleSnapInterval(snapSettings, t.scale);
         }
@@ -20263,73 +20341,109 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             height: hHeight, patternUnits: 'userSpaceOnUse'
         };
         setAttributeSvg(pattern, attr);
-        this.horizontalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid);
-        this.verticalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid);
+        this.horizontalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, horizontalLineIntervals);
+        this.verticalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, verticalLineIntervals);
         defs.appendChild(pattern);
         gridSvg.appendChild(defs);
     };
-    DiagramRenderer.prototype.horizontalSvgGridlines = function (pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid) {
+    DiagramRenderer.prototype.horizontalSvgGridlines = function (pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, intervals) {
         var space = 0;
         var dashArray = [];
         var hLine;
         if (snapSettings.constraints & SnapConstraints.ShowHorizontalLines) {
-            var intervals = snapSettings.horizontalGridlines.lineIntervals;
-            var strokestyle = snapSettings.horizontalGridlines.lineColor;
             if (snapSettings.horizontalGridlines.lineDashArray) {
                 dashArray = this.renderer.parseDashArray(snapSettings.horizontalGridlines.lineDashArray);
             }
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler) {
-                intervals = this.updateLineIntervals(intervals, rulerSettings, vRuler, hHeight);
+                intervals = this.updateLineIntervals(intervals, rulerSettings, vRuler, hHeight, isLine);
             }
+            intervals = getInterval(intervals, isLine);
             for (var i = 0; i < intervals.length; i = i + 2) {
-                hLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                var d = space + intervals[i] / 2;
+                space = getSpaceValue(intervals, isLine, i, space);
+                var spaceY = 0;
+                hLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
+                var d = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
-                var attr = {
-                    'stroke-width': intervals[i], 'stroke': snapSettings.horizontalGridlines.lineColor,
-                    'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
-                    'dashArray': dashArray.toString(),
-                    'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
-                };
-                setAttributeSvg(hLine, attr);
-                pattern.appendChild(hLine);
-                space += intervals[i + 1] + intervals[i];
+                var attr = void 0;
+                if (isLine) {
+                    attr = {
+                        'stroke-width': intervals[i], 'stroke': snapSettings.horizontalGridlines.lineColor,
+                        'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
+                        'dashArray': dashArray.toString(),
+                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
+                    };
+                    setAttributeSvg(hLine, attr);
+                    pattern.appendChild(hLine);
+                    space += intervals[i + 1] + intervals[i];
+                }
+                else {
+                    this.renderDotGrid(i, pattern, snapSettings, spaceY, d, scale, true);
+                    space += intervals[i];
+                }
             }
         }
     };
-    DiagramRenderer.prototype.verticalSvgGridlines = function (pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid) {
+    DiagramRenderer.prototype.renderDotGrid = function (i, pattern, snapSettings, spacey, d, scale, isHorizontal) {
+        var intervals = !isHorizontal ?
+            snapSettings.horizontalGridlines.dotIntervals : snapSettings.verticalGridlines.dotIntervals;
+        intervals = getInterval(intervals, false);
+        var r;
+        var hLine;
+        var dy;
+        var attr;
+        for (var j = 1; j < intervals.length; j = j + 2) {
+            r = j === intervals.length - 1 ? intervals[0] : intervals[j - 1];
+            hLine = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dy = spacey;
+            dy = dy * scale;
+            attr = {
+                'cx': isHorizontal ? dy : d, 'cy': isHorizontal ? d : dy, 'fill': snapSettings.horizontalGridlines.lineColor, 'r': r
+            };
+            setAttributeSvg(hLine, attr);
+            pattern.appendChild(hLine);
+            spacey += intervals[j] + intervals[j - 1];
+        }
+    };
+    DiagramRenderer.prototype.verticalSvgGridlines = function (pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, intervals) {
         var space = 0;
         var dashArray = [];
         var vLine;
         if (snapSettings.constraints & SnapConstraints.ShowVerticalLines) {
-            var intervals = snapSettings.verticalGridlines.lineIntervals;
-            var strokestyle = snapSettings.verticalGridlines.lineColor;
             if (snapSettings.verticalGridlines.lineDashArray) {
                 dashArray = this.renderer.parseDashArray(snapSettings.verticalGridlines.lineDashArray);
             }
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler) {
-                intervals = this.updateLineIntervals(intervals, rulerSettings, hRuler, hWidth);
+                intervals = this.updateLineIntervals(intervals, rulerSettings, hRuler, hWidth, isLine);
             }
+            var spaceY = 0;
+            intervals = getInterval(intervals, isLine);
             for (var i = 0; i < intervals.length; i = i + 2) {
-                vLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                var d = space + intervals[i] / 2;
+                space = getSpaceValue(intervals, isLine, i, space);
+                vLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
+                var d = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
-                var attr = {
-                    'stroke-width': intervals[i], 'stroke': snapSettings.verticalGridlines.lineColor,
-                    'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
-                    'dashArray': dashArray.toString(),
-                    'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
-                };
-                setAttributeSvg(vLine, attr);
-                pattern.appendChild(vLine);
-                space += intervals[i + 1] + intervals[i];
+                var attr = void 0;
+                if (isLine) {
+                    attr = {
+                        'stroke-width': intervals[i], 'stroke': snapSettings.verticalGridlines.lineColor,
+                        'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
+                        'dashArray': dashArray.toString(),
+                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
+                    };
+                    setAttributeSvg(vLine, attr);
+                    pattern.appendChild(vLine);
+                    space += intervals[i + 1] + intervals[i];
+                }
+                else {
+                    this.renderDotGrid(i, pattern, snapSettings, spaceY, d, scale, false);
+                    space += intervals[i];
+                }
             }
         }
     };
     /**   @private  */
     DiagramRenderer.prototype.updateGrid = function (snapSettings, svgGrid, transform, rulerSettings, hRuler, vRuler) {
         var grid = svgGrid.getElementById(this.diagramId + '_grid_rect');
-        var i;
         var isRulerGrid = false;
         if (grid) {
             var pattern = svgGrid.getElementById(this.diagramId + '_pattern');
@@ -20339,6 +20453,11 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             var hSegmentwidth = 0;
             var vSegmentwidth = 0;
             var scale = 1;
+            var isLine = snapSettings.gridType === 'Lines';
+            var verticalLineIntervals = isLine ?
+                snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
+            var horizontalLineIntervals = isLine ?
+                snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler && hRuler) {
                 hSegmentwidth = vRuler.updateSegmentWidth(transform.scale);
                 vSegmentwidth = hRuler.updateSegmentWidth(transform.scale);
@@ -20350,12 +20469,12 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
                 scale = this.scaleSnapInterval(snapSettings, transform.scale);
             }
             var height = 0;
-            for (i = 0; i < snapSettings.horizontalGridlines.lineIntervals.length; i++) {
-                height += snapSettings.horizontalGridlines.lineIntervals[i];
+            for (var j = 0; j < horizontalLineIntervals.length; j = j + 1) {
+                height += horizontalLineIntervals[j];
             }
             var width = 0;
-            for (i = 0; i < snapSettings.verticalGridlines.lineIntervals.length; i++) {
-                width += snapSettings.verticalGridlines.lineIntervals[i];
+            for (var j = 0; j < verticalLineIntervals.length; j = j + 1) {
+                width += verticalLineIntervals[j];
             }
             var attr = {
                 x: -transform.tx * transform.scale,
@@ -20370,23 +20489,24 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             };
             pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
             setAttributeSvg(pattern, attr);
-            this.horizontalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, vRuler, isRulerGrid);
-            this.verticalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, hRuler, isRulerGrid);
+            this.horizontalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, horizontalLineIntervals);
+            this.verticalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, verticalLineIntervals);
             var defs = svgGrid.getElementById(this.diagramId + '_grid_pattern_defn');
             if (defs) {
                 defs.appendChild(pattern);
             }
         }
     };
-    DiagramRenderer.prototype.updateLineIntervals = function (intervals, rulerSettings, ruler, segmentWidth) {
+    DiagramRenderer.prototype.updateLineIntervals = function (intervals, rulerSettings, ruler, segmentWidth, isLine) {
         var newInterval = [];
         var tickInterval = segmentWidth / ruler.interval;
-        for (var i = 0; i < ruler.interval * 2; i++) {
+        var interval = isLine ? ruler.interval : ruler.interval + 1;
+        for (var i = 0; i < interval * 2; i++) {
             if (i % 2 === 0) {
-                newInterval[i] = (i === 0) ? 1.25 : 0.25;
+                newInterval[i] = isLine ? ((i === 0) ? 1.25 : 0.25) : 0;
             }
             else {
-                newInterval[i] = tickInterval - newInterval[i - 1];
+                newInterval[i] = isLine ? (tickInterval - newInterval[i - 1]) : tickInterval;
             }
         }
         return newInterval;
@@ -20819,7 +20939,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
     return DiagramRenderer;
 }());
 
-var __extends$23 = (undefined && undefined.__extends) || (function () {
+var __extends$24 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20832,7 +20952,7 @@ var __extends$23 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20842,45 +20962,45 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the size and appearance of the diagram page
  */
 var Background = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(Background, _super);
+    __extends$24(Background, _super);
     function Background() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$14([
+    __decorate$15([
         Property('')
     ], Background.prototype, "source", void 0);
-    __decorate$14([
+    __decorate$15([
         Property('transparent')
     ], Background.prototype, "color", void 0);
-    __decorate$14([
+    __decorate$15([
         Property('None')
     ], Background.prototype, "scale", void 0);
-    __decorate$14([
+    __decorate$15([
         Property('None')
     ], Background.prototype, "align", void 0);
     return Background;
 }(ChildProperty));
 var FitOptions = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(FitOptions, _super);
+    __extends$24(FitOptions, _super);
     function FitOptions() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$14([
+    __decorate$15([
         Property('Page')
     ], FitOptions.prototype, "mode", void 0);
-    __decorate$14([
+    __decorate$15([
         Property('PageSettings')
     ], FitOptions.prototype, "region", void 0);
-    __decorate$14([
+    __decorate$15([
         Complex({ top: 25, bottom: 25, left: 25, right: 25 }, Margin)
     ], FitOptions.prototype, "margin", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(false)
     ], FitOptions.prototype, "canZoomIn", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(undefined)
     ], FitOptions.prototype, "customBounds", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(false)
     ], FitOptions.prototype, "canFit", void 0);
     return FitOptions;
@@ -20903,35 +21023,35 @@ var FitOptions = /** @__PURE__ @class */ (function (_super) {
  * @default {}
  */
 var PageSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(PageSettings, _super);
+    __extends$24(PageSettings, _super);
     function PageSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$14([
+    __decorate$15([
         Property(null)
     ], PageSettings.prototype, "width", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(null)
     ], PageSettings.prototype, "height", void 0);
-    __decorate$14([
+    __decorate$15([
         Complex({}, Margin)
     ], PageSettings.prototype, "margin", void 0);
-    __decorate$14([
+    __decorate$15([
         Property('Landscape')
     ], PageSettings.prototype, "orientation", void 0);
-    __decorate$14([
+    __decorate$15([
         Property('Infinity')
     ], PageSettings.prototype, "boundaryConstraints", void 0);
-    __decorate$14([
+    __decorate$15([
         Complex({}, Background)
     ], PageSettings.prototype, "background", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(false)
     ], PageSettings.prototype, "multiplePage", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(false)
     ], PageSettings.prototype, "showPageBreaks", void 0);
-    __decorate$14([
+    __decorate$15([
         Complex({}, FitOptions)
     ], PageSettings.prototype, "fitOptions", void 0);
     return PageSettings;
@@ -20940,44 +21060,44 @@ var PageSettings = /** @__PURE__ @class */ (function (_super) {
  * Diagram ScrollSettings module handles the scroller properties of the diagram
  */
 var ScrollSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(ScrollSettings, _super);
+    __extends$24(ScrollSettings, _super);
     function ScrollSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$14([
+    __decorate$15([
         Property(0)
     ], ScrollSettings.prototype, "horizontalOffset", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(0)
     ], ScrollSettings.prototype, "verticalOffset", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(1)
     ], ScrollSettings.prototype, "currentZoom", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(0)
     ], ScrollSettings.prototype, "viewPortWidth", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(0)
     ], ScrollSettings.prototype, "viewPortHeight", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(0.2)
     ], ScrollSettings.prototype, "minZoom", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(30)
     ], ScrollSettings.prototype, "maxZoom", void 0);
-    __decorate$14([
+    __decorate$15([
         Property('Diagram')
     ], ScrollSettings.prototype, "scrollLimit", void 0);
-    __decorate$14([
+    __decorate$15([
         Property()
     ], ScrollSettings.prototype, "scrollableArea", void 0);
-    __decorate$14([
+    __decorate$15([
         Property(false)
     ], ScrollSettings.prototype, "canAutoScroll", void 0);
-    __decorate$14([
+    __decorate$15([
         Complex({ left: 15, right: 15, top: 15, bottom: 15 }, Margin)
     ], ScrollSettings.prototype, "autoScrollBorder", void 0);
-    __decorate$14([
+    __decorate$15([
         Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
     ], ScrollSettings.prototype, "padding", void 0);
     return ScrollSettings;
@@ -21000,74 +21120,6 @@ var ServiceLocator = /** @__PURE__ @class */ (function () {
     return ServiceLocator;
 }());
 
-var __extends$24 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Provides a visual guidance while dragging or arranging the objects on the Diagram surface
- */
-var Gridlines = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(Gridlines, _super);
-    function Gridlines() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$15([
-        Property('lightgray')
-    ], Gridlines.prototype, "lineColor", void 0);
-    __decorate$15([
-        Property('')
-    ], Gridlines.prototype, "lineDashArray", void 0);
-    __decorate$15([
-        Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
-    ], Gridlines.prototype, "lineIntervals", void 0);
-    __decorate$15([
-        Property([20])
-    ], Gridlines.prototype, "snapIntervals", void 0);
-    return Gridlines;
-}(ChildProperty));
-/**
- * Defines the gridlines and defines how and when the objects have to be snapped
- * @default {}
- */
-var SnapSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(SnapSettings, _super);
-    function SnapSettings() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$15([
-        Complex({}, Gridlines)
-    ], SnapSettings.prototype, "horizontalGridlines", void 0);
-    __decorate$15([
-        Complex({}, Gridlines)
-    ], SnapSettings.prototype, "verticalGridlines", void 0);
-    __decorate$15([
-        Property(SnapConstraints.All)
-    ], SnapSettings.prototype, "constraints", void 0);
-    __decorate$15([
-        Property(5)
-    ], SnapSettings.prototype, "snapAngle", void 0);
-    __decorate$15([
-        Property(5)
-    ], SnapSettings.prototype, "snapObjectDistance", void 0);
-    return SnapSettings;
-}(ChildProperty));
-
 var __extends$25 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -21088,32 +21140,106 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Defines the properties of both horizontal and vertical guides/rulers to measure the diagram area.
+ * Provides a visual guidance while dragging or arranging the objects on the Diagram surface
  */
-var DiagramRuler = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(DiagramRuler, _super);
-    function DiagramRuler() {
+var Gridlines = /** @__PURE__ @class */ (function (_super) {
+    __extends$25(Gridlines, _super);
+    function Gridlines() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$16([
+        Property('lightgray')
+    ], Gridlines.prototype, "lineColor", void 0);
+    __decorate$16([
+        Property('')
+    ], Gridlines.prototype, "lineDashArray", void 0);
+    __decorate$16([
+        Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
+    ], Gridlines.prototype, "lineIntervals", void 0);
+    __decorate$16([
+        Property([1, 19, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5])
+    ], Gridlines.prototype, "dotIntervals", void 0);
+    __decorate$16([
+        Property([20])
+    ], Gridlines.prototype, "snapIntervals", void 0);
+    return Gridlines;
+}(ChildProperty));
+/**
+ * Defines the gridlines and defines how and when the objects have to be snapped
+ * @default {}
+ */
+var SnapSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$25(SnapSettings, _super);
+    function SnapSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$16([
+        Complex({}, Gridlines)
+    ], SnapSettings.prototype, "horizontalGridlines", void 0);
+    __decorate$16([
+        Complex({}, Gridlines)
+    ], SnapSettings.prototype, "verticalGridlines", void 0);
+    __decorate$16([
+        Property(SnapConstraints.All)
+    ], SnapSettings.prototype, "constraints", void 0);
+    __decorate$16([
+        Property(5)
+    ], SnapSettings.prototype, "snapAngle", void 0);
+    __decorate$16([
+        Property('Lines')
+    ], SnapSettings.prototype, "gridType", void 0);
+    __decorate$16([
+        Property(5)
+    ], SnapSettings.prototype, "snapObjectDistance", void 0);
+    return SnapSettings;
+}(ChildProperty));
+
+var __extends$26 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the properties of both horizontal and vertical guides/rulers to measure the diagram area.
+ */
+var DiagramRuler = /** @__PURE__ @class */ (function (_super) {
+    __extends$26(DiagramRuler, _super);
+    function DiagramRuler() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$17([
         Property(5)
     ], DiagramRuler.prototype, "interval", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(100)
     ], DiagramRuler.prototype, "segmentWidth", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('Horizontal')
     ], DiagramRuler.prototype, "orientation", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('RightOrBottom')
     ], DiagramRuler.prototype, "tickAlignment", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('red')
     ], DiagramRuler.prototype, "markerColor", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(25)
     ], DiagramRuler.prototype, "thickness", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(null)
     ], DiagramRuler.prototype, "arrangeTick", void 0);
     return DiagramRuler;
@@ -21137,23 +21263,60 @@ var DiagramRuler = /** @__PURE__ @class */ (function (_super) {
  * @default {}
  */
 var RulerSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(RulerSettings, _super);
+    __extends$26(RulerSettings, _super);
     function RulerSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$16([
+    __decorate$17([
         Property(false)
     ], RulerSettings.prototype, "showRulers", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(true)
     ], RulerSettings.prototype, "dynamicGrid", void 0);
-    __decorate$16([
+    __decorate$17([
         Complex({ orientation: 'Horizontal' }, DiagramRuler)
     ], RulerSettings.prototype, "horizontalRuler", void 0);
-    __decorate$16([
+    __decorate$17([
         Complex({ orientation: 'Vertical' }, DiagramRuler)
     ], RulerSettings.prototype, "verticalRuler", void 0);
     return RulerSettings;
+}(ChildProperty));
+
+var __extends$28 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * A collection of JSON objects where each object represents a layer.
+ * Layer is a named category of diagram shapes.
+ */
+var DataMappingItems = /** @__PURE__ @class */ (function (_super) {
+    __extends$28(DataMappingItems, _super);
+    function DataMappingItems() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$19([
+        Property('')
+    ], DataMappingItems.prototype, "property", void 0);
+    __decorate$19([
+        Property('')
+    ], DataMappingItems.prototype, "field", void 0);
+    return DataMappingItems;
 }(ChildProperty));
 
 var __extends$27 = (undefined && undefined.__extends) || (function () {
@@ -21170,43 +21333,6 @@ var __extends$27 = (undefined && undefined.__extends) || (function () {
     };
 })();
 var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * A collection of JSON objects where each object represents a layer.
- * Layer is a named category of diagram shapes.
- */
-var DataMappingItems = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(DataMappingItems, _super);
-    function DataMappingItems() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$18([
-        Property('')
-    ], DataMappingItems.prototype, "property", void 0);
-    __decorate$18([
-        Property('')
-    ], DataMappingItems.prototype, "field", void 0);
-    return DataMappingItems;
-}(ChildProperty));
-
-var __extends$26 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -21242,97 +21368,97 @@ var __decorate$17 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var CrudAction = /** @__PURE__ @class */ (function (_super) {
-    __extends$26(CrudAction, _super);
+    __extends$27(CrudAction, _super);
     function CrudAction() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], CrudAction.prototype, "read", void 0);
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], CrudAction.prototype, "create", void 0);
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], CrudAction.prototype, "update", void 0);
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], CrudAction.prototype, "destroy", void 0);
-    __decorate$17([
+    __decorate$18([
         Property()
     ], CrudAction.prototype, "customFields", void 0);
     return CrudAction;
 }(ChildProperty));
 var ConnectionDataSource = /** @__PURE__ @class */ (function (_super) {
-    __extends$26(ConnectionDataSource, _super);
+    __extends$27(ConnectionDataSource, _super);
     function ConnectionDataSource() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], ConnectionDataSource.prototype, "id", void 0);
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], ConnectionDataSource.prototype, "sourceID", void 0);
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], ConnectionDataSource.prototype, "targetID", void 0);
-    __decorate$17([
+    __decorate$18([
         Property(null)
     ], ConnectionDataSource.prototype, "sourcePointX", void 0);
-    __decorate$17([
+    __decorate$18([
         Property(null)
     ], ConnectionDataSource.prototype, "sourcePointY", void 0);
-    __decorate$17([
+    __decorate$18([
         Property(null)
     ], ConnectionDataSource.prototype, "targetPointX", void 0);
-    __decorate$17([
+    __decorate$18([
         Property(null)
     ], ConnectionDataSource.prototype, "targetPointY", void 0);
-    __decorate$17([
+    __decorate$18([
         Property(null)
     ], ConnectionDataSource.prototype, "dataManager", void 0);
-    __decorate$17([
+    __decorate$18([
         Complex({}, CrudAction)
     ], ConnectionDataSource.prototype, "crudAction", void 0);
     return ConnectionDataSource;
 }(ChildProperty));
 var DataSource = /** @__PURE__ @class */ (function (_super) {
-    __extends$26(DataSource, _super);
+    __extends$27(DataSource, _super);
     function DataSource() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], DataSource.prototype, "id", void 0);
-    __decorate$17([
+    __decorate$18([
         Property(null)
     ], DataSource.prototype, "dataManager", void 0);
-    __decorate$17([
+    __decorate$18([
         Property(null)
     ], DataSource.prototype, "dataSource", void 0);
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], DataSource.prototype, "root", void 0);
-    __decorate$17([
+    __decorate$18([
         Property('')
     ], DataSource.prototype, "parentId", void 0);
-    __decorate$17([
+    __decorate$18([
         Property()
     ], DataSource.prototype, "doBinding", void 0);
-    __decorate$17([
+    __decorate$18([
         Collection([], DataMappingItems)
     ], DataSource.prototype, "dataMapSettings", void 0);
-    __decorate$17([
+    __decorate$18([
         Complex({}, CrudAction)
     ], DataSource.prototype, "crudAction", void 0);
-    __decorate$17([
+    __decorate$18([
         Complex({}, ConnectionDataSource)
     ], DataSource.prototype, "connectionDataSource", void 0);
     return DataSource;
 }(ChildProperty));
 
-var __extends$28 = (undefined && undefined.__extends) || (function () {
+var __extends$29 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21345,7 +21471,7 @@ var __extends$28 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -21355,65 +21481,65 @@ var __decorate$19 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the behavior of the automatic layouts
  */
 var Layout = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(Layout, _super);
+    __extends$29(Layout, _super);
     function Layout() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$19([
+    __decorate$20([
         Property('')
     ], Layout.prototype, "fixedNode", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(30)
     ], Layout.prototype, "horizontalSpacing", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(30)
     ], Layout.prototype, "verticalSpacing", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(30)
     ], Layout.prototype, "maxIteration", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(40)
     ], Layout.prototype, "springFactor", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(50)
     ], Layout.prototype, "springLength", void 0);
-    __decorate$19([
+    __decorate$20([
         Complex({ left: 50, top: 50, right: 0, bottom: 0 }, Margin)
     ], Layout.prototype, "margin", void 0);
-    __decorate$19([
+    __decorate$20([
         Property('Auto')
     ], Layout.prototype, "horizontalAlignment", void 0);
-    __decorate$19([
+    __decorate$20([
         Property('Auto')
     ], Layout.prototype, "verticalAlignment", void 0);
-    __decorate$19([
+    __decorate$20([
         Property('TopToBottom')
     ], Layout.prototype, "orientation", void 0);
-    __decorate$19([
+    __decorate$20([
         Property('Auto')
     ], Layout.prototype, "connectionDirection", void 0);
-    __decorate$19([
+    __decorate$20([
         Property('Default')
     ], Layout.prototype, "connectorSegments", void 0);
-    __decorate$19([
+    __decorate$20([
         Property('None')
     ], Layout.prototype, "type", void 0);
-    __decorate$19([
+    __decorate$20([
         Property()
     ], Layout.prototype, "getLayoutInfo", void 0);
-    __decorate$19([
+    __decorate$20([
         Property()
     ], Layout.prototype, "layoutInfo", void 0);
-    __decorate$19([
+    __decorate$20([
         Property()
     ], Layout.prototype, "getBranch", void 0);
-    __decorate$19([
+    __decorate$20([
         Property()
     ], Layout.prototype, "bounds", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(true)
     ], Layout.prototype, "enableAnimation", void 0);
-    __decorate$19([
+    __decorate$20([
         Property('')
     ], Layout.prototype, "root", void 0);
     return Layout;
@@ -22218,7 +22344,7 @@ var DeepDiffMapper = /** @__PURE__ @class */ (function () {
     return DeepDiffMapper;
 }());
 
-var __extends$29 = (undefined && undefined.__extends) || (function () {
+var __extends$30 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22501,7 +22627,7 @@ var ToolBase = /** @__PURE__ @class */ (function () {
  * Helps to select the objects
  */
 var SelectTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(SelectTool, _super);
+    __extends$30(SelectTool, _super);
     function SelectTool(commandHandler, protectChange, action) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.action = action;
@@ -22573,7 +22699,7 @@ var SelectTool = /** @__PURE__ @class */ (function (_super) {
  * Helps to edit the selected connectors
  */
 var ConnectTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(ConnectTool, _super);
+    __extends$30(ConnectTool, _super);
     function ConnectTool(commandHandler, endPoint) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.isConnected = false;
@@ -22889,7 +23015,7 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
  * Drags the selected objects
  */
 var MoveTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(MoveTool, _super);
+    __extends$30(MoveTool, _super);
     function MoveTool(commandHandler, objType) {
         var _this = _super.call(this, commandHandler, true) || this;
         /**   @private  */
@@ -23236,7 +23362,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
  * Rotates the selected objects
  */
 var RotateTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(RotateTool, _super);
+    __extends$30(RotateTool, _super);
     function RotateTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -23379,7 +23505,7 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
  * Scales the selected objects
  */
 var ResizeTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(ResizeTool, _super);
+    __extends$30(ResizeTool, _super);
     function ResizeTool(commandHandler, corner) {
         var _this = _super.call(this, commandHandler, true) || this;
         /**   @private  */
@@ -23616,7 +23742,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a node that is defined by the user
  */
 var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(NodeDrawingTool, _super);
+    __extends$30(NodeDrawingTool, _super);
     function NodeDrawingTool(commandHandler, sourceObject) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.sourceObject = sourceObject;
@@ -23677,7 +23803,7 @@ var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a connector that is defined by the user
  */
 var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(ConnectorDrawingTool, _super);
+    __extends$30(ConnectorDrawingTool, _super);
     function ConnectorDrawingTool(commandHandler, endPoint, sourceObject) {
         var _this = _super.call(this, commandHandler, endPoint) || this;
         _this.sourceObject = sourceObject;
@@ -23747,7 +23873,7 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
     return ConnectorDrawingTool;
 }(ConnectTool));
 var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(TextDrawingTool, _super);
+    __extends$30(TextDrawingTool, _super);
     function TextDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -23811,7 +23937,7 @@ var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Pans the diagram control on drag
  */
 var ZoomPanTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(ZoomPanTool, _super);
+    __extends$30(ZoomPanTool, _super);
     function ZoomPanTool(commandHandler, zoom) {
         var _this = _super.call(this, commandHandler) || this;
         _this.zooming = zoom;
@@ -23870,7 +23996,7 @@ var ZoomPanTool = /** @__PURE__ @class */ (function (_super) {
  * Animate the layout during expand and collapse
  */
 var ExpandTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(ExpandTool, _super);
+    __extends$30(ExpandTool, _super);
     function ExpandTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -23886,7 +24012,7 @@ var ExpandTool = /** @__PURE__ @class */ (function (_super) {
  * Opens the annotation hypeLink at mouse up
  */
 var LabelTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(LabelTool, _super);
+    __extends$30(LabelTool, _super);
     function LabelTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -23903,7 +24029,7 @@ var LabelTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a Polygon shape node dynamically using polygon Tool
  */
 var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(PolygonDrawingTool, _super);
+    __extends$30(PolygonDrawingTool, _super);
     function PolygonDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -23982,7 +24108,7 @@ var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a PolyLine Connector dynamically using PolyLine Drawing Tool
  */
 var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(PolyLineDrawingTool, _super);
+    __extends$30(PolyLineDrawingTool, _super);
     function PolyLineDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -24043,7 +24169,7 @@ var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
     return PolyLineDrawingTool;
 }(ToolBase));
 var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(LabelDragTool, _super);
+    __extends$30(LabelDragTool, _super);
     function LabelDragTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -24094,7 +24220,7 @@ var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
     return LabelDragTool;
 }(ToolBase));
 var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(LabelResizeTool, _super);
+    __extends$30(LabelResizeTool, _super);
     function LabelResizeTool(commandHandler, corner) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.corner = corner;
@@ -24173,7 +24299,7 @@ var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
     return LabelResizeTool;
 }(ToolBase));
 var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(LabelRotateTool, _super);
+    __extends$30(LabelRotateTool, _super);
     function LabelRotateTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -24223,7 +24349,7 @@ var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
     return LabelRotateTool;
 }(ToolBase));
 
-var __extends$30 = (undefined && undefined.__extends) || (function () {
+var __extends$31 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24240,7 +24366,7 @@ var __extends$30 = (undefined && undefined.__extends) || (function () {
  * Multiple segments editing for Connector
  */
 var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
-    __extends$30(ConnectorEditing, _super);
+    __extends$31(ConnectorEditing, _super);
     function ConnectorEditing(commandHandler, endPoint) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.endPoint = endPoint;
@@ -27023,7 +27149,7 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
             }
             else if (action === 'Pan' || action === 'LayoutAnimation') {
                 for (var i = objects.length - 1; i >= 0; i--) {
-                    if (objects[i] instanceof Node) {
+                    if (objects[i] instanceof Node || objects[i] instanceof Connector) {
                         var portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
                         if ((action === 'LayoutAnimation' || action === 'Pan') || ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$'))))) {
                             return objects[i];
@@ -27084,7 +27210,7 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
     return ObjectFinder;
 }());
 
-var __extends$31 = (undefined && undefined.__extends) || (function () {
+var __extends$32 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27097,7 +27223,7 @@ var __extends$31 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -27108,7 +27234,7 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
  * Layer is a named category of diagram shapes.
  */
 var Layer = /** @__PURE__ @class */ (function (_super) {
-    __extends$31(Layer, _super);
+    __extends$32(Layer, _super);
     // tslint:disable-next-line:no-any
     function Layer(parent, propName, defaultValue, isArray) {
         var _this = _super.call(this, parent, propName, defaultValue, isArray) || this;
@@ -27119,22 +27245,22 @@ var Layer = /** @__PURE__ @class */ (function (_super) {
         _this.objects = [];
         return _this;
     }
-    __decorate$20([
+    __decorate$21([
         Property('')
     ], Layer.prototype, "id", void 0);
-    __decorate$20([
+    __decorate$21([
         Property(true)
     ], Layer.prototype, "visible", void 0);
-    __decorate$20([
+    __decorate$21([
         Property(false)
     ], Layer.prototype, "lock", void 0);
-    __decorate$20([
+    __decorate$21([
         Property()
     ], Layer.prototype, "objects", void 0);
-    __decorate$20([
+    __decorate$21([
         Property()
     ], Layer.prototype, "addInfo", void 0);
-    __decorate$20([
+    __decorate$21([
         Property(-1)
     ], Layer.prototype, "zIndex", void 0);
     return Layer;
@@ -27303,22 +27429,25 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             var connector = this.diagram.nameTable[args.connector.id];
             var nodeEndId = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
             var portEndId = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
-            oldChanges[nodeEndId] = args.newValue.connectorTargetValue.nodeId;
-            oldChanges[portEndId] = args.newValue.connectorTargetValue.portId;
-            newChanges[nodeEndId] = args.oldValue.connectorTargetValue.nodeId;
-            newChanges[portEndId] = args.oldValue.connectorTargetValue.portId;
+            var connectionEnd = args.connectorEnd === 'ConnectorTargetEnd';
+            var newValue = connectionEnd ? args.newValue.connectorTargetValue : args.newValue.connectorSourceValue;
+            var oldValue = connectionEnd ? args.oldValue.connectorTargetValue : args.oldValue.connectorSourceValue;
+            oldChanges[nodeEndId] = newValue.nodeId;
+            oldChanges[portEndId] = newValue.portId;
+            newChanges[nodeEndId] = oldValue.nodeId;
+            newChanges[portEndId] = oldValue.portId;
             if (args.cancel && args.connectorEnd !== 'ConnectorTargetEnd') {
-                connector.sourceID = args.oldValue.connectorTargetValue.nodeId;
+                connector.sourceID = oldValue.nodeId;
                 if (args.connector.sourcePortID) {
-                    connector.sourcePortID = args.oldValue.connectorTargetValue.portId;
+                    connector.sourcePortID = oldValue.portId;
                 }
                 this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
             }
             if (args.cancel && args.connectorEnd === 'ConnectorTargetEnd') {
                 if (args.connector.targetPortID) {
-                    connector.targetPortID = args.oldValue.connectorTargetValue.portId;
+                    connector.targetPortID = oldValue.portId;
                 }
-                connector.targetID = args.oldValue.connectorTargetValue.nodeId;
+                connector.targetID = oldValue.nodeId;
                 this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
             }
         }
@@ -32483,7 +32612,7 @@ var SpatialSearch = /** @__PURE__ @class */ (function () {
     return SpatialSearch;
 }());
 
-var __extends$32 = (undefined && undefined.__extends) || (function () {
+var __extends$33 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -32496,7 +32625,7 @@ var __extends$32 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32518,17 +32647,17 @@ var __decorate$21 = (undefined && undefined.__decorate) || function (decorators,
  * @default {}
  */
 var SerializationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$32(SerializationSettings, _super);
+    __extends$33(SerializationSettings, _super);
     function SerializationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$21([
+    __decorate$22([
         Property(false)
     ], SerializationSettings.prototype, "preventDefaults", void 0);
     return SerializationSettings;
 }(ChildProperty));
 
-var __extends$33 = (undefined && undefined.__extends) || (function () {
+var __extends$34 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -32541,7 +32670,7 @@ var __extends$33 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$23 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32552,14 +32681,14 @@ var __decorate$22 = (undefined && undefined.__decorate) || function (decorators,
  * Layer is a named category of diagram shapes.
  */
 var CustomCursorAction = /** @__PURE__ @class */ (function (_super) {
-    __extends$33(CustomCursorAction, _super);
+    __extends$34(CustomCursorAction, _super);
     function CustomCursorAction() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$22([
+    __decorate$23([
         Property('')
     ], CustomCursorAction.prototype, "action", void 0);
-    __decorate$22([
+    __decorate$23([
         Property('')
     ], CustomCursorAction.prototype, "cursor", void 0);
     return CustomCursorAction;
@@ -32772,10 +32901,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             var args = arg[obj];
             this.isServerUpdate = true;
             if (arg[isAdding]) {
-                this.add(args);
+                var add = 'add';
+                this[add].apply(this, args);
             }
             else {
-                this.remove(args);
+                var remove_1 = 'remove';
+                this[remove_1].apply(this, args);
             }
             this.isServerUpdate = false;
         }
@@ -33023,7 +33154,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /* tslint:enable */
     Diagram.prototype.updateSnapSettings = function (newProp) {
         if (newProp.snapSettings.constraints !== undefined || newProp.snapSettings.horizontalGridlines ||
-            newProp.snapSettings.verticalGridlines) {
+            newProp.snapSettings.verticalGridlines || newProp.snapSettings.gridType) {
             this.diagramRenderer.updateGrid(this.snapSettings, getGridLayerSvg(this.element.id), this.scroller.transform, this.rulerSettings, this.hRuler, this.vRuler);
         }
     };
@@ -33241,16 +33372,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             node = this.nodes[i];
             annotation = node.annotations[0];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
-                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this);
+                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this, false);
             }
             else if (annotation && annotation.annotationType === 'Template') {
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this);
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
         for (var i = 0; i < this.connectors.length; i++) {
             pathAnnotation = this.connectors[i].annotations[0];
             if (pathAnnotation && pathAnnotation.annotationType === 'Template') {
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this);
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
     };
@@ -38091,7 +38222,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         if (!(this.diagramActions & DiagramAction.TextEdit)) return [3 /*break*/, 9];
                         this.enableServerDataBinding(false);
                         textArea = document.getElementById(this.element.id + '_editBox');
-                        if (!((isBlazor() && textArea && textArea.value) || !isBlazor())) return [3 /*break*/, 9];
+                        if (!((isBlazor() && textArea) || !isBlazor())) return [3 /*break*/, 9];
                         text = textArea.value;
                         EventHandler.remove(textArea, 'input', this.eventHandler.inputChange);
                         EventHandler.remove(textArea, 'focusout', this.focusOutEdit);
@@ -39642,6 +39773,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     var clonedObject = void 0;
                     var selectedSymbol = args.dragData.helper;
                     var paletteId = selectedSymbol.getAttribute('paletteId');
+                    var nodeDragSize = void 0;
+                    var nodePreviewSize = void 0;
+                    var paletteDragSize = void 0;
                     if (paletteId) {
                         var sourceElement = document.getElementById(paletteId).ej2_instances[0];
                         var source = 'sourceElement';
@@ -39662,6 +39796,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                                     && newNode.shape.activity.subProcess.processes.length) {
                                     newNode.shape.activity.subProcess.processes = [];
                                 }
+                                nodeDragSize = newNode.dragSize;
+                                nodePreviewSize = newNode.previewSize;
+                                paletteDragSize = sourceElement['symbolDragSize'];
+                                var palettePreview = sourceElement['symbolPreview'];
+                                newNode.width = nodeDragSize.width || paletteDragSize.width || nodePreviewSize.width || palettePreview.width || newNode.width;
+                                newNode.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height || palettePreview.height || newNode.height;
                                 if (newNode.shape.type === 'SwimLane') {
                                     _this.diagramActions |= DiagramAction.PreventHistory;
                                     if (newNode.shape.isLane) {
@@ -39706,6 +39846,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                                         group.shape = newNode.shape;
                                         group.width = newNode.shape.lanes[0].width;
                                         group.height = newNode.shape.lanes[0].height;
+                                        group.previewSize = newNode.previewSize;
+                                        group.dragSize = newNode.dragSize;
                                         newNode = _this.add(group);
                                         _this.diagramActions &= ~DiagramAction.PreventCollectionChangeOnDragOver;
                                     }
@@ -39769,6 +39911,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                                 isHorizontal = (swimLaneObj.shape.orientation === 'Horizontal') ? true : false;
                                 child1 = _this.nameTable[newObj.children[0]];
                                 child2 = _this.nameTable[newObj.children[1]];
+                                nodeDragSize = newObj.dragSize;
+                                nodePreviewSize = newObj.previewSize;
+                                paletteDragSize = sourceElement['symbolDragSize'];
+                                laneObj.width = nodeDragSize.width || paletteDragSize.width || nodePreviewSize.width || laneObj.width;
+                                laneObj.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height || laneObj.height;
                                 if (isHorizontal) {
                                     header.width = laneObj.header.width;
                                     header.height = laneObj.height;
@@ -39835,7 +39982,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         };
         // tslint:disable-next-line:no-any
         this.droppable.drop = function (args) { return __awaiter(_this, void 0, void 0, function () {
-            var source, value, isPhase, orientation_2, isConnector, newObj, node, conn, arg, clonedObject, id, nodeId, selectedSymbols, arg, clonedObject, id;
+            var source, value, isPhase, orientation_2, isConnector, newObj, node, conn, arg, clonedObject, id, nodeId, arg, clonedObject, id, selectedSymbols;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -39861,7 +40008,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         arg = {
                             source: cloneBlazorObject(this.droppable[source]),
                             element: getObjectType(this.currentSymbol) === Connector ? { connector: cloneBlazorObject(this.currentSymbol) } : { node: cloneBlazorObject(this.currentSymbol) },
-                            cancel: false,
+                            cancel: false, target: {},
                             position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
                         };
                         this.getDropEventArgs(arg);
@@ -39946,8 +40093,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             this.refreshDiagramLayer();
                         }
                         delete this.droppable[source];
-                        selectedSymbols = 'selectedSymbols';
-                        remove(this.droppable[selectedSymbols]);
                         return [3 /*break*/, 5];
                     case 4:
                         arg = {
@@ -39962,6 +40107,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                                 element: undefined,
                                 cancel: false,
                                 position: undefined,
+                                target: {}
                             };
                             this.getDropEventArgs(arg);
                         }
@@ -39969,7 +40115,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         clonedObject = void 0;
                         id = 'id';
                         _a.label = 5;
-                    case 5: return [2 /*return*/];
+                    case 5:
+                        selectedSymbols = 'selectedSymbols';
+                        if (this.droppable[selectedSymbols]) {
+                            remove(this.droppable[selectedSymbols]);
+                        }
+                        return [2 /*return*/];
                 }
             });
         }); };
@@ -43454,20 +43605,25 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
         var elementWrapper = actualObject.wrapper.children[0];
         var actualShape = actualObject.shape.shape;
         var sizeChanged = changedProp.width !== undefined || changedProp.height !== undefined;
-        if (newShape.shape === 'Gateway' && newShape.gateway) {
+        if (((isBlazor() && newShape.bpmnShape === 'Gateway') || newShape.shape === 'Gateway') &&
+            newShape.gateway) {
             actualObject.wrapper.children[0] = this.getBPMNGatewayShape(actualObject);
         }
-        else if (newShape.shape === 'DataObject' && newShape.dataObject) {
+        else if (((isBlazor() && newShape.bpmnShape === 'DataObject') || newShape.shape === 'DataObject') &&
+            newShape.dataObject) {
             actualObject.wrapper.children[0] = this.getBPMNDataObjectShape(actualObject);
         }
-        else if (newShape.shape === 'Activity' && newShape.activity) {
+        else if (((isBlazor() && newShape.bpmnShape === 'Activity') || newShape.shape === 'Activity') &&
+            newShape.activity) {
             actualObject.wrapper.children[0] = this.getBPMNActivityShape(actualObject);
         }
-        else if (newShape.shape === 'Event' && newShape.event) {
+        else if (((isBlazor() && newShape.bpmnShape === 'Event') || newShape.shape === 'Event') &&
+            newShape.event) {
             var shapeEvent = newShape.event;
             actualObject.wrapper.children[0] = this.getBPMNEventShape(actualObject, shapeEvent);
         }
-        else if (newShape.shape === 'Message' || newShape.shape === 'DataSource') {
+        else if (((isBlazor() && newShape.bpmnShape === 'Message') || newShape.shape === 'Message') ||
+            ((isBlazor() && newShape.bpmnShape === 'DataSource') || newShape.shape === 'DataSource')) {
             actualObject.wrapper.children[0] = this.getBPMNShapes(actualObject);
             //} 
             // else if (newShape.shape === 'Group') {
@@ -52530,7 +52686,7 @@ var CrossReduction = /** @__PURE__ @class */ (function () {
  * Diagram component exported items
  */
 
-var __extends$34 = (undefined && undefined.__extends) || (function () {
+var __extends$35 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -52543,7 +52699,7 @@ var __extends$34 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$23 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -52564,45 +52720,61 @@ var getObjectType$1 = function (obj) {
  * A palette allows to display a group of related symbols and it textually annotates the group with its header.
  */
 var Palette = /** @__PURE__ @class */ (function (_super) {
-    __extends$34(Palette, _super);
+    __extends$35(Palette, _super);
     function Palette() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$23([
+    __decorate$24([
         Property('')
     ], Palette.prototype, "id", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], Palette.prototype, "height", void 0);
-    __decorate$23([
+    __decorate$24([
         Property(true)
     ], Palette.prototype, "expanded", void 0);
-    __decorate$23([
+    __decorate$24([
         Property('')
     ], Palette.prototype, "iconCss", void 0);
-    __decorate$23([
+    __decorate$24([
         Property('')
     ], Palette.prototype, "title", void 0);
-    __decorate$23([
+    __decorate$24([
         CollectionFactory(getObjectType$1)
     ], Palette.prototype, "symbols", void 0);
     return Palette;
 }(ChildProperty));
 /**
+ * customize the drag size of the individual palette items.
+ */
+var SymbolDragSize = /** @__PURE__ @class */ (function (_super) {
+    __extends$35(SymbolDragSize, _super);
+    function SymbolDragSize() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$24([
+        Property()
+    ], SymbolDragSize.prototype, "width", void 0);
+    __decorate$24([
+        Property()
+    ], SymbolDragSize.prototype, "height", void 0);
+    return SymbolDragSize;
+}(ChildProperty));
+/**
  * customize the preview size and position of the individual palette items.
  */
 var SymbolPreview = /** @__PURE__ @class */ (function (_super) {
-    __extends$34(SymbolPreview, _super);
+    __extends$35(SymbolPreview, _super);
     function SymbolPreview() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPreview.prototype, "width", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPreview.prototype, "height", void 0);
-    __decorate$23([
+    __decorate$24([
         Complex({}, Point)
     ], SymbolPreview.prototype, "offset", void 0);
     return SymbolPreview;
@@ -52622,7 +52794,7 @@ var SymbolPreview = /** @__PURE__ @class */ (function (_super) {
  * and to drag and drop those nodes/connectors to drawing area
  */
 var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
-    __extends$34(SymbolPalette, _super);
+    __extends$35(SymbolPalette, _super);
     //region - protected methods 
     /**
      * Constructor for creating the component
@@ -53247,9 +53419,11 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         var symbolPreviewWidth = symbol.wrapper.children[0].desiredSize.width + symbol.style.strokeWidth;
         var symbolPreviewHeight = symbol.wrapper.children[0].desiredSize.height + symbol.style.strokeWidth;
         var content = symbol.wrapper.children[0].children[0];
-        if (this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
-            symbolPreviewWidth = (this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
-            symbolPreviewHeight = (this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
+        var symbolPreview = symbol.previewSize;
+        if ((symbol && (symbolPreview.width || symbolPreview.height)) ||
+            this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
+            symbolPreviewWidth = (symbolPreview.width || this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
+            symbolPreviewHeight = (symbolPreview.height || this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
             sw = symbolPreviewWidth / content.actualSize.width;
             sh = symbolPreviewHeight / content.actualSize.height;
             sw = sh = Math.min(sw, sh);
@@ -53879,70 +54053,73 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, keyEvent, this.keyUp);
         EventHandler.remove(document, keyDownEvent, this.keyDown);
     };
-    __decorate$23([
+    __decorate$24([
         Property('S')
     ], SymbolPalette.prototype, "accessKey", void 0);
-    __decorate$23([
+    __decorate$24([
         Property('100%')
     ], SymbolPalette.prototype, "width", void 0);
-    __decorate$23([
+    __decorate$24([
         Property('100%')
     ], SymbolPalette.prototype, "height", void 0);
-    __decorate$23([
+    __decorate$24([
         Collection([], Palette)
     ], SymbolPalette.prototype, "palettes", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "getSymbolInfo", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "symbolInfo", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "filterSymbols", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "ignoreSymbolsOnSearch", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "getSymbolTemplate", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "symbolWidth", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "symbolHeight", void 0);
-    __decorate$23([
+    __decorate$24([
         Complex({ left: 10, right: 10, top: 10, bottom: 10 }, Margin)
     ], SymbolPalette.prototype, "symbolMargin", void 0);
-    __decorate$23([
+    __decorate$24([
         Property(true)
     ], SymbolPalette.prototype, "allowDrag", void 0);
-    __decorate$23([
+    __decorate$24([
         Complex({}, SymbolPreview)
     ], SymbolPalette.prototype, "symbolPreview", void 0);
-    __decorate$23([
+    __decorate$24([
+        Complex({}, SymbolDragSize)
+    ], SymbolPalette.prototype, "symbolDragSize", void 0);
+    __decorate$24([
         Property(false)
     ], SymbolPalette.prototype, "enableSearch", void 0);
-    __decorate$23([
+    __decorate$24([
         Property(true)
     ], SymbolPalette.prototype, "enableAnimation", void 0);
-    __decorate$23([
+    __decorate$24([
         Property('Multiple')
     ], SymbolPalette.prototype, "expandMode", void 0);
-    __decorate$23([
+    __decorate$24([
         Event()
     ], SymbolPalette.prototype, "paletteSelectionChange", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "getNodeDefaults", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "nodeDefaults", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "getConnectorDefaults", void 0);
-    __decorate$23([
+    __decorate$24([
         Property()
     ], SymbolPalette.prototype, "connectorDefaults", void 0);
     return SymbolPalette;
@@ -53952,7 +54129,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
  * Exported symbol palette files
  */
 
-var __extends$35 = (undefined && undefined.__extends) || (function () {
+var __extends$36 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -53965,7 +54142,7 @@ var __extends$35 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$25 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -53993,7 +54170,7 @@ var __decorate$24 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Overview = /** @__PURE__ @class */ (function (_super) {
-    __extends$35(Overview, _super);
+    __extends$36(Overview, _super);
     function Overview(options, element) {
         var _this = _super.call(this, options, element) || this;
         /** @private */
@@ -54866,16 +55043,16 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
          */
         return 'Overview';
     };
-    __decorate$24([
+    __decorate$25([
         Property('100%')
     ], Overview.prototype, "width", void 0);
-    __decorate$24([
+    __decorate$25([
         Property('100%')
     ], Overview.prototype, "height", void 0);
-    __decorate$24([
+    __decorate$25([
         Property('')
     ], Overview.prototype, "sourceID", void 0);
-    __decorate$24([
+    __decorate$25([
         Event()
     ], Overview.prototype, "created", void 0);
     return Overview;
@@ -54889,5 +55066,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

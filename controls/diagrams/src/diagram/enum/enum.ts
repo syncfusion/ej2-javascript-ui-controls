@@ -702,6 +702,16 @@ export type RenderingMode =
     'SVG' |
     /** Canvas - Renders the diagram in a canvas */
     'Canvas';
+/**
+ * Defines the gird rendering pattern
+ * Lines - Render the line for the grid
+ * Dots - Render the dot for the grid
+ */
+export type GridType =
+    /** Lines - Render the diagram Grid in Line format */
+    'Lines' |
+    /** Lines - Render the diagram Grid in Dot format */
+    'Dots';
 
 /**
  * Defines how to decorate the text

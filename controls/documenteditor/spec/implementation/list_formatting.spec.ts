@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, SfdtExport } from '../../src/index';
+import { Editor, SfdtExport, DocumentHelper } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -961,27 +961,27 @@ let json: Object = {
 //Apply Bullet or Numbering public API Validation
 describe('Multi Level List apply validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
         editor.selection.selectAll();
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -1005,26 +1005,26 @@ describe('Multi Level List apply validation', () => {
 });
 describe('Numbering apply validation in different scenario', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -1066,26 +1066,26 @@ describe('Numbering apply validation in different scenario', () => {
 
 describe('Bullet list Apply validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -1111,20 +1111,19 @@ describe('Bullet list Apply validation', () => {
 });
 describe('List Text validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.enableLocalPaste = true;
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -1215,20 +1214,19 @@ describe('List Text validation', () => {
 });
 describe('List Edit operation validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.enableLocalPaste = true;
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -1239,7 +1237,7 @@ describe('List Edit operation validation', () => {
         }, 1000);
     });
     it('List Edit Validation', () => {
-        editor.viewer.onDocumentChanged([createListDocument()]);
+        editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
         editor.editorModule.onEnter();
@@ -1251,9 +1249,9 @@ describe('List Edit operation validation', () => {
         editor.editorModule.onEnter();
         editor.editorModule.insertText('A');
         editor.editorModule.onEnter();
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(6);
-        for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
-            let block: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(6);
+        for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
+            let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
             expect(((block.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((i + 1) + '.');
         }
         editor.selection.moveUp();
@@ -1262,13 +1260,13 @@ describe('List Edit operation validation', () => {
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
-        for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
-            let block: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
+        for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
+            let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
             expect(((block.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((i + 1) + '.');
         }
     });
     it('Insert Table At List start Validation', () => {
-        editor.viewer.onDocumentChanged([createListDocument()]);
+        editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         let paragraph = editor.selection.start.paragraph;
         editor.editorModule.insertTable(2, 2);
@@ -1277,23 +1275,23 @@ describe('List Edit operation validation', () => {
         expect(((paragraph.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((1) + '.');
     });
     it('Insert Table At List End Validation', () => {
-        editor.viewer.onDocumentChanged([createListDocument()]);
+        editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
         editor.editorModule.insertTable(2, 2);
-        let paragraph = editor.viewer.pages[0].bodyWidgets[0].firstChild as BlockWidget;
+        let paragraph = editor.documentHelper.pages[0].bodyWidgets[0].firstChild as BlockWidget;
         expect(((paragraph.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((1) + '.');
         expect(((editor.selection.start.paragraph.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((2) + '.')
     });
     it('Insert Table At List Middle  Validation', () => {
-        editor.viewer.onDocumentChanged([createListDocument()]);
+        editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         let paragraph = editor.selection.start.paragraph;
         editor.editorModule.insertTable(2, 2);
-        let lastBlock: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].lastChild as BlockWidget;
+        let lastBlock: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].lastChild as BlockWidget;
         expect(((lastBlock.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((6) + '.');
         editor.editorModule.insertText('S');
         expect(((lastBlock.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((6) + '.');
@@ -1302,20 +1300,19 @@ describe('List Edit operation validation', () => {
 
 describe('List paste issue', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, SfdtExport, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.enableLocalPaste = true;
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -1327,7 +1324,7 @@ describe('List paste issue', () => {
         }, 1000);
     });
     it('Paste copied List content', () => {
-        editor.viewer.onDocumentChanged([createListDocument()]);
+        editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
         editor.editorModule.onEnter();
@@ -1339,22 +1336,22 @@ describe('List paste issue', () => {
         editor.selection.copy();
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         editor.editorModule.paste();
-        for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
-            let block: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
+        for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
+            let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
             expect(((block.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((i + 1) + '.');
         }
     });
     it('Undo after paste', () => {
         editor.editorHistory.undo();
-        for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
-            let block: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
+        for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
+            let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
             expect(((block.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((i + 1) + '.');
         }
     });
     it('Redo after paste', () => {
         editor.editorHistory.redo();
-        for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
-            let block: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
+        for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
+            let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
             expect(((block.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((i + 1) + '.');
         }
     });
@@ -1365,8 +1362,8 @@ describe('List paste issue', () => {
             editor.editorHistory.redo();
             i++;
         }
-        for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
-            let block: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
+        for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
+            let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
             expect(((block.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((i + 1) + '.');
         }
     });
@@ -1378,28 +1375,27 @@ describe('List paste issue', () => {
             i++;
         }
         editor.editorHistory.undo();
-        for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
-            let block: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
+        for (let i: number = 0; i < editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length; i++) {
+            let block: BlockWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
             expect(((block.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((i + 1) + '.');
         }
     })
 })
 describe('List paste Mutiple Page then Undo and redo operation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, SfdtExport, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.enableLocalPaste = true;
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -1411,7 +1407,7 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
         }, 1000);
     });
     it('Paste copied List content', () => {
-        editor.viewer.onDocumentChanged([createListDocument()]);
+        editor.documentHelper.onDocumentChanged([createListDocument()]);
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
         editor.editorModule.onEnter();
@@ -1427,7 +1423,7 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
             editor.editorModule.paste();
             i++;
         }
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Undo after paste', () => {
         let i: number = 0;
@@ -1435,7 +1431,7 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
             editor.editorHistory.undo();
             i++;
         }
-        expect(editor.viewer.pages.length).toBe(1);
+        expect(editor.documentHelper.pages.length).toBe(1);
     });
     it('Redo after paste', () => {
         let i: number = 0;
@@ -1443,7 +1439,7 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
             editor.editorHistory.redo();
             i++;
         }
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
 })
 
@@ -1469,20 +1465,19 @@ function createListDocument(): BodyWidget {
 
 describe('Numbering list apply validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, SfdtExport, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.enableLocalPaste = true;
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -1501,7 +1496,7 @@ describe('Numbering list apply validation', () => {
         editor.editor.insertText('Arabic');
         editor.editor.onEnter();
         editor.editor.applyNumbering('%1.', 'Arabic');
-        expect(editor.viewer.lists.length).toBe(2);
+        expect(editor.documentHelper.lists.length).toBe(2);
     });
     it('Uproman numbering validation', () => {
         editor.editor.applyNumbering('%1.', 'UpRoman');
@@ -1511,27 +1506,26 @@ describe('Numbering list apply validation', () => {
         editor.editor.insertText('Arabic');
         editor.editor.onEnter();
         editor.editor.applyNumbering('%1.', 'Arabic');
-        expect(editor.viewer.lists.length).toBe(4);
+        expect(editor.documentHelper.lists.length).toBe(4);
     });
 });
 
 
 describe('List apply validation for level number is greater than 1', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, SfdtExport, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.enableLocalPaste = true;
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();

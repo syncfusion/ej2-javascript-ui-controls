@@ -15,10 +15,10 @@ describe('Insert comment', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -33,6 +33,6 @@ describe('Insert comment', () => {
     it('In header footer', () => {
         editor.selection.goToHeader();
         editor.editor.insertComment();
-        expect(editor.viewer.comments.length).toBe(0);
+        expect(editor.documentHelper.comments.length).toBe(0);
     });
 });

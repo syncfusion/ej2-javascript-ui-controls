@@ -1,4 +1,4 @@
-import { LayoutViewer } from '../viewer';
+import { LayoutViewer, DocumentHelper } from '../viewer';
 import { L10n, createElement } from '@syncfusion/ej2-base';
 import { RestrictEditing } from './restrict-editing-pane';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -6,7 +6,7 @@ import { DialogUtility } from '@syncfusion/ej2-popups';
  * @private 
  */
 export class EnforceProtectionDialog {
-    private viewer: LayoutViewer;
+    private documentHelper: DocumentHelper;
     private target: HTMLElement;
     private passwordTextBox: HTMLInputElement;
     private confirmPasswordTextBox: HTMLInputElement;
@@ -16,12 +16,13 @@ export class EnforceProtectionDialog {
      * @private
      */
     public password: string;
-
-    constructor(viewer: LayoutViewer, owner: RestrictEditing) {
-        this.viewer = viewer;
+    constructor(documentHelper: DocumentHelper, owner: RestrictEditing) {
+        this.documentHelper = documentHelper;
         this.owner = owner;
     }
-
+    get viewer(): LayoutViewer {
+        return this.owner.viewer;
+    }
     /**
      * @private
      */
@@ -55,11 +56,11 @@ export class EnforceProtectionDialog {
         if (!this.target) {
             this.initDialog(this.localeValue, this.viewer.owner.enableRtl);
         }
-        this.viewer.dialog.header = this.localeValue.getConstant('Start Enforcing Protection');
-        this.viewer.dialog.height = 'auto';
-        this.viewer.dialog.content = this.target;
-        this.viewer.dialog.width = 'auto';
-        this.viewer.dialog.buttons = [{
+        this.documentHelper.dialog.header = this.localeValue.getConstant('Start Enforcing Protection');
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.buttons = [{
             click: this.okButtonClick,
             buttonModel: { content: this.localeValue.getConstant('Ok'), cssClass: 'e-flat', isPrimary: true }
         },
@@ -69,12 +70,12 @@ export class EnforceProtectionDialog {
         }];
         this.passwordTextBox.value = '';
         this.confirmPasswordTextBox.value = '';
-        this.viewer.dialog.show();
+        this.documentHelper.dialog.show();
     }
     public hideDialog = (): void => {
         this.passwordTextBox.value = '';
         this.confirmPasswordTextBox.value = '';
-        this.viewer.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
 
     /**
@@ -96,7 +97,7 @@ export class EnforceProtectionDialog {
  * @private 
  */
 export class UnProtectDocumentDialog {
-    private viewer: LayoutViewer;
+    private documentHelper: DocumentHelper;
     private target: HTMLElement;
     private passwordTextBox: HTMLInputElement;
     private owner: RestrictEditing;
@@ -104,9 +105,11 @@ export class UnProtectDocumentDialog {
     private localObj: L10n;
     private currentHashValue: string;
     private currentSaltValue: string;
-
-    constructor(viewer: LayoutViewer, owner: RestrictEditing) {
-        this.viewer = viewer;
+    get viewer(): LayoutViewer {
+        return this.owner.viewer;
+    }
+    constructor(documentHelper: DocumentHelper, owner: RestrictEditing) {
+        this.documentHelper = documentHelper;
         this.owner = owner;
     }
 
@@ -141,11 +144,11 @@ export class UnProtectDocumentDialog {
         if (!this.target) {
             this.initDialog(this.localObj, this.viewer.owner.enableRtl);
         }
-        this.viewer.dialog.header = 'Unprotect Document';
-        this.viewer.dialog.height = 'auto';
-        this.viewer.dialog.width = 'auto';
-        this.viewer.dialog.content = this.target;
-        this.viewer.dialog.buttons = [{
+        this.documentHelper.dialog.header = 'Unprotect Document';
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.buttons = [{
             click: this.okButtonClick,
             buttonModel: { content: this.localObj.getConstant('Ok'), cssClass: 'e-flat', isPrimary: true }
         },
@@ -153,9 +156,9 @@ export class UnProtectDocumentDialog {
             click: this.hideDialog,
             buttonModel: { content: this.localObj.getConstant('Cancel'), cssClass: 'e-flat' }
         }];
-        this.viewer.dialog.dataBind();
+        this.documentHelper.dialog.dataBind();
         this.passwordTextBox.value = '';
-        this.viewer.dialog.show();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
@@ -173,7 +176,7 @@ export class UnProtectDocumentDialog {
      */
     public hideDialog = (): void => {
         this.passwordTextBox.value = '';
-        this.viewer.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
     /* tslint:enable:no-any */
 }    

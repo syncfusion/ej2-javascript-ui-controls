@@ -1,10 +1,11 @@
 import { TextPosition } from '../selection/selection-helper';
-import { LayoutViewer } from '../index';
+import { DocumentHelper } from '../index';
 import { DocumentEditor } from '../../document-editor';
 /** 
  * @private
  */
 export class TextSearchResult {
+    public documentHelper: DocumentHelper;
     private startIn: TextPosition = undefined;
     private endIn: TextPosition = undefined;
     private owner: DocumentEditor;
@@ -16,9 +17,6 @@ export class TextSearchResult {
      * @private
      */
     public isFooter: boolean;
-    get viewer(): LayoutViewer {
-        return this.owner.viewer;
-    }
     get start(): TextPosition {
         return this.startIn;
     }
@@ -32,10 +30,11 @@ export class TextSearchResult {
         this.endIn = value;
     }
     get text(): string {
-        return this.viewer.selection.getTextInternal(this.start, this.end, false);
+        return this.documentHelper.selection.getTextInternal(this.start, this.end, false);
     }
     constructor(owner: DocumentEditor) {
         this.owner = owner;
+        this.documentHelper = this.owner.documentHelper;
     }
     public destroy(): void {
         this.start = undefined;

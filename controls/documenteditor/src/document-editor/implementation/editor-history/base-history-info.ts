@@ -21,6 +21,7 @@ import { TableResizer } from '../editor/table-resizer';
 import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle } from '../format/index';
 import { ParagraphInfo } from '../editor/editor-helper';
 import { BookmarkInfo } from './history-helper';
+import { DocumentHelper } from '../viewer';
 
 /** 
  * @private
@@ -28,6 +29,7 @@ import { BookmarkInfo } from './history-helper';
 export class BaseHistoryInfo {
     // Fields
     private ownerIn: DocumentEditor;
+    public documentHelper: DocumentHelper;
     private actionIn: Action;
     private removedNodesIn: IWidget[];
     private modifiedPropertiesIn: Object[];
@@ -38,8 +40,6 @@ export class BaseHistoryInfo {
     private endPositionIn: string;
     private currentPropertyIndex: number;
     private ignoredWord: string;
-    private viewer: LayoutViewer;
-
     //Properties
     //gets owner control
     /**
@@ -103,11 +103,15 @@ export class BaseHistoryInfo {
     set endPosition(value: string) { this.endPositionIn = value; }
     constructor(node: DocumentEditor) {
         this.ownerIn = node;
-        this.viewer = node.viewer;
+        this.documentHelper = node.documentHelper;
         this.modifiedPropertiesIn = [];
         this.modifiedNodeLength = [];
         this.removedNodesIn = [];
     }
+    get viewer(): LayoutViewer {
+        return this.ownerIn.viewer;
+    }
+
     /**
      * Update the selection
      * @param selection
@@ -130,7 +134,7 @@ export class BaseHistoryInfo {
         let bookmarkInfo: BookmarkInfo = this.removedNodes[0] as BookmarkInfo;
         let bookmark: BookmarkElementBox = bookmarkInfo.bookmark;
         if (this.editorHistory.isUndoing) {
-            this.viewer.bookmarks.add(bookmark.name, bookmark);
+            this.documentHelper.bookmarks.add(bookmark.name, bookmark);
             bookmark.line.children.splice(bookmarkInfo.startIndex, 0, bookmark);
             bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
             this.editorHistory.recordChanges(this);
@@ -246,8 +250,8 @@ export class BaseHistoryInfo {
                             this.owner.editorModule.deleteSelectedContents(sel, true);
                         }
                         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
-                            this.editorHistory.currentHistoryInfo.action === 'PageBreak' && this.viewer.blockToShift) {
-                            this.viewer.layout.shiftLayoutedItems();
+                            this.editorHistory.currentHistoryInfo.action === 'PageBreak' && this.documentHelper.blockToShift) {
+                            this.documentHelper.layout.shiftLayoutedItems();
                         }
                     }
                 }
@@ -257,7 +261,7 @@ export class BaseHistoryInfo {
             if (isRemoveContent) {
                 this.removeContent(insertTextPosition, endTextPosition);
             }
-            //this.owner.editorModule.reLayout(this.viewer.selection);
+            //this.owner.editorModule.reLayout(this.documentHelper.selection);
         }
         let isSelectionChanged: boolean = false;
         if ((this.editorHistory.isUndoing && isNullOrUndefined(this.editorHistory.currentHistoryInfo)) ||
@@ -275,7 +279,7 @@ export class BaseHistoryInfo {
         this.endPosition = end;
         this.owner.editorModule.reLayout(this.owner.selection, this.owner.selection.isEmpty);
         if (isSelectionChanged) {
-            this.viewer.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
+            this.documentHelper.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
         }
         this.highlightListText();
     }
@@ -285,7 +289,7 @@ export class BaseHistoryInfo {
             if (this.action === 'ListCharacterFormat' || (this.editorHistory.currentHistoryInfo.action === 'ListSelect' && this.action === 'ListFormat')) {
                 let selectionStartTextPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
                 let widget: LineWidget = selectionStartTextPosition.currentWidget as LineWidget;
-                this.viewer.selection.highlightListText(widget);
+                this.documentHelper.selection.highlightListText(widget);
             }
         }
     }
@@ -431,7 +435,7 @@ export class BaseHistoryInfo {
                         deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
                         if (isNullOrUndefined(block)) {
                             // tslint:disable-next-line:max-line-length
-                            let nextBlock: BlockWidget = this.viewer.selection.getNextParagraphBlock(lastNode.getSplitWidgets().pop() as BlockWidget);
+                            let nextBlock: BlockWidget = this.documentHelper.selection.getNextParagraphBlock(lastNode.getSplitWidgets().pop() as BlockWidget);
                             this.owner.selection.getNextRenderedBlock((lastNode as ParagraphWidget));
                             if (isNullOrUndefined(nextBlock)) {
                                 //Sets the selection as starting of last paragraph.
@@ -446,7 +450,7 @@ export class BaseHistoryInfo {
                             deletedNodes.splice(deletedNodes.indexOf(firstBlock), 1);
                             if (isNullOrUndefined(block)) {
                                 // tslint:disable-next-line:max-line-length
-                                let nextBlock: BlockWidget = this.viewer.selection.getNextParagraphBlock(firstBlock.getSplitWidgets().pop() as BlockWidget);
+                                let nextBlock: BlockWidget = this.documentHelper.selection.getNextParagraphBlock(firstBlock.getSplitWidgets().pop() as BlockWidget);
                                 if (isNullOrUndefined(nextBlock)) {
                                     //Sets the selection as starting of last paragraph.
                                     this.owner.selection.selectParagraphInternal(firstBlock as ParagraphWidget, true);
@@ -484,7 +488,7 @@ export class BaseHistoryInfo {
                             editor.removeBlock(this.owner.selection.start.paragraph);
                         }
                         // tslint:disable-next-line:max-line-length
-                        let paragraph: ParagraphWidget = this.viewer.selection.getNextParagraphBlock(firstNode.getSplitWidgets().pop() as BlockWidget);
+                        let paragraph: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(firstNode.getSplitWidgets().pop() as BlockWidget);
                         if (!isNullOrUndefined(paragraph)) {
                             this.owner.selection.selectParagraphInternal(paragraph, true);
                         }
@@ -516,7 +520,7 @@ export class BaseHistoryInfo {
                         this.owner.editorModule.updateNextBlocksIndex(node, true);
                         if (i === 0 || !(deletedNodes[i - 1] instanceof TableRowWidget)) {
                             // tslint:disable-next-line:max-line-length
-                            this.viewer.layout.layoutBodyWidgetCollection(block.index, block.containerWidget, block, false);
+                            this.documentHelper.layout.layoutBodyWidgetCollection(block.index, block.containerWidget, block, false);
                         }
                     }
                 } else if (block instanceof TableWidget) {
@@ -826,10 +830,10 @@ export class BaseHistoryInfo {
         this.editorHistory.currentBaseHistoryInfo = this;
         this.currentPropertyIndex = 0;
         let property: string = this.getProperty();
-        this.viewer.owner.editorModule.setOffsetValue(this.viewer.selection);
+        this.viewer.owner.editorModule.setOffsetValue(this.documentHelper.selection);
         if (this.action === 'ClearCharacterFormat' || this.modifiedProperties[0] instanceof WCharacterFormat) {
             if (this.action === 'ListCharacterFormat') {
-                this.owner.editorModule.updateListCharacterFormat(this.viewer.selection, property, undefined);
+                this.owner.editorModule.updateListCharacterFormat(this.documentHelper.selection, property, undefined);
                 return;
             }
             this.owner.editorModule.updateSelectionCharacterFormatting(property, undefined, false);
@@ -844,16 +848,16 @@ export class BaseHistoryInfo {
                 this.owner.editorModule.updateSelectionParagraphFormatting(property, (this.modifiedProperties[0] as WParagraphFormat).baseStyle, false);
                 return;
             }
-            let selection: Selection = this.owner.viewer.selection;
+            let selection: Selection = this.owner.documentHelper.selection;
             let isBidiList: boolean = (selection.paragraphFormat.bidi ||
                 (this.modifiedProperties[0] instanceof WParagraphFormat && this.modifiedProperties[0] as WParagraphFormat).bidi
             ) && (selection.paragraphFormat.listId !== -1 || property === 'listFormat');
             if (!isBidiList) {
-                this.owner.viewer.layout.isBidiReLayout = true;
+                this.owner.documentHelper.layout.isBidiReLayout = true;
             }
             this.owner.editorModule.updateSelectionParagraphFormatting(property, undefined, false);
             if (!isBidiList) {
-                this.owner.viewer.layout.isBidiReLayout = false;
+                this.owner.documentHelper.layout.isBidiReLayout = false;
             }
         } else if (this.modifiedProperties[0] instanceof WSectionFormat) {
             this.owner.editorModule.updateSectionFormat(property, undefined);
@@ -882,7 +886,7 @@ export class BaseHistoryInfo {
         }
         this.currentPropertyIndex = 0;
         if (this.action === 'ClearCharacterFormat' || this.action === 'ClearParagraphFormat') {
-            this.owner.editorModule.getOffsetValue(this.viewer.selection);
+            this.owner.editorModule.getOffsetValue(this.documentHelper.selection);
         }
     }
     /**

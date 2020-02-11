@@ -321,4 +321,14 @@
     font-family: 'e-icons';
   }
 
+  .e-de-printlayout::before {
+    content: '\e897';
+    font-family: 'e-icons';
+  }
+
+  .e-de-weblayout::before {
+    content: '\e798';
+    font-family: 'e-icons';
+  }
+
 }

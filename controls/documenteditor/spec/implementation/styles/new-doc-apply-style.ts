@@ -1,4 +1,4 @@
-import { TextExport } from '../../../src/index';
+import { TextExport, DocumentHelper } from '../../../src/index';
 import { createElement, } from '@syncfusion/ej2-base';
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { LayoutViewer } from '../../../src/index';
@@ -12,7 +12,7 @@ import { ParagraphWidget } from '../../../src/index';
 
 describe('New Document - Edit and Apply Style', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     let currentPara: ParagraphWidget = undefined;
     beforeAll((): void => {
@@ -21,16 +21,16 @@ describe('New Document - Edit and Apply Style', () => {
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true });
         editor.acceptTab = true;
-        (editor as any).viewer.containerCanvasIn = TestHelper.containerCanvas;
-        (editor as any).viewer.selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor as any).viewer.render.pageCanvasIn = TestHelper.pageCanvas;
-        (editor as any).viewer.render.selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = (editor as any).viewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -47,9 +47,9 @@ describe('New Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(12.0);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
-        
+
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -65,9 +65,9 @@ describe('New Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
-        
+
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -83,9 +83,9 @@ describe('New Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
-        
+
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -101,9 +101,9 @@ describe('New Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
-        
+
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -118,9 +118,9 @@ describe('New Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
-        
+
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -135,9 +135,9 @@ describe('New Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
-        
+
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -152,18 +152,18 @@ describe('New Document - Edit and Apply Style', () => {
         expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(2.0);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
-        
-        event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
 
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
+
+        event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.applyStyle("Heading 1");
 
@@ -176,43 +176,43 @@ describe('New Document - Edit and Apply Style', () => {
         editor.editorModule.applyStyle('Heading 2');
         editor.editorModule.insertText('First Paragrapgh');
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         editor.editorModule.applyStyle('Heading 3');
         editor.editorModule.insertText('Second Paragrapgh');
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         editor.editorModule.applyStyle('Heading 4');
         editor.editorModule.insertText('Third Paragrapgh');
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         editor.editorModule.applyStyle('Heading 5');
         editor.editorModule.insertText('Fourth Paragrapgh');
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
-        
+        (editor as any).documentHelper.onKeyDownInternal(event);
+
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        (editor as any).viewer.onKeyDownInternal(event);
+        (editor as any).documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.applyStyle('Heading 1');
 

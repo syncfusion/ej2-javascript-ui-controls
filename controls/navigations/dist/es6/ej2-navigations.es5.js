@@ -3555,6 +3555,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         for (var i = 0; i < items.length; i++) {
             if (isBlazor() && this.isServerRendered) {
+                this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
                 var itemEleBlaDom = this.element.querySelector('.' + BZ_ITEMS);
                 innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
                 if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
@@ -5788,11 +5789,13 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             timingFunction: this.animation.expand.easing
         };
         var icon = select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
-        eventArgs = { element: trgtItemEle,
+        eventArgs = {
+            element: trgtItemEle,
             item: items[this.getIndexByItem(trgtItemEle)],
             index: this.getIndexByItem(trgtItemEle),
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
-            isExpanded: true };
+            isExpanded: true
+        };
         var eff = animation.name;
         this.trigger('expanding', eventArgs, function (expandArgs) {
             if (!expandArgs.cancel) {
@@ -5896,11 +5899,13 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             timingFunction: this.animation.collapse.easing,
         };
         var icon = select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
-        eventArgs = { element: trgtItemEle,
+        eventArgs = {
+            element: trgtItemEle,
             item: items[this.getIndexByItem(trgtItemEle)],
             index: this.getIndexByItem(trgtItemEle),
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
-            isExpanded: false };
+            isExpanded: false
+        };
         var eff = animation.name;
         this.trigger('expanding', eventArgs, function (expandArgs) {
             if (!expandArgs.cancel) {
@@ -6127,7 +6132,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      */
     Accordion.prototype.expandItem = function (isExpand, index) {
         var _this = this;
-        var root = this.element;
         var itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
@@ -10918,7 +10922,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
-            var subChild = this.getChildNodes(this.treeData, checkedChild);
+            var subChild = this.getChildNodes([childItems[i]], checkedChild);
             if (subChild) {
                 this.childStateChange(subChild, parent, childElement, doCheck);
             }

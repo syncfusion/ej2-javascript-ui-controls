@@ -41,6 +41,7 @@ export class AutoComplete extends ComboBox {
      * * iconCss - Maps the icon class column from data table for each list item
      * * groupBy - Group the list items with it's related items by mapping groupBy field
      * 
+     * {% codeBlock src='autocomplete/fields/index.md' %}{% endcodeBlock %}
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
      * @default { value: null, iconCss: null, groupBy: null}
      */
@@ -79,9 +80,7 @@ export class AutoComplete extends ComboBox {
      * Allows additional HTML attributes such as title, name, etc., and
      * accepts n number of attributes in a key-value pair format.
      * 
-     * {% codeBlock src="autocomplete/html-attributes-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="autocomplete/html-attributes-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='autocomplete/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})
@@ -90,9 +89,7 @@ export class AutoComplete extends ComboBox {
      * Accepts the external `query`
      * that execute along with data processing.
      * 
-     * {% codeBlock src="autocomplete/query-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="autocomplete/query-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='autocomplete/query/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)

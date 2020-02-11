@@ -177,7 +177,8 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
         //initialize the canvas element
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement(
             {
-                id: this.element.id, height: mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+                id: this.element.id + 'content',
+                height: mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
                 width: mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
             },
             this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight) as HTMLElement;

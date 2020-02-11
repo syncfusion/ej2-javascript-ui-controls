@@ -1,7 +1,7 @@
 import { ListView } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
-import { LayoutViewer } from '../index';
 import { createElement, L10n } from '@syncfusion/ej2-base';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Styles dialog is used to create or modify styles.
@@ -10,7 +10,7 @@ export class StylesDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private target: HTMLElement;
     private listviewInstance: ListView;
     private styleName: string;
@@ -18,8 +18,8 @@ export class StylesDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
     /**
      * @private
@@ -32,7 +32,7 @@ export class StylesDialog {
      */
     public initStylesDialog(localValue: L10n, styles: string[], isRtl?: boolean): void {
         let instance: StylesDialog = this;
-        let id: string = this.owner.owner.containerId + '_insert_styles';
+        let id: string = this.documentHelper.owner.containerId + '_insert_styles';
         this.target = createElement('div', { id: id, className: 'e-de-styles' });
         let headerValue: string = localValue.getConstant('Styles');
         let dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-styles-dlgfields' });
@@ -87,26 +87,26 @@ export class StylesDialog {
      * @private
      */
     public show(): void {
-        let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        localValue.setLocale(this.owner.owner.locale);
+        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
         let styles: string[] = this.updateStyleNames(localValue);
         this.localValue = localValue;
-        this.initStylesDialog(localValue, styles, this.owner.owner.enableRtl);
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = this.owner.updateFocus;
-        this.owner.dialog.close = this.owner.updateFocus;
-        this.owner.dialog.header = localValue.getConstant('Styles');
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.buttons = [{
+        this.initStylesDialog(localValue, styles, this.documentHelper.owner.enableRtl);
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.close = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.header = localValue.getConstant('Styles');
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.buttons = [{
             click: this.hideObjects.bind(this),
             buttonModel: { content: localValue.getConstant('Cancel'), cssClass: 'e-flat e-hyper-insert', isPrimary: true }
         }];
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
     private updateStyleNames = (localValue: L10n): string[] => {
-        let collection: string[] = this.owner.owner.viewer.styles.getStyleNames('Paragraph');
+        let collection: string[] = this.documentHelper.owner.documentHelper.styles.getStyleNames('Paragraph');
         let styleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6'];
         let defaultStyleNames: string[] = this.defaultStyleName(styleNames, localValue);
         let finalList: string[] = collection.concat(defaultStyleNames).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
@@ -120,20 +120,20 @@ export class StylesDialog {
         return styleName;
     }
     private modifyStyles = (): void => {
-        this.owner.dialog.hide();
-        this.owner.owner.styleDialogModule.show(this.styleName, this.localValue.getConstant('Modify Style'));
+        this.documentHelper.dialog.hide();
+        this.documentHelper.owner.styleDialogModule.show(this.styleName, this.localValue.getConstant('Modify Style'));
     }
     /* tslint:disable:no-any */
     private selectHandler = (args: any): void => {
         this.styleName = args.text;
     }
     private hideObjects(): void {
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
 
     private addNewStyles = (): void => {
-        this.owner.dialog.hide();
-        this.owner.owner.styleDialogModule.show();
+        this.documentHelper.dialog.hide();
+        this.documentHelper.owner.styleDialogModule.show();
     }
 
     /**

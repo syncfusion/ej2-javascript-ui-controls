@@ -16,10 +16,10 @@ describe('Spell Checker dialog API', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, ContextMenu, SpellChecker, Search, SpellCheckDialog);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableContextMenu: true, enableSpellCheck: true, enableSearch: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -36,8 +36,8 @@ describe('Spell Checker dialog API', () => {
         editor.serviceUrl='';
         editor.spellChecker.allowSpellCheckAndSuggestion = true;
         editor.editor.insertTextInternal('eacock', false);
-        let paragraph: ParagraphWidget = editor.viewer.selection.start.paragraph;
-        let lineInfo: LineInfo = editor.viewer.selection.getLineInfo(paragraph, 0);
+        let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
+        let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
         editor.spellCheckDialogModule.show(element.text, element, false);
     });
@@ -47,8 +47,8 @@ describe('Spell Checker dialog API', () => {
     it('Spell checker dialog ignore button test', () => {
         editor.openBlank();
         editor.editor.insertTextInternal('helo', false);
-        let paragraph: ParagraphWidget = editor.viewer.selection.start.paragraph;
-        let lineInfo: LineInfo = editor.viewer.selection.getLineInfo(paragraph, 0);
+        let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
+        let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['hello', 'halo', 'help'] };
         (editor.spellCheckDialogModule as any).handleRetrievedSuggestion('helo', jsonData.Suggestions);
@@ -67,8 +67,8 @@ describe('Spell Checker dialog API', () => {
     it('Spell checker dialog Ignore All button test', () => {
         editor.openBlank();
         editor.editor.insertTextInternal('eacock', false);
-        let paragraph: ParagraphWidget = editor.viewer.selection.start.paragraph;
-        let lineInfo: LineInfo = editor.viewer.selection.getLineInfo(paragraph, 0);
+        let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
+        let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
         (editor.spellCheckDialogModule as any).elementBox = element;
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['peacock', 'petcock'] };
@@ -79,8 +79,8 @@ describe('Spell Checker dialog API', () => {
     it('Spell checker dialog change button test', () => {
         editor.openBlank();
         editor.editor.insertTextInternal('helo', false);
-        let paragraph: ParagraphWidget = editor.viewer.selection.start.paragraph;
-        let lineInfo: LineInfo = editor.viewer.selection.getLineInfo(paragraph, 0);
+        let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
+        let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
         (editor.spellCheckDialogModule as any).elementBox = element;
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['hello', 'halo', 'help'] };
@@ -92,8 +92,8 @@ describe('Spell Checker dialog API', () => {
     it('Spell checker dialog change All button test', () => {
         editor.openBlank();
         editor.editor.insertTextInternal('helo', false);
-        let paragraph: ParagraphWidget = editor.viewer.selection.start.paragraph;
-        let lineInfo: LineInfo = editor.viewer.selection.getLineInfo(paragraph, 0);
+        let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
+        let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
         (editor.spellCheckDialogModule as any).elementBox = element;
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['hello', 'halo', 'help'] };
@@ -107,8 +107,8 @@ describe('Spell Checker dialog API', () => {
     it('Spell checker dialog change All button test 1', () => {
         editor.openBlank();
         editor.editor.insertTextInternal('helo world', false);
-        let paragraph: ParagraphWidget = editor.viewer.selection.start.paragraph;
-        let lineInfo: LineInfo = editor.viewer.selection.getLineInfo(paragraph, 0);
+        let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
+        let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
         (editor.spellCheckDialogModule as any).elementBox = element;
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['hello', 'halo', 'help'] };
@@ -123,8 +123,8 @@ describe('Spell Checker dialog API', () => {
         editor.openBlank();
         editor.serviceUrl= undefined;
         editor.editor.insertTextInternal('eacock', false);
-        let paragraph: ParagraphWidget = editor.viewer.selection.start.paragraph;
-        let lineInfo: LineInfo = editor.viewer.selection.getLineInfo(paragraph, 0);
+        let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
+        let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
         (editor.spellCheckDialogModule as any).elementBox = element;
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['peacock', 'petcock'] };

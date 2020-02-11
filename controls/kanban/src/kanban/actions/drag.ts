@@ -142,9 +142,7 @@ export class DragAndDrop {
                     offsetHeight -= limitEle.offsetHeight;
                 }
                 this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
-                let cards: HTMLElement[] = [].slice.call(contentCell.querySelectorAll('.' + cls.CARD_CLASS));
-                cards.forEach((el: Element) => addClass([el], cls.MULTI_CLONE_CARD));
-                addClass([contentCell], cls.MULTI_CLONE_CONTENT_CELL);
+                addClass([contentCell.querySelector('.' + cls.CARD_WRAPPER_CLASS)], cls.MULTI_CARD_WRAPPER);
                 (contentCell.querySelector('.' + cls.CARD_WRAPPER_CLASS) as HTMLElement).style.height = 'auto';
                 contentCell.style.borderStyle = 'none';
                 this.removeElement(this.dragObj.targetClone);
@@ -316,12 +314,11 @@ export class DragAndDrop {
             let columnKey: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.MULTI_COLUMN_KEY));
             columnKey.forEach((node: Element) => remove(node));
             cloneMulti.forEach((node: HTMLElement) => {
-                let target: HTMLElement = closest(node, '.' + cls.CONTENT_CELLS_CLASS) as HTMLElement;
-                if (target) {
-                    target.style.borderStyle = '';
+                let cell: HTMLElement = closest(node, '.' + cls.CONTENT_CELLS_CLASS) as HTMLElement;
+                if (cell) {
+                    cell.style.borderStyle = '';
+                    removeClass([cell.querySelector('.' + cls.CARD_WRAPPER_CLASS)], cls.MULTI_CARD_WRAPPER);
                 }
-                let cards: HTMLElement[] = [].slice.call(target.querySelectorAll('.' + cls.CARD_CLASS));
-                cards.forEach((el: Element) => removeClass([el], cls.MULTI_CLONE_CARD));
             });
             this.removeElement(this.dragObj.targetCloneMulti);
         }

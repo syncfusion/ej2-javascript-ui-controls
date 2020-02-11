@@ -470,7 +470,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (!this.isImportRules) {
-                this.disableRuleCondition(target);
+                this.disableRuleCondition(target, rules);
             }
             if (Object.keys(rule).length) {
                 this.changeRule(rule, {
@@ -2131,14 +2131,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'displayMode':
-                    if (newProp.displayMode === 'Horizontal') {
-                        addClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-                        removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
-                    }
-                    else {
-                        addClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
-                        removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-                    }
+                    this.refresh();
                     break;
                 case 'showButtons':
                     if (newProp.showButtons.ruleDelete) {
@@ -2418,7 +2411,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var elem = groupElem.parentElement.parentElement.parentElement;
             detach(target);
             this.refreshLevelColl();
-            this.disableRuleCondition(elem);
+            this.disableRuleCondition(elem, rule);
             if (!this.isImportRules) {
                 this.trigger('change', args);
             }
@@ -2477,7 +2470,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             detach(clnruleElem);
-            this.disableRuleCondition(groupElem);
+            if (!(rule.rules[0] && rule.rules[0].rules)) {
+                this.disableRuleCondition(groupElem, rule);
+            }
             if (!this.isImportRules) {
                 this.trigger('change', args);
             }
@@ -2494,14 +2489,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
         this.isImportRules = false;
     };
-    QueryBuilder.prototype.disableRuleCondition = function (groupElem) {
+    QueryBuilder.prototype.disableRuleCondition = function (groupElem, rules) {
         var count = groupElem.querySelector('.e-rule-list').childElementCount;
         var andElem = groupElem.querySelector('.e-btngroup-and');
         var orElem = groupElem.querySelector('.e-btngroup-or');
         if (count > 1) {
             andElem.disabled = false;
-            andElem.checked = true;
             orElem.disabled = false;
+            rules && rules.condition === 'or' ? orElem.checked = true : andElem.checked = true;
         }
         else {
             andElem.checked = false;

@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../../src/index';
 import { ListDialog } from '../../../src/document-editor/implementation/dialogs/list-dialog';
 import { ListViewModel } from '../../../src/document-editor/implementation/dialogs/list-view-model';
 import { createElement } from '@syncfusion/ej2-base';
@@ -403,12 +403,12 @@ let arabic: any = {
 //         DocumentEditor.Inject(Editor, Selection, ListDialog, EditorHistory);
 //         editor = new DocumentEditor({ isReadOnly: false,enableEditor: true, enableSelection: true, enableListDialog: true });
 //         editor.enableEditorHistory = true;
-//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
 //         editor.appendTo('#container');
-//         dialog = new ListDialog(editor.viewer);
+//         dialog = new ListDialog(editor.documentHelper);
 //     });
 //     afterAll((done): void => {
 //         editor.destroy();
@@ -438,7 +438,6 @@ let arabic: any = {
 // });
 describe('List dialog validation-2', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: ListDialog;
     beforeAll((): void => {
         editor = undefined;
@@ -448,19 +447,17 @@ describe('List dialog validation-2', () => {
         DocumentEditor.Inject(EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableListDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
         dialog = editor.listDialogModule;
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -489,11 +486,10 @@ describe('List dialog validation-2', () => {
         expect(number).toBe(0);
     });
     it('Applylist API validation', () => {
-        let viewer: LayoutViewer = editor.viewer;
-        let dialog: any = new ListDialog(viewer);
+        let dialog: any = new ListDialog(editor.documentHelper);
         createDocument(editor);
         dialog.showListDialog();
-        dialog.owner = undefined;
+        dialog.documentHelper = undefined;
         expect(() => { (dialog as any).onApplyList(); }).toThrowError();
         dialog.destroy();
     });
@@ -501,7 +497,6 @@ describe('List dialog validation-2', () => {
 });
 describe('ListDialogViewModel class validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: ListDialog;
     let viewModel: ListViewModel
     beforeAll((): void => {
@@ -512,13 +507,12 @@ describe('ListDialogViewModel class validation', () => {
         DocumentEditor.Inject(EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
-        dialog = new ListDialog(viewer);
+        dialog = new ListDialog(editor.documentHelper);
         viewModel = (dialog as any).viewModel;
     });
     afterAll((done): void => {
@@ -526,7 +520,6 @@ describe('ListDialogViewModel class validation', () => {
         dialog.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         dialog = undefined;
         viewModel = undefined;
         setTimeout(function () {
@@ -545,7 +538,6 @@ describe('ListDialogViewModel class validation', () => {
     });
     it('Create List and addListLevel API validation', () => {
 
-        let viewer: LayoutViewer = editor.viewer;
         dialog.showListDialog();
         let dialogview: ListViewModel = new ListViewModel();
         (dialogview as any).addListLevels();
@@ -554,7 +546,6 @@ describe('ListDialogViewModel class validation', () => {
 });
 describe('dialog event validation-1', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: ListDialog;
     beforeAll((): void => {
         editor = undefined;
@@ -564,13 +555,12 @@ describe('dialog event validation-1', () => {
         DocumentEditor.Inject(EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        dialog = new ListDialog(editor.viewer);
-        viewer = editor.viewer as PageLayoutViewer;
+        dialog = new ListDialog(editor.documentHelper);
     });
     afterAll((done): void => {
         editor.destroy();
@@ -578,7 +568,6 @@ describe('dialog event validation-1', () => {
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 500);
@@ -597,7 +586,6 @@ describe('dialog event validation-1', () => {
         });
     });
     it('follow character event validation', () => {
-        let viewer: LayoutViewer = editor.viewer;
         createDocument(editor);
         editor.editorModule.insertText('Syncfusion Software');
         editor.editor.applyBullet('\uf0b7', 'Symbol');
@@ -621,7 +609,6 @@ describe('dialog event validation-1', () => {
 });
 describe('dialog event validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: ListDialog;
     beforeAll((): void => {
         editor = undefined;
@@ -631,12 +618,11 @@ describe('dialog event validation', () => {
         DocumentEditor.Inject(EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableListDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
         dialog = editor.listDialogModule;
     });
     afterAll((done): void => {
@@ -645,7 +631,6 @@ describe('dialog event validation', () => {
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 500);
@@ -658,7 +643,6 @@ describe('dialog event validation', () => {
         (dialog as any).onApplyList();
     });
     it('ListLevel event validation with index 0', () => {
-        let viewer: LayoutViewer = editor.viewer;
         createDocument(editor);
         dialog.showListDialog();
         let event: any = { value: 'Level 1', target: { selectedIndex: 0 } };
@@ -670,7 +654,6 @@ describe('dialog event validation', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('Dialog property validation', (done) => {
-        let viewer: LayoutViewer = editor.viewer;
         createDocument(editor);
         dialog.showListDialog();
         setTimeout(() => {
@@ -683,7 +666,6 @@ describe('dialog event validation', () => {
 });
 describe('dialog event validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: ListDialog;
     let event: any;
     beforeAll((): void => {
@@ -693,13 +675,12 @@ describe('dialog event validation', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory, ListDialog);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
-        dialog = new ListDialog(viewer);
+        dialog = new ListDialog(editor.documentHelper);
         createDocument(editor);
         dialog.showListDialog();
     });
@@ -709,7 +690,6 @@ describe('dialog event validation', () => {
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);

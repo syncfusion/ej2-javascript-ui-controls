@@ -12,10 +12,10 @@ describe('Text with bdo is RTL validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);        
         editor = new DocumentEditor({ });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(textBdo));
     });
@@ -28,12 +28,12 @@ describe('Text with bdo is RTL validation', () => {
         }, 1000);
     });
     it('Bdo text layouting validation- RTL', () => {
-        let lineWidget: LineWidget = (((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget);
+        let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget);
         expect((lineWidget.children[0] as TextElementBox).text).toBe('sample');
         expect((lineWidget.children[0] as TextElementBox).characterFormat.bdo).toBe('RTL');
     });
     it('Bdo text layouting validation - LTR', () => {        
-        let lineWidget: LineWidget = (((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
+        let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
         expect((lineWidget.children[0] as TextElementBox).text).toBe('sample');
     });
 });
@@ -45,10 +45,10 @@ describe('Normal text and RTL Text layout combination validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);        
         editor = new DocumentEditor({ });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(combination));
     });
@@ -61,15 +61,15 @@ describe('Normal text and RTL Text layout combination validation', () => {
         }, 1000);
     });
     it('Hebrew text RTL validation with bidi false', () => {        
-        let lineWidget: LineWidget = (((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget);
+        let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget);
         // expect((lineWidget.children[1] as TextElementBox).text).toBe("גג'ג'ג'ג'ג'גק''");
     });
     it('Space after RTL text valdiation with bidi false', () => {        
-        let lineWidget: LineWidget = (((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
+        let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
         expect((lineWidget.children[1] as TextElementBox).text).toBe("    ");
     });
     it('English text after RTL text valdiation with bidi false', () => {        
-        let lineWidget: LineWidget = (((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
+        let lineWidget: LineWidget = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);
         expect((lineWidget.children[4] as TextElementBox).text).toBe("English     ");
     });
 });
@@ -82,10 +82,10 @@ describe('RTL Paragraph layout validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);        
         editor = new DocumentEditor({});
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(paragraph));
     });
@@ -98,21 +98,21 @@ describe('RTL Paragraph layout validation', () => {
         }, 1000);
     });
     it('Bidi false with normal text and RTL Text combination', () => {        
-        let paraWidget: ParagraphWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget);
+        let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget);
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Left');
     });
     it('Bidi true and bdo none with normal text and RTL Text combination', () => {        
-        let paraWidget: ParagraphWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[8] as ParagraphWidget);
+        let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[8] as ParagraphWidget);
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
         expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text).toBe("سشةحمث سشةحمث ");
     });
     it('Bidi true and bdo- RTL with normal text and RTL Text combination', () => {        
-        let paraWidget: ParagraphWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[9] as ParagraphWidget);
+        let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[9] as ParagraphWidget);
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
         expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text.indexOf('سشةحمث سشةحمث سشةحمث سشةحمث ')).toBe(0);
     });
     it('Bidi true and bdo- LTR with normal text and RTL Text combination', () => {        
-        let paraWidget: ParagraphWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[10] as ParagraphWidget);
+        let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[10] as ParagraphWidget);
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
         expect((((paraWidget.childWidgets[0] as LineWidget).children[0]) as TextElementBox).text).toBe("B");
     });

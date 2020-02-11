@@ -41,6 +41,8 @@ export interface IFreeTextAnnotation {
     comments: ICommentsCollection[];
     review: IReviewCollection;
     annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    // tslint:disable-next-line
+    annotationSettings?: any;
 }
 
 /**
@@ -266,6 +268,8 @@ export class FreeTextAnnotation {
                                 vertexPoints.push(point);
                             }
                         }
+                        // tslint:disable-next-line:max-line-length
+                        annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
                         annot = {
@@ -285,7 +289,8 @@ export class FreeTextAnnotation {
                             review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                             // tslint:disable-next-line:max-line-length
                             font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
-                            annotationSelectorSettings: this.getSettings(annotation)
+                            annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
+                            customData: this.pdfViewer.annotation.getCustomData(annotation)
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
@@ -305,11 +310,11 @@ export class FreeTextAnnotation {
      */
     // tslint:disable-next-line
     public getSettings(annotation : any) : any {
-        let selector: AnnotationSelectorSettingsModel;
-        if ( annotation.AnnotationSelectorSettings === null) {
-            selector = this.pdfViewer.freeTextSettings.annotationSelectorSettings;
-        } else {
+        let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
+        if (annotation.AnnotationSelectorSettings) {
             selector = annotation.AnnotationSelectorSettings;
+        } else if (this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
+            selector = this.pdfViewer.freeTextSettings.annotationSelectorSettings;
         }
         return selector;
     }
@@ -556,6 +561,10 @@ export class FreeTextAnnotation {
                     document.getElementById(commentsDivid).id = annotationName;
                 }
                 // tslint:disable-next-line
+                let annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ? this.pdfViewer.freeTextSettings.annotationSelectorSettings: this.pdfViewer.annotationSelectorSettings;
+                // tslint:disable-next-line
+                let annotationSettings: any =  this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
+                // tslint:disable-next-line
                 annot = {
                     author: this.author, modifiedDate: currentDateString, subject: 'Text Box', id: 'free_text' + this.inputBoxCount,
                     // tslint:disable-next-line:max-line-length
@@ -569,7 +578,9 @@ export class FreeTextAnnotation {
                     // tslint:disable-next-line:max-line-length
                     font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline },
                     review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },
-                    annotationSelectorSettings: this.pdfViewer.freeTextSettings.annotationSelectorSettings
+                    // tslint:disable-next-line:max-line-length
+                    annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
+                    customData: this.pdfViewer.freeTextSettings.customData
                 };
                 let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                 // tslint:disable-next-line
@@ -863,6 +874,8 @@ export class FreeTextAnnotation {
                     vertexPoints.push(point);
                 }
             }
+            // tslint:disable-next-line:max-line-length
+            annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
             let annot: PdfAnnotationBaseModel;
             // tslint:disable-next-line
             annot = {
@@ -880,7 +893,8 @@ export class FreeTextAnnotation {
                 // tslint:disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
-                annotationSelectorSettings: this.getSettings(annotation)
+                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
+                customData: this.pdfViewer.annotation.getCustomData(annotation)
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
         }
@@ -902,6 +916,8 @@ export class FreeTextAnnotation {
                     vertexPoints.push(point);
                 }
             }
+            // tslint:disable-next-line:max-line-length
+            annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
             // tslint:disable-next-line
             let annot: any;
             annot = {
@@ -918,7 +934,7 @@ export class FreeTextAnnotation {
                 fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
                 // tslint:disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
-                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber
+                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings
             };
             return annot;
         }

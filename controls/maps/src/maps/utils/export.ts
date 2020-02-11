@@ -1,5 +1,5 @@
 import { print as printWindow, createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { Maps} from '../../index';
+import { Maps } from '../../index';
 import { getElement } from '../utils/helper';
 import { ExportType } from '../utils/enum';
 import { IPrintEventArgs } from '../model/interface';
@@ -10,7 +10,7 @@ import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-
  * Annotation Module handles the Annotation for Maps 
  */
 export class ExportUtils {
-    private control: Maps ;
+    private control: Maps;
     private printWindow: Window;
 
     /**
@@ -66,61 +66,72 @@ export class ExportUtils {
      * @param type 
      * @param fileName 
      */
-    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
-        let element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
-            id: 'ej2-canvas',
-            attrs: {
-                'width': this.control.availableSize.width.toString(),
-                'height': this.control.availableSize.height.toString()
-            }
-        });
-        let isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-        orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-        let svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            this.control.svgObject.outerHTML +
-            '</svg>';
-        let url: string = window.URL.createObjectURL(
-            new Blob(
-                type === 'SVG' ? [svgData] :
-                    [(new XMLSerializer()).serializeToString(this.control.svgObject)],
-                { type: 'image/svg+xml' }
-            )
-        );
-        if (type === 'SVG') {
-            this.triggerDownload(
-                fileName, type,
-                url, isDownload
-            );
-        } else {
-            let image: HTMLImageElement = new Image();
-            let ctx: CanvasRenderingContext2D = element.getContext('2d');
-            image.onload = (() => {
-                ctx.drawImage(image, 0, 0);
-                window.URL.revokeObjectURL(url);
-                if (type === 'PDF') {
-                    let document: PdfDocument = new PdfDocument();
-                    let imageString: string = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                    document.pageSettings.orientation = orientation;
-                    imageString = imageString.slice(imageString.indexOf(',') + 1);
-                    document.pages.add().graphics.drawImage(
-                        new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height
-                    );
-                    if (isDownload) {
-                        document.save(fileName + '.pdf');
-                        document.destroy();
-                    }
-                } else {
-
-                    this.triggerDownload(
-                        fileName, type,
-                        element.toDataURL('image/png').replace('image/png', 'image/octet-stream'),
-                        isDownload
-                    );
+    public export(type: ExportType, fileName: string, exportDownload?: boolean, orientation?: PdfPageOrientation): Promise<string> {
+        let promise: Promise<string> = new Promise((resolve: Function, reject: Function) => {
+            let canvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': this.control.availableSize.width.toString(),
+                    'height': this.control.availableSize.height.toString()
                 }
             });
-            image.src = url;
-
-        }
+            let isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+            let svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                this.control.svgObject.outerHTML +
+                '</svg>';
+            let url: string = window.URL.createObjectURL(
+                new Blob(
+                    type === 'SVG' ? [svgData] :
+                        [(new XMLSerializer()).serializeToString(this.control.svgObject)],
+                    { type: 'image/svg+xml' }
+                )
+            );
+            if (type === 'SVG') {
+                if (exportDownload) {
+                    this.triggerDownload(
+                        fileName, type,
+                        url, isDownload
+                    );
+                } else {
+                    resolve(null);
+                }
+            } else {
+                let image: HTMLImageElement = new Image();
+                let ctx: CanvasRenderingContext2D = canvasElement.getContext('2d');
+                image.onload = (() => {
+                    ctx.drawImage(image, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (type === 'PDF') {
+                        let document: PdfDocument = new PdfDocument();
+                        let imageString: string = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                        document.pageSettings.orientation = orientation;
+                        imageString = imageString.slice(imageString.indexOf(',') + 1);
+                        document.pages.add().graphics.drawImage(
+                            new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height
+                        );
+                        if (exportDownload) {
+                            document.save(fileName + '.pdf');
+                            document.destroy();
+                        } else {
+                            resolve(null);
+                        }
+                    } else {
+                        if (exportDownload) {
+                            this.triggerDownload(
+                                fileName, type,
+                                canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'),
+                                isDownload
+                            );
+                        } else {
+                            resolve(canvasElement.toDataURL('image/png'));
+                        }
+                    }
+                });
+                image.src = url;
+            }
+        });
+        return promise;
     }
     /**
      * To trigger the download element

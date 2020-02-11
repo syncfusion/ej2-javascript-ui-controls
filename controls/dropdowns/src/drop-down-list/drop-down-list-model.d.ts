@@ -59,9 +59,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Allows additional HTML attributes such as title, name, etc., and
      * accepts n number of attributes in a key-value pair format.
      * 
-     * {% codeBlock src="dropdownlist/html-attributes-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="dropdownlist/html-attributes-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='dropdownlist/htmlAttributes/index.md' %}{% endcodeBlock %}
      *
      * @default {}
      */
@@ -71,9 +69,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Accepts the external `Query`
      * that execute along with data processing.
      * 
-     * {% codeBlock src="dropdownlist/query-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="dropdownlist/query-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='dropdownlist/query/index.md' %}{% endcodeBlock %}
      * 
      * @default null
      * @deprecated

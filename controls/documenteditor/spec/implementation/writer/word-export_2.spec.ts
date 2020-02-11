@@ -20,10 +20,10 @@ describe('Word export module with different table', () => {
         DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport,EditorHistory);
        editor = new DocumentEditor({enableEditorHistory:true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -50,10 +50,10 @@ describe('Word export module with different image and underline', () => {
         DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport,EditorHistory);
        editor = new DocumentEditor({enableEditorHistory:true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -81,10 +81,10 @@ describe('Word export module with empty page default character format validation
         DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport,EditorHistory);
        editor = new DocumentEditor({enableEditorHistory:true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         writer = new XmlWriter();
     });
@@ -101,7 +101,7 @@ describe('Word export module with empty page default character format validation
         expect(()=>{editor.save('empty', 'Docx');}).not.toThrowError();
     });
     it('default character format validation',()=>{
-        (editor.wordExportModule as any).serializeCharacterFormat(writer,editor.viewer.characterFormat,true);
+        (editor.wordExportModule as any).serializeCharacterFormat(writer,editor.documentHelper.characterFormat,true);
         expect((writer as any).bufferText.indexOf('<sz w:val="22"')).not.toBe(-1);
     })
 });
@@ -118,10 +118,10 @@ describe('Word export module with empty page default character format validation
         editor.characterFormat={
             fontSize:12
         };
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');        
         writer = new XmlWriter();
     });
@@ -138,7 +138,7 @@ describe('Word export module with empty page default character format validation
         expect(()=>{editor.save('empty', 'Docx');}).not.toThrowError();
     });
     it('default character format validation',()=>{
-        (editor.wordExportModule as any).serializeCharacterFormat(writer,editor.viewer.characterFormat,true);
+        (editor.wordExportModule as any).serializeCharacterFormat(writer,editor.documentHelper.characterFormat,true);
         expect((writer as any).bufferText.indexOf('<sz w:val="24"')).not.toBe(-1);
     })
 });

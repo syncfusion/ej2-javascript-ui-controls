@@ -4,12 +4,17 @@ import { Dictionary } from '../../base/dictionary';
 import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaselineAlignment } from '../../base/types';
+import { DocumentHelper } from '../viewer';
 /**
  * The spell checker module
  */
 export class SpellChecker {
 
     private langIDInternal: number = 0;
+    /**
+     * Specifies whether spell check has to be performed or not.
+     */
+    public enableSpellCheck: boolean = true;
     /**
      * @private
      */
@@ -27,7 +32,7 @@ export class SpellChecker {
     /**
      * @private
      */
-    public viewer: LayoutViewer;
+    public documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -142,31 +147,34 @@ export class SpellChecker {
     /**
      *
      */
-    constructor(viewer: LayoutViewer) {
-        this.viewer = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
         this.errorWordCollection = new Dictionary<string, ElementBox[]>();
         this.errorSuggestions = new Dictionary<string, string[]>();
         this.ignoreAllItems = [];
         this.uniqueSpelledWords = [];
-        this.uniqueKey = this.viewer.owner.element.id + '_' + this.createGuid();
+        this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
+    }
+    get viewer(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
     /**
      * Method to manage replace logic
      * @private
      */
     public manageReplace(content: string, dialogElement?: ElementBox): void {
-        this.viewer.triggerSpellCheck = true;
+        this.documentHelper.triggerSpellCheck = true;
         let exactText: string = '';
         let elementInfo: ElementInfo;
         if (!isNullOrUndefined(dialogElement) && dialogElement instanceof ErrorTextElementBox) {
             let exactText: string = (dialogElement as ErrorTextElementBox).text;
-            this.viewer.selection.start = (dialogElement as ErrorTextElementBox).start;
-            this.viewer.selection.end = (dialogElement as ErrorTextElementBox).end;
+            this.documentHelper.selection.start = (dialogElement as ErrorTextElementBox).start;
+            this.documentHelper.selection.end = (dialogElement as ErrorTextElementBox).end;
             if (content !== 'Ignore Once') {
                 content = this.manageSpecialCharacters(exactText, content);
-                this.viewer.owner.editor.insertTextInternal(content, true);
-                this.viewer.selection.start.setPositionInternal(this.viewer.selection.end);
-                this.viewer.clearSelectionHighlight();
+                this.documentHelper.owner.editor.insertTextInternal(content, true);
+                this.documentHelper.selection.start.setPositionInternal(this.documentHelper.selection.end);
+                this.documentHelper.clearSelectionHighlight();
                 return;
             } else {
                 this.currentContextInfo = { 'text': exactText, 'element': dialogElement };
@@ -176,21 +184,21 @@ export class SpellChecker {
             let elementBox: ElementBox = this.currentContextInfo.element;
             exactText = (this.currentContextInfo.element as TextElementBox).text;
 
-            this.viewer.selection.start = (elementBox as ErrorTextElementBox).start;
-            this.viewer.selection.end = (elementBox as ErrorTextElementBox).end;
+            this.documentHelper.selection.start = (elementBox as ErrorTextElementBox).start;
+            this.documentHelper.selection.end = (elementBox as ErrorTextElementBox).end;
         } else {
             this.handleReplace(content);
         }
         if (content !== 'Ignore Once') {
-            this.viewer.owner.editor.insertTextInternal(content, true);
+            this.documentHelper.owner.editor.insertTextInternal(content, true);
             if (!isNullOrUndefined(this.currentContextInfo)) {
                 this.removeErrorsFromCollection(this.currentContextInfo);
             }
-            this.viewer.selection.start.setPositionInternal(this.viewer.selection.end);
-            this.viewer.clearSelectionHighlight();
+            this.documentHelper.selection.start.setPositionInternal(this.documentHelper.selection.end);
+            this.documentHelper.clearSelectionHighlight();
         }
-        //this.viewer.owner.errorWordCollection.remove(content);
-        this.viewer.triggerSpellCheck = false;
+        //this.documentHelper.owner.errorWordCollection.remove(content);
+        this.documentHelper.triggerSpellCheck = false;
     }
     /**
      * Method to handle replace logic
@@ -198,7 +206,7 @@ export class SpellChecker {
      * @private
      */
     public handleReplace(content: string): void {
-        let startPosition: TextPosition = this.viewer.selection.start;
+        let startPosition: TextPosition = this.documentHelper.selection.start;
         let offset: number = startPosition.offset;
         let startIndex: number = 0;
         let startInlineObj: ElementInfo = (startPosition.currentWidget as LineWidget).getInline(offset, startIndex, false, true);
@@ -224,9 +232,9 @@ export class SpellChecker {
             startPosition.offset += matches[0].toString().length;
         }
         // tslint:disable-next-line:max-line-length
-        startPosition.location = this.viewer.owner.selection.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), startPosition.offset, true);
+        startPosition.location = this.documentHelper.owner.selection.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), startPosition.offset, true);
         // tslint:disable-next-line:max-line-length
-        startPosition = this.viewer.owner.searchModule.textSearch.getTextPosition(startPosition.currentWidget as LineWidget, startPosition.offset.toString());
+        startPosition = this.documentHelper.owner.searchModule.textSearch.getTextPosition(startPosition.currentWidget as LineWidget, startPosition.offset.toString());
         //startPosition.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
         startPosition.setPositionParagraph(startPosition.currentWidget as LineWidget, startPosition.offset);
         let index: number = (startPosition.offset + (startInlineObj.element as TextElementBox).length) - startPosition.offset;
@@ -243,10 +251,10 @@ export class SpellChecker {
             endOffset -= matches[0].toString().length;
         }
         // tslint:disable-next-line:max-line-length
-        this.viewer.selection.end = this.viewer.owner.searchModule.textSearch.getTextPosition(lineWidget, endOffset.toString());
+        this.documentHelper.selection.end = this.documentHelper.owner.searchModule.textSearch.getTextPosition(lineWidget, endOffset.toString());
         // tslint:disable-next-line:max-line-length
-        this.viewer.selection.end.location = this.viewer.owner.selection.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), endOffset, true);
-        this.viewer.selection.end.setPositionParagraph(lineWidget, endOffset);
+        this.documentHelper.selection.end.location = this.documentHelper.owner.selection.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), endOffset, true);
+        this.documentHelper.selection.end.setPositionParagraph(lineWidget, endOffset);
         this.currentContextInfo = { 'element': startInlineObj.element, 'text': (startInlineObj.element as TextElementBox).text };
     }
 
@@ -278,7 +286,7 @@ export class SpellChecker {
         if (textElement.ignoreOnceItems.indexOf(exactText) === -1) {
             textElement.ignoreOnceItems.push(exactText);
         }
-        this.viewer.owner.editor.reLayout(this.viewer.selection);
+        this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
     }
 
     /**
@@ -291,10 +299,10 @@ export class SpellChecker {
         if (this.ignoreAllItems.indexOf(retrievedText) === -1) {
             this.ignoreAllItems.push(retrievedText);
             this.removeErrorsFromCollection(contextItem);
-            this.viewer.triggerSpellCheck = true;
-            this.viewer.owner.editor.reLayout(this.viewer.selection);
-            this.viewer.triggerSpellCheck = false;
-            this.viewer.clearSelectionHighlight();
+            this.documentHelper.triggerSpellCheck = true;
+            this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
+            this.documentHelper.triggerSpellCheck = false;
+            this.documentHelper.clearSelectionHighlight();
         }
     }
 
@@ -308,11 +316,11 @@ export class SpellChecker {
         // tslint:disable-next-line:max-line-length
         /* tslint:disable:no-any */
         this.CallSpellChecker(this.languageID, retrievedText, false, false, true).then((data: any) => {
-            this.viewer.triggerSpellCheck = true;
+            this.documentHelper.triggerSpellCheck = true;
             this.removeErrorsFromCollection(contextItem);
             this.ignoreAllItems.push(retrievedText);
-            this.viewer.owner.editor.reLayout(this.viewer.selection, true);
-            this.viewer.triggerSpellCheck = false;
+            this.documentHelper.owner.editor.reLayout(this.documentHelper.selection, true);
+            this.documentHelper.triggerSpellCheck = false;
         });
     }
     /**
@@ -389,10 +397,10 @@ export class SpellChecker {
         if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element) {
             currentElement = this.currentContextInfo.element;
             exactText = (this.currentContextInfo.element as TextElementBox).text;
-            this.viewer.selection.start = (currentElement as ErrorTextElementBox).start;
-            this.viewer.selection.end = (currentElement as ErrorTextElementBox).end;
+            this.documentHelper.selection.start = (currentElement as ErrorTextElementBox).start;
+            this.documentHelper.selection.end = (currentElement as ErrorTextElementBox).end;
         } else {
-            let startPosition: TextPosition = this.viewer.selection.start;
+            let startPosition: TextPosition = this.documentHelper.selection.start;
             let offset: number = startPosition.offset;
             let startIndex: number = 0;
             let startInlineObj: ElementInfo = (startPosition.currentWidget as LineWidget).getInline(offset, startIndex);
@@ -425,7 +433,7 @@ export class SpellChecker {
                 spellSuggestion.push(
                     {
                         text: str,
-                        id: this.viewer.owner.element.id + '_contextmenu_otherSuggestions_spellcheck_' + str,
+                        id: this.documentHelper.owner.element.id + '_contextmenu_otherSuggestions_spellcheck_' + str,
                         iconCss: ''
                     });
 
@@ -448,7 +456,7 @@ export class SpellChecker {
         text = text.replace(/[\s]+/g, '');
         if (!isNullOrUndefined(element.errorCollection) && element.errorCollection.length > 0) {
             // tslint:disable-next-line:max-line-length
-            if (!this.viewer.isScrollHandler && (element.ischangeDetected || element.paragraph.isChangeDetected)) {
+            if (!this.documentHelper.isScrollHandler && (element.ischangeDetected || element.paragraph.isChangeDetected)) {
                 this.updateStatusForGlobalErrors(element.errorCollection, element);
                 element.errorCollection = [];
                 element.ischangeDetected = true;
@@ -460,7 +468,7 @@ export class SpellChecker {
                     erroElements.push(element.errorCollection[i]);
                 }
             }
-        } else if (!this.viewer.isScrollHandler && element.paragraph.isChangeDetected) {
+        } else if (!this.documentHelper.isScrollHandler && element.paragraph.isChangeDetected) {
             element.ischangeDetected = true;
         } else if (!element.ischangeDetected && this.handleErrorCollection(element)) {
             hasError = true;
@@ -534,11 +542,11 @@ export class SpellChecker {
      * @private
      */
     public findCurretText(): ContextElementInfo {
-        let insertPosition: TextPosition = this.viewer.selection.start;
+        let insertPosition: TextPosition = this.documentHelper.selection.start;
         /* tslint:disable:no-any */
         let element: any;
         /* tslint:disable:no-any */
-        let inlineObj: any = insertPosition.currentWidget.getInline(this.viewer.selection.start.offset, 0);
+        let inlineObj: any = insertPosition.currentWidget.getInline(this.documentHelper.selection.start.offset, 0);
         let text: string;
         if (!isNullOrUndefined(inlineObj.element)) {
             if (!isNullOrUndefined(inlineObj.element.errorCollection) && inlineObj.element.errorCollection.length > 0) {
@@ -556,7 +564,7 @@ export class SpellChecker {
             }
 
             if (text === ' ') {
-                inlineObj = insertPosition.currentWidget.getInline(this.viewer.selection.start.offset + 1, 0);
+                inlineObj = insertPosition.currentWidget.getInline(this.documentHelper.selection.start.offset + 1, 0);
                 text = inlineObj.element.text;
             }
         }
@@ -662,8 +670,8 @@ export class SpellChecker {
         if (jsonObject.HasSpellingError && isSamePage) {
             this.addErrorCollection(elementBox.text, elementBox, jsonObject.Suggestions);
             // tslint:disable-next-line:max-line-length
-            let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
-            this.viewer.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
+            let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+            this.documentHelper.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
             elementBox.isSpellChecked = true;
         } else {
             elementBox.isSpellChecked = true;
@@ -683,7 +691,7 @@ export class SpellChecker {
         let checkPrevious: boolean = !isNullOrUndefined(isPrevious) ? isPrevious : true;
         let checkNext: boolean = !isNullOrUndefined(isNext) ? isNext : true;
         let combinedElements: TextElementBox[] = [];
-        let line: LineWidget = this.viewer.selection.getLineWidget(elementBox, 0);
+        let line: LineWidget = this.documentHelper.selection.getLineWidget(elementBox, 0);
         let index: number = line.children.indexOf(elementBox);
         let prevText: string = elementBox.text;
         combinedElements.push(elementBox);
@@ -812,11 +820,11 @@ export class SpellChecker {
                     let currentText: string = splittedText[i];
                     currentText = this.manageSpecialCharacters(currentText, undefined, true);
                     // tslint:disable-next-line:max-line-length
-                    this.viewer.render.handleUnorderdElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, beforeIndex);
+                    this.documentHelper.render.handleUnorderdElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, beforeIndex);
                 }
             } else {
                 currentText = this.manageSpecialCharacters(currentText, undefined, true);
-                this.viewer.render.handleUnorderdElements(currentText, elementBox, underlineY, 0, 0, true, beforeIndex);
+                this.documentHelper.render.handleUnorderdElements(currentText, elementBox, underlineY, 0, 0, true, beforeIndex);
             }
         }
     }
@@ -854,7 +862,7 @@ export class SpellChecker {
             // tslint:disable-next-line:max-line-length
             markIndex = (elementBox.istextCombined) ? elementBox.line.getOffset(this.getCombinedElement(elementBox), 0) : markIndex;
             // tslint:disable-next-line:max-line-length
-            this.viewer.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);
+            this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);
             this.handleMatchedResults(matchResults.textResults, elementBox, underlineY, iteration, jsonObject.Suggestions, isLastItem);
         } else if (isLastItem) {
             elementBox.isSpellChecked = true;
@@ -884,8 +892,8 @@ export class SpellChecker {
             }
             this.addErrorCollection(span.text, span, suggestions);
             // tslint:disable-next-line:max-line-length
-            let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
-            this.viewer.render.renderWavyline(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+            let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+            this.documentHelper.render.renderWavyline(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
             if (isLastItem) {
                 elementBox.isSpellChecked = true;
             }
@@ -906,7 +914,7 @@ export class SpellChecker {
             if (!isNullOrUndefined(this)) {
                 let httpRequest: XMLHttpRequest = new XMLHttpRequest();
                 // tslint:disable-next-line:max-line-length
-                let service: string = this.viewer.owner.serviceUrl + this.viewer.owner.serverActionSettings.spellCheck;
+                let service: string = this.documentHelper.owner.serviceUrl + this.documentHelper.owner.serverActionSettings.spellCheck;
                 service = (isByPage) ? service + 'ByPage' : service;
                 httpRequest.open('POST', service, true);
                 httpRequest.setRequestHeader('Content-Type', 'application/json');
@@ -930,8 +938,8 @@ export class SpellChecker {
     }
 
     private setCustomHeaders(httpRequest: XMLHttpRequest): void {
-        for (let i: number = 0; i < this.viewer.owner.headers.length; i++) {
-            let header: Object = this.viewer.owner.headers[i];
+        for (let i: number = 0; i < this.documentHelper.owner.headers.length; i++) {
+            let header: Object = this.documentHelper.owner.headers[i];
             for (let key of Object.keys(header)) {
                 httpRequest.setRequestHeader(key, header[key]);
             }
@@ -956,7 +964,7 @@ export class SpellChecker {
                             // tslint:disable-next-line:max-line-length
                             let markIndex: number = (errorElements[j].ischangeDetected) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
                             // tslint:disable-next-line:max-line-length
-                            this.viewer.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
+                            this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
                             for (let i: number = 0; i < results.length; i++) {
                                 let element: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], errorElements[j]);
                                 this.updateErrorElementTextBox(element.text, element);
@@ -968,7 +976,7 @@ export class SpellChecker {
                     break;
                 }
             } else {
-                this.viewer.clearSelectionHighlight();
+                this.documentHelper.clearSelectionHighlight();
             }
         }
     }
@@ -986,7 +994,7 @@ export class SpellChecker {
         element.height = errorElement.height;
         element.canTrigger = errorElement.canTrigger;
         element.characterFormat.copyFormat(errorElement.characterFormat);
-        element.width = this.viewer.textHelper.getWidth(element.text, errorElement.characterFormat);
+        element.width = this.documentHelper.textHelper.getWidth(element.text, errorElement.characterFormat);
         return element;
     }
     /**
@@ -997,11 +1005,11 @@ export class SpellChecker {
     public getMatchedResultsFromElement(errorElement: ElementBox, currentText?: string): MatchResults {
         let line: LineWidget = (errorElement as TextElementBox).line;
         // tslint:disable-next-line:max-line-length
-        let pattern: RegExp = this.viewer.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? (errorElement as TextElementBox).text : currentText, 'CaseSensitive');
-        this.viewer.owner.searchModule.textSearchResults.clearResults();
+        let pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? (errorElement as TextElementBox).text : currentText, 'CaseSensitive');
+        this.documentHelper.owner.searchModule.textSearchResults.clearResults();
         // tslint:disable-next-line:max-line-length
-        let results: TextSearchResults = this.viewer.owner.searchModule.textSearchResults;
-        let textLineInfo: TextInLineInfo = this.viewer.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false);
+        let results: TextSearchResults = this.documentHelper.owner.searchModule.textSearchResults;
+        let textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false);
         let text: string = textLineInfo.fullText;
         let matches: RegExpExecArray[] = [];
         let spans: any = textLineInfo.elementsWithOffset;
@@ -1020,11 +1028,11 @@ export class SpellChecker {
      */
     public updateErrorElementTextBox(error: string, errorElement: ErrorTextElementBox): void {
         let element: ErrorTextElementBox = errorElement;
-        this.viewer.clearSelectionHighlight();
-        this.viewer.selection.start = element.start;
-        this.viewer.selection.end = element.end;
-        this.viewer.selection.highlight(errorElement.start.paragraph, errorElement.start, errorElement.end);
-        this.viewer.owner.spellCheckDialog.updateSuggestionDialog(error, element);
+        this.documentHelper.clearSelectionHighlight();
+        this.documentHelper.selection.start = element.start;
+        this.documentHelper.selection.end = element.end;
+        this.documentHelper.selection.highlight(errorElement.start.paragraph, errorElement.start, errorElement.end);
+        this.documentHelper.owner.spellCheckDialog.updateSuggestionDialog(error, element);
     }
 
     /**
@@ -1041,7 +1049,7 @@ export class SpellChecker {
         matchedText = text.match(/[\s]+/);
         if (!isNullOrUndefined(matchedText) && matchedText.length > 0) {
             for (let i: number = 0; i < matchedText.length; i++) {
-                width += this.viewer.textHelper.getWidth(matchedText[i], characterFormat);
+                width += this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat);
                 length += matchedText[i].length;
             }
 
@@ -1064,7 +1072,7 @@ export class SpellChecker {
         matchedText = text.match(/^[\#\@\!\~\$\%\^\&\*\(\)\-\_\+\=\{\}\[\]\:\;\"\'\,\<\.\>\/\?\`]*/);
         for (let i: number = 0; i < matchedText.length; i++) {
             if (!isNullOrUndefined(matchedText[i]) && matchedText[i].length > 0) {
-                beginingwidth = this.viewer.textHelper.getWidth(matchedText[i], characterFormat);
+                beginingwidth = this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat);
             }
             length = matchedText.length;
         }
@@ -1072,7 +1080,7 @@ export class SpellChecker {
         matchedText = text.match(/[\#\@\!\~\$\%\^\&\*\(\)\-\_\+\=\{\}\[\]\:\;\"\'\,\<\.\>\/\?\`]*$/);
         for (let i: number = 0; i < matchedText.length; i++) {
             if (!isNullOrUndefined(matchedText[i]) && matchedText[i].length > 0) {
-                endWidth = this.viewer.textHelper.getWidth(matchedText[i], characterFormat);
+                endWidth = this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat);
             }
             length = matchedText.length;
         }
@@ -1133,12 +1141,12 @@ export class SpellChecker {
      */
     public getPageContent(page: Page): string {
         let content: string = '';
-        if (this.viewer.owner.sfdtExportModule) {
-            let sfdtExport: SfdtExport = this.viewer.owner.sfdtExportModule;
+        if (this.documentHelper.owner.sfdtExportModule) {
+            let sfdtExport: SfdtExport = this.documentHelper.owner.sfdtExportModule;
             sfdtExport.Initialize();
             let document: any = sfdtExport.writePage(page);
-            if (this.viewer.owner.textExportModule) {
-                let textExport: TextExport = this.viewer.owner.textExportModule;
+            if (this.documentHelper.owner.textExportModule) {
+                let textExport: TextExport = this.documentHelper.owner.textExportModule;
                 textExport.pageContent = '';
                 textExport.setDocument(document);
                 textExport.writeInternal();
@@ -1206,7 +1214,7 @@ export class SpellChecker {
         let hasError: boolean = false;
         let elementPresent: boolean = false;
         /* tslint:disable:no-any */
-        let uniqueWords: any[] = JSON.parse(localStorage.getItem(this.viewer.owner.spellChecker.uniqueKey));
+        let uniqueWords: any[] = JSON.parse(localStorage.getItem(this.documentHelper.owner.spellChecker.uniqueKey));
         if (!isNullOrUndefined(uniqueWords)) {
             for (let i: number = 0; i < uniqueWords.length; i++) {
                 if (uniqueWords[i].Text === wordToCheck) {

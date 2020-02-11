@@ -2730,13 +2730,16 @@ class BarcodeGenerator extends Component {
         this.renderElements();
     }
     initialize() {
-        //Initialize the height of the  barcode generator
+        //Initialize the height of the barcode generator
         this.element.style.height = this.getElementSize(this.height);
-        //Initialize the width of the  barcode generator
+        //Initialize the width of the barcode generator
         this.element.style.width = this.getElementSize(this.width);
         let svgMode = this.mode;
-        this.barcodeCanvas = this.barcodeRenderer.renderRootElement({ id: this.element.id, height: svgMode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
-            width: svgMode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5 }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
+        this.barcodeCanvas = this.barcodeRenderer.renderRootElement({
+            id: this.element.id + 'content',
+            height: svgMode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+            width: svgMode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
+        }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
         this.element.appendChild(this.barcodeCanvas);
     }
     renderElements() {
@@ -6319,9 +6322,9 @@ class QRCode {
                     for (let x of Object.keys(numberInBool)) {
                         encodeData.push(numberInBool[x]);
                     }
-                    numberInString = null;
+                    numberInString = '';
                 }
-                if (i !== 1 && numberInString !== null) {
+                if (i !== 1 && numberInString !== '') {
                     if (i + 1 === dataStringArray.length && numberInString.length === 1) {
                         number = this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[i]);
                         numberInBool = this.intToBoolArray(number, 6);
@@ -6653,7 +6656,8 @@ class QRCodeGenerator extends Component {
         //Initialize the width of qrcode generator
         this.element.style.width = this.getElementSize(this.width);
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement({
-            id: this.element.id, height: this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+            id: this.element.id + 'content',
+            height: this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
             width: this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
         }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
         this.element.appendChild(this.barcodeCanvas);
@@ -7614,7 +7618,8 @@ class DataMatrixGenerator extends Component {
         let mode = this.mode;
         //initialize the canvas element
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement({
-            id: this.element.id, height: mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+            id: this.element.id + 'content',
+            height: mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
             width: mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
         }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
         this.element.appendChild(this.barcodeCanvas);

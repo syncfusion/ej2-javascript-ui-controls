@@ -83,7 +83,7 @@ import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs
 import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
-import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../chart/model/chart-interface';
+import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';
@@ -1039,6 +1039,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     @Event()
     public zoomComplete: EmitType<IZoomCompleteEventArgs>;
+
+    /**
+     * Triggers after the zoom selection is completed.
+     * @event
+     */
+    @Event()
+    public onZooming: EmitType<IZoomingEventArgs>;
 
     /**
      * Triggers when start the scroll.

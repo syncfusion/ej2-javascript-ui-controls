@@ -6,7 +6,7 @@ import {
 import {
     WSectionFormat, WCharacterFormat, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WShading
 } from '../format/index';
-import { LayoutViewer } from '../index';
+import { DocumentHelper } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TableWidget, ImageElementBox, ListTextElementBox } from '../viewer/page';
 import { Editor } from '../index';
@@ -464,7 +464,7 @@ export class SelectionParagraphFormat {
      */
     public listId: number;
     private listLevelNumberIn: number = -1;
-    private viewer: LayoutViewer;
+    private documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -707,7 +707,7 @@ export class SelectionParagraphFormat {
      */
     public get listText(): string {
         let listFormat: string = undefined;
-        let list: WList = this.viewer.getListById(this.listId);
+        let list: WList = this.documentHelper.getListById(this.listId);
         if (list instanceof WList && this.listLevelNumberIn > -1 && this.listLevelNumberIn < 9) {
             let listLevel: WListLevel = list.getListLevel(this.listLevelNumber);
             if (listLevel instanceof WListLevel) {
@@ -732,10 +732,11 @@ export class SelectionParagraphFormat {
     /**
      * @private
      */
-    constructor(selection: Selection, viewer: LayoutViewer) {
+    constructor(selection: Selection, documentHelper: DocumentHelper) {
         this.selection = selection;
-        this.viewer = viewer;
+        this.documentHelper = documentHelper;
     }
+
     private getPropertyValue(property: string): Object {
         switch (property) {
             case 'leftIndent':
@@ -798,7 +799,7 @@ export class SelectionParagraphFormat {
                 return;
             }
             if (propertyName === 'listLevelNumber') {
-                editorModule.onApplyListInternal(this.viewer.getListById(this.listId), this.listLevelNumber);
+                editorModule.onApplyListInternal(this.documentHelper.getListById(this.listId), this.listLevelNumber);
             } else {
                 editorModule.onApplyParagraphFormat(propertyName, value, propertyName === 'textAlignment' ? true : false, false);
             }
@@ -942,11 +943,11 @@ export class SelectionParagraphFormat {
      * @private
      */
     public getList(): WList {
-        let list: WList = this.viewer.getListById(this.listId);
+        let list: WList = this.documentHelper.getListById(this.listId);
         if (!isNullOrUndefined(list)) {
             let listAdv: WList = new WList();
             let abstractList: WAbstractList = new WAbstractList();
-            let currentAbstractList: WAbstractList = this.viewer.getAbstractListById(list.abstractListId);
+            let currentAbstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
             let editor: Editor = this.selection.owner.editorModule;
             if (!isNullOrUndefined(currentAbstractList)) {
                 for (let i: number = 0; i < currentAbstractList.levels.length; i++) {
@@ -976,45 +977,45 @@ export class SelectionParagraphFormat {
      * @private
      */
     public setList(listAdv: WList): void {
-        if (this.viewer.owner.isReadOnlyMode || !this.viewer.owner.isDocumentLoaded) {
+        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
-        let list: WList = this.viewer.getListById(this.listId);
+        let list: WList = this.documentHelper.getListById(this.listId);
         let collection: Dictionary<number, ModifiedLevel> = undefined;
-        let currentAbstractList: WAbstractList = listAdv ? this.viewer.getAbstractListById(listAdv.abstractListId) : undefined;
+        let currentAbstractList: WAbstractList = listAdv ? this.documentHelper.getAbstractListById(listAdv.abstractListId) : undefined;
         if (!isNullOrUndefined(list) && !isNullOrUndefined(listAdv)
             && !isNullOrUndefined(currentAbstractList) && listAdv.sourceListId === list.listId) {
-            let history: EditorHistory = this.viewer.owner.editorHistory;
-            let listLevel: WListLevel = this.viewer.layout.getListLevel(list, 1);
+            let history: EditorHistory = this.documentHelper.owner.editorHistory;
+            let listLevel: WListLevel = this.documentHelper.layout.getListLevel(list, 1);
             this.selection.owner.isLayoutEnabled = false;
-            this.viewer.owner.editorModule.setOffsetValue(this.selection);
+            this.documentHelper.owner.editorModule.setOffsetValue(this.selection);
             if (history) {
                 collection = history.updateListChangesInHistory(currentAbstractList, list);
             }
-            this.viewer.owner.editorModule.updateListParagraphs();
+            this.documentHelper.owner.editorModule.updateListParagraphs();
             if (history) {
                 history.applyListChanges(this.selection, collection);
             }
             this.selection.owner.isLayoutEnabled = true;
-            this.viewer.renderedLists.clear();
-            this.viewer.renderedLevelOverrides = [];
+            this.documentHelper.renderedLists.clear();
+            this.documentHelper.renderedLevelOverrides = [];
             // this.viewer.pages = [];
-            this.viewer.owner.editorModule.layoutWholeDocument();
-            this.viewer.owner.editorModule.updateSelectionTextPosition(false);
+            this.documentHelper.owner.editorModule.layoutWholeDocument();
+            this.documentHelper.owner.editorModule.updateSelectionTextPosition(false);
             if (history && history.currentBaseHistoryInfo) {
                 if (history.currentBaseHistoryInfo.modifiedProperties.length > 0) {
                     history.currentBaseHistoryInfo.updateSelection();
                 }
                 history.updateHistory();
             }
-            this.viewer.owner.editorModule.fireContentChange();
+            this.documentHelper.owner.editorModule.fireContentChange();
         } else if (!isNullOrUndefined(listAdv)) {
             this.selection.owner.isLayoutEnabled = false;
-            if (!isNullOrUndefined(currentAbstractList) && this.viewer.abstractLists.indexOf(currentAbstractList) === -1) {
-                this.viewer.abstractLists.push(currentAbstractList);
+            if (!isNullOrUndefined(currentAbstractList) && this.documentHelper.abstractLists.indexOf(currentAbstractList) === -1) {
+                this.documentHelper.abstractLists.push(currentAbstractList);
             }
-            if (this.viewer.lists.indexOf(listAdv) === -1) {
-                this.viewer.lists.push(listAdv);
+            if (this.documentHelper.lists.indexOf(listAdv) === -1) {
+                this.documentHelper.lists.push(listAdv);
             }
             //currentAbstractList.listType = 'Numbering';
             this.selection.owner.isLayoutEnabled = true;
@@ -1039,7 +1040,7 @@ export class SelectionParagraphFormat {
         this.lineSpacingTypeIn = undefined;
         this.listId = undefined;
         this.listLevelNumberIn = undefined;
-        this.viewer = undefined;
+        this.documentHelper = undefined;
         this.selection = undefined;
         this.styleName = undefined;
         this.bidi = undefined;

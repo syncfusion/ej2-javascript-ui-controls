@@ -208,6 +208,11 @@ export interface AnnotationAddEventArgs extends BaseEventArgs {
      * End index of text markup annotation in the page text content.
      */
     labelSettings?: ShapeLabelSettingsModel;
+    /**
+     * Defines the multi page annotation collections.
+     */
+    // tslint:disable-next-line
+    multiplePageCollection?: any;
 }
 
 /**
@@ -243,6 +248,11 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
      * End index of text markup annotation in the page text content.
      */
     textMarkupEndIndex?: number;
+    /**
+     * Defines the multi page annotation collections.
+     */
+    // tslint:disable-next-line
+    multiplePageCollection?: any;
 }
 
 /**
@@ -309,6 +319,11 @@ export interface AnnotationPropertiesChangeEventArgs extends BaseEventArgs {
      * End index of text markup annotation in the page text content.
      */
     textMarkupEndIndex?: number;
+    /**
+     * Defines the multi page annotation collections.
+     */
+    // tslint:disable-next-line
+    multiplePageCollection?: any
 }
 
 /**
@@ -353,6 +368,11 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
      * End index of text markup annotation in the page text content.
      */
     labelSettings?: ShapeLabelSettingsModel;
+    /**
+     * Defines the multiple page annotation collections.
+     */
+    // tslint:disable-next-line
+    multiplePageCollection?: any;
 }
 
 /**
@@ -387,6 +407,34 @@ export interface AnnotationMoveEventArgs extends BaseEventArgs {
 }
 
 /**
+ * This event arguments provides the necessary information about annotation mouseover event.
+ */
+export interface AnnotationMouseoverEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the mouse over annotation object in the page of the PDF document
+     */
+    annotationId: string;
+    /**
+     * Defines the page number in which the mouse over annotation object is rendered.
+     */
+    pageIndex: number;
+    /**
+     * Defines the type of the annotation during the mouse hover in the PDF document. 
+     */
+    annotationType: AnnotationType;
+    /**
+     * Defines the annotation object mouse hover in the PDF document.
+     */
+    // tslint:disable-next-line
+    annotation: any;
+    /**
+     * Defines the bounds of the annotation resized in the page of the PDF document.
+     */
+    // tslint:disable-next-line
+    annotationBounds: any;
+}
+
+/**
  * This event arguments provides the necessary information about annotation select event.
  */
 export interface AnnotationSelectEventArgs extends BaseEventArgs {
@@ -408,6 +456,16 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
      */
     // tslint:disable-next-line
     annotationCollection?: any;
+    /**
+     * Defines the multi page annotation collections.
+     */
+    // tslint:disable-next-line
+    multiplePageCollection?: any;
+
+    /**
+     * Defines the annotation selection by mouse.
+     */
+    isProgrammaticSelection?: boolean;
 }
 
 /**

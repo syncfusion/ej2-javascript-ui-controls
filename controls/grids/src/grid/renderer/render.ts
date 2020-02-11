@@ -437,7 +437,8 @@ export class Render {
             this.parent.notify(events.tooltipDestroy, {});
             gObj.currentViewData = <Object[]>dataArgs.result;
             if (isBlazor() && gObj.filterSettings.type === 'FilterBar'
-                && !isNullOrUndefined(args) && args.requestType === 'filtering' && !dataArgs.result.length) {
+                && (isNullOrUndefined(gObj.currentViewData) ||
+                    (!isNullOrUndefined(gObj.currentViewData) && !gObj.currentViewData.length))) {
                 let gridColumns: Column[] = gObj.getColumns();
                 for (let i: number = 0; i < gridColumns.length; i++) {
                     if (gridColumns[i].filterTemplate) {

@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { LayoutViewer, PageLayoutViewer, Editor, Selection, EditorHistory, Page, ParagraphWidget } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, Editor, Selection, EditorHistory, Page, ParagraphWidget, DocumentHelper } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 /**
  * Layout Spec
@@ -3238,11 +3238,11 @@ function getJson() {
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
 //         document.body.appendChild(ele);
 //         editor = new DocumentEditor({});
-//         viewer = editor.viewer as PageLayoutViewer;
-//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         viewer = editor.documentHelper as PageLayoutViewer;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
 //         editor.appendTo('#container');
 //     });
 //     afterAll((done) => {
@@ -3260,17 +3260,17 @@ function getJson() {
 
 describe('Page Break Layout Validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true });
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -3283,7 +3283,7 @@ describe('Page Break Layout Validation', () => {
     });
     it('Layout page break', () => {
         editor.open(JSON.stringify(sfdt));
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Insert Text Before Page Break', () => {
         editor.editorModule.insertText('Syncfusion');
@@ -3301,29 +3301,29 @@ describe('Page Break Layout Validation', () => {
         for (let i: number = 0; i < 60; i++) {
             editor.editor.onEnter();
         }
-        expect(editor.viewer.pages.length).toBe(3);
+        expect(editor.documentHelper.pages.length).toBe(3);
     });
     it('Handle Shifting after page break validation backward', () => {
         for (let i: number = 0; i < 20; i++) {
             editor.editor.onBackSpace();
         }
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
 });
 
 describe('Insert Page break API validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true });
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -3340,7 +3340,7 @@ describe('Insert Page break API validation', () => {
             which: 13
         }
         editor.editor.onKeyDownInternal(event, true, false, false);
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Insert Text Before Page Break', () => {
         editor.editorModule.insertText('Syncfusion');
@@ -3349,17 +3349,17 @@ describe('Insert Page break API validation', () => {
 });
 describe('Insert page break history preservation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableEditorHistory: true });
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -3379,31 +3379,31 @@ describe('Insert page break history preservation', () => {
             which: 13
         }
         editor.editor.onKeyDownInternal(event, true, false, false);
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Undo Redo multiple times', () => {
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
-            expect(editor.viewer.pages.length).toBe(1);
+            expect(editor.documentHelper.pages.length).toBe(1);
             editor.editorHistory.redo();
-            expect(editor.viewer.pages.length).toBe(2);
+            expect(editor.documentHelper.pages.length).toBe(2);
         }
     });
 });
 
 describe('Insert page break history preservation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableEditorHistory: true });
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -3422,31 +3422,31 @@ describe('Insert page break history preservation', () => {
             which: 13
         }
         editor.editor.onKeyDownInternal(event, true, false, false);
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Undo Redo multiple times at paragraph end', () => {
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
-            expect(editor.viewer.pages.length).toBe(1);
+            expect(editor.documentHelper.pages.length).toBe(1);
             editor.editorHistory.redo();
-            expect(editor.viewer.pages.length).toBe(2);
+            expect(editor.documentHelper.pages.length).toBe(2);
         }
     });
 });
 
 describe('Insert page break history preservation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableEditorHistory: true });
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -3467,14 +3467,14 @@ describe('Insert page break history preservation', () => {
             which: 13
         }
         editor.editor.onKeyDownInternal(event, true, false, false);
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Undo Redo multiple times at paragraph middle', () => {
         for (let i: number = 0; i < 5; i++) {
             editor.editorHistory.undo();
-            expect(editor.viewer.pages.length).toBe(1);
+            expect(editor.documentHelper.pages.length).toBe(1);
             editor.editorHistory.redo();
-            expect(editor.viewer.pages.length).toBe(2);
+            expect(editor.documentHelper.pages.length).toBe(2);
         }
     });
 });
@@ -3513,17 +3513,17 @@ let sfdt: object = {
 
 describe('Insert page break history preservation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableEditorHistory: true });
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -3544,7 +3544,7 @@ describe('Insert page break history preservation', () => {
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.bodyWidget.childWidgets.length).toBe(2);
         editor.editorHistory.redo();
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('Insert Page Break on non empty selection', () => {
         editor.openBlank();
@@ -3561,9 +3561,9 @@ describe('Insert page break history preservation', () => {
         editor.selection.handleShiftRightKey();
         editor.editor.insertPageBreak();
         editor.editorHistory.undo();
-        expect(editor.viewer.pages.length).toBe(1);
+        expect(editor.documentHelper.pages.length).toBe(1);
         editor.editorHistory.redo();
-        expect(editor.viewer.pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
     });
 });
 
@@ -3607,17 +3607,17 @@ let documentWithoutHeaderFooter: any = {
 
 describe('Empty Header footer validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableEditorHistory: true });
-        viewer = editor.viewer as PageLayoutViewer;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -3631,14 +3631,14 @@ describe('Empty Header footer validation', () => {
     });
     it('Load empty header footer validation', () => {
         editor.open(JSON.stringify(documentWithoutHeaderFooter));
-        expect(editor.viewer.pages.length).toBe(1);
-        let page: Page = editor.viewer.pages[0];
+        expect(editor.documentHelper.pages.length).toBe(1);
+        let page: Page = editor.documentHelper.pages[0];
         expect(page.headerWidget.isEmpty).toBe(true);
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(page.headerWidget.y + page.headerWidget.height);
     });
     it('Go to header', () => {
         editor.selection.goToHeader();
-        let page: Page = editor.viewer.pages[0];
+        let page: Page = editor.documentHelper.pages[0];
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);
         editor.selection.disableHeaderFooter();
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(page.headerWidget.y + page.headerWidget.height);
@@ -3646,7 +3646,7 @@ describe('Empty Header footer validation', () => {
     it('insert text in Empty Header', () => {
         editor.selection.goToHeader();
         editor.editor.insertText("Syncfusion");
-        let page: Page = editor.viewer.pages[0];
+        let page: Page = editor.documentHelper.pages[0];
         expect(page.headerWidget.isEmpty).toBe(false);
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);
         editor.selection.disableHeaderFooter();

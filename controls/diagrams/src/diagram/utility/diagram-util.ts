@@ -20,7 +20,7 @@ import { ImageElement } from '../core/elements/image-element';
 import { PathAnnotation, ShapeAnnotation } from './../objects/annotation';
 import {
     PathModel, TextModel, ImageModel, FlowShapeModel, BasicShapeModel,
-    NativeModel, HtmlModel, UmlActivityShapeModel, SwimLaneModel, ShapeModel
+    NativeModel, HtmlModel, UmlActivityShapeModel, SwimLaneModel, ShapeModel, DiagramShapeModel
 } from './../objects/node-model';
 import {
     Node, FlowShape, BasicShape, Native, Html, UmlActivityShape, BpmnGateway, BpmnDataObject, BpmnEvent, BpmnSubEvent, BpmnActivity,
@@ -112,6 +112,31 @@ export function setSwimLaneDefaults(child: NodeModel | ConnectorModel, node: Nod
             ((node as NodeModel).shape as SwimLane).hasHeader = false;
         }
     }
+}
+
+/**
+ * @private
+ */
+export function getSpaceValue(intervals: number[], isLine: boolean, i: number, space: number): number {
+    space = !isLine ? ((intervals[i - 1] !== undefined) ? intervals[i - 1] + space : 0) : space;
+    return space;
+}
+
+/**
+ * @private
+ */
+export function getInterval(intervals: number[], isLine: boolean): number[] {
+    let newInterval: number[] = [];
+    if (!isLine) {
+        for (let k: number = 0; k < intervals.length; k++) {
+            newInterval.push(intervals[k]);
+        }
+        newInterval.push(intervals[newInterval.length - 2]);
+        newInterval.push(intervals[newInterval.length - 2]);
+    } else {
+        newInterval = intervals;
+    }
+    return newInterval;
 }
 
 /**
@@ -267,7 +292,7 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
                 }
                 hasRelation = true;
             } else if ((child.shape as RelationShip).relationship === 'Aggregation' ||
-            (child.shape as RelationShip).relationship === undefined) {
+                (child.shape as RelationShip).relationship === undefined) {
                 if (node.sourceDecorator && node.sourceDecorator.style) {
                     node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                         child.sourceDecorator.style.fill) || 'white';
@@ -1410,8 +1435,10 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
                     htmlElement.appendChild(getContent(actualObject.wrapper.children[0] as DiagramHtmlElement, true));
                 }
             }
-        } else if (actualObject.shape.type === 'Flow' && (newValues.shape as FlowShapeModel).shape !== undefined) {
-            (actualObject.shape as FlowShapeModel).shape = (newValues.shape as FlowShapeModel).shape;
+        } else if (actualObject.shape.type === 'Flow' && ((isBlazor() && (newValues.shape as DiagramShapeModel).flowShape !== undefined) ||
+            (newValues.shape as FlowShapeModel).shape !== undefined)) {
+            (actualObject.shape as FlowShapeModel).shape = isBlazor() ? (newValues.shape as DiagramShapeModel).flowShape :
+                (newValues.shape as FlowShapeModel).shape;
             let shapes: FlowShapes = (actualObject.shape as FlowShapeModel).shape;
             let flowshapedata: string = getFlowShape(shapes.toString());
             (actualObject.wrapper.children[0] as PathModel).data = flowshapedata;
@@ -1421,8 +1448,10 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
             updateUmlActivityNode(actualObject, newValues);
         } else if ((newValues.shape as BasicShapeModel).cornerRadius !== undefined) {
             (actualObject.wrapper.children[0] as BasicShapeModel).cornerRadius = (newValues.shape as BasicShapeModel).cornerRadius;
-        } else if ((newValues.shape as FlowShapeModel).shape !== undefined) {
-            (actualObject.shape as BasicShapeModel).shape = (newValues.shape as BasicShapeModel).shape;
+        } else if (((isBlazor() && (newValues.shape as DiagramShapeModel).basicShape !== undefined) ||
+            (newValues.shape as FlowShapeModel).shape !== undefined)) {
+            (actualObject.shape as BasicShapeModel).shape = isBlazor() ? (newValues.shape as DiagramShapeModel).basicShape :
+                (newValues.shape as BasicShapeModel).shape;
             let shapes: string = (actualObject.shape as BasicShapeModel).shape;
             let basicShapeData: string = getBasicShape(shapes.toString());
             (actualObject.wrapper.children[0] as PathModel).data = basicShapeData;

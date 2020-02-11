@@ -1,10 +1,10 @@
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { HyperlinkTextInfo } from '../editor/editor-helper';
-import { LayoutViewer } from '../index';
 import { FieldElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { CheckBox } from '@syncfusion/ej2-buttons';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Hyperlink dialog is used to insert or edit hyperlink at selection.
@@ -24,14 +24,14 @@ export class HyperlinkDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private bookmarks: string[] = [];
     private localObj: L10n;
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
     /**
      * @private
@@ -44,18 +44,18 @@ export class HyperlinkDialog {
      */
     public initHyperlinkDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: HyperlinkDialog = this;
-        let id: string = this.owner.owner.containerId + '_insert_hyperlink';
+        let id: string = this.documentHelper.owner.containerId + '_insert_hyperlink';
         this.target = createElement('div', { id: id, className: 'e-de-hyperlink' });
 
         let container: HTMLElement = createElement('div');
         let displayText: HTMLElement = createElement('div', { className: 'e-de-hyperlink-dlg-title', innerHTML: localValue.getConstant('Text to display') });
-        this.displayTextBox = createElement('input', { id: this.owner.owner.containerId + '_display_text', className: 'e-input e-de-hyperlink-dlg-input' }) as HTMLInputElement;
+        this.displayTextBox = createElement('input', { id: this.documentHelper.owner.containerId + '_display_text', className: 'e-input e-de-hyperlink-dlg-input' }) as HTMLInputElement;
         this.displayTextBox.addEventListener('keyup', instance.onKeyUpOnDisplayBox);
         container.appendChild(displayText);
         container.appendChild(this.displayTextBox);
 
         this.addressText = createElement('div', { className: 'e-de-hyperlink-dlg-title', innerHTML: localValue.getConstant('Address') }) as HTMLDivElement;
-        this.urlTextBox = createElement('input', { id: this.owner.owner.containerId + '_url_text', className: 'e-input e-de-hyperlink-dlg-input', attrs: { autofocus: 'true' } }) as HTMLInputElement;
+        this.urlTextBox = createElement('input', { id: this.documentHelper.owner.containerId + '_url_text', className: 'e-input e-de-hyperlink-dlg-input', attrs: { autofocus: 'true' } }) as HTMLInputElement;
         this.urlTextBox.addEventListener('input', instance.onKeyUpOnUrlBox);
         this.urlTextBox.addEventListener('keyup', instance.onKeyUpOnUrlBox);
         container.appendChild(this.addressText);
@@ -89,16 +89,16 @@ export class HyperlinkDialog {
      * @private
      */
     public show(): void {
-        this.localObj = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        this.localObj.setLocale(this.owner.owner.locale);
+        this.localObj = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        this.localObj.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initHyperlinkDialog(this.localObj, this.owner.owner.enableRtl);
+            this.initHyperlinkDialog(this.localObj, this.documentHelper.owner.enableRtl);
         }
-        this.owner.dialog.header = this.localObj.getConstant('Insert Hyperlink');
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = this.localObj.getConstant('Insert Hyperlink');
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.buttons = [{
             click: this.onInsertButtonClick,
             buttonModel: { content: this.localObj.getConstant('Ok'), cssClass: 'e-flat e-hyper-insert', isPrimary: true }
         },
@@ -106,10 +106,10 @@ export class HyperlinkDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: this.localObj.getConstant('Cancel'), cssClass: 'e-flat e-hyper-cancel' }
         }];
-        this.owner.dialog.dataBind();
-        this.owner.dialog.beforeOpen = this.loadHyperlinkDialog;
-        this.owner.dialog.close = this.closeHyperlinkDialog;
-        this.owner.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.beforeOpen = this.loadHyperlinkDialog;
+        this.documentHelper.dialog.close = this.closeHyperlinkDialog;
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
@@ -127,7 +127,7 @@ export class HyperlinkDialog {
             }
             return;
         }
-        let selectedText: string = this.owner.selection.text;
+        let selectedText: string = this.documentHelper.selection.text;
         let urlValue: string = this.urlTextBox.value;
         if (urlValue.substring(0, 4).toLowerCase() === 'www.') {
             this.urlTextBox.value = 'http://' + urlValue;
@@ -160,36 +160,36 @@ export class HyperlinkDialog {
      * @private
      */
     public onCancelButtonClick = (): void => {
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
         this.clearValue();
     }
     /**
      * @private
      */
     public loadHyperlinkDialog = (): void => {
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
         this.bookmarks = [];
-        for (let i: number = 0; i < this.owner.bookmarks.keys.length; i++) {
-            let bookmark: string = this.owner.bookmarks.keys[i];
+        for (let i: number = 0; i < this.documentHelper.bookmarks.keys.length; i++) {
+            let bookmark: string = this.documentHelper.bookmarks.keys[i];
             if (bookmark.indexOf('_') !== 0) {
                 this.bookmarks.push(bookmark);
             }
         }
-        let fieldBegin: FieldElementBox = this.owner.selection.getHyperlinkField();
+        let fieldBegin: FieldElementBox = this.documentHelper.selection.getHyperlinkField();
         if (!isNullOrUndefined(fieldBegin)) {
             if (!isNullOrUndefined(fieldBegin.fieldSeparator)) {
                 let format: WCharacterFormat = undefined;
                 // tslint:disable-next-line:max-line-length
-                let fieldObj: HyperlinkTextInfo = this.owner.selection.getHyperlinkDisplayText(fieldBegin.fieldSeparator.line.paragraph, fieldBegin.fieldSeparator, fieldBegin.fieldEnd, false, format);
+                let fieldObj: HyperlinkTextInfo = this.documentHelper.selection.getHyperlinkDisplayText(fieldBegin.fieldSeparator.line.paragraph, fieldBegin.fieldSeparator, fieldBegin.fieldEnd, false, format);
                 this.displayText = fieldObj.displayText;
                 this.displayTextBox.disabled = fieldObj.isNestedField;
             }
             this.displayTextBox.value = this.displayText;
-            let link: string = this.owner.selection.getLinkText(fieldBegin);
+            let link: string = this.documentHelper.selection.getLinkText(fieldBegin);
             this.urlTextBox.value = this.navigationUrl = link;
-            this.owner.dialog.header = this.localObj.getConstant('Edit Hyperlink');
+            this.documentHelper.dialog.header = this.localObj.getConstant('Edit Hyperlink');
         } else {
-            this.displayText = this.owner.selection.getText(true);
+            this.displayText = this.documentHelper.selection.getText(true);
             if (this.displayText !== '') {
                 if (this.displayText.indexOf(String.fromCharCode(65532)) !== -1 ||
                     this.displayText.indexOf('\r') !== -1 && (this.displayText.lastIndexOf('\r') !== -1 &&
@@ -205,12 +205,12 @@ export class HyperlinkDialog {
         this.addressText.style.display = 'block';
         this.urlTextBox.style.display = 'block';
         this.bookmarkCheckbox.checked = false;
-        this.bookmarkDropdown.dataSource = this.owner.bookmarks.keys;
+        this.bookmarkDropdown.dataSource = this.documentHelper.bookmarks.keys;
         this.insertButton = document.getElementsByClassName('e-hyper-insert')[0] as HTMLButtonElement;
         this.enableOrDisableInsertButton();
         this.urlTextBox.focus();
-        if (this.owner.selection.caret.style.display !== 'none') {
-            this.owner.selection.caret.style.display = 'none';
+        if (this.documentHelper.selection.caret.style.display !== 'none') {
+            this.documentHelper.selection.caret.style.display = 'none';
         }
     }
     /**
@@ -218,7 +218,7 @@ export class HyperlinkDialog {
      */
     public closeHyperlinkDialog = (): void => {
         this.clearValue();
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -232,7 +232,7 @@ export class HyperlinkDialog {
             isBookmark = true;
         }
         if (address === '') {
-            this.owner.dialog.hide();
+            this.documentHelper.dialog.hide();
             return;
         }
         if (displayText === '' && address !== '') {
@@ -242,12 +242,12 @@ export class HyperlinkDialog {
         }
 
         if (!isNullOrUndefined(this.navigationUrl)) {
-            this.owner.owner.editorModule.editHyperlink(this.owner.selection, address, displayText, isBookmark);
+            this.documentHelper.owner.editorModule.editHyperlink(this.documentHelper.selection, address, displayText, isBookmark);
         } else {
-            let remove: boolean = this.owner.selection.text !== displayText && !this.displayTextBox.disabled;
-            this.owner.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
+            let remove: boolean = this.documentHelper.selection.text !== displayText && !this.displayTextBox.disabled;
+            this.documentHelper.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
         }
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
         this.navigationUrl = undefined;
     }
     /* tslint:disable:no-any */
@@ -291,7 +291,7 @@ export class HyperlinkDialog {
             this.urlTextBox.parentElement.removeChild(this.urlTextBox);
             this.urlTextBox = undefined;
         }
-        this.owner = undefined;
+        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);

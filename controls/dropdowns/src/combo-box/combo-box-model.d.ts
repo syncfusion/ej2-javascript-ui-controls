@@ -23,9 +23,8 @@ export interface ComboBoxModel extends DropDownListModel{
      * Allows additional HTML attributes such as title, name, etc., and
      * accepts n number of attributes in a key-value pair format.
      * 
-     * {% codeBlock src="combobox/html-attributes-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='combobox/htmlAttributes/index.md' %}{% endcodeBlock %}
      * 
-     * {% codeBlock src="combobox/html-attributes-api/index.html" %}{% endcodeBlock %}
      * @default {}
      */
     htmlAttributes?: { [key: string]: string; };
@@ -47,9 +46,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * Accepts the external `Query`
      * that execute along with [`data processing`](../../combo-box/data-binding).
      * 
-     * {% codeBlock src="combobox/query-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="combobox/query-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='combobox/query/index.md' %}{% endcodeBlock %}
      * @default null
      */
     query?: Query;

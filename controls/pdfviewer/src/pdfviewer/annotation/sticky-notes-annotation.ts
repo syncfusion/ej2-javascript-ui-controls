@@ -29,6 +29,9 @@ export interface IPopupAnnotation {
     review: IReviewCollection;
     annotName: string;
     annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    customData: object;
+    // tslint:disable-next-line
+    annotationSettings: any;
 }
 
 /**
@@ -128,6 +131,8 @@ export class StickyNotesAnnotation {
                     // tslint:disable-next-line
                     let position: any = annotation.Bounds;
                     let author: string = annotation.Author;
+                    // tslint:disable-next-line:max-line-length
+                    let isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
                     annotationObject = {
                         // tslint:disable-next-line:max-line-length
                         shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
@@ -135,9 +140,12 @@ export class StickyNotesAnnotation {
                         // tslint:disable-next-line:max-line-length
                         bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
                         annotName: annotation.AnnotName, color: annotation.color,
-                        annotationSelectorSettings: this.getSettings(annotation)
+                        annotationSelectorSettings: this.getSettings(annotation),
+                        customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings: { isLock: isLock}
                     };
                     let annot: PdfAnnotationBaseModel;
+                    // tslint:disable-next-line:max-line-length
+                    annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                     annot = {
                         // tslint:disable-next-line:max-line-length
                         author: author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName, pageIndex: pageNumber, bounds: { x: position.Left, y: position.Top, width: position.Width, height: position.Height }, strokeColor: 'transparent', stampStrokeColor: '', data: this.setImageSource(), shapeAnnotationType: 'StickyNotes',
@@ -160,11 +168,11 @@ export class StickyNotesAnnotation {
      */
     // tslint:disable-next-line
     public getSettings(annotation : any) : any {
-        let selector: AnnotationSelectorSettingsModel;
-        if ( annotation.AnnotationSelectorSettings === null) {
-            selector = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings;
-        } else {
+        let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
+        if (annotation.AnnotationSelectorSettings) {
             selector = annotation.AnnotationSelectorSettings;
+        } else if (this.pdfViewer.stickyNotesSettings.annotationSelectorSettings) {
+            selector = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings;
         }
         return selector;
     }
@@ -194,6 +202,8 @@ export class StickyNotesAnnotation {
                 annotationName = this.pdfViewer.annotation.createGUID();
                 commentsDivid = proxy.addComments('sticky', pageIndex + 1);
                 document.getElementById(commentsDivid).id = annotationName;
+                // tslint:disable-next-line
+                let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings: this.pdfViewer.annotationSelectorSettings;
                 annot = {
                     // tslint:disable-next-line:max-line-length
                     bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src, modifiedDate: date.toLocaleString(),
@@ -211,6 +221,8 @@ export class StickyNotesAnnotation {
                     proxy.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 }
                 proxy.pdfViewer.toolbar.isAddComment = false;
+                // tslint:disable-next-line:max-line-length
+                let isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
                 annotationObject = {
                     // tslint:disable-next-line:max-line-length
                     author: author, modifiedDate: date.toLocaleString(), subject: 'Sticky Note', shapeAnnotationType: 'sticky',
@@ -218,7 +230,8 @@ export class StickyNotesAnnotation {
                     note: '', opacity: this.opacity, pathData: '', state: '', stateModel: '', color: 'rgba(255,255,0)', comments: [], annotName: annotationName,
                     // tslint:disable-next-line:max-line-length
                     bounds: { left: X, top: Y, width: width, height: height }, review: { state: '', stateModel: '', modifiedDate: '', author: author },
-                    annotationSelectorSettings: this.pdfViewer.stickyNotesSettings.annotationSelectorSettings
+                    annotationSelectorSettings: annotationSelectorSettings,
+                    customData: this.pdfViewer.stickyNotesSettings.customData, annotationSettings: { isLock: isLock}
                 };
             }
             if (!annotation) {
@@ -2820,6 +2833,8 @@ export class StickyNotesAnnotation {
             // tslint:disable-next-line:max-line-length
             annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
         }
+        // tslint:disable-next-line:max-line-length
+        let isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
         annotationObject = {
             // tslint:disable-next-line:max-line-length
             shapeAnnotationType: 'sticky', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
@@ -2827,7 +2842,8 @@ export class StickyNotesAnnotation {
             // tslint:disable-next-line:max-line-length
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             annotName: annotation.AnnotName, color: annotation.color,
-            annotationSelectorSettings: this.getSettings(annotation)
+            annotationSelectorSettings: this.getSettings(annotation),
+            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings: { isLock : isLock}
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_sticky');
     }
@@ -2843,13 +2859,16 @@ export class StickyNotesAnnotation {
             // tslint:disable-next-line:max-line-length
             annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
         }
+        // tslint:disable-next-line:max-line-length
+        let isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
         annotationObject = {
             // tslint:disable-next-line:max-line-length
             shapeAnnotationType: 'sticky', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
             pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
             // tslint:disable-next-line:max-line-length
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
-            annotationId: annotation.AnnotName, color: annotation.color, pageNumber: pageNumber
+            annotationId: annotation.AnnotName, color: annotation.color, pageNumber: pageNumber,
+            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings : {isLock: isLock}
         };
         return annotationObject;
     }

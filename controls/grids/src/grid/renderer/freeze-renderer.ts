@@ -7,6 +7,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { FreezeRowModelGenerator } from '../services/freeze-row-model-generator';
 import * as events from '../base/constant';
 import { renderMovable, getScrollBarWidth, wrap } from '../base/util';
+import {InputArgs, Input} from '@syncfusion/ej2-inputs';
 
 /**
  * Freeze module is used to render grid content with frozen rows and columns
@@ -206,6 +207,17 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
                 this.getMovableHeader().querySelector('thead')
                     .appendChild(renderMovable(filterRow, this.parent.getFrozenColumns()));
+                let elements: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
+                querySelectorAll('thead .e-filterbarcell .e-input'));
+                for (let elem of elements) {
+                    let args: InputArgs = {
+                        element: elem as HTMLInputElement, floatLabelType: 'Never',
+                        properties: {
+                            enableRtl: this.parent.enableRtl, showClearButton: true
+                        }
+                    };
+                    Input.bindInitialEvent(args);
+                }
             }
         } else if (obj.case === 'textwrap' || obj.case === 'refreshHeight') {
             let fRows: NodeListOf<HTMLElement>;

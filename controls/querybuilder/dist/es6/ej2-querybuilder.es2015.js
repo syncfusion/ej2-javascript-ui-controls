@@ -412,7 +412,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
             if (!this.isImportRules) {
-                this.disableRuleCondition(target);
+                this.disableRuleCondition(target, rules);
             }
             if (Object.keys(rule).length) {
                 this.changeRule(rule, {
@@ -2060,14 +2060,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                     break;
                 case 'displayMode':
-                    if (newProp.displayMode === 'Horizontal') {
-                        addClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-                        removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
-                    }
-                    else {
-                        addClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
-                        removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-                    }
+                    this.refresh();
                     break;
                 case 'showButtons':
                     if (newProp.showButtons.ruleDelete) {
@@ -2345,7 +2338,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let elem = groupElem.parentElement.parentElement.parentElement;
             detach(target);
             this.refreshLevelColl();
-            this.disableRuleCondition(elem);
+            this.disableRuleCondition(elem, rule);
             if (!this.isImportRules) {
                 this.trigger('change', args);
             }
@@ -2403,7 +2396,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
             detach(clnruleElem);
-            this.disableRuleCondition(groupElem);
+            if (!(rule.rules[0] && rule.rules[0].rules)) {
+                this.disableRuleCondition(groupElem, rule);
+            }
             if (!this.isImportRules) {
                 this.trigger('change', args);
             }
@@ -2420,14 +2415,14 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
         this.isImportRules = false;
     }
-    disableRuleCondition(groupElem) {
+    disableRuleCondition(groupElem, rules) {
         let count = groupElem.querySelector('.e-rule-list').childElementCount;
         let andElem = groupElem.querySelector('.e-btngroup-and');
         let orElem = groupElem.querySelector('.e-btngroup-or');
         if (count > 1) {
             andElem.disabled = false;
-            andElem.checked = true;
             orElem.disabled = false;
+            rules && rules.condition === 'or' ? orElem.checked = true : andElem.checked = true;
         }
         else {
             andElem.checked = false;

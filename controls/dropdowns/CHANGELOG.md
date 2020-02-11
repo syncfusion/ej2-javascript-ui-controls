@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.49 (2020-02-11)
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#261901` - Issue with "cascade dropdown previous value maintained while enabled the filtering" has been resolved.
+
 ## 17.4.47 (2020-02-05)
 
 ### ListBox

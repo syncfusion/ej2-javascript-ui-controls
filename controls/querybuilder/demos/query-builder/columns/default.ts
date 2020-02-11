@@ -33,7 +33,7 @@ let filter: ColumnsModel [] = [
             multiSelectObj = new MultiSelect({
                 dataSource: [1, 2, 3, 4, 5],
                 value: args.values as string [],
-                mode: 'Box',
+                mode: 'CheckBox',
                 change: (e: any) => {
                     qbObj.notifyChange(e.value, e.element);
                 }

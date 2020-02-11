@@ -1,5 +1,5 @@
 import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { LayoutViewer } from './viewer';
+import { LayoutViewer, DocumentHelper } from './viewer';
 import { isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../document-editor';
 import { Selection, ContextElementInfo } from './index';
@@ -45,7 +45,7 @@ const CONTEXTMENU_NO_SUGGESTION: string = '_contextmenu_no_suggestion';
  * Context Menu class
  */
 export class ContextMenu {
-    private viewer: LayoutViewer;
+    private documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -86,18 +86,21 @@ export class ContextMenu {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.viewer = viewer;
-        this.locale = new L10n('documenteditor', this.viewer.owner.defaultLocale);
-        this.locale.setLocale(this.viewer.owner.locale);
-        this.initContextMenu(this.locale, this.viewer.owner.enableRtl);
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
+        this.locale = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        this.locale.setLocale(this.documentHelper.owner.locale);
+        this.initContextMenu(this.locale, this.documentHelper.owner.enableRtl);
+    }
+    get viewer(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
     /**
      * Gets the spell checker
      * @private
      */
     get spellChecker(): SpellChecker {
-        return this.viewer.owner.spellChecker;
+        return this.documentHelper.owner.spellChecker;
     }
     /**
      * Gets module name.
@@ -112,13 +115,13 @@ export class ContextMenu {
      */
     // tslint:disable:max-func-body-length
     public initContextMenu(localValue: L10n, isRtl?: boolean): void {
-        let id: string = this.viewer.owner.element.id;
+        let id: string = this.documentHelper.owner.element.id;
         this.contextMenu = document.createElement('div');
-        this.contextMenu.id = this.viewer.owner.containerId + 'e-de-contextmenu';
+        this.contextMenu.id = this.documentHelper.owner.containerId + 'e-de-contextmenu';
         document.body.appendChild(this.contextMenu);
         let ul: HTMLUListElement = document.createElement('ul');
         ul.style.width = 'auto';
-        ul.id = this.viewer.owner.containerId + 'e-de-contextmenu-list';
+        ul.id = this.documentHelper.owner.containerId + 'e-de-contextmenu-list';
         ul.style.listStyle = 'none';
         ul.style.margin = '0px';
         ul.style.maxHeight = 'auto';
@@ -298,7 +301,7 @@ export class ContextMenu {
             },
         ];
         let menuOptions: ContextMenuModel = {
-            target: '#' + this.viewer.owner.containerId + 'e-de-contextmenu',
+            target: '#' + this.documentHelper.owner.containerId + 'e-de-contextmenu',
             enableRtl: isRtl,
             items: this.addMenuItems(this.menuItems),
             select: (args: MenuEventArgs) => {
@@ -306,7 +309,7 @@ export class ContextMenu {
                 this.handleContextMenuItem(item);
             },
         };
-        this.contextMenuInstance = new Menu(menuOptions, '#' + this.viewer.owner.containerId + 'e-de-contextmenu-list');
+        this.contextMenuInstance = new Menu(menuOptions, '#' + this.documentHelper.owner.containerId + 'e-de-contextmenu-list');
         this.contextMenuInstance.beforeOpen = () => {
             for (let index: number = 0; index < this.customMenuItems.length; index++) {
                 if (typeof this.customMenuItems[index].id !== 'undefined') {
@@ -315,7 +318,7 @@ export class ContextMenu {
                     this.ids[index] = this.customMenuItems[index + 1].id;
                 }
             }
-            this.viewer.owner.fireCustomContextMenuBeforeOpen(this.ids);
+            this.documentHelper.owner.fireCustomContextMenuBeforeOpen(this.ids);
             if (this.enableCustomContextMenu) {
                 for (let index: number = 0; index < this.menuItems.length; index++) {
                     if (typeof this.menuItems[index].id !== 'undefined') {
@@ -325,15 +328,15 @@ export class ContextMenu {
                     }
                 }
             }
-            if (this.viewer && this.viewer.selection) {
-                classList(this.viewer.selection.caret, [], ['e-de-cursor-animation']);
-                this.viewer.selection.showCaret();
+            if (this.viewer && this.documentHelper.selection) {
+                classList(this.documentHelper.selection.caret, [], ['e-de-cursor-animation']);
+                this.documentHelper.selection.showCaret();
             }
         };
         this.contextMenuInstance.onClose = () => {
-            if (this.viewer && this.viewer.selection) {
-                classList(this.viewer.selection.caret, ['e-de-cursor-animation'], []);
-                this.viewer.updateFocus();
+            if (this.viewer && this.documentHelper.selection) {
+                classList(this.documentHelper.selection.caret, ['e-de-cursor-animation'], []);
+                this.documentHelper.updateFocus();
             }
         };
     }
@@ -349,115 +352,115 @@ export class ContextMenu {
      * @private
      */
     public handleContextMenuItem(item: string): void {
-        let id: string = this.viewer.owner.element.id;
+        let id: string = this.documentHelper.owner.element.id;
         switch (item) {
             case id + CONTEXTMENU_COPY:
-                this.viewer.selection.copy();
+                this.documentHelper.selection.copy();
                 break;
             case id + CONTEXTMENU_CUT:
-                this.viewer.owner.editor.cut();
+                this.documentHelper.owner.editor.cut();
                 break;
             case id + CONTEXTMENU_PASTE:
-                if (!this.viewer.owner.isReadOnlyMode) {
-                    this.viewer.owner.editorModule.pasteInternal(undefined);
+                if (!this.documentHelper.owner.isReadOnlyMode) {
+                    this.documentHelper.owner.editorModule.pasteInternal(undefined);
                 }
                 break;
             case id + CONTEXTMENU_ADD_COMMENT:
-                if (!this.viewer.owner.isReadOnlyMode) {
-                    this.viewer.owner.editorModule.insertComment();
+                if (!this.documentHelper.owner.isReadOnlyMode) {
+                    this.documentHelper.owner.editorModule.insertComment();
                 }
                 break;
             case id + CONTEXTMENU_UPDATE_FIELD:
-                if (!this.viewer.owner.isReadOnlyMode) {
-                    this.viewer.owner.editorModule.updateToc();
+                if (!this.documentHelper.owner.isReadOnlyMode) {
+                    this.documentHelper.owner.editorModule.updateToc();
                 }
                 break;
             case id + CONTEXTMENU_EDIT_FIELD:
-                if (!this.viewer.owner.isReadOnlyMode) {
-                    this.viewer.owner.tableOfContentsDialogModule.show();
+                if (!this.documentHelper.owner.isReadOnlyMode) {
+                    this.documentHelper.owner.tableOfContentsDialogModule.show();
                 }
                 break;
             case id + CONTEXTMENU_FONT_DIALOG:
-                if (this.viewer.owner.fontDialogModule) {
-                    this.viewer.owner.fontDialogModule.showFontDialog();
+                if (this.documentHelper.owner.fontDialogModule) {
+                    this.documentHelper.owner.fontDialogModule.showFontDialog();
                 }
                 break;
             case id + CONTEXTMENU_OPEN_HYPERLINK:
-                this.viewer.selection.navigateHyperlink();
+                this.documentHelper.selection.navigateHyperlink();
                 break;
             case id + CONTEXTMENU_COPY_HYPERLINK:
-                this.viewer.selection.copyHyperlink();
+                this.documentHelper.selection.copyHyperlink();
                 break;
             case id + CONTEXTMENU_EDIT_HYPERLINK:
             case id + CONTEXTMENU_HYPERLINK:
-                if (this.viewer.owner.hyperlinkDialogModule) {
-                    this.viewer.owner.hyperlinkDialogModule.show();
+                if (this.documentHelper.owner.hyperlinkDialogModule) {
+                    this.documentHelper.owner.hyperlinkDialogModule.show();
                 }
                 break;
             case id + CONTEXTMENU_REMOVE_HYPERLINK:
-                this.viewer.owner.editor.removeHyperlink();
+                this.documentHelper.owner.editor.removeHyperlink();
                 break;
             case id + CONTEXTMENU_PARAGRAPH:
-                if (this.viewer.owner.paragraphDialogModule) {
-                    this.viewer.owner.paragraphDialogModule.show();
+                if (this.documentHelper.owner.paragraphDialogModule) {
+                    this.documentHelper.owner.paragraphDialogModule.show();
                 }
                 break;
             case id + CONTEXTMENU_TABLE:
-                this.viewer.owner.tablePropertiesDialogModule.show();
+                this.documentHelper.owner.tablePropertiesDialogModule.show();
                 break;
             case id + CONTEXTMENU_MERGE_CELL:
-                this.viewer.owner.editor.mergeCells();
+                this.documentHelper.owner.editor.mergeCells();
                 break;
             case id + CONTEXTMENU_INSERT_ABOVE:
-                this.viewer.owner.editor.insertRow(true);
+                this.documentHelper.owner.editor.insertRow(true);
                 break;
             case id + CONTEXTMENU_INSERT_BELOW:
-                this.viewer.owner.editor.insertRow(false);
+                this.documentHelper.owner.editor.insertRow(false);
                 break;
             case id + CONTEXTMENU_INSERT_LEFT:
-                this.viewer.owner.editor.insertColumn(true);
+                this.documentHelper.owner.editor.insertColumn(true);
                 break;
             case id + CONTEXTMENU_INSERT_RIGHT:
-                this.viewer.owner.editor.insertColumn(false);
+                this.documentHelper.owner.editor.insertColumn(false);
                 break;
             case id + CONTEXTMENU_COMPLETE_DELETE_TABLE:
-                this.viewer.owner.editor.deleteTable();
+                this.documentHelper.owner.editor.deleteTable();
                 break;
             case id + CONTEXTMENU_DELETE_ROW:
-                this.viewer.owner.editor.deleteRow();
+                this.documentHelper.owner.editor.deleteRow();
                 break;
             case id + CONTEXTMENU_DELETE_COLUMN:
-                this.viewer.owner.editor.deleteColumn();
+                this.documentHelper.owner.editor.deleteColumn();
                 break;
             case id + CONTEXTMENU_CONTINUE_NUMBERING:
-                this.viewer.owner.editorModule.applyContinueNumbering(this.viewer.selection);
+                this.documentHelper.owner.editorModule.applyContinueNumbering(this.documentHelper.selection);
                 break;
             case id + CONTEXTMENU_RESTART_AT:
-                this.viewer.owner.editorModule.applyRestartNumbering(this.viewer.selection);
+                this.documentHelper.owner.editorModule.applyRestartNumbering(this.documentHelper.selection);
                 break;
             case id + CONTEXTMENU_AUTO_FIT_TO_CONTENTS:
-                this.viewer.owner.editor.autoFitTable('FitToContents');
+                this.documentHelper.owner.editor.autoFitTable('FitToContents');
                 break;
             case id + CONTEXTMENU_AUTO_FIT_TO_WINDOW:
-                this.viewer.owner.editor.autoFitTable('FitToWindow');
+                this.documentHelper.owner.editor.autoFitTable('FitToWindow');
                 break;
             case id + CONTEXTMENU_FIXED_COLUMN_WIDTH:
-                this.viewer.owner.editor.autoFitTable('FixedColumnWidth');
+                this.documentHelper.owner.editor.autoFitTable('FixedColumnWidth');
                 break;
             case id + CONTEXTMENU_SPELLING_DIALOG:
                 let contextInfo: ContextElementInfo = this.spellChecker.retriveText();
                 this.currentContextInfo = null;
-                this.viewer.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
+                this.documentHelper.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
                 break;
             default:
-                let expectedData: string = this.viewer.owner.element.id + CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS;
+                let expectedData: string = this.documentHelper.owner.element.id + CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS;
                 if (item.substring(0, expectedData.length) === expectedData) {
                     let content: string = item.substring(item.lastIndexOf('_') + 1);
                     this.callSelectedOption(content);
                     break;
                 } else {
                     // fires customContextMenuSelect while selecting the added custom menu item
-                    this.viewer.owner.fireCustomContextMenuSelect(item);
+                    this.documentHelper.owner.fireCustomContextMenuSelect(item);
                     break;
                 }
         }
@@ -490,7 +493,7 @@ export class ContextMenu {
         }
         for (let index: number = 0; index < menuItems.length; index++) {
             this.customMenuItems.push(menuItems[index]);
-            this.customMenuItems[index].id = this.viewer.owner.element.id + this.customMenuItems[index].id;
+            this.customMenuItems[index].id = this.documentHelper.owner.element.id + this.customMenuItems[index].id;
         }
         this.enableCustomContextMenu = isEnable;
         this.enableCustomContextMenuBottom = isBottom;
@@ -515,7 +518,7 @@ export class ContextMenu {
      */
     public onContextMenuInternal = (event: MouseEvent | TouchEvent): void => {
         let isTouch: boolean = !(event instanceof MouseEvent);
-        if (this.viewer.owner.enableSpellCheck && this.spellChecker.allowSpellCheckAndSuggestion) {
+        if (this.documentHelper.owner.isSpellCheck && this.spellChecker.allowSpellCheckAndSuggestion) {
             event.preventDefault();
             this.currentContextInfo = this.spellChecker.findCurretText();
             let splittedSuggestion: string[];
@@ -565,16 +568,16 @@ export class ContextMenu {
         let xPos: number = 0;
         let yPos: number = 0;
         if (isTouch) {
-            let point: Point = this.viewer.getTouchOffsetValue(event as TouchEvent);
+            let point: Point = this.documentHelper.getTouchOffsetValue(event as TouchEvent);
             xPos = point.x;
             yPos = point.y;
         } else {
             yPos = (event as MouseEvent).y;
             xPos = (event as MouseEvent).x;
         }
-        if (this.showHideElements(this.viewer.selection)) {
+        if (this.showHideElements(this.documentHelper.selection)) {
             if (isTouch) {
-                this.viewer.isMouseDown = false;
+                this.documentHelper.isMouseDown = false;
             }
             this.contextMenuInstance.open(yPos, xPos);
             event.preventDefault();
@@ -586,7 +589,7 @@ export class ContextMenu {
     public hideSpellContextItems(): void {
         if (this.spellContextItems.length > 0) {
             for (let i: number = 0; i < this.spellContextItems.length; i++) {
-                let item: HTMLElement = document.getElementById(this.viewer.owner.element.id + this.spellContextItems[i].id);
+                let item: HTMLElement = document.getElementById(this.documentHelper.owner.element.id + this.spellContextItems[i].id);
                 if (!isNullOrUndefined(item)) {
                     item.style.display = 'none';
                 }
@@ -604,7 +607,7 @@ export class ContextMenu {
     public processSuggestions(allSuggestions: any, splittedSuggestion: string[], event: MouseEvent | TouchEvent): void {
         this.spellContextItems = this.constructContextmenu(allSuggestions, splittedSuggestion);
         this.addCustomMenu(this.spellContextItems);
-        this.noSuggestion = document.getElementById(this.viewer.owner.element.id + CONTEXTMENU_NO_SUGGESTION);
+        this.noSuggestion = document.getElementById(this.documentHelper.owner.element.id + CONTEXTMENU_NO_SUGGESTION);
         if (!isNullOrUndefined(this.noSuggestion)) {
             this.noSuggestion.style.display = 'block';
             classList(this.noSuggestion, ['e-disabled'], ['e-focused']);
@@ -649,7 +652,7 @@ export class ContextMenu {
             return false;
         }
         selection.hideToolTip();
-        let owner: DocumentEditor = this.viewer.owner;
+        let owner: DocumentEditor = this.documentHelper.owner;
         let id: string = owner.element.id;
         let copy: HTMLElement = document.getElementById(id + CONTEXTMENU_COPY);
         let cut: HTMLElement = document.getElementById(id + CONTEXTMENU_CUT);
@@ -699,15 +702,15 @@ export class ContextMenu {
         classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         // tslint:disable-next-line:max-line-length
-        let isHideComment: boolean = this.viewer.owner.isReadOnlyMode || this.viewer.owner.enableHeaderAndFooter || !this.viewer.owner.enableComment;
+        let isHideComment: boolean = this.documentHelper.owner.isReadOnlyMode || this.documentHelper.owner.enableHeaderAndFooter || !this.documentHelper.owner.enableComment;
         addComment.style.display = isHideComment ? 'none' : 'block';
         (addComment.previousSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         (addComment.nextSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         if (owner.isReadOnlyMode) {
             return true;
         }
-        if (this.viewer && this.viewer.owner && this.viewer.owner.commentReviewPane &&
-            this.viewer.owner.commentReviewPane.commentPane.isEditMode) {
+        if (this.viewer && this.documentHelper.owner && this.documentHelper.owner.commentReviewPane &&
+            this.documentHelper.owner.commentReviewPane.commentPane.isEditMode) {
             classList(addComment, ['e-disabled'], []);
         } else {
             classList(addComment, [], ['e-disabled']);
@@ -759,24 +762,24 @@ export class ContextMenu {
                 }
             }
         }
-        if (this.viewer.owner.selection.start.paragraph.isInsideTable
-            && this.viewer.owner.selection.end.paragraph.isInsideTable) {
+        if (this.documentHelper.owner.selection.start.paragraph.isInsideTable
+            && this.documentHelper.owner.selection.end.paragraph.isInsideTable) {
             (paragraph.nextSibling as HTMLElement).style.display = 'block';
             if (owner.tablePropertiesDialogModule) {
                 tableProperties.style.display = 'block';
             }
             insertTable.style.display = 'block';
             deleteTable.style.display = 'block';
-            if (this.viewer.owner.editor.canMergeCells()) {
+            if (this.documentHelper.owner.editor.canMergeCells()) {
                 mergeCells.style.display = 'block';
             }
-            autoFitTable.style.display = this.viewer.selection.isTableSelected() ? 'block' : 'none';
+            autoFitTable.style.display = this.documentHelper.selection.isTableSelected() ? 'block' : 'none';
         } else {
-            if (this.viewer.owner.fontDialogModule) {
+            if (this.documentHelper.owner.fontDialogModule) {
                 font.style.display = 'block';
                 (font.previousSibling as HTMLElement).style.display = 'block';
             }
-            if (this.viewer.owner.paragraphDialogModule) {
+            if (this.documentHelper.owner.paragraphDialogModule) {
                 paragraph.style.display = 'block';
             }
         }

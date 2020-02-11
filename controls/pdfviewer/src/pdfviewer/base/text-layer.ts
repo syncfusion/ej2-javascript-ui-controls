@@ -131,7 +131,7 @@ export class TextLayer {
     }
 
     private applyTextRotation(scale: number, textDiv: HTMLElement, rotation: number, textRotation: number): void {
-        let scaleString: string = 'scale(' + scale + ')';
+        let scaleString: string = 'scaleX(' + scale + ')';
         if (rotation === 0) {
             if (textRotation === 0) {
                 textDiv.style.transform = scaleString;
@@ -477,7 +477,9 @@ export class TextLayer {
                 content: '<div class="e-pv-notification-popup-content" tabindex = "0">' + text + '</div>', target: this.pdfViewer.element,
                 beforeClose: (): void => {
                     this.notifyDialog.destroy();
-                    this.pdfViewer.element.removeChild(popupElement);
+                    if (this.pdfViewer.element) {
+                        this.pdfViewer.element.removeChild(popupElement);
+                    }
                     if (this.pdfViewer.textSearchModule) {
                         this.pdfViewer.textSearch.isMessagePopupOpened = false;
                     }

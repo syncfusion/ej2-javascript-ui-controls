@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../src/index';
 
 import { TestHelper } from '../test-helper.spec';
 import { createElement } from '@syncfusion/ej2-base';
@@ -15,24 +15,24 @@ let saveformat: any = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pag
 
 describe('JSON Save validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, SfdtExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 1000);

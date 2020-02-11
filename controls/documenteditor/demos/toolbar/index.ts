@@ -90,6 +90,7 @@ L10n.load({
             'Orientation': 'التوجه',
             'Landscape': 'المناظر الطبيعيه',
             'Portrait': 'صوره',
+            'Table Of Contents': 'جدول المحتويات',
             'Show page numbers': 'إظهار أرقام الصفحات',
             'Right align page numbers': 'محاذاة أرقام الصفحات إلى اليمين',
             'Nothing': 'شيء',

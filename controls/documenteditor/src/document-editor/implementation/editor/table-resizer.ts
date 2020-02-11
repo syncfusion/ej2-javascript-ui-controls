@@ -7,11 +7,13 @@ import { WRowFormat } from '../index';
 import { LayoutViewer } from '../index';
 import { TableAlignment } from '../../index';
 import { TableHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo } from '../index';
+import { DocumentHelper } from '../viewer';
 /** 
  * @private
  */
 export class TableResizer {
     public owner: DocumentEditor;
+    public documentHelper: DocumentHelper;
     public resizeNode: number = 0;
     public resizerPosition: number = -1;
     public currentResizingTable: TableWidget = undefined;
@@ -19,16 +21,19 @@ export class TableResizer {
     /** 
      * @private
      */
-    get viewer(): LayoutViewer {
-        return this.owner.viewer;
-    }
+
     /** 
      * @private
      */
     constructor(node: DocumentEditor) {
         this.owner = node;
+        this.documentHelper = this.owner.documentHelper;
         this.startingPoint = new Point(0, 0);
     }
+    get viewer(): LayoutViewer {
+        return this.owner.viewer;
+    }
+
     /**
      * Gets module name.
      */
@@ -42,11 +47,11 @@ export class TableResizer {
         if (this.owner.editorHistory) {
             this.owner.editorHistory.updateResizingHistory(touchPoint, this);
         }
-        this.viewer.isRowOrCellResizing = false;
+        this.documentHelper.isRowOrCellResizing = false;
         this.resizerPosition = -1;
     }
     public handleResize(point: Point): void {
-        this.owner.viewer.isRowOrCellResizing = true;
+        this.owner.documentHelper.isRowOrCellResizing = true;
         this.startingPoint.x = point.x;
         this.startingPoint.y = point.y;
         //Initialize resizing history.
@@ -93,17 +98,17 @@ export class TableResizer {
         if (tableWidget && cellSpacing > 0) {
             this.currentResizingTable = tableWidget;
             // tslint:disable-next-line:max-line-length
-            if (this.viewer.isInsideRect(tableWidget.x - HelperMethods.convertPointToPixel(tableWidget.leftBorderWidth) - 0.25, tableWidget.y, HelperMethods.convertPointToPixel(tableWidget.leftBorderWidth) + 0.5, tableWidget.height, touchPoint)) {
+            if (this.documentHelper.isInsideRect(tableWidget.x - HelperMethods.convertPointToPixel(tableWidget.leftBorderWidth) - 0.25, tableWidget.y, HelperMethods.convertPointToPixel(tableWidget.leftBorderWidth) + 0.5, tableWidget.height, touchPoint)) {
                 return position = 0;
             }
             let startingPointX: number = tableWidget.x;
             for (let i: number = 0; i < tableWidget.tableHolder.columns.length; i++) {
                 let preferredWidth: number = HelperMethods.convertPointToPixel(tableWidget.tableHolder.columns[i].preferredWidth);
                 // tslint:disable-next-line:max-line-length
-                if ((this.viewer.isInsideRect(startingPointX - 1, tableWidget.y, tableWidget.leftBorderWidth + resizerBoundaryWidth, tableWidget.height, touchPoint))) {
+                if ((this.documentHelper.isInsideRect(startingPointX - 1, tableWidget.y, tableWidget.leftBorderWidth + resizerBoundaryWidth, tableWidget.height, touchPoint))) {
                     return position = i > 0 ? i : 0;
                     // tslint:disable-next-line:max-line-length
-                } else if (i > 0 && (this.viewer.isInsideRect(startingPointX + preferredWidth - resizerBoundaryWidth / 2, tableWidget.y, resizerBoundaryWidth, tableWidget.height, touchPoint))) {
+                } else if (i > 0 && (this.documentHelper.isInsideRect(startingPointX + preferredWidth - resizerBoundaryWidth / 2, tableWidget.y, resizerBoundaryWidth, tableWidget.height, touchPoint))) {
                     return position = (i + 1);
                 }
                 startingPointX = startingPointX + preferredWidth;
@@ -112,11 +117,11 @@ export class TableResizer {
             if (!isNullOrUndefined(cellWidget)) {
                 this.currentResizingTable = cellWidget.ownerTable;
                 // tslint:disable-next-line:max-line-length
-                if (this.viewer.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height, touchPoint)) {
+                if (this.documentHelper.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height, touchPoint)) {
                     return position = cellWidget.columnIndex;
                     // tslint:disable-next-line:max-line-length
                 } else if (isNullOrUndefined(cellWidget.nextRenderedWidget)
-                    && this.viewer.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height, touchPoint)) {
+                    && this.documentHelper.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height, touchPoint)) {
                     return position = (cellWidget.columnIndex + cellWidget.cellFormat.columnSpan);
                 } else if (cellWidget.childWidgets.length > 0) {
                     return this.getCellReSizerPositionInternal(cellWidget, touchPoint); // Gets the nested table resizer position.
@@ -137,7 +142,7 @@ export class TableResizer {
         if (!isNullOrUndefined(childTableWidget) && childTableWidget.tableFormat.cellSpacing > 0) {
             this.currentResizingTable = childTableWidget;
             // tslint:disable-next-line:max-line-length
-            if (this.viewer.isInsideRect(childTableWidget.x - childTableWidget.leftBorderWidth - 0.25, childTableWidget.y, childTableWidget.leftBorderWidth + 0.5, childTableWidget.height, touchPoint)) {
+            if (this.documentHelper.isInsideRect(childTableWidget.x - childTableWidget.leftBorderWidth - 0.25, childTableWidget.y, childTableWidget.leftBorderWidth + 0.5, childTableWidget.height, touchPoint)) {
                 return position = 0;
             }
             let startingPointX: number = childTableWidget.x;
@@ -145,10 +150,10 @@ export class TableResizer {
                 // tslint:disable-next-line:max-line-length
                 let preferredWidth: number = HelperMethods.convertPointToPixel(childTableWidget.tableHolder.columns[i].preferredWidth);
                 // tslint:disable-next-line:max-line-length
-                if ((this.viewer.isInsideRect(startingPointX - 1, childTableWidget.y, childTableWidget.leftBorderWidth + 2, childTableWidget.height, touchPoint))) {
+                if ((this.documentHelper.isInsideRect(startingPointX - 1, childTableWidget.y, childTableWidget.leftBorderWidth + 2, childTableWidget.height, touchPoint))) {
                     return position = i > 0 ? i : 0;
                     // tslint:disable-next-line:max-line-length
-                } else if (i > 0 && (this.viewer.isInsideRect(startingPointX + preferredWidth - 1, childTableWidget.y, 2, childTableWidget.height, touchPoint))) {
+                } else if (i > 0 && (this.documentHelper.isInsideRect(startingPointX + preferredWidth - 1, childTableWidget.y, 2, childTableWidget.height, touchPoint))) {
                     return position = (i + 1);
                 }
                 startingPointX = startingPointX + preferredWidth;
@@ -160,11 +165,11 @@ export class TableResizer {
             if (!isNullOrUndefined(childCellWidget)) {
                 this.currentResizingTable = childCellWidget.ownerTable;
                 // tslint:disable-next-line:max-line-length
-                if (this.viewer.isInsideRect(childCellWidget.x - childCellWidget.margin.left - 1, childCellWidget.y - childCellWidget.margin.top, 2, childCellWidget.height, touchPoint)) {
+                if (this.documentHelper.isInsideRect(childCellWidget.x - childCellWidget.margin.left - 1, childCellWidget.y - childCellWidget.margin.top, 2, childCellWidget.height, touchPoint)) {
                     return position = childCellWidget.columnIndex;
                 } else if (isNullOrUndefined(childCellWidget.nextRenderedWidget)
                     // tslint:disable-next-line:max-line-length
-                    && this.viewer.isInsideRect(childCellWidget.x + childCellWidget.margin.right + childCellWidget.width - 1, childCellWidget.y - childCellWidget.margin.top, 2, childCellWidget.height, touchPoint)) {
+                    && this.documentHelper.isInsideRect(childCellWidget.x + childCellWidget.margin.right + childCellWidget.width - 1, childCellWidget.y - childCellWidget.margin.top, 2, childCellWidget.height, touchPoint)) {
                     return position = (childCellWidget.columnIndex + childCellWidget.cellFormat.columnSpan);
                 } else if (childCellWidget.childWidgets.length > 0) {
                     return this.getCellReSizerPositionInternal(childCellWidget, touchPoint);
@@ -186,7 +191,7 @@ export class TableResizer {
         if (tableWidget && cellSpacing > 0) {
             this.currentResizingTable = tableWidget;
             // tslint:disable-next-line:max-line-length
-            if (this.owner.viewer.isInsideRect(tableWidget.x, tableWidget.y + tableWidget.height - cellSpacing, this.getActualWidth(tableWidget.lastChild as TableRowWidget), (isNullOrUndefined(tableWidget.nextSplitWidget) ? tableWidget.bottomBorderWidth + cellSpacing : 0), touchPoint)) {
+            if (this.owner.documentHelper.isInsideRect(tableWidget.x, tableWidget.y + tableWidget.height - cellSpacing, this.getActualWidth(tableWidget.lastChild as TableRowWidget), (isNullOrUndefined(tableWidget.nextSplitWidget) ? tableWidget.bottomBorderWidth + cellSpacing : 0), touchPoint)) {
                 return (tableWidget.lastChild as TableRowWidget).rowIndex;
             }
             for (let i: number = 0; i < tableWidget.childWidgets.length; i++) {
@@ -194,7 +199,7 @@ export class TableResizer {
                 let rowWidget: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
                 if (tableWidget.childWidgets.indexOf(rowWidget) > -1
                     // tslint:disable-next-line:max-line-length
-                    && (this.owner.viewer.isInsideRect(rowWidget.x, rowWidget.y + rowWidget.height + cellSpacing / 2, this.getActualWidth(rowWidget), cellSpacing / 2, touchPoint))) {
+                    && (this.owner.documentHelper.isInsideRect(rowWidget.x, rowWidget.y + rowWidget.height + cellSpacing / 2, this.getActualWidth(rowWidget), cellSpacing / 2, touchPoint))) {
                     return rowWidget.rowIndex;
                 }
             }
@@ -211,7 +216,7 @@ export class TableResizer {
                     height = (rowWidget.nextRenderedWidget as TableRowWidget).topBorderWidth + 2;
                 }
                 // tslint:disable-next-line:max-line-length
-                if (this.owner.viewer.isInsideRect(rowWidget.x, rowWidget.y + rowWidget.height - height, rowWidget.width, height * 2, touchPoint)) {
+                if (this.owner.documentHelper.isInsideRect(rowWidget.x, rowWidget.y + rowWidget.height - height, rowWidget.width, height * 2, touchPoint)) {
                     this.currentResizingTable = rowWidget.ownerTable;
                     return rowWidget.rowIndex;
                 } else {
@@ -256,12 +261,12 @@ export class TableResizer {
             selection.selectPosition(selection.start, selection.end);
         }
         if (table.isInsideTable) {
-            let parentTable: TableWidget = this.owner.viewer.layout.getParentTable(table);
+            let parentTable: TableWidget = this.owner.documentHelper.layout.getParentTable(table);
             this.owner.isLayoutEnabled = true; //layouting is enabled to layout the parent table of the nested table.
             table = parentTable;
         }
         this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
-        this.owner.viewer.layout.reLayoutTable(table);
+        this.owner.documentHelper.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
         if (row) {
             this.currentResizingTable = row.ownerTable;
@@ -278,7 +283,7 @@ export class TableResizer {
      */
     private getTableWidget(cursorPoint: Point): TableWidget {
         let widget: TableWidget = undefined;
-        let currentPage: Page = this.owner.viewer.currentPage;
+        let currentPage: Page = this.owner.documentHelper.currentPage;
         if (!isNullOrUndefined(currentPage)) {
             for (let i: number = 0; i < currentPage.bodyWidgets.length; i++) {
                 let bodyWidget: BodyWidget = currentPage.bodyWidgets[i];
@@ -308,7 +313,7 @@ export class TableResizer {
      */
     public getTableCellWidget(cursorPoint: Point): TableCellWidget {
         let widget: TableCellWidget = undefined;
-        let currentPage: Page = this.owner.viewer.currentPage;
+        let currentPage: Page = this.owner.documentHelper.currentPage;
         if (!isNullOrUndefined(currentPage)) {
             for (let i: number = 0; i < currentPage.bodyWidgets.length; i++) {
                 let bodyWidget: BodyWidget = currentPage.bodyWidgets[i];
@@ -325,7 +330,7 @@ export class TableResizer {
         if (rowFormat.heightType === 'Auto') {
             rowFormat.heightType = 'AtLeast';
             let row: TableRowWidget = rowFormat.ownerBase as TableRowWidget;
-            let currentHeight: number = this.owner.viewer.layout.getRowHeight(row, [row]);
+            let currentHeight: number = this.owner.documentHelper.layout.getRowHeight(row, [row]);
             //the minimum height of the Row in MS word is 2.7 points which is equal to 3.6 pixel.
             if (currentHeight + dragValue >= 2.7 && rowFormat.height !== currentHeight + dragValue) {
                 rowFormat.height = currentHeight + dragValue;
@@ -666,12 +671,12 @@ export class TableResizer {
         table.isGridUpdated = true;
         this.viewer.owner.isLayoutEnabled = true;
         if (table.isInsideTable) {
-            let parentTable: TableWidget = this.viewer.layout.getParentTable(table);
-            this.viewer.layout.reLayoutTable(parentTable); // Need to optmize this.
+            let parentTable: TableWidget = this.documentHelper.layout.getParentTable(table);
+            this.documentHelper.layout.reLayoutTable(parentTable); // Need to optmize this.
         } else {
-            this.viewer.layout.reLayoutTable(table);
+            this.documentHelper.layout.reLayoutTable(table);
         }
-        this.owner.editor.getOffsetValue(this.viewer.selection);
+        this.owner.editor.getOffsetValue(this.documentHelper.selection);
         this.owner.editorModule.reLayout(this.owner.selection);
         if (dragValue) {
             this.startingPoint.x += HelperMethods.convertPointToPixel(dragValue);

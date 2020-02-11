@@ -19612,8 +19612,8 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                         draggedRecord.level = this.ganttData[recordIndex1].level;
                         if (draggedRecord.hasChildRecords) {
                             var level = 1;
-                            this.updateChildRecordLevel(draggedRecord, level);
                             this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
+                            this.updateChildRecordLevel(draggedRecord, level);
                         }
                         if (droppedRecord.parentItem) {
                             var rec = this.parent.getParentTask(droppedRecord.parentItem).childRecords;

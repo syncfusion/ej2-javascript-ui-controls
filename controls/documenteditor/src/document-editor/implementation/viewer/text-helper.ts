@@ -1,9 +1,9 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WCharacterFormat } from '../index';
 import { TextElementBox, ListTextElementBox, ParagraphWidget } from './page';
-import { LayoutViewer } from './viewer';
+import { DocumentHelper } from './viewer';
 import { HelperMethods, RtlInfo } from '../editor/editor-helper';
-import { BaselineAlignment, BiDirectionalOverride } from '../../index';
+import { BaselineAlignment, BiDirectionalOverride} from '../../index';
 /** 
  * @private
  */
@@ -22,7 +22,7 @@ export interface TextHeightInfo {
  * @private
  */
 export class TextHelper {
-    private owner: LayoutViewer;
+    private documentHelper: DocumentHelper;
     private context: CanvasRenderingContext2D;
     private paragraphMarkInfo: TextHeightInfo = {};
     private get paragraphMark(): string {
@@ -32,10 +32,13 @@ export class TextHelper {
         return '↲';
     }
 
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
-        if (!isNullOrUndefined(viewer)) {
-            this.context = viewer.containerContext;
+    /**
+     * documentHelper definition
+     */
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
+        if (!isNullOrUndefined(documentHelper)) {
+            this.context = documentHelper.containerContext;
         }
     }
     /**
@@ -78,6 +81,7 @@ export class TextHelper {
         if (elementBox.text[elementBox.text.length - 1] === ' ') {
             textTrimEndWidth = this.getWidth(HelperMethods.trimEnd(elementBox.text), characterFormat);
         }
+        elementBox.trimEndWidth = textTrimEndWidth;
         return textTrimEndWidth;
     }
     /**
@@ -87,11 +91,11 @@ export class TextHelper {
         // Get character format property as  below predefined structure to make it easy to check and retrieve
         // Predefined static structure `[FontName];[FontSize];bold;italic` to maintain as key in the collection 
         let key: string = this.getFormatText(characterFormat);
-        if (!isNullOrUndefined(this.owner.heightInfoCollection[key])) {
-            return this.owner.heightInfoCollection[key];
+        if (!isNullOrUndefined(this.documentHelper.heightInfoCollection[key])) {
+            return this.documentHelper.heightInfoCollection[key];
         }
         let sizeInfo: TextSizeInfo = this.getHeightInternal(characterFormat);
-        this.owner.heightInfoCollection[key] = sizeInfo;
+        this.documentHelper.heightInfoCollection[key] = sizeInfo;
         return sizeInfo;
     }
     /**
@@ -337,7 +341,7 @@ export class TextHelper {
         return { isRtl: false, id: 0 };
     }
     public destroy(): void {
-        this.owner = undefined;
+        this.documentHelper = undefined;
         this.context = undefined;
         this.paragraphMarkInfo = {};
         this.paragraphMarkInfo = undefined;

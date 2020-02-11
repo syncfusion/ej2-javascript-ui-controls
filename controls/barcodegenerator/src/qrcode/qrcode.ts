@@ -201,7 +201,8 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
         this.element.style.width = this.getElementSize(this.width);
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement(
             {
-                id: this.element.id, height: this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+                id: this.element.id + 'content',
+                height: this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
                 width: this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
             },
             this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight) as HTMLElement;

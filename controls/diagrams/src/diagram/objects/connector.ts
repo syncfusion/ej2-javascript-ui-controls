@@ -34,6 +34,8 @@ import { RelationShipModel, ClassifierMultiplicityModel, MultiplicityLabelModel 
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { DiagramConnectorSegmentModel } from './connector-model';
 import { getTemplateContent } from '../utility/dom-util';
+import { SymbolSizeModel } from './preview-model';
+import { SymbolSize } from './preview';
 
 let getConnectorType: Function = (obj: ConnectorShape): Object => {
     if (isBlazor()) {
@@ -1097,6 +1099,23 @@ export class Connector extends NodeBase implements IElement {
     @Property(0)
     public sourcePadding: number;
 
+    /**
+     * Defines the size of the symbol preview
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<SymbolSizeModel>({}, SymbolSize)
+    public previewSize: SymbolSizeModel;
+
+    /**
+     * Defines the size of a drop symbol
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<SymbolSizeModel>({}, SymbolSize)
+    public dragSize: SymbolSizeModel;
     /**
      * Sets the target padding of the connector
      * @default 0

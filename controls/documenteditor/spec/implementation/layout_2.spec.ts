@@ -87,10 +87,10 @@ describe('Document Layout behaviour validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor();
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -103,7 +103,7 @@ describe('Document Layout behaviour validation', () => {
     });
     it('break character validation', () => {
         editor.open(getJson());
-        expect(editor.viewer.pages.length).toBe(1);
+        expect(editor.documentHelper.pages.length).toBe(1);
     });
 });
 describe('Layout API validation-1', () => {
@@ -10187,10 +10187,10 @@ function getJsonValue() {
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
 //         document.body.appendChild(ele);
 //         editor = new DocumentEditor({});
-//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
 //         editor.appendTo('#container');
 //     });
 //     afterAll((done) => {

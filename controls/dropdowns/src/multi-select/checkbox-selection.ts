@@ -398,7 +398,7 @@ export class CheckBoxSelection {
                 this.parent.inputFocus = false;
                 this.parent.scrollFocusStatus = false;
                 this.parent.hidePopup();
-                this.parent.onBlur(e);
+                this.parent.onBlur(e, true);
                 this.parent.focused = true;
             }
         } else {

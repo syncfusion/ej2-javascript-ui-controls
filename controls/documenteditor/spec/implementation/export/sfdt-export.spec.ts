@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { PageLayoutViewer, LayoutViewer } from '../../../src/document-editor/implementation/viewer/viewer';;
+import { PageLayoutViewer, LayoutViewer, DocumentHelper } from '../../../src/document-editor/implementation/viewer/viewer';;
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
@@ -14,25 +14,25 @@ let tableBidi: any = { "sections": [{ "blocks": [{ "rows": [{ "rowFormat": { "al
 
 describe('Sfdt export for section,character and paragraph format Bidi validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let exportData: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport);
         editor = new DocumentEditor({ enableSfdtExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(charParaBidi));
         exportData = JSON.parse(editor.sfdtExportModule.serialize());
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -58,25 +58,25 @@ describe('Sfdt export for section,character and paragraph format Bidi validation
 
 describe('Sfdt export for Table format Bidi validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let exportData: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport);
         editor = new DocumentEditor({ enableSfdtExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(tableBidi));
         exportData = JSON.parse(editor.sfdtExportModule.serialize());
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -97,25 +97,25 @@ let rtlFormat: any = { "sections": [{ "blocks": [{ "characterFormat": { "bold": 
 
 describe('Sfdt export for Table format Bidi validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let exportData: any;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport, WordExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(rtlFormat));
         exportData = JSON.parse(editor.sfdtExportModule.serialize());
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -124,7 +124,7 @@ describe('Sfdt export for Table format Bidi validation', () => {
         }, 1000);
     });
     it('Rtl export font family bidi validation', () => {
-        let line: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let line: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line.children[0].characterFormat.fontSizeBidi).toBe(22);
         expect(line.children[0].characterFormat.fontFamilyBidi).toBe("Segoe UI");
     });
@@ -152,22 +152,22 @@ let tab: any = {
 };
 describe('Default tab width export validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport, WordExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -177,12 +177,14 @@ describe('Default tab width export validation', () => {
     });
     it('opened document- check default tab width', () => {
         editor.open(JSON.stringify(tab));
-        let document: any = viewer.owner.sfdtExportModule.write();
+        documentHelper = editor.documentHelper;
+        let document: any = documentHelper.owner.sfdtExportModule.write();
         expect(document.defaultTabWidth).toBe(56);
     });
     it('open blank default tab width export validation', () => {
         editor.openBlank();
-        let document: any = viewer.owner.sfdtExportModule.write();
+        documentHelper = editor.documentHelper;
+        let document: any = documentHelper.owner.sfdtExportModule.write();
         expect(document.defaultTabWidth).toBe(36);
     });
 });
@@ -190,23 +192,23 @@ let chart: any = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pageHeig
 let lineChart: any = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pageHeight": 792, "leftMargin": 72, "rightMargin": 72, "topMargin": 72, "bottomMargin": 72, "differentFirstPage": false, "differentOddAndEvenPages": false, "headerDistance": 36, "footerDistance": 36, "bidi": false }, "blocks": [{ "paragraphFormat": { "styleName": "Normal", "listFormat": {} }, "characterFormat": {}, "inlines": [{ "characterFormat": {}, "chartLegend": { "position": "Bottom", "chartTitleArea": { "fontName": "+mn-lt", "fontSize": 9, "layout": { "layoutX": 0, "layoutY": 0 }, "dataFormat": { "fill": { "foreColor": "000000", "rgb": "#000000" }, "line": { "color": "808080", "rgb": "#808080" } } } }, "chartTitleArea": { "fontName": "+mn-lt", "fontSize": 14, "layout": { "layoutX": 0, "layoutY": 0 }, "dataFormat": { "fill": { "foreColor": "000000", "rgb": "#000000" }, "line": { "color": "000000", "rgb": "#000000" } } }, "chartArea": { "foreColor": "#FFFFFFFF" }, "plotArea": { "foreColor": "#000000FF" }, "chartCategory": [{ "chartData": [{ "yValue": 4.3 }, { "yValue": 2.4 }, { "yValue": 2 }], "categoryXName": "Category 1" }, { "chartData": [{ "yValue": 2.5 }, { "yValue": 4.4 }, { "yValue": 2 }], "categoryXName": "Category 2" }, { "chartData": [{ "yValue": 3.5 }, { "yValue": 1.8 }, { "yValue": 3 }], "categoryXName": "Category 3" }, { "chartData": [{ "yValue": 4.5 }, { "yValue": 2.8 }, { "yValue": 5 }], "categoryXName": "Category 4" }], "chartSeries": [{ "dataPoints": [{ "fill": { "foreColor": "000000", "rgb": "#000000" }, "line": { "color": "4472c4", "rgb": "#4472c4" } }], "seriesName": "Series 1", "seriesFormat": { "markerStyle": "Circle", "markerSize": 5, "markerColor": "ff4472c4" } }, { "dataPoints": [{ "fill": { "foreColor": "000000", "rgb": "#000000" }, "line": { "color": "ed7d31", "rgb": "#ed7d31" } }], "seriesName": "Series 2", "seriesFormat": { "markerStyle": "Circle", "markerSize": 5, "markerColor": "ffed7d31" } }, { "dataPoints": [{ "fill": { "foreColor": "000000", "rgb": "#000000" }, "line": { "color": "a5a5a5", "rgb": "#a5a5a5" } }], "seriesName": "Series 3", "seriesFormat": { "markerStyle": "Circle", "markerSize": 5, "markerColor": "ffa5a5a5" } }], "chartPrimaryCategoryAxis": { "chartTitle": null, "chartTitleArea": { "layout": {}, "dataFormat": { "fill": {}, "line": {} } }, "categoryType": "Automatic", "fontSize": 9, "fontName": "+mn-lt", "numberFormat": "General", "maximumValue": 0, "minimumValue": 0, "majorUnit": 0, "hasMajorGridLines": false, "hasMinorGridLines": false, "majorTickMark": "TickMark_None", "minorTickMark": "TickMark_None", "tickLabelPosition": "TickLabelPosition_NextToAxis" }, "chartPrimaryValueAxis": { "chartTitle": null, "chartTitleArea": { "layout": {}, "dataFormat": { "fill": {}, "line": {} } }, "fontSize": 9, "fontName": "+mn-lt", "maximumValue": 6, "minimumValue": 0, "majorUnit": 1, "hasMajorGridLines": true, "hasMinorGridLines": false, "majorTickMark": "TickMark_None", "minorTickMark": "TickMark_None", "tickLabelPosition": "TickLabelPosition_NextToAxis" }, "chartTitle": "Chart Title", "chartType": "Line_Markers", "gapWidth": 0, "overlap": 0, "height": 252, "width": 432 }, { "characterFormat": {}, "bookmarkType": 0, "name": "_GoBack" }, { "characterFormat": {}, "bookmarkType": 1, "name": "_GoBack" }] }], "headersFooters": {} }], "characterFormat": { "bold": false, "italic": false, "fontSize": 11, "fontFamily": "Calibri", "underline": "None", "strikethrough": "None", "baselineAlignment": "Normal", "highlightColor": "NoColor", "fontColor": "#000000", "fontSizeBidi": 11, "fontFamilyBidi": "Calibri" }, "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 0, "afterSpacing": 8, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "listFormat": {}, "bidi": false }, "defaultTabWidth": 36, "enforcement": false, "hashValue": "", "saltValue": "", "formatting": false, "protectionType": "ReadOnly", "styles": [{ "name": "Normal", "type": "Paragraph", "paragraphFormat": { "listFormat": {} }, "characterFormat": {}, "next": "Normal" }, { "name": "Default Paragraph Font", "type": "Character", "characterFormat": {} }, { "name": "Balloon Text", "type": "Paragraph", "paragraphFormat": { "afterSpacing": 0, "lineSpacing": 1, "lineSpacingType": "Multiple", "listFormat": {} }, "characterFormat": { "fontSize": 9, "fontFamily": "Segoe UI", "fontSizeBidi": 9, "fontFamilyBidi": "Segoe UI" }, "basedOn": "Normal", "link": "Balloon Text Char" }, { "name": "Balloon Text Char", "type": "Character", "characterFormat": { "fontSize": 9, "fontFamily": "Segoe UI", "fontSizeBidi": 9, "fontFamilyBidi": "Segoe UI" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 1", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 12, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level1", "listFormat": {} }, "characterFormat": { "fontSize": 16, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 1 Char", "next": "Normal" }, { "name": "Heading 1 Char", "type": "Character", "characterFormat": { "fontSize": 16, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 2", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level2", "listFormat": {} }, "characterFormat": { "fontSize": 13, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 2 Char", "next": "Normal" }, { "name": "Heading 2 Char", "type": "Character", "characterFormat": { "fontSize": 13, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 3", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level3", "listFormat": {} }, "characterFormat": { "fontSize": 12, "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Normal", "link": "Heading 3 Char", "next": "Normal" }, { "name": "Heading 3 Char", "type": "Character", "characterFormat": { "fontSize": 12, "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 4", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level4", "listFormat": {} }, "characterFormat": { "italic": true, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 4 Char", "next": "Normal" }, { "name": "Heading 4 Char", "type": "Character", "characterFormat": { "italic": true, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 5", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level5", "listFormat": {} }, "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 5 Char", "next": "Normal" }, { "name": "Heading 5 Char", "type": "Character", "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 6", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level6", "listFormat": {} }, "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Normal", "link": "Heading 6 Char", "next": "Normal" }, { "name": "Heading 6 Char", "type": "Character", "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Default Paragraph Font" }], "lists": [], "abstractLists": [] };
 describe('Chart export validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let exportData: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport, WordExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -300,22 +302,22 @@ let breakHypen: any = {
 
 describe('No break hyphen character validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport, WordExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -325,7 +327,8 @@ describe('No break hyphen character validation', () => {
     });
     it('opened document- check default tab width', () => {
         editor.open(JSON.stringify(breakHypen));
-        let document: any = viewer.owner.sfdtExportModule.write();
+        documentHelper = editor.documentHelper;
+        let document: any = documentHelper.owner.sfdtExportModule.write();
         expect(document.sections[0].blocks[0].inlines[3].text).toBe('-');
     });
 });
@@ -1080,25 +1083,25 @@ let listJson: any = {
 };
 describe('Sfdt export for validating abstract list collection', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let exportData: any;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport);
         editor = new DocumentEditor({ enableSfdtExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(listJson));
         exportData = JSON.parse(editor.sfdtExportModule.serialize());
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -1115,25 +1118,25 @@ let sfdt: any = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pageHeigh
 
 describe('Header Page Number Validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let exportData: any;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport);
         editor = new DocumentEditor({ enableSfdtExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(sfdt));
-        exportData = viewer.owner.sfdtExportModule.write();
+        exportData = documentHelper.owner.sfdtExportModule.write();
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -1153,25 +1156,25 @@ let bidi: any = { "sections": [{ "sectionFormat": { "pageWidth": 595.29998779296
 
 describe('Bidi Property Validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let exportData: any;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport);
         editor = new DocumentEditor({ enableSfdtExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(bidi));
-        exportData = viewer.owner.sfdtExportModule.write();
+        exportData = documentHelper.owner.sfdtExportModule.write();
     });
     afterAll((): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -1184,24 +1187,24 @@ describe('Bidi Property Validation', () => {
 
 describe('Export for paragraph and character format validation when document contains selection', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let exportData: any;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
 
         editor = new DocumentEditor({ isReadOnly: false });
         editor.enableAllModules();
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -1233,10 +1236,10 @@ describe('export list level number validation',()=>{
 
         editor = new DocumentEditor({ isReadOnly: false });
         editor.enableAllModules();
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         viewer = editor.viewer as PageLayoutViewer;
     });

@@ -17,10 +17,10 @@ describe('Position editable div on', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -34,18 +34,18 @@ describe('Position editable div on', () => {
     });
     it('IME start event', (done: DoneFn) => {
         editor.editor.insertText('Syncfusion Software ');
-        expect(editor.viewer.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
+        expect(editor.documentHelper.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
-            expect(editor.viewer.iframe.getAttribute('style')).not.toBe('pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
-            let left: string = editor.viewer.iframe.style.left;
+            expect(editor.documentHelper.iframe.getAttribute('style')).not.toBe('pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
+            let left: string = editor.documentHelper.iframe.style.left;
             let page: Page = editor.selection.start.paragraph.bodyWidget.page;
             let marginLeft: number = HelperMethods.convertPointToPixel(editor.selection.start.paragraph.bodyWidget.sectionFormat.leftMargin);
             expect(parseFloat(left.substring(0, left.length - 1))).toBe(page.boundingRectangle.x + marginLeft);
 
-            let top: string = editor.viewer.iframe.style.top;
+            let top: string = editor.documentHelper.iframe.style.top;
             let pageTop: number = page.boundingRectangle.y;
             expect(parseFloat(top.substring(0, top.length - 1))).toBe(pageTop + editor.selection.start.location.y);
             done();
@@ -55,9 +55,9 @@ describe('Position editable div on', () => {
     // it('IME start end', (done: DoneFn) => {
     //     let event: CompositionEvent = document.createEvent('CompositionEvent');
     //     event.initEvent('compositionend', true, true);
-    //     editor.viewer.editableDiv.dispatchEvent(event);
+    //     editor.documentHelper.editableDiv.dispatchEvent(event);
     //     setTimeout(() => {
-    //         expect(editor.viewer.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;left:' + editor.viewer.containerLeft + 'px;top:' + editor.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
+    //         expect(editor.documentHelper.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;left:' + editor.documentHelper.containerLeft + 'px;top:' + editor.documentHelper.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
     //         done();
     //     });
     // });
@@ -71,10 +71,10 @@ describe('IME Text processing with History', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -89,14 +89,14 @@ describe('IME Text processing with History', () => {
     it('Trigger Composition start event validation', () => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
-        expect(editor.viewer.isComposingIME).toBe(true);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
+        expect(editor.documentHelper.isComposingIME).toBe(true);
     });
     it('Composition Update event', (done: DoneFn) => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.innerText = 'S';
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.innerText = 'S';
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
             expect(editor.selection.text).toBe('S');
             expect(editor.selection.isEmpty).toBe(false);
@@ -106,8 +106,8 @@ describe('IME Text processing with History', () => {
     it('Composition Update event 2', (done: DoneFn) => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.innerText = 'Sy';
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.innerText = 'Sy';
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
             expect(editor.selection.text).toBe('Sy');
             expect(editor.selection.isEmpty).toBe(false);
@@ -117,8 +117,8 @@ describe('IME Text processing with History', () => {
     it('Composition Update event 3', (done: DoneFn) => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.innerText = 'Syncfusion';
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.innerText = 'Syncfusion';
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
             expect(editor.selection.text).toBe('Syncfusion');
             expect(editor.selection.isEmpty).toBe(false);
@@ -128,10 +128,10 @@ describe('IME Text processing with History', () => {
     it('Composition end event', () => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionend', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         expect(editor.selection.text).toBe('');
         expect(editor.selection.isEmpty).toBe(true);
-        expect(editor.viewer.isComposingIME).toBe(false);
+        expect(editor.documentHelper.isComposingIME).toBe(false);
         expect(editor.editorHistory.undoStack.length).toBe(1);
     });
     it('Undo IME Text', () => {
@@ -154,10 +154,10 @@ describe('IME Text processing without History', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -172,14 +172,14 @@ describe('IME Text processing without History', () => {
     it('Trigger Composition start event validation', () => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
-        expect(editor.viewer.isComposingIME).toBe(true);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
+        expect(editor.documentHelper.isComposingIME).toBe(true);
     });
     it('Composition Update event', (done: DoneFn) => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.innerText = 'S';
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.innerText = 'S';
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
             expect(editor.selection.text).toBe('S');
             expect(editor.selection.isEmpty).toBe(false);
@@ -189,8 +189,8 @@ describe('IME Text processing without History', () => {
     it('Composition Update event 2', (done: DoneFn) => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.innerText = 'Sy';
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.innerText = 'Sy';
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
             expect(editor.selection.text).toBe('Sy');
             expect(editor.selection.isEmpty).toBe(false);
@@ -200,8 +200,8 @@ describe('IME Text processing without History', () => {
     it('Composition Update event 3', (done: DoneFn) => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.innerText = 'Syncfusion';
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.innerText = 'Syncfusion';
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
             expect(editor.selection.text).toBe('Syncfusion');
             expect(editor.selection.isEmpty).toBe(false);
@@ -211,10 +211,10 @@ describe('IME Text processing without History', () => {
     it('Composition end event', () => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionend', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         expect(editor.selection.text).toBe('');
         expect(editor.selection.isEmpty).toBe(true);
-        expect(editor.viewer.isComposingIME).toBe(false);
+        expect(editor.documentHelper.isComposingIME).toBe(false);
     });
 });
 
@@ -226,10 +226,10 @@ describe('Composition event on Device validation', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -244,15 +244,15 @@ describe('Composition event on Device validation', () => {
     it('Composition updated without start', () => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
-        expect(editor.viewer.isComposingIME).toBe(false);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
+        expect(editor.documentHelper.isComposingIME).toBe(false);
         expect(editor.selection.isEmpty).toBe(true);
     });
     it('IME start end', () => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionend', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
-        expect(editor.viewer.isComposingIME).toBe(false);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
+        expect(editor.documentHelper.isComposingIME).toBe(false);
         expect(editor.selection.isEmpty).toBe(true);
         expect(editor.editorHistory.undoStack).toBeUndefined();
     });
@@ -265,10 +265,10 @@ describe('Composition event cancel by undo operation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -283,14 +283,14 @@ describe('Composition event cancel by undo operation', () => {
     it('Trigger Composition start event validation', () => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
-        expect(editor.viewer.isComposingIME).toBe(true);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
+        expect(editor.documentHelper.isComposingIME).toBe(true);
     });
     it('Composition Update event', (done: DoneFn) => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.innerText = 'S';
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.innerText = 'S';
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
             expect(editor.selection.text).toBe('S');
             expect(editor.selection.isEmpty).toBe(false);
@@ -300,8 +300,8 @@ describe('Composition event cancel by undo operation', () => {
     it('Composition Update event 2', (done: DoneFn) => {
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionupdate', true, true);
-        editor.viewer.editableDiv.innerText = 'S';
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.innerText = 'S';
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         setTimeout(() => {
             expect(editor.selection.text).toBe('S');
             expect(editor.selection.isEmpty).toBe(false);
@@ -310,13 +310,13 @@ describe('Composition event cancel by undo operation', () => {
     });
     it('Composition end event', () => {
         // Composition event end on undo operation update empty string in editable div
-        editor.viewer.editableDiv.innerText = '';
+        editor.documentHelper.editableDiv.innerText = '';
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionend', true, true);
-        editor.viewer.editableDiv.dispatchEvent(event);
+        editor.documentHelper.editableDiv.dispatchEvent(event);
         expect(editor.selection.text).toBe('');
         expect(editor.selection.isEmpty).toBe(true);
-        expect(editor.viewer.isComposingIME).toBe(false);
+        expect(editor.documentHelper.isComposingIME).toBe(false);
         expect(editor.editorHistory.redoStack.length).toBe(0);
     });
 });

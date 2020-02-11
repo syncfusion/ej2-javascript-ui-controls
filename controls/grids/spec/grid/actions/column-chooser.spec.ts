@@ -695,4 +695,39 @@ describe('Column chooser module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-36229 => column chooser ok button click check', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' },
+                    { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity', showInColumnChooser: false }],
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    pageSettings: { pageSize: 5 },
+                }, done);
+        });
+        it('check ok button click when unselect all with ShowInColumnChooser False', (done: Function) => {
+            gridObj.columnChooserModule.openColumnChooser();
+            let cheEle: any = gridObj.element.querySelectorAll('.e-cc-selectall .e-selectall')[0];
+            cheEle.click();
+            let okButton: any = gridObj.element.querySelector(".e-cc_okbtn");
+            okButton.click();
+            expect(gridObj.getVisibleColumns().length).toBe(1);
+            done();
+        });
+
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
+
 });

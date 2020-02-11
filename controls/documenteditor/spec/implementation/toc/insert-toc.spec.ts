@@ -1,6 +1,6 @@
 import { createElement, } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/index';
 import { Selection } from '../../../src/index';
@@ -16,29 +16,29 @@ function getJson(): any {
 }
 describe('Insert Toc (hyperlink,page number,right alignment)', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     let currentPara: ParagraphWidget = undefined;
     let tocSettings: TableOfContentsSettings =
-        {
-            startLevel: 1, endLevel: 3, includeHyperlink: true, includePageNumber: true, rightAlign: true
-        };
+    {
+        startLevel: 1, endLevel: 3, includeHyperlink: true, includePageNumber: true, rightAlign: true
+    };
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -50,35 +50,35 @@ describe('Insert Toc (hyperlink,page number,right alignment)', () => {
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
-        let field: FieldElementBox = ((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as FieldElementBox;
+        let field: FieldElementBox = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as FieldElementBox;
         expect(field instanceof FieldElementBox).toBe(true);
     });
     it('Filed code', () => {
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
-        let field: FieldElementBox = ((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as FieldElementBox;
+        let field: FieldElementBox = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as FieldElementBox;
         expect((field.nextNode as TextElementBox).text.toLowerCase()).toBe('toc \\o "1-3" \\h \\z');
     });
     it('paragraph style', () => {
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
-        let paragraph: ParagraphWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget);
+        let paragraph: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget);
         expect(paragraph.paragraphFormat.baseStyle.name).toBe('Toc1');
     });
     it('Right Tab', () => {
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
-        let paragraph: ParagraphWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget);
+        let paragraph: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget);
         expect(paragraph.paragraphFormat.tabs.length).toBe(1);
     });
     it('Hyperlink style', () => {
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         editor.editorModule.insertTableOfContents(tocSettings);
-        let text: TextElementBox = ((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[6] as TextElementBox;
+        let text: TextElementBox = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[6] as TextElementBox;
         expect(text.text).toBe('First heading');
     });
     it('Toc styles', () => {
@@ -91,7 +91,7 @@ describe('Insert Toc (hyperlink,page number,right alignment)', () => {
 
 describe('Insert Toc - page number and right alignment', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     let currentPara: ParagraphWidget = undefined;
     beforeAll((): void => {
@@ -100,16 +100,16 @@ describe('Insert Toc - page number and right alignment', () => {
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -121,9 +121,9 @@ describe('Insert Toc - page number and right alignment', () => {
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
         let tocSettings: TableOfContentsSettings =
-            {
-                startLevel: 1, endLevel: 3, includeHyperlink: true, includePageNumber: true, rightAlign: true
-            };
+        {
+            startLevel: 1, endLevel: 3, includeHyperlink: true, includePageNumber: true, rightAlign: true
+        };
         let widgets: ParagraphWidget[] = editor.editorModule.buildToc(tocSettings, 'toc /mergeformat', true);
         expect(widgets.length).toBe(4);
         for (let i: number = 0; i < widgets.length; i++) {

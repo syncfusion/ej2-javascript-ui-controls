@@ -13,10 +13,10 @@ describe('Single Tab Stop Validation 1', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -44,10 +44,10 @@ describe('Table Cell Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -80,10 +80,10 @@ describe('Single Tab Stop Validation 2', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -111,10 +111,10 @@ describe('Table Margin Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll(() => {
@@ -125,6 +125,6 @@ describe('Table Margin Validation', () => {
     it('Check Cell Margin Value', () => {
         editor.open(JSON.stringify(tableDocument));
         let table: TableWidget = editor.selection.start.paragraph.bodyWidget.childWidgets[0] as TableWidget;
-        expect((editor.viewer.layout as any).getMaxTopCellMargin(table.childWidgets[0])).toBe(18.933329999999998);
+        expect((editor.documentHelper.layout as any).getMaxTopCellMargin(table.childWidgets[0])).toBe(18.933329999999998);
     });
 });

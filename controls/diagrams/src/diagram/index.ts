@@ -63,6 +63,7 @@ export * from './objects/connector-model';
 export * from './objects/undo-redo';
 export * from './objects/tooltip';
 export * from './objects/layout-animation';
+export * from './objects/preview';
 
 //interaction 
 export * from './interaction/selector';

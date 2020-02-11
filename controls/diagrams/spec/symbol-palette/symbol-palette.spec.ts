@@ -30,11 +30,11 @@ describe('Symbol Palette', () => {
         let palette: SymbolPalette;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
-        let flowshapes: NodeModel[] = [{ id: 'start', shape: { type: 'Flow', shape: 'Terminator' } },
-        { id: 'process', shape: { type: 'Flow', shape: 'Process' } },
-        { id: 'decision', shape: { type: 'Flow', shape: 'Decision' } },
-        { id: 'data', shape: { type: 'Flow', shape: 'Data' } },
-        { id: 'end', shape: { type: 'Flow', shape: 'Terminator' } }];
+        let flowshapes: NodeModel[] = [{ id: 'start', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} ,shape: { type: 'Flow', shape: 'Terminator' } },
+        { id: 'process', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Process' } },
+        { id: 'decision', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Decision' } },
+        { id: 'data', dragSize:{width:300, height:300}, previewSize:{width:200, height:200} , shape: { type: 'Flow', shape: 'Data' } },
+        { id: 'end',  dragSize:{width:300, height:300}, previewSize:{width:200, height:200} ,shape: { type: 'Flow', shape: 'Terminator' } }];
 
         let bpmnShapes: NodeModel[] = [{
             id: 'node2a', width: 100, height: 100, offsetX: 500, offsetY: 100, constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
@@ -344,12 +344,16 @@ describe('Symbol Palette', () => {
                 done();
             }
             diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).width === 300).toBe(true);
+                expect((arg.element as NodeModel).height === 300).toBe(true);
                 expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
                 done();
             }
             let events: MouseEvents = new MouseEvents();
             events.mouseDownEvent(palette.element, 75, 100, false, false);
             events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            expect(palette.selectedSymbols.wrapper.children[0].width === 199).toBe(true);
+            expect(palette.selectedSymbols.wrapper.children[0].height === 199).toBe(true);
             events.mouseMoveEvent(palette.element, 200, 200, false, false);
             expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
             events.mouseMoveEvent(diagram.element, 300, 300, false, false);
@@ -359,7 +363,8 @@ describe('Symbol Palette', () => {
             console.log(ele);
             expect(ele.childElementCount===1).toBe(true);
             events.mouseUpEvent(diagram.element, 400, 400, false, false);
-
+            expect(diagram.selectedItems.nodes[0].width === 300).toBe(true);
+            expect(diagram.selectedItems.nodes[0].height === 300).toBe(true);
             expect(diagram.nodes.length).toBe(3);
             diagram.undo()
             expect(diagram.nodes.length).toBe(2);
@@ -1074,6 +1079,8 @@ describe('Symbol Palette', () => {
                 events.mouseMoveEvent(diagram.element, 400, 50 - 5 - diagram.element.offsetTop, false, false);
                 events.mouseUpEvent(diagram.element, 400, 50 - 10 - diagram.element.offsetTop, false, false);
                 expect(diagram.nodes.length === 4).toBe(true);
+                done();
+                expect(document.getElementById(targetNode.id+'_preview') === null).toBe(true);
                 done();
             }, 1000);
         });

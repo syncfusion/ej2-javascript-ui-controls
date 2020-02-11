@@ -1,16 +1,18 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { LayoutViewer, PageLayoutViewer } from '../index';
+import { LayoutViewer, PageLayoutViewer, WebLayoutViewer } from '../index';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
 import { ImageFormat } from '../selection/selection-helper';
 import { IWidget, ImageElementBox, LineWidget, Page, ParagraphWidget, TableCellWidget, TableRowWidget } from '../viewer/page';
 import { Point, ImagePointInfo, HelperMethods } from './editor-helper';
 import { BaseHistoryInfo } from '../editor-history/base-history-info';
+import { DocumentHelper } from '../viewer';
 
 /** 
  * Image resizer implementation.
  */
 export class ImageResizer {
+    private documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -105,7 +107,6 @@ export class ImageResizer {
      * @private
      */
     public isImageResizerVisible: boolean = false;
-    private viewer: LayoutViewer;
     /**
      * @private
      */
@@ -166,15 +167,20 @@ export class ImageResizer {
      * @param {LayoutViewer} viewer
      * @private
      */
-    constructor(node: DocumentEditor, viewer: LayoutViewer) {
+    constructor(node: DocumentEditor, documentHelper: DocumentHelper) {
         this.owner = node;
         this.selectedImageWidget = new Dictionary<IWidget, SelectedImageInfo>();
-        this.viewer = viewer;
+        this.documentHelper = documentHelper;
         this.imageResizerPoints = new ImageResizingPoints();
-        if (isNullOrUndefined(this.imageResizerDiv) && this.viewer && this.viewer.pageContainer) {
+        if (isNullOrUndefined(this.imageResizerDiv) && this.viewer && this.documentHelper.pageContainer) {
             this.initializeImageResizer();
         }
     }
+    get viewer(): LayoutViewer {
+        return this.owner.viewer;
+    }
+
+
     /**
      * Gets module name.
      */
@@ -195,7 +201,11 @@ export class ImageResizer {
         this.imageResizerDivElement.style.left = x.toString() + 'px';
         this.imageResizerDivElement.style.borderWidth = '0px';
         this.imageResizerDivElement.style.height = height + 'px';
-        this.imageResizerDivElement.style.width = width + 'px';
+        if (this.owner.viewer instanceof WebLayoutViewer) {
+            this.imageResizerDivElement.style.width = width - x - this.documentHelper.scrollbarWidth + 'px';
+        } else {
+            this.imageResizerDivElement.style.width = width + 'px';
+        }
         this.imageResizerDivElement.style.backgroundColor = 'transparent';
         this.imageResizerDivElement.style.overflow = 'hidden';
         this.imageResizerDivElement.style.position = 'absolute';
@@ -208,7 +218,7 @@ export class ImageResizer {
         this.imageResizerDivElement = document.createElement('div');
         this.imageResizerDivElement.style.zIndex = '1';
         this.imageResizerDivElement.style.display = 'none';
-        this.viewer.pageContainer.appendChild(this.imageResizerDivElement);
+        this.documentHelper.pageContainer.appendChild(this.imageResizerDivElement);
     }
     /**
      * Position an image resizer
@@ -219,7 +229,7 @@ export class ImageResizer {
         this.selectedImageWidget.clear();
         // Initializes the image resizer on demand, i.e at the time of selecting an image for the first time.
         let resizeDiv: HTMLElement;
-        if (!isNullOrUndefined(this.viewer.currentPage)) {
+        if (!isNullOrUndefined(this.documentHelper.currentPage)) {
             resizeDiv = this.imageResizerDivElement;
         }
         if (!isNullOrUndefined(resizeDiv) && !resizeDiv.contains(this.imageResizerDiv)) {
@@ -229,15 +239,24 @@ export class ImageResizer {
         this.imageResizerDiv.style.height = (elementBox.height) + 'px';
         this.currentImageElementBox = elementBox;
         let lineWidget: LineWidget = elementBox.line;
-        let top: number = this.viewer.selection.getTop(lineWidget) + elementBox.margin.top;
-        let left: number = this.viewer.selection.getLeftInternal(lineWidget, elementBox, 0);
-        let page: Page = this.viewer.selection.getPage(lineWidget.paragraph);
+        let top: number = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
+        let left: number = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
+        let page: Page = this.documentHelper.selection.getPage(lineWidget.paragraph);
         this.currentPage = page;
         let x: number = 0;
         let y: number = 0;
         if (!isNullOrUndefined(resizeDiv)) {
+            if (this.owner.viewer instanceof WebLayoutViewer) {
+                // tslint:disable-next-line:max-line-length
+                this.imageResizerDivElement.style.width = page.boundingRectangle.width - page.boundingRectangle.x - left - this.documentHelper.scrollbarWidth + 'px';
+            }
             this.imageResizerDivElement.style.display = 'block';
-            resizeDiv.style.width = page.boundingRectangle.width + 'px';
+            if (this.owner.viewer instanceof WebLayoutViewer) {
+                // tslint:disable-next-line:max-line-length
+                resizeDiv.style.width = (page.boundingRectangle.width - this.documentHelper.scrollbarWidth - page.boundingRectangle.x - left) + 'px';
+            } else {
+                resizeDiv.style.width = page.boundingRectangle.width + 'px';
+            }
             resizeDiv.style.height = page.boundingRectangle.height + 'px';
             resizeDiv.style.left = page.boundingRectangle.x + 'px';
             resizeDiv.style.top = page.boundingRectangle.y + 'px';
@@ -247,19 +266,19 @@ export class ImageResizer {
             resizeDiv.style.position = 'absolute';
         }
         let horizontalWidth: number = 0;
-        let pageWidth: number = this.viewer.getPageWidth(page);
+        let pageWidth: number = this.documentHelper.getPageWidth(page);
         let pagelayout: PageLayoutViewer = this.viewer as PageLayoutViewer;
         // tslint:disable-next-line:max-line-length
         horizontalWidth = parseFloat(this.imageResizerDivElement.style.width);
-        x = (this.viewer.visibleBounds.width - horizontalWidth * this.viewer.zoomFactor) / 2;
+        x = (this.documentHelper.visibleBounds.width - horizontalWidth * this.documentHelper.zoomFactor) / 2;
         if (x < 30) {
             x = 30;
         }
         if (pageWidth < horizontalWidth) {
-            x += (horizontalWidth - pageWidth) * this.viewer.zoomFactor / 2;
+            x += (horizontalWidth - pageWidth) * this.documentHelper.zoomFactor / 2;
         }
         // tslint:disable-next-line:max-line-length           
-        y = page.boundingRectangle.y * this.viewer.zoomFactor + (this.viewer.pages.indexOf(page) + 1) * 20 * (1 - this.viewer.zoomFactor);
+        y = page.boundingRectangle.y * this.documentHelper.zoomFactor + (this.documentHelper.pages.indexOf(page) + 1) * 20 * (1 - this.documentHelper.zoomFactor);
         let currentPageDiv: HTMLElement = this.imageResizerDivElement;
         let currentPageDivWidth: number = parseFloat(currentPageDiv.style.width);
         let currentPageDivHeight: number = parseFloat(currentPageDiv.style.height);
@@ -268,22 +287,22 @@ export class ImageResizer {
         let margin: number = (this.resizeMarkSize - 1) / 2;
         let width: number = imageResizerDivWidth + 2 * margin;
         let height: number = imageResizerDivHeight + 2 * margin;
-        if (width > (currentPageDivWidth - left) * this.viewer.zoomFactor + margin) {
-            width = (currentPageDivWidth - left) * this.viewer.zoomFactor;
+        if (width > (currentPageDivWidth - left) * this.documentHelper.zoomFactor + margin) {
+            width = (currentPageDivWidth - left) * this.documentHelper.zoomFactor;
         }
-        if (height > (currentPageDivHeight - top) * this.viewer.zoomFactor + margin) {
-            height = (currentPageDivHeight - top) * this.viewer.zoomFactor;
+        if (height > (currentPageDivHeight - top) * this.documentHelper.zoomFactor + margin) {
+            height = (currentPageDivHeight - top) * this.documentHelper.zoomFactor;
         }
         // if (width < imageResizerDivHeight + margin || height < imageResizerDivHeight + margin) {
 
         // }
         // tslint:disable-next-line:max-line-length
-        this.imageResizerDivElement.style.width = parseInt(this.imageResizerDivElement.style.width.replace('px', ''), 10) * this.viewer.zoomFactor + 'px';
-        this.imageResizerDivElement.style.height = parseInt(this.imageResizerDivElement.style.height.replace('px', ''), 10) * this.viewer.zoomFactor + 'px';
-        height = this.viewer.render.getScaledValue(elementBox.height);
-        width = this.viewer.render.getScaledValue(elementBox.width);
-        left = this.viewer.render.getScaledValue(left);
-        top = this.viewer.render.getScaledValue(top);
+        this.imageResizerDivElement.style.width = parseInt(this.imageResizerDivElement.style.width.replace('px', ''), 10) * this.documentHelper.zoomFactor + 'px';
+        this.imageResizerDivElement.style.height = parseInt(this.imageResizerDivElement.style.height.replace('px', ''), 10) * this.documentHelper.zoomFactor + 'px';
+        height = this.documentHelper.render.getScaledValue(elementBox.height);
+        width = this.documentHelper.render.getScaledValue(elementBox.width);
+        left = this.documentHelper.render.getScaledValue(left);
+        top = this.documentHelper.render.getScaledValue(top);
         this.setImageResizerPosition(left, top, width, height, this);
         if (!this.selectedImageWidget.containsKey(lineWidget)) {
             let selectedImageInfo: SelectedImageInfo = new SelectedImageInfo(elementBox.height, elementBox.width);
@@ -394,120 +413,120 @@ export class ImageResizer {
 
         imageResizer.topRightRectParent = document.createElement('div');
         imageResizer.topRightRectParent.style.cursor = 'ne-resize';
-        imageResizer.topRightRectParent.id = this.viewer.owner.containerId + '_TopRightRectParent';
+        imageResizer.topRightRectParent.id = this.documentHelper.owner.containerId + '_TopRightRectParent';
         this.applyProperties(imageResizer.topRightRectParent);
-        imageResizer.topRightRectParent.style.width = !this.viewer.isTouchInput ? '14px' : '30px';
-        imageResizer.topRightRectParent.style.height = !this.viewer.isTouchInput ? '14px' : '30px';
+        imageResizer.topRightRectParent.style.width = !this.documentHelper.isTouchInput ? '14px' : '30px';
+        imageResizer.topRightRectParent.style.height = !this.documentHelper.isTouchInput ? '14px' : '30px';
         imageResizer.topRightRectParent.style.opacity = '-1';
         resizeDiv.appendChild(imageResizer.topRightRectParent);
 
         imageResizer.topRightRect = document.createElement('div');
-        imageResizer.topRightRect.id = this.viewer.owner.containerId + '_TopRightRect';
+        imageResizer.topRightRect.id = this.documentHelper.owner.containerId + '_TopRightRect';
         imageResizer.topRightRect.style.cursor = 'ne-resize';
         this.applyProperties(imageResizer.topRightRect);
         resizeDiv.appendChild(imageResizer.topRightRect);
 
         imageResizer.topLeftRectParent = document.createElement('div');
         imageResizer.topLeftRectParent.style.cursor = 'nw-resize';
-        imageResizer.topLeftRectParent.id = this.viewer.owner.containerId + '_TopLeftRectParent';
+        imageResizer.topLeftRectParent.id = this.documentHelper.owner.containerId + '_TopLeftRectParent';
         this.applyProperties(imageResizer.topLeftRectParent);
-        imageResizer.topLeftRectParent.style.width = !this.viewer.isTouchInput ? '14px' : '30px';
-        imageResizer.topLeftRectParent.style.height = !this.viewer.isTouchInput ? '14px' : '30px';
+        imageResizer.topLeftRectParent.style.width = !this.documentHelper.isTouchInput ? '14px' : '30px';
+        imageResizer.topLeftRectParent.style.height = !this.documentHelper.isTouchInput ? '14px' : '30px';
         imageResizer.topLeftRectParent.style.opacity = '-1';
         resizeDiv.appendChild(imageResizer.topLeftRectParent);
 
         imageResizer.topLeftRect = document.createElement('div');
-        imageResizer.topLeftRect.id = this.viewer.owner.containerId + '_TopLeftRect';
+        imageResizer.topLeftRect.id = this.documentHelper.owner.containerId + '_TopLeftRect';
         imageResizer.topLeftRect.style.cursor = 'nw-resize';
         this.applyProperties(imageResizer.topLeftRect);
         resizeDiv.appendChild(imageResizer.topLeftRect);
 
         imageResizer.topMiddleRectParent = document.createElement('div');
         imageResizer.topMiddleRectParent.style.cursor = 'n-resize';
-        imageResizer.topMiddleRectParent.id = this.viewer.owner.containerId + '_TopMiddleRectParent';
+        imageResizer.topMiddleRectParent.id = this.documentHelper.owner.containerId + '_TopMiddleRectParent';
         this.applyProperties(imageResizer.topMiddleRectParent);
-        imageResizer.topMiddleRectParent.style.width = !this.viewer.isTouchInput ? '14px' : '30px';
-        imageResizer.topMiddleRectParent.style.height = !this.viewer.isTouchInput ? '14px' : '30px';
+        imageResizer.topMiddleRectParent.style.width = !this.documentHelper.isTouchInput ? '14px' : '30px';
+        imageResizer.topMiddleRectParent.style.height = !this.documentHelper.isTouchInput ? '14px' : '30px';
         imageResizer.topMiddleRectParent.style.opacity = '-1';
         resizeDiv.appendChild(imageResizer.topMiddleRectParent);
 
         imageResizer.topMiddleRect = document.createElement('div');
-        imageResizer.topMiddleRect.id = this.viewer.owner.containerId + '_TopMiddleRect';
+        imageResizer.topMiddleRect.id = this.documentHelper.owner.containerId + '_TopMiddleRect';
         imageResizer.topMiddleRect.style.cursor = 'n-resize';
         this.applyProperties(imageResizer.topMiddleRect);
         resizeDiv.appendChild(imageResizer.topMiddleRect);
 
         imageResizer.bottomRightRectParent = document.createElement('div');
         imageResizer.bottomRightRectParent.style.cursor = 'se-resize';
-        imageResizer.bottomRightRectParent.id = this.viewer.owner.containerId + '_BottomRightRectParent';
+        imageResizer.bottomRightRectParent.id = this.documentHelper.owner.containerId + '_BottomRightRectParent';
         this.applyProperties(imageResizer.bottomRightRectParent);
-        imageResizer.bottomRightRectParent.style.width = !this.viewer.isTouchInput ? '14px' : '30px';
-        imageResizer.bottomRightRectParent.style.height = !this.viewer.isTouchInput ? '14px' : '30px';
+        imageResizer.bottomRightRectParent.style.width = !this.documentHelper.isTouchInput ? '14px' : '30px';
+        imageResizer.bottomRightRectParent.style.height = !this.documentHelper.isTouchInput ? '14px' : '30px';
         imageResizer.bottomRightRectParent.style.opacity = '-1';
         resizeDiv.appendChild(imageResizer.bottomRightRectParent);
 
         imageResizer.bottomRightRect = document.createElement('div');
-        imageResizer.bottomRightRect.id = this.viewer.owner.containerId + '_BottomRightRect';
+        imageResizer.bottomRightRect.id = this.documentHelper.owner.containerId + '_BottomRightRect';
         imageResizer.bottomRightRect.style.cursor = 'se-resize';
         this.applyProperties(imageResizer.bottomRightRect);
         resizeDiv.appendChild(imageResizer.bottomRightRect);
 
         imageResizer.bottomLeftRectParent = document.createElement('div');
         imageResizer.bottomLeftRectParent.style.cursor = 'sw-resize';
-        imageResizer.bottomLeftRectParent.id = this.viewer.owner.containerId + '_BottomLeftRectParent';
+        imageResizer.bottomLeftRectParent.id = this.documentHelper.owner.containerId + '_BottomLeftRectParent';
         this.applyProperties(imageResizer.bottomLeftRectParent);
-        imageResizer.bottomLeftRectParent.style.width = !this.viewer.isTouchInput ? '14px' : '30px';
-        imageResizer.bottomLeftRectParent.style.height = !this.viewer.isTouchInput ? '14px' : '30px';
+        imageResizer.bottomLeftRectParent.style.width = !this.documentHelper.isTouchInput ? '14px' : '30px';
+        imageResizer.bottomLeftRectParent.style.height = !this.documentHelper.isTouchInput ? '14px' : '30px';
         imageResizer.bottomLeftRectParent.style.opacity = '-1';
         resizeDiv.appendChild(imageResizer.bottomLeftRectParent);
 
         imageResizer.bottomLeftRect = document.createElement('div');
-        imageResizer.bottomLeftRect.id = this.viewer.owner.containerId + '_BottomLeftRect';
+        imageResizer.bottomLeftRect.id = this.documentHelper.owner.containerId + '_BottomLeftRect';
         imageResizer.bottomLeftRect.style.cursor = 'sw-resize';
         this.applyProperties(imageResizer.bottomLeftRect);
         resizeDiv.appendChild(imageResizer.bottomLeftRect);
 
         imageResizer.bottomMiddleRectParent = document.createElement('div');
         imageResizer.bottomMiddleRectParent.style.cursor = 's-resize';
-        imageResizer.bottomMiddleRectParent.id = this.viewer.owner.containerId + '_BottomMiddleRectParent';
+        imageResizer.bottomMiddleRectParent.id = this.documentHelper.owner.containerId + '_BottomMiddleRectParent';
         this.applyProperties(imageResizer.bottomMiddleRectParent);
-        imageResizer.bottomMiddleRectParent.style.width = !this.viewer.isTouchInput ? '14px' : '30px';
-        imageResizer.bottomMiddleRectParent.style.height = !this.viewer.isTouchInput ? '14px' : '30px';
+        imageResizer.bottomMiddleRectParent.style.width = !this.documentHelper.isTouchInput ? '14px' : '30px';
+        imageResizer.bottomMiddleRectParent.style.height = !this.documentHelper.isTouchInput ? '14px' : '30px';
         imageResizer.bottomMiddleRectParent.style.opacity = '-1';
         resizeDiv.appendChild(imageResizer.bottomMiddleRectParent);
 
         imageResizer.bottomMiddleRect = document.createElement('div');
-        imageResizer.bottomMiddleRect.id = this.viewer.owner.containerId + '_BottomMiddleRect';
+        imageResizer.bottomMiddleRect.id = this.documentHelper.owner.containerId + '_BottomMiddleRect';
         imageResizer.bottomMiddleRect.style.cursor = 's-resize';
         this.applyProperties(imageResizer.bottomMiddleRect);
         resizeDiv.appendChild(imageResizer.bottomMiddleRect);
 
         imageResizer.rightMiddleRectParent = document.createElement('div');
         imageResizer.rightMiddleRectParent.style.cursor = 'e-resize';
-        imageResizer.rightMiddleRectParent.id = this.viewer.owner.containerId + '_RightMiddleRectParent';
+        imageResizer.rightMiddleRectParent.id = this.documentHelper.owner.containerId + '_RightMiddleRectParent';
         this.applyProperties(imageResizer.rightMiddleRectParent);
-        imageResizer.rightMiddleRectParent.style.width = !this.viewer.isTouchInput ? '14px' : '30px';
-        imageResizer.rightMiddleRectParent.style.height = !this.viewer.isTouchInput ? '14px' : '30px';
+        imageResizer.rightMiddleRectParent.style.width = !this.documentHelper.isTouchInput ? '14px' : '30px';
+        imageResizer.rightMiddleRectParent.style.height = !this.documentHelper.isTouchInput ? '14px' : '30px';
         imageResizer.rightMiddleRectParent.style.opacity = '-1';
         resizeDiv.appendChild(imageResizer.rightMiddleRectParent);
 
         imageResizer.rightMiddleRect = document.createElement('div');
-        imageResizer.rightMiddleRect.id = this.viewer.owner.containerId + '_RightMiddleRect';
+        imageResizer.rightMiddleRect.id = this.documentHelper.owner.containerId + '_RightMiddleRect';
         imageResizer.rightMiddleRect.style.cursor = 'e-resize';
         this.applyProperties(imageResizer.rightMiddleRect);
         resizeDiv.appendChild(imageResizer.rightMiddleRect);
 
         imageResizer.leftMiddleRectParent = document.createElement('div');
         imageResizer.leftMiddleRectParent.style.cursor = 'w-resize';
-        imageResizer.leftMiddleRectParent.id = this.viewer.owner.containerId + '_LeftMiddleRectParent';
+        imageResizer.leftMiddleRectParent.id = this.documentHelper.owner.containerId + '_LeftMiddleRectParent';
         this.applyProperties(imageResizer.leftMiddleRectParent);
-        imageResizer.leftMiddleRectParent.style.width = !this.viewer.isTouchInput ? '14px' : '30px';
-        imageResizer.leftMiddleRectParent.style.height = !this.viewer.isTouchInput ? '14px' : '30px';
+        imageResizer.leftMiddleRectParent.style.width = !this.documentHelper.isTouchInput ? '14px' : '30px';
+        imageResizer.leftMiddleRectParent.style.height = !this.documentHelper.isTouchInput ? '14px' : '30px';
         imageResizer.leftMiddleRectParent.style.opacity = '-1';
         resizeDiv.appendChild(imageResizer.leftMiddleRectParent);
 
         imageResizer.leftMiddleRect = document.createElement('div');
-        imageResizer.leftMiddleRect.id = this.viewer.owner.containerId + '_LeftMiddleRect';
+        imageResizer.leftMiddleRect.id = this.documentHelper.owner.containerId + '_LeftMiddleRect';
         imageResizer.leftMiddleRect.style.cursor = 'w-resize';
         this.applyProperties(imageResizer.leftMiddleRect);
         resizeDiv.appendChild(imageResizer.leftMiddleRect);
@@ -545,12 +564,13 @@ export class ImageResizer {
         imageResizer.rightMiddleRect.style.top = (parseFloat(imageResizer.topRightRect.style.top) + (height / 2)) + 'px';
         imageResizer.leftMiddleRect.style.left = imageResizer.topLeftRect.style.left;
         imageResizer.leftMiddleRect.style.top = (parseFloat(imageResizer.topLeftRect.style.top) + (height / 2)) + 'px';
-        imageResizer.topRightRectParent.style.left = !this.viewer.isTouchInput ? ((left + width) - 8) + 'px' : ((left + width) - 15) + 'px';
-        imageResizer.topRightRectParent.style.top = !this.viewer.isTouchInput ? (top - 7) + 'px' : (top - 15) + 'px';
-        imageResizer.topLeftRectParent.style.left = !this.viewer.isTouchInput ? (left - 8) + 'px' : (left - 15) + 'px';
-        imageResizer.topLeftRectParent.style.top = !this.viewer.isTouchInput ? (top - 7) + 'px' : (top - 15) + 'px';
+        // tslint:disable-next-line:max-line-length
+        imageResizer.topRightRectParent.style.left = !this.documentHelper.isTouchInput ? ((left + width) - 8) + 'px' : ((left + width) - 15) + 'px';
+        imageResizer.topRightRectParent.style.top = !this.documentHelper.isTouchInput ? (top - 7) + 'px' : (top - 15) + 'px';
+        imageResizer.topLeftRectParent.style.left = !this.documentHelper.isTouchInput ? (left - 8) + 'px' : (left - 15) + 'px';
+        imageResizer.topLeftRectParent.style.top = !this.documentHelper.isTouchInput ? (top - 7) + 'px' : (top - 15) + 'px';
         imageResizer.topMiddleRectParent.style.left = ((parseFloat(imageResizer.topLeftRectParent.style.left) + (width / 2)) - 4) + 'px';
-        imageResizer.topMiddleRectParent.style.top = !this.viewer.isTouchInput ? (top - 7) + 'px' : (top - 15) + 'px';
+        imageResizer.topMiddleRectParent.style.top = !this.documentHelper.isTouchInput ? (top - 7) + 'px' : (top - 15) + 'px';
         imageResizer.bottomRightRectParent.style.left = imageResizer.topRightRectParent.style.left;
         imageResizer.bottomRightRectParent.style.top = (parseFloat(imageResizer.topRightRectParent.style.top) + height) + 'px';
         imageResizer.bottomLeftRectParent.style.left = imageResizer.topLeftRectParent.style.left;
@@ -558,12 +578,12 @@ export class ImageResizer {
         imageResizer.bottomMiddleRectParent.style.left = imageResizer.topMiddleRectParent.style.left;
         imageResizer.bottomMiddleRectParent.style.top = (parseFloat(imageResizer.topMiddleRectParent.style.top) + height) + 'px';
         // tslint:disable-next-line:max-line-length 
-        imageResizer.rightMiddleRectParent.style.left = !this.viewer.isTouchInput ? ((left + width) - 7) + 'px' : ((left + width) - 15) + 'px';
+        imageResizer.rightMiddleRectParent.style.left = !this.documentHelper.isTouchInput ? ((left + width) - 7) + 'px' : ((left + width) - 15) + 'px';
         imageResizer.rightMiddleRectParent.style.top = (parseFloat(imageResizer.topRightRectParent.style.top) + (height / 2)) + 'px';
         imageResizer.leftMiddleRectParent.style.left = imageResizer.topLeftRectParent.style.left;
         imageResizer.leftMiddleRectParent.style.top = (parseFloat(imageResizer.topLeftRectParent.style.top) + (height / 2)) + 'px';
         this.setImageResizingPoints(imageResizer);
-        if (this.viewer.isTouchInput) {
+        if (this.documentHelper.isTouchInput) {
             this.applyPropertiesForTouch();
         } else {
             this.applyPropertiesForMouse();
@@ -601,7 +621,7 @@ export class ImageResizer {
      */
     public initResizeContainerDiv(imageResizer: ImageResizer): void {
         imageResizer.resizeContainerDiv = document.createElement('div');
-        imageResizer.resizeContainerDiv.id = this.viewer.owner.containerId + '_ResizeDivElement';
+        imageResizer.resizeContainerDiv.id = this.documentHelper.owner.containerId + '_ResizeDivElement';
         imageResizer.resizeContainerDiv.style.position = 'absolute';
         imageResizer.resizeContainerDiv.style.border = '1px solid #bfbfbf';
         imageResizer.resizeContainerDiv.style.zIndex = '30';
@@ -630,8 +650,8 @@ export class ImageResizer {
      * @param {number} y - Specifies for top value while resizing.
      */
     private handleImageResizing(touchPoint: Point, prevX: number, prevY: number): void {
-        prevX = prevX / this.viewer.zoomFactor;
-        prevY = prevY / this.viewer.zoomFactor;
+        prevX = prevX / this.documentHelper.zoomFactor;
+        prevY = prevY / this.documentHelper.zoomFactor;
         this.leftValue = isNullOrUndefined(this.leftValue) ? prevX : this.leftValue;
         this.topValue = isNullOrUndefined(this.topValue) ? prevY : this.topValue;
         let points: LeftTopInfo;
@@ -839,8 +859,8 @@ export class ImageResizer {
      * @private
      */
     public getImagePoint(touchPoint: Point): ImagePointInfo {
-        let x: number = this.viewer.render.getScaledValue(touchPoint.x, 1);
-        let y: number = this.viewer.render.getScaledValue(touchPoint.y, 2);
+        let x: number = this.documentHelper.render.getScaledValue(touchPoint.x, 1);
+        let y: number = this.documentHelper.render.getScaledValue(touchPoint.y, 2);
         touchPoint = new Point(x, y);
         let imageResizingPoints: ImageResizingPoints = this.imageResizerPoints;
         let resizePosition: string = '';
@@ -924,8 +944,8 @@ export class ImageResizer {
      * @private
      */
     public getImagePointOnTouch(touchPoints: Point): ImagePointInfo {
-        let x: number = this.viewer.render.getScaledValue(touchPoints.x, 1);
-        let y: number = this.viewer.render.getScaledValue(touchPoints.y, 2);
+        let x: number = this.documentHelper.render.getScaledValue(touchPoints.x, 1);
+        let y: number = this.documentHelper.render.getScaledValue(touchPoints.y, 2);
         touchPoints = new Point(x, y);
         let imageResizingPointsOnTouch: ImageResizingPoints = this.imageResizerPoints;
         let resizePosition: string = '';
@@ -1006,11 +1026,11 @@ export class ImageResizer {
      * @private
      */
     public mouseUpInternal(): void {
-        this.currentImageElementBox.width = parseFloat(this.imageResizerDiv.style.width) / this.viewer.zoomFactor;
-        this.currentImageElementBox.height = parseFloat(this.imageResizerDiv.style.height) / this.viewer.zoomFactor;
+        this.currentImageElementBox.width = parseFloat(this.imageResizerDiv.style.width) / this.documentHelper.zoomFactor;
+        this.currentImageElementBox.height = parseFloat(this.imageResizerDiv.style.height) / this.documentHelper.zoomFactor;
         this.owner.isShiftingEnabled = true;
         this.owner.editorModule.setOffsetValue(this.owner.selection);
-        this.viewer.layout.reLayoutParagraph(this.currentImageElementBox.line.paragraph, 0, 0);
+        this.documentHelper.layout.reLayoutParagraph(this.currentImageElementBox.line.paragraph, 0, 0);
         this.owner.editorModule.reLayout(this.owner.selection, true);
         this.viewer.updateScrollBars();
     }
@@ -1054,12 +1074,12 @@ export class ImageResizer {
         if (!isNullOrUndefined(this.currentImageElementBox)) {
             let elementBox: ImageElementBox = this.currentImageElementBox;
             let lineWidget: LineWidget = elementBox.line;
-            let top: number = this.viewer.selection.getTop(lineWidget) + elementBox.margin.top;
-            let left: number = this.viewer.selection.getLeftInternal(lineWidget, elementBox, 0);
-            let topValue: number = top * this.viewer.zoomFactor;
-            let leftValue: number = left * this.viewer.zoomFactor;
-            let height: number = this.viewer.render.getScaledValue(elementBox.height, 2);
-            let width: number = this.viewer.render.getScaledValue(elementBox.width, 1);
+            let top: number = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
+            let left: number = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
+            let topValue: number = top * this.documentHelper.zoomFactor;
+            let leftValue: number = left * this.documentHelper.zoomFactor;
+            let height: number = this.documentHelper.render.getScaledValue(elementBox.height, 2);
+            let width: number = this.documentHelper.render.getScaledValue(elementBox.width, 1);
             this.setImageResizerPosition(leftValue, topValue, width, height, this);
         }
     }
@@ -1121,7 +1141,7 @@ export class ImageResizer {
         this.currentImageElementBoxIn = undefined;
         //this.baseHistoryInfo = undefined;
         this.resizeMarkSizeIn = undefined;
-        this.viewer = undefined;
+        this.documentHelper = undefined;
         this.owner = undefined;
     }
 }

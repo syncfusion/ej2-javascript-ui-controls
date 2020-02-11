@@ -3013,7 +3013,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
             }
-            let subChild: { [key: string]: Object }[] = this.getChildNodes(this.treeData, checkedChild);
+            let subChild: { [key: string]: Object }[] = this.getChildNodes([childItems[i]], checkedChild);
             if (subChild) {
                 this.childStateChange(subChild, parent, childElement, doCheck);
             }

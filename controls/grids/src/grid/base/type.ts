@@ -8,6 +8,8 @@ export type ValueType = number | string | Date | boolean;
 
 export type ValueAccessor = (field: string, data: Object, column: ColumnModel) => Object;
 
+export type HeaderValueAccessor = (field: string, column: ColumnModel) => Object;
+
 export type SortComparer = (x: ValueType, y: ValueType) => number;
 
 export type CustomSummaryType = (data: Object[] | Object, column: AggregateColumnModel) => Object;

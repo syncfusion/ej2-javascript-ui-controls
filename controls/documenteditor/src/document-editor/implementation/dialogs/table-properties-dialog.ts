@@ -1,4 +1,3 @@
-import { LayoutViewer } from '../index';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -7,13 +6,14 @@ import { TableAlignment, WidthType, HeightType, CellVerticalAlignment } from '..
 import { Selection } from '../index';
 import { CheckBox, RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { Tab } from '@syncfusion/ej2-navigations';
+import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
 import { SelectionRowFormat, SelectionTableFormat, SelectionCellFormat } from '../index';
 import { TableWidget, TableCellWidget } from '../viewer/page';
 import { classList } from '@syncfusion/ej2-base';
 import { HelperMethods } from '../editor/editor-helper';
 import { EditorHistory } from '../editor-history/index';
 import { TextPosition } from '../selection';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Table properties dialog is used to modify properties of selected table.
@@ -23,7 +23,7 @@ export class TablePropertiesDialog {
     private target: HTMLElement;
     private cellAlignment: HTMLDivElement;
     private tableAlignment: HTMLDivElement;
-    private owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private preferCheckBox: CheckBox;
     private tableWidthType: DropDownList;
     private preferredWidth: HTMLInputElement;
@@ -125,8 +125,8 @@ export class TablePropertiesDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
 
     private getModuleName(): string {
@@ -137,7 +137,7 @@ export class TablePropertiesDialog {
      */
     public initTablePropertyDialog(localValue: L10n, isRtl?: boolean): void {
         this.localValue = localValue;
-        let id: string = this.owner.owner.containerId + '_TablePropertiesDialog';
+        let id: string = this.documentHelper.owner.containerId + '_TablePropertiesDialog';
         this.target = createElement('div', { id: id, className: 'e-de-table-properties-dlg' });
         let ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_TabContainer' });
         this.target.appendChild(ejtabContainer);
@@ -165,19 +165,22 @@ export class TablePropertiesDialog {
         });
         headerContainer.appendChild(tableHeader); headerContainer.appendChild(rowHeader);
         headerContainer.appendChild(cellHeader);
-        let contentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-content' });
         let tableContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_tableContent' });
         let rowContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_rowContent' });
         let cellContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_cellContent' });
-        tableContent.appendChild(this.tableTab); rowContent.appendChild(this.rowTab);
-        cellContent.appendChild(this.cellTab); contentContainer.appendChild(tableContent);
-        contentContainer.appendChild(rowContent); contentContainer.appendChild(cellContent);
-        ejtab.appendChild(headerContainer); ejtab.appendChild(contentContainer);
+        let items: TabItemModel[] = [
+            { header: { text: tableHeader }, content: tableContent },
+            { header: { text: rowHeader }, content: rowContent },
+            { header: { text: cellHeader }, content: cellContent }];
+        tableContent.appendChild(this.tableTab);
+        rowContent.appendChild(this.rowTab);
+        cellContent.appendChild(this.cellTab);
         ejtabContainer.appendChild(ejtab);
-        this.initTableProperties(this.tableTab, localValue, this.owner.owner.enableRtl);
-        this.initTableRowProperties(this.rowTab, localValue, this.owner.owner.enableRtl);
-        this.initTableCellProperties(this.cellTab, localValue, this.owner.owner.enableRtl);
-        this.tabObj = new Tab({ enableRtl: isRtl }, ejtab);
+        this.initTableProperties(this.tableTab, localValue, this.documentHelper.owner.enableRtl);
+        this.initTableRowProperties(this.rowTab, localValue, this.documentHelper.owner.enableRtl);
+        this.initTableCellProperties(this.cellTab, localValue, this.documentHelper.owner.enableRtl);
+        this.tabObj = new Tab({ items: items, enableRtl: isRtl }, ejtab);
+        this.tabObj.isStringTemplate = true;
         this.target.appendChild(separatorLine);
         let alignMentButtons: NodeListOf<Element> = this.tableTab.getElementsByClassName(this.tableTab.id + 'e-de-table-alignment');
         for (let i: number = 0; i < alignMentButtons.length; i++) {
@@ -187,46 +190,29 @@ export class TablePropertiesDialog {
         for (let i: number = 0; i < cellAlignment.length; i++) {
             cellAlignment[i].addEventListener('click', this.changeCellAlignment);
         }
-
-        // let tableTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
-        // let tableTabHeaderItem: HTMLElement = tableTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-
-        // let rowTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[1] as HTMLElement;
-        // let rowTabHeaderItem: HTMLElement = rowTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        // rowTabHeaderItem.classList.add('e-de-table-ppty-dlg-row-header');
-
-        // let cellTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[2] as HTMLElement;
-        // let cellTabHeaderItem: HTMLElement = cellTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        // cellTabHeaderItem.classList.add('e-de-table-ppty-dlg-cell-header');
-        // if (isRtl) {
-        //     tableTabHeaderItem.classList.add('e-de-rtl');
-        //     (this.tabObj.element.getElementsByClassName('e-indicator')[0] as HTMLElement).style.left = '155px';
-        // } else {
-        //     (this.tabObj.element.getElementsByClassName('e-indicator')[0] as HTMLElement).style.right = '155px';
-        // }
     }
     /**
      * @private
      */
     public show(): void {
-        let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        localValue.setLocale(this.owner.owner.locale);
+        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initTablePropertyDialog(localValue, this.owner.owner.enableRtl);
+            this.initTablePropertyDialog(localValue, this.documentHelper.owner.enableRtl);
         }
 
-        if (this.owner.selection.caret.style.display !== 'none') {
-            this.owner.selection.caret.style.display = 'none';
+        if (this.documentHelper.selection.caret.style.display !== 'none') {
+            this.documentHelper.selection.caret.style.display = 'none';
         }
-        this.owner.dialog2.header = localValue.getConstant('Table Properties');
-        this.owner.dialog2.position = { X: 'center', Y: 'center' };
-        this.owner.dialog2.width = 'auto';
-        this.owner.dialog2.height = 'auto';
-        this.owner.dialog2.content = this.target;
-        this.owner.dialog2.beforeOpen = this.onBeforeOpen;
-        this.owner.dialog2.close = this.onCloseTablePropertyDialog;
-        this.owner.dialog2.open = this.wireEvent.bind(this);
-        this.owner.dialog2.buttons = [{
+        this.documentHelper.dialog2.header = localValue.getConstant('Table Properties');
+        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog2.width = 'auto';
+        this.documentHelper.dialog2.height = 'auto';
+        this.documentHelper.dialog2.content = this.target;
+        this.documentHelper.dialog2.beforeOpen = this.onBeforeOpen;
+        this.documentHelper.dialog2.close = this.onCloseTablePropertyDialog;
+        this.documentHelper.dialog2.open = this.wireEvent.bind(this);
+        this.documentHelper.dialog2.buttons = [{
             click: this.applyTableProperties,
             buttonModel: { content: localValue.getConstant('Ok'), cssClass: 'e-flat e-table-ppty-okay', isPrimary: true }
         },
@@ -235,11 +221,11 @@ export class TablePropertiesDialog {
             buttonModel: { content: localValue.getConstant('Cancel'), cssClass: 'e-flat e-table-ppty-cancel' }
         }];
         //this.tabObj.select(0);
-        this.owner.dialog2.dataBind();
-        this.owner.dialog2.show();
+        this.documentHelper.dialog2.dataBind();
+        this.documentHelper.dialog2.show();
     }
     private onBeforeOpen = (): void => {
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
         this.loadTableProperties();
     }
     /**
@@ -247,13 +233,13 @@ export class TablePropertiesDialog {
      */
     public onCloseTablePropertyDialog = (): void => {
         this.unWireEvent.bind(this);
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
      */
     public applyTableProperties = (): void => {
-        let selection: Selection = this.owner.selection;
+        let selection: Selection = this.documentHelper.selection;
         if (!this.preferCheckBox.checked && !this.preferCheckBox.indeterminate) {
             if (isNullOrUndefined(selection.tableFormat.preferredWidth) || selection.tableFormat.preferredWidth !== 0) {
                 this.tableFormat.preferredWidth = 0;
@@ -279,25 +265,26 @@ export class TablePropertiesDialog {
         } else {
             if (this.cellFormat.preferredWidthType === 'Percent') {
                 if (!this.tableFormat.hasValue('preferredWidth') && !this.tableFormat.hasValue('preferredWidthType')
-                    && this.owner.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidth === 0) {
+                    && this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidth === 0) {
                     // tslint:disable-next-line:max-line-length
-                    let containerWidth: number = this.owner.selection.start.paragraph.associatedCell.ownerTable.getOwnerWidth(true);
-                    let tableWidth: number = this.owner.selection.start.paragraph.associatedCell.ownerTable.getTableClientWidth(containerWidth);
+                    let containerWidth: number = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.getOwnerWidth(true);
+                    let tableWidth: number = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.getTableClientWidth(containerWidth);
                     this.tableFormat.preferredWidthType = 'Percent';
-                    this.tableFormat.preferredWidth = tableWidth / HelperMethods.convertPixelToPoint(this.owner.clientArea.width) * 100;
+                    // tslint:disable-next-line:max-line-length
+                    this.tableFormat.preferredWidth = tableWidth / HelperMethods.convertPixelToPoint(this.documentHelper.owner.viewer.clientArea.width) * 100;
                 }
             }
         }
         if (this.rowHeightValue) {
             this.rowFormat.height = this.rowHeightValue;
         }
-        this.owner.owner.editorModule.initComplexHistory('TableProperties');
-        this.owner.owner.editorModule.onTableFormat(this.tableFormat);
-        this.owner.owner.editorModule.onRowFormat(this.rowFormat);
-        this.owner.owner.editorModule.onCellFormat(this.cellFormat);
-        this.owner.owner.editorHistory.updateComplexHistory();
+        this.documentHelper.owner.editorModule.initComplexHistory('TableProperties');
+        this.documentHelper.owner.editorModule.onTableFormat(this.tableFormat);
+        this.documentHelper.owner.editorModule.onRowFormat(this.rowFormat);
+        this.documentHelper.owner.editorModule.onCellFormat(this.cellFormat);
+        this.documentHelper.owner.editorHistory.updateComplexHistory();
         this.closeTablePropertiesDialog();
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -307,30 +294,30 @@ export class TablePropertiesDialog {
         table.isGridUpdated = false;
         table.buildTableColumns();
         table.isGridUpdated = true;
-        this.owner.selection.owner.isLayoutEnabled = true;
-        this.owner.layout.reLayoutTable(table);
-        this.owner.owner.editorModule.reLayout(this.owner.selection);
-        this.owner.owner.editorModule.updateSelectionTextPosition(true);
-        let history: EditorHistory = this.owner.owner.editorHistory;
+        this.documentHelper.selection.owner.isLayoutEnabled = true;
+        this.documentHelper.layout.reLayoutTable(table);
+        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+        this.documentHelper.owner.editorModule.updateSelectionTextPosition(true);
+        let history: EditorHistory = this.documentHelper.owner.editorHistory;
         if (history && history.currentBaseHistoryInfo) {
             if (history.currentBaseHistoryInfo.modifiedProperties.length > 0) {
                 history.currentBaseHistoryInfo.updateSelection();
             }
             history.updateHistory();
         }
-        this.owner.owner.editorModule.fireContentChange();
+        this.documentHelper.owner.editorModule.fireContentChange();
     }
     /**
      * @private
      */
     public applyTableSubProperties = (): void => {
         if (this.isCellOptionsUpdated) {
-            let cellFormat: WCellFormat = this.owner.owner.cellOptionsDialogModule.cellFormat;
-            this.owner.owner.cellOptionsDialogModule.applySubCellOptions(cellFormat);
+            let cellFormat: WCellFormat = this.documentHelper.owner.cellOptionsDialogModule.cellFormat;
+            this.documentHelper.owner.cellOptionsDialogModule.applySubCellOptions(cellFormat);
         }
         if (this.isTableOptionsUpdated) {
-            let tableFormat: WTableFormat = this.owner.owner.tableOptionsDialogModule.tableFormat;
-            this.owner.owner.tableOptionsDialogModule.applySubTableOptions(tableFormat);
+            let tableFormat: WTableFormat = this.documentHelper.owner.tableOptionsDialogModule.tableFormat;
+            this.documentHelper.owner.tableOptionsDialogModule.applySubTableOptions(tableFormat);
         }
         this.isCellOptionsUpdated = false;
         this.isTableOptionsUpdated = false;
@@ -342,17 +329,17 @@ export class TablePropertiesDialog {
         this.setTableProperties();
         this.setTableRowProperties();
         this.setTableCellProperties();
-        if (!this.owner.owner.bordersAndShadingDialogModule) {
+        if (!this.documentHelper.owner.bordersAndShadingDialogModule) {
             this.bordersAndShadingButton.disabled = true;
         } else {
             this.bordersAndShadingButton.disabled = false;
         }
-        // if (!this.owner.owner.tableOptionsDialogModule) {
+        // if (!this.documentHelper.owner.tableOptionsDialogModule) {
         //     this.tableOptionButton.disabled = true;
         // } else {
         this.tableOptionButton.disabled = false;
         // }
-        // if (!this.owner.owner.cellOptionsDialogModule) {
+        // if (!this.documentHelper.owner.cellOptionsDialogModule) {
         //     this.cellOptionButton.disabled = true;
         // } else {
         this.cellOptionButton.disabled = false;
@@ -381,13 +368,13 @@ export class TablePropertiesDialog {
         this.rowFormat.destroy();
         this.tableFormat.destroy();
         this.rowHeightValue = undefined;
-        this.owner.dialog2.open = this.owner.selection.hideCaret.bind(this.owner);
+        this.documentHelper.dialog2.open = this.documentHelper.selection.hideCaret.bind(this.documentHelper.owner.viewer);
     }
     /**
      * @private
      */
     public wireEvent(): void {
-        this.owner.selection.hideCaret();
+        this.documentHelper.selection.hideCaret();
         //Table Format
         this.preferCheckBox.change = this.changeTableCheckBox.bind(this);
         this.tableWidthBox.change = this.onTableWidthChange.bind(this);
@@ -408,8 +395,8 @@ export class TablePropertiesDialog {
      * @private
      */
     public closeTablePropertiesDialog = (): void => {
-        this.owner.dialog2.hide();
-        this.owner.updateFocus();
+        this.documentHelper.dialog2.hide();
+        this.documentHelper.updateFocus();
     }
     //#region Table Format
     /**
@@ -617,12 +604,12 @@ export class TablePropertiesDialog {
      */
     public onTableWidthTypeChange(): void {
         let value: number;
-        let table: TableWidget = this.owner.selection.start.paragraph.associatedCell.ownerTable;
-        let width: number = HelperMethods.convertPixelToPoint(this.owner.clientArea.width);
-        if (this.tableWidthType.text === 'Percent' && this.owner.selection.tableFormat.preferredWidthType !== 'Percent') {
+        let table: TableWidget = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable;
+        let width: number = HelperMethods.convertPixelToPoint(this.documentHelper.owner.viewer.clientArea.width);
+        if (this.tableWidthType.text === 'Percent' && this.documentHelper.selection.tableFormat.preferredWidthType !== 'Percent') {
             value = this.tableWidthBox.value / width * 100;
             this.formatNumericTextBox(this.tableWidthBox, 'Percent', value);
-        } else if (this.tableWidthType.text === 'Points' && this.owner.selection.tableFormat.preferredWidthType !== 'Point') {
+        } else if (this.tableWidthType.text === 'Points' && this.documentHelper.selection.tableFormat.preferredWidthType !== 'Point') {
             value = width / 100 * this.tableWidthBox.value;
             this.formatNumericTextBox(this.tableWidthBox, 'Point', value);
         } else {
@@ -653,13 +640,13 @@ export class TablePropertiesDialog {
     }
     private setTableProperties(): void {
         //instance of Table Property values
-        let tableFormat: SelectionTableFormat = this.owner.selection.tableFormat;
+        let tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
         let tableHasWidth: boolean = tableFormat.preferredWidth > 0;
         let preferredWidth: number = tableFormat.preferredWidth;
         if (isNullOrUndefined(tableFormat.preferredWidth)) {
             this.preferCheckBox.indeterminate = true;
-            let startTable: TableWidget = this.owner.selection.start.paragraph.associatedCell.ownerTable;
-            let table: TableWidget = startTable.combineWidget(this.owner) as TableWidget;
+            let startTable: TableWidget = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable;
+            let table: TableWidget = startTable.combineWidget(this.documentHelper.owner.viewer) as TableWidget;
             preferredWidth = table.tableFormat.preferredWidth;
         } else {
             this.preferCheckBox.checked = tableHasWidth;
@@ -729,7 +716,7 @@ export class TablePropertiesDialog {
             this.tableFormat.preferredWidthType = (this.tableWidthType.value === 'Points') ?
                 'Point' : this.tableWidthType.value as WidthType;
         } else {
-            this.tableFormat.preferredWidthType = this.owner.selection.tableFormat.preferredWidthType;
+            this.tableFormat.preferredWidthType = this.documentHelper.selection.tableFormat.preferredWidthType;
         }
     }
     /**
@@ -882,7 +869,7 @@ export class TablePropertiesDialog {
         }
     }
     private setTableRowProperties(): void {
-        let rowFormat: SelectionRowFormat = this.owner.selection.rowFormat;
+        let rowFormat: SelectionRowFormat = this.documentHelper.selection.rowFormat;
         let enableRowHeight: boolean = (rowFormat.height > 0 || rowFormat.heightType === 'Exactly');
         //instance of table row values
         if (enableRowHeight) {
@@ -901,10 +888,10 @@ export class TablePropertiesDialog {
 
         let enabledHeader: boolean = this.enableRepeatHeader() ? false : true;
 
-        if (isNullOrUndefined(this.owner.selection.rowFormat.isHeader)) {
+        if (isNullOrUndefined(this.documentHelper.selection.rowFormat.isHeader)) {
             this.repeatHeader.indeterminate = true;
             this.repeatHeader.disabled = true;
-        } else if (this.owner.selection.rowFormat.isHeader) {
+        } else if (this.documentHelper.selection.rowFormat.isHeader) {
             this.repeatHeader.checked = !enabledHeader;
             this.repeatHeader.indeterminate = enabledHeader;
             this.repeatHeader.disabled = enabledHeader;
@@ -949,7 +936,7 @@ export class TablePropertiesDialog {
         if (this.rowHeightType.enabled) {
             this.rowFormat.heightType = this.rowHeightType.value as HeightType;
         } else {
-            this.rowFormat.heightType = this.owner.selection.rowFormat.heightType;
+            this.rowFormat.heightType = this.documentHelper.selection.rowFormat.heightType;
         }
     }
     /**
@@ -968,7 +955,7 @@ export class TablePropertiesDialog {
      * @private
      */
     public enableRepeatHeader(): boolean {
-        let selection: Selection = this.owner.selection;
+        let selection: Selection = this.documentHelper.selection;
         let start: TextPosition = selection.start;
         let end: TextPosition = selection.end;
         if (!selection.isForward) {
@@ -1108,13 +1095,13 @@ export class TablePropertiesDialog {
         }
     }
     private setTableCellProperties(): void {
-        let cellFormat: SelectionCellFormat = this.owner.selection.cellFormat;
+        let cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
         //instance of table cell Values
         this.hasCellWidth = cellFormat.preferredWidth > 0;
         let preferredWidth: number = cellFormat.preferredWidth;
         if (isNullOrUndefined(cellFormat.preferredWidth)) {
             this.preferredCellWidthCheckBox.indeterminate = true;
-            preferredWidth = this.owner.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;
+            preferredWidth = this.documentHelper.selection.start.paragraph.associatedCell.cellFormat.preferredWidth;
         } else {
             this.preferredCellWidthCheckBox.checked = this.hasCellWidth;
         }
@@ -1182,7 +1169,7 @@ export class TablePropertiesDialog {
                 }
             }
         }
-        return this.owner.selection.cellFormat.verticalAlignment;
+        return this.documentHelper.selection.cellFormat.verticalAlignment;
     }
     /**
      * @private
@@ -1202,13 +1189,13 @@ export class TablePropertiesDialog {
      */
     public onCellWidthTypeChange(): void {
         let value: number;
-        let table: TableWidget = this.owner.selection.start.paragraph.associatedCell.ownerTable;
+        let table: TableWidget = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable;
         let containerWidth: number = table.getOwnerWidth(true);
         let tableWidth: number = table.getTableClientWidth(containerWidth);
-        if (this.cellWidthType.text === 'Percent' && this.owner.selection.cellFormat.preferredWidthType !== 'Percent') {
+        if (this.cellWidthType.text === 'Percent' && this.documentHelper.selection.cellFormat.preferredWidthType !== 'Percent') {
             value = this.cellWidthBox.value / tableWidth * 100;
             this.formatNumericTextBox(this.cellWidthBox, 'Percent', value);
-        } else if (this.cellWidthType.text === 'Points' && this.owner.selection.cellFormat.preferredWidthType !== 'Point') {
+        } else if (this.cellWidthType.text === 'Points' && this.documentHelper.selection.cellFormat.preferredWidthType !== 'Point') {
             value = tableWidth / 100 * this.cellWidthBox.value;
             this.formatNumericTextBox(this.cellWidthBox, 'Point', value);
         } else {
@@ -1244,22 +1231,22 @@ export class TablePropertiesDialog {
      * @private
      */
     public showTableOptionsDialog = (): void => {
-        this.owner.owner.tableOptionsDialogModule.show();
-        this.owner.dialog2.element.style.pointerEvents = 'none';
+        this.documentHelper.owner.tableOptionsDialogModule.show();
+        this.documentHelper.dialog2.element.style.pointerEvents = 'none';
     }
     /**
      * @private
      */
     public showBordersShadingsPropertiesDialog = (): void => {
-        this.owner.owner.bordersAndShadingDialogModule.show();
-        this.owner.dialog2.element.style.pointerEvents = 'none';
+        this.documentHelper.owner.bordersAndShadingDialogModule.show();
+        this.documentHelper.dialog2.element.style.pointerEvents = 'none';
     }
     /**
      * @private
      */
     public showCellOptionsDialog = (): void => {
-        this.owner.owner.cellOptionsDialogModule.show();
-        this.owner.dialog2.element.style.pointerEvents = 'none';
+        this.documentHelper.owner.cellOptionsDialogModule.show();
+        this.documentHelper.dialog2.element.style.pointerEvents = 'none';
     }
     /**
      * @private
@@ -1279,7 +1266,7 @@ export class TablePropertiesDialog {
         this.target = undefined;
         this.cellAlignment = undefined;
         this.tableAlignment = undefined;
-        this.owner = undefined;
+        this.documentHelper = undefined;
         this.preferCheckBox = undefined;
         this.tableWidthType = undefined;
         this.preferredWidth = undefined;

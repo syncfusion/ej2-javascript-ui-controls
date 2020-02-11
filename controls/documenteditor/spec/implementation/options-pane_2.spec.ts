@@ -1,4 +1,4 @@
-import { LayoutViewer, PageLayoutViewer, TextElementBox } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, TextElementBox, DocumentHelper } from '../../src/index';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
@@ -19,16 +19,16 @@ function getJson() {
 describe('open find pane and repalce pane testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -37,23 +37,23 @@ describe('open find pane and repalce pane testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 1000);
     });
     it('replace all validation-1', () => {
         editor.open(getJson());
-        let paraLength = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length;
+        let paraLength = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length;
         editor.selection.start.setPositionForCurrentIndex('0;0;1;1;33');
         editor.selection.end.setPositionForCurrentIndex('0;0;2;2;45');
         editor.selection.highlightSelectedContent(editor.selection.start, editor.selection.end);
         editor.editorModule.insertText('a');
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
     });
     it('replace all validation-2', () => {
         editor.open(getJson());
-        let paraLength = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
+        let paraLength = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
         editor.selection.start.setPositionForCurrentIndex('0;0;1;1;33');
         editor.selection.end.setPositionForCurrentIndex('0;0;2;2;45');
         editor.selection.highlightSelectedContent(editor.selection.start, editor.selection.end);
@@ -64,24 +64,24 @@ describe('open find pane and repalce pane testing', () => {
             editor.editorHistory.redo();
             count++;
         }
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
     });
     it('replace all validation-3', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
-        let paraLength = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
+        documentHelper = editor.documentHelper;
+        let paraLength = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'Adventure';
         let replaceelementbox: any = (optionsPane as any).replaceWith;
         replaceelementbox.value = 'Adventuressssssssssssssssssssssssssssssssssssssssssssssss';
         optionsPane.onReplaceAllButtonClick();
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
     });
     it('replace all validation-4', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
-        let paraLength = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
+        documentHelper = editor.documentHelper;
+        let paraLength = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'Adventure';
@@ -94,22 +94,21 @@ describe('open find pane and repalce pane testing', () => {
             editor.editorHistory.redo();
             count++;
         }
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.viewer.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length + (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
     });
 });
 describe('open find pane and repalce pane testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -118,7 +117,6 @@ describe('open find pane and repalce pane testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -191,10 +189,10 @@ describe('search icon focus validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -210,7 +208,7 @@ describe('search icon focus validation', () => {
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'Road';
         optionsPane.searchIconClickInternal();
-        let scrollTop: number = editor.viewer.viewerContainer.scrollTop;
+        let scrollTop: number = editor.documentHelper.viewerContainer.scrollTop;
         expect(scrollTop).not.toBe(0);
     });
 });

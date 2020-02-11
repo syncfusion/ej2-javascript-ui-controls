@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer, SfdtExport } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, SfdtExport, DocumentHelper } from '../../src/index';
 
 import { TestHelper } from '../test-helper.spec';
 import { createElement } from '@syncfusion/ej2-base';
@@ -18,60 +18,59 @@ import { WSectionFormat } from '../../src/document-editor/implementation/format/
 
 describe('Selection Module Unit Test script', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
         editor.editorModule.insertText('Adventure Works cycles');
-        viewer.selection.selectAll()
+        documentHelper.selection.selectAll()
     });
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(() => {
             done();
         }, 1000);
     });
     it('toggle highlight color testing', () => {
-        viewer.selection.characterFormat.highlightColor = undefined;
+        documentHelper.selection.characterFormat.highlightColor = undefined;
         editor.editorModule.toggleHighlightColor();
-        expect(viewer.selection.characterFormat.highlightColor).toBe('Yellow');
+        expect(documentHelper.selection.characterFormat.highlightColor).toBe('Yellow');
     });
     it('toggle highlight no color testing', () => {
-        viewer.selection.characterFormat.highlightColor = 'Yellow';
+        documentHelper.selection.characterFormat.highlightColor = 'Yellow';
         editor.editorModule.toggleHighlightColor();
-        expect(viewer.selection.characterFormat.highlightColor).toBe('NoColor');
+        expect(documentHelper.selection.characterFormat.highlightColor).toBe('NoColor');
     });
 });
 describe('Selection Public APi testing ', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, SfdtExport, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.enableLocalPaste = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -140,19 +139,19 @@ describe('Selection Public APi testing ', () => {
 });
 describe('Selection Public APi testing - 2', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.enableLocalPaste = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -321,18 +320,18 @@ describe('Selection Public APi testing - 2', () => {
 });
 // describe('Text Position API validation', () => {
 //     let editor: DocumentEditor;
-//     let viewer: PageLayoutViewer;
+//     let documentHelper:DocumentHelper;
 //     beforeAll(() => {
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
 //         document.body.appendChild(ele);
 //         DocumentEditor.Inject(Selection, Editor, EditorHistory);
 //         editor = new DocumentEditor({ enableEditor: true,isReadOnly: false, enablePaste: true, enableSelection: true, enableEditorHistory: true });
-//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
 //         editor.appendTo('#container');
-//         viewer = editor.viewer as PageLayoutViewer;
+//         documentHelper=editor.documentHelper;
 //     });
 //     afterAll((done) => {
 //         editor.destroy();
@@ -386,19 +385,19 @@ describe('Selection Public APi testing - 2', () => {
 // });
 describe('Selection with out clearing multi selection', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
         editor.enableLocalPaste = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -436,18 +435,18 @@ describe('Selection with out clearing multi selection', () => {
 
 describe('Select Current Word', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = (editor as any).viewer;
+        documentHelper = (editor as any).documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -493,18 +492,18 @@ describe('Select Current Word', () => {
 
 describe('Cut and Copy operation without SfdtExport', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();

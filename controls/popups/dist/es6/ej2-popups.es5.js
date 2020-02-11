@@ -1922,7 +1922,8 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.dlgContainer = this.element.parentElement;
             this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
         }
-        if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true) {
+        if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true
+            && !isNullOrUndefined(this.element.parentElement)) {
             var parentEle = this.isModal ? this.dlgContainer.parentElement : this.element.parentElement;
             this.refElement = this.createElement('div', { className: DLG_REF_ELEMENT });
             parentEle.insertBefore(this.refElement, (this.isModal ? this.dlgContainer : this.element));
@@ -2115,6 +2116,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.element.insertBefore(this.contentEle, this.element.children[0]);
         }
         if (this.height === 'auto') {
+            if (!this.isBlazorServerRender() && Browser.isIE && this.element.style.width === '' && !isNullOrUndefined(this.width)) {
+                this.element.style.width = formatUnit(this.width);
+            }
             this.setMaxHeight();
         }
     };
@@ -2198,6 +2202,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
             (this.targetEle.offsetHeight - 20) + 'px' : (window.innerHeight - 20) + 'px';
         this.element.style.display = display;
+        if (Browser.isIE && this.height === 'auto' && !isNullOrUndefined(this.contentEle)
+            && this.element.offsetHeight < this.contentEle.offsetHeight) {
+            this.element.style.height = '100%';
+        }
     };
     Dialog.prototype.setEnableRTL = function () {
         if (!this.isBlazorServerRender()) {
@@ -2615,7 +2623,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             removeClass([this.element], this.cssClass.split(' '));
         }
-        if (!isNullOrUndefined(this.refElement)) {
+        if (!isNullOrUndefined(this.refElement) && !isNullOrUndefined(this.refElement.parentElement)) {
             this.refElement.parentElement.insertBefore((this.isModal ? this.dlgContainer : this.element), this.refElement);
             detach(this.refElement);
             this.refElement = undefined;
@@ -4248,16 +4256,18 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
      * @memberof Tooltip
      */
     Tooltip.prototype.destroy = function () {
-        _super.prototype.destroy.call(this);
+        if (!isBlazor()) {
+            _super.prototype.destroy.call(this);
+            if (this.popupObj) {
+                this.popupObj.destroy();
+            }
+            if (this.tooltipEle) {
+                remove(this.tooltipEle);
+            }
+        }
         removeClass([this.element], ROOT$1);
         this.unwireEvents(this.opensOn);
         this.unwireMouseEvents(this.element);
-        if (this.popupObj) {
-            this.popupObj.destroy();
-        }
-        if (this.tooltipEle) {
-            remove(this.tooltipEle);
-        }
         this.tooltipEle = null;
         this.popupObj = null;
     };

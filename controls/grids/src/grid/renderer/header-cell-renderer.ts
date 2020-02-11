@@ -60,14 +60,18 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         let column: Column = cell.column; let ariaAttr: IAriaOptions<boolean> = {};
         //Prepare innerHtml
         let innerDIV: HTMLDivElement = <HTMLDivElement>this.getGui();
-
+        let hValueAccer: string;
         attributes(innerDIV, {
             'e-mappinguid': column.uid,
             'class': 'e-headercelldiv'
         });
-
+        if (!isNullOrUndefined(column.headerValueAccessor)) {
+            hValueAccer = (this.getValue(column.headerText, column) as string);
+        }
         if (column.type !== 'checkbox') {
             let value: string = column.headerText;
+            if (!isNullOrUndefined(hValueAccer)) {
+                value = hValueAccer; }
             let headerText: Element = <Element>this.hTxtEle.cloneNode();
             headerText[column.getDomSetter()] = value;
             innerDIV.appendChild(headerText);
@@ -130,11 +134,8 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
                 extend({ 'index': colIndex }, column), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
             node.firstElementChild.innerHTML = '';
             appendChildren(node.firstElementChild, result);
-
         }
-
         this.ariaService.setOptions(<HTMLElement>node, ariaAttr);
-
         if (!isNullOrUndefined(column.headerTextAlign) || !isNullOrUndefined(column.textAlign)) {
             let alignment: string = column.headerTextAlign || column.textAlign;
             (innerDIV as HTMLElement).style.textAlign = alignment;
@@ -144,7 +145,6 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
                 node.classList.add('e-centeralign');
             }
         }
-
         if (column.clipMode === 'Clip' || (!column.clipMode && this.parent.clipMode === 'Clip')) {
             node.classList.add('e-gridclip');
         } else if (column.clipMode === 'EllipsisWithTooltip' || (!column.clipMode && this.parent.clipMode === 'EllipsisWithTooltip')) {
@@ -154,6 +154,10 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         node.setAttribute('aria-colspan', '1');
         this.parent.trigger(headerCellInfo, {cell, node});
         return node;
+    }
+
+    public getValue(field: string, column: Column): Object {
+        return (column.headerValueAccessor as Function)(field, column);
     }
 
     private extendPrepareHeader(column: Column, node: Element): Element {

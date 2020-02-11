@@ -201,9 +201,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Gets or sets the additional attribute to `HtmlAttributes` property in MultiSelect,
      * which helps to add attribute like title, name etc, input should be key value pair.
      * 
-     * {% codeBlock src="multiselect/html-attributes-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="multiselect/html-attributes-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='multiselect/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     htmlAttributes?: { [key: string]: string; };
@@ -307,6 +305,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
 
     /**
      * Selects the list item which maps the data `value` field in the component.
+     * {% codeBlock src='multiselect/value/index.md' %}{% endcodeBlock %}
      * @default null
      * @isGenericType true
      */

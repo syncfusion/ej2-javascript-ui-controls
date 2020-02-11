@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+
+<head>
+    <title> Nodes </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+
+    <script data-main="template" src="../../node_modules/requirejs/require.js"></script>
+
+    <script src="../require.config.js"></script>
+</head>
+
+<style>
+    th {
+        border: 5px solid #c1dad7
+    }
+
+    td {
+        border: 5px solid #c1dad7
+    }
+
+    .c1 {
+        background: #4b8c74
+    }
+
+    .c2 {
+        background: #74c476
+    }
+
+    .c3 {
+        background: #a4e56d
+    }
+
+    .c4 {
+        background: #cffc83
+    }
+</style>
+
+<style>
+    th {
+        border: 5px solid #c1dad7
+    }
+
+    td {
+        border: 5px solid #c1dad7
+    }
+
+    .c1 {
+        background: #4b8c74
+    }
+
+    .c2 {
+        background: #74c476
+    }
+
+    .c3 {
+        background: #a4e56d
+    }
+
+    .c4 {
+        background: #cffc83
+    }
+</style>
+<script id="nodetemplate" type="text/x-template">
+<table style="width:100%;">
+    <tbody>
+        <tr>
+            <th class="c1">ID</th>
+            <th class="c2">Offset</th>
+        </tr>
+        <tr>
+            <td class="c1">${id}</td>
+            <td class="c2">${width}</td>
+        </tr>
+    </tbody>
+</table>
+</script>
+<script id="annotationtemplate" type="text/x-template">
+    <div style="width:100%;height:100%;overflow:hidden"><input type="button" value="${id}" 
+        style="width:${width}"/></div>
+    </script>
+
+<body>
+    <div class="content-wrapper">
+        <div id="diagram"></div>
+    </div>
+</body>
+
+</html>

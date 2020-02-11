@@ -22,7 +22,7 @@ describe('Border Validation Testing', () => {
         expect('').toBe('');
         border1.destroy();
     });
-    it('Copy Format undefined Testing', () => {        
+    it('Copy Format undefined Testing', () => {
         border.copyFormat(border);
         expect('').toBe('');
     });

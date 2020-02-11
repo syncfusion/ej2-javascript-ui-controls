@@ -2,7 +2,7 @@
 $pager-font-family: sans-serif !default;
 $pager-border-type: $border-type !default;
 $pager-mobile-icon-size: 11px !default;
-$pager-bg-color: $default-bg-color !default;
+$pager-bg-color: $theme-primary !default;
 $pager-mhover-color: $default-font-color !default;
 $pager-pagermessage-weight: normal !default;
 $pager-last-border-size: 0 !default;
@@ -77,7 +77,7 @@ $pager-bigger-dropdown-margin: -44px  0 0 15px !default;
 $pager-dropdown-height: 32px !default;
 $pager-constant-margin: 0 0 4px 8px !default;
 $pager-bigger-letter-spacing: 2px 10px 11px !default;
-$pager-hover-bg-color: '' !default;
+$pager-hover-bg-color: $neutral-light !default;
 $pager-numericitem-min-width: 30px !default;
 $pager-activeitem-padding: 9px 3px 8px 2px !default;
 $pager-tripledot-rtl-margin-top: 2px !default;

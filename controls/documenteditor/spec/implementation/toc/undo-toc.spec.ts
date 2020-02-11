@@ -1,6 +1,6 @@
 import { createElement, } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/index';
 import { Selection } from '../../../src/index';
@@ -17,29 +17,29 @@ function getJson(): any {
 }
 describe('undo and redo toc', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     let currentPara: ParagraphWidget = undefined;
     let tocSettings: TableOfContentsSettings =
-        {
-            startLevel: 1, endLevel: 3, includeHyperlink: true, includePageNumber: true, rightAlign: true, includeOutlineLevels: true
-        };
+    {
+        startLevel: 1, endLevel: 3, includeHyperlink: true, includePageNumber: true, rightAlign: true, includeOutlineLevels: true
+    };
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -50,16 +50,16 @@ describe('undo and redo toc', () => {
     it('paragraph length - undo and redo', () => {
         editor.openBlank();
         editor.open(JSON.stringify(getJson()));
-        let paraWidgets: ParagraphWidget[] = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        let paraWidgets: ParagraphWidget[] = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(1);
         editor.editorModule.insertTableOfContents();
-        paraWidgets = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        paraWidgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(3);
         editor.editorHistory.undo();
-        paraWidgets = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        paraWidgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(1);
         editor.editorHistory.redo();
-        paraWidgets = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        paraWidgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(3);
     });
     it('paragraph length - multiple undo', () => {
@@ -68,16 +68,16 @@ describe('undo and redo toc', () => {
         editor.editorModule.insertTableOfContents();
         editor.editorModule.insertTableOfContents();
         editor.editorModule.insertTableOfContents();
-        let paraWidgets: ParagraphWidget[] = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        let paraWidgets: ParagraphWidget[] = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(7);
         editor.editorHistory.undo();
-        paraWidgets = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        paraWidgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(5);
         editor.editorHistory.undo();
-        paraWidgets = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        paraWidgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(3);
         editor.editorHistory.undo();
-        paraWidgets = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        paraWidgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(1);
     });
     it('paragraph length - multiple undo', () => {
@@ -86,17 +86,17 @@ describe('undo and redo toc', () => {
         editor.editorModule.insertTableOfContents();
         editor.editorModule.insertTableOfContents();
         editor.editorModule.insertTableOfContents();
-        let paraWidgets: ParagraphWidget[] = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        let paraWidgets: ParagraphWidget[] = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(7);
         editor.editorHistory.undo();
         editor.editorHistory.redo();
-        paraWidgets = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        paraWidgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(7);
         editor.editorHistory.undo();
         editor.editorHistory.undo();
         editor.editorHistory.redo();
         editor.editorHistory.redo();
-        paraWidgets = editor.viewer.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
+        paraWidgets = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets as ParagraphWidget[];
         expect(paraWidgets.length).toBe(7);
     });
 });

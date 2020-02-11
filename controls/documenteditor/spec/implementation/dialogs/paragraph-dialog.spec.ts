@@ -23,10 +23,10 @@ describe('Paragraph Dialog Test Case Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show()
@@ -61,10 +61,10 @@ describe('Load Paragraph Format Dialog Test Case Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -80,12 +80,12 @@ describe('Load Paragraph Format Dialog Test Case Validation', function () {
         }, 2000);
     });
     it('Load Paragraph Format Index 0 testing', function () {
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.textAlignment = 'Center';
         dialog.loadParagraphDialog();
     });
     it('Load Paragraph Format Index 1 testing', function () {
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.textAlignment = 'Left';
         selectionParaFormat.lineSpacingType = 'AtLeast';
         dialog.loadParagraphDialog();
@@ -122,10 +122,10 @@ describe('Paragraph Format Dialog Load Test Case Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -141,13 +141,13 @@ describe('Paragraph Format Dialog Load Test Case Validation', function () {
         }, 2000);
     });
     it('Load Paragraph Format Index 2 testing', function () {
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.textAlignment = 'Right';
         selectionParaFormat.lineSpacingType = 'Exactly';
         dialog.loadParagraphDialog();
     });
     it('Load Paragraph Format Index 3 testing', function () {
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.textAlignment = 'Justify';
         selectionParaFormat.lineSpacingType = 'Multiple';
         dialog.loadParagraphDialog();
@@ -164,10 +164,10 @@ describe('Apply Paragraph Format Dialog Test Case Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -204,10 +204,10 @@ describe('Paragraph Format Apply Dialog Test Case Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -253,10 +253,10 @@ describe('Paragraph Format Dialog Test Case Validation', function () {
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableSelection: true, enableContextMenu: true });
         editor.enableEditorHistory = true;
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule;
         menu = editor.contextMenu;
@@ -292,10 +292,10 @@ describe('Dialog Test Case using event Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -312,14 +312,14 @@ describe('Dialog Test Case using event Validation', function () {
     });
     it('Load Paragraph Index 0 testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         (dialog as any).special.index = 0;
         selectionParaFormat.firstLineIndent = 0;
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Format Index 0 else testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 25;
         (dialog as any).special.index = 0;
         dialog.changeByValue(changeEvent);
@@ -337,10 +337,10 @@ describe('Dialog Test Case using event second Validation', function () {
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -357,21 +357,21 @@ describe('Dialog Test Case using event second Validation', function () {
     });
     it('Load Paragraph Format Index 1 else testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = undefined;
         (dialog as any).special.index = 1;
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Format Index 1 else testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = -2;
         (dialog as any).special.index = 1;
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Index 1 testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 0;
         (dialog as any).special.index = 1;
         dialog.changeByValue(changeEvent);
@@ -388,10 +388,10 @@ describe('Dialog Test Case using event third Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -408,7 +408,7 @@ describe('Dialog Test Case using event third Validation', function () {
     });
     it('Load Paragraph Format Index 1 else testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = undefined;
         (dialog as any).special.index = 2;
         dialog.changeByValue(changeEvent);
@@ -418,14 +418,14 @@ describe('Dialog Test Case using event third Validation', function () {
         changeEvent = { preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         changeEvent.target = (dialog as any).alignment;
         changeEvent.target.index = 2;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = -2;
         (dialog as any).special.index = 2;
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Index 1 testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 0;
         (dialog as any).special.index = 2;
         dialog.changeByValue(changeEvent);
@@ -442,10 +442,10 @@ describe('Dialog Test Case using event third Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -462,14 +462,14 @@ describe('Dialog Test Case using event third Validation', function () {
     });
     it('Load Paragraph Format Index 1 else testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 48;
         (dialog as any).special.index = 1;
         dialog.changeByValue(changeEvent);
     });
     it('Load Paragraph Format Index 2 else testing', function () {
         let changeEvent: any;
-        selectionParaFormat = editor.viewer.selection.paragraphFormat;
+        selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
         selectionParaFormat.firstLineIndent = 48;
         (dialog as any).special.index = 1;
         dialog.changeByValue(changeEvent);
@@ -485,10 +485,10 @@ describe('Paragraph Format show and destroy Test Case Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -521,10 +521,10 @@ describe('Paragraph format change by space Test Case Validation', function () {
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
         dialog.show();
@@ -565,10 +565,10 @@ describe('Paragraph format-before spacing Applying validation via dialog in empt
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
     });
@@ -623,10 +623,10 @@ describe('Paragraph format-before spacing and left Indent Applying validation vi
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
     });
@@ -681,10 +681,10 @@ describe('Paragraph format-after spacing and left Indent Applying validation via
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
     });
@@ -742,10 +742,10 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
     });
@@ -810,10 +810,10 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
     });
@@ -872,10 +872,10 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
     });
@@ -941,10 +941,10 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableParagraphDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.paragraphDialogModule
     });

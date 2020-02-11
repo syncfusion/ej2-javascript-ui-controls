@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, SfdtExport } from '../../src/index';
+import { Editor, SfdtExport, DocumentHelper } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -9,7 +9,7 @@ import { LineWidget, FieldElementBox, BodyWidget, ParagraphWidget, HeaderFooters
 import { WSectionFormat } from '../../src/document-editor/implementation/format/section-format';
 import { WParagraphFormat } from '../../src/document-editor/implementation/format/paragraph-format';
 import { WCharacterFormat } from '../../src/document-editor/implementation/format/character-format';
-//editor.viewer.onDocumentChanged([createDocument()]);
+//editor.documentHelper.onDocumentChanged([createDocument()]);
 /**
  * Editor Spec
  */
@@ -178,10 +178,10 @@ describe('Delete with history preservation -1 ', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -199,7 +199,7 @@ describe('Delete with history preservation -1 ', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('single delete at inline start', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.editorModule.delete();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
@@ -212,10 +212,10 @@ describe('Delete with history preservation-2', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -227,7 +227,7 @@ describe('Delete with history preservation-2', () => {
         }, 1000);
     });
     it('single delete at inline end', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
         let start = editor.selection.getText(true);
         editor.editorModule.delete();
@@ -250,7 +250,7 @@ describe('Delete with history preservation-2', () => {
         expect(start !== end).toBe(true);
     });
     it('selected content removal using delete', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.selectAll();
         let start = editor.selection.getText(true);
         editor.editorModule.delete();
@@ -266,10 +266,10 @@ describe('Delete with history preservation-3', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -281,7 +281,7 @@ describe('Delete with history preservation-3', () => {
         }, 1000);
     });
     it('selected content removal containing paragraph,field,table using delete', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
@@ -319,10 +319,10 @@ describe('Delete with history preservation-4', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -368,11 +368,11 @@ describe('Delete and paste with history preservation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, SfdtExport, EditorHistory);
-         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -394,9 +394,9 @@ describe('Delete and paste with history preservation', () => {
         editor.selection.copy();
         let event: any;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.paste(); }).not.toThrowError();
     });
     it('paste testing inside paragraph', () => {
@@ -413,25 +413,25 @@ describe('Delete and paste with history preservation', () => {
     });
     it('MultiSelection in insert text testing', () => {
         editor.openBlank()
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
         let event: any;
         event = { offsetX: 238, offsetY: 123, preventDefault: function () { }, ctrlKey: true, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         event = { offsetX: 240, offsetY: 123, preventDefault: function () { }, ctrlKey: true, which: 1 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 260, offsetY: 123, preventDefault: function () { }, ctrlKey: true, which: 1 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 270, offsetY: 123, preventDefault: function () { }, ctrlKey: true, which: 1 };
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseUpInternal(event);
         event = { offsetX: 320, offsetY: 123, preventDefault: function () { }, ctrlKey: true, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         event = { offsetX: 325, offsetY: 123, preventDefault: function () { }, ctrlKey: true, which: 1 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 370, offsetY: 123, preventDefault: function () { }, ctrlKey: true, which: 1 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 374, offsetY: 125, preventDefault: function () { }, ctrlKey: true, which: 1 };
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseUpInternal(event);
         expect(() => { editor.editorModule.insertText('A'); }).not.toThrowError();
         editor.editorHistory.undo();
         editor.editorHistory.redo();
@@ -456,10 +456,10 @@ describe('Delete and paste with history preservation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -472,67 +472,67 @@ describe('Delete and paste with history preservation', () => {
     });
     it('Skipbackspace testing if nextblock is table', () => {
         editor.openBlank()
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         let event: any;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         //center alignment Property
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onBackSpace();
         editor.editorHistory.undo();
         editor.editorHistory.redo();
     });
     it('insert text skip testing if selection end is inside table', () => {
         editor.openBlank()
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         let event: any;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         //center alignment Property
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.insertText('A'); }).not.toThrowError();
     });
     it('insert text skip testing if selection end is inside table', () => {
         editor.openBlank()
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         let event: any;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         //center alignment Property
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.onBackSpace() }).not.toThrowError();
     });
     it('insert text  testing at different format', () => {
         editor.openBlank()
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         editor.editorModule.insertText('Adventure Work Cycles');
         editor.selection.selectAll();
         let event: any;
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 73, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         //center alignment Property
         event = { keyCode: 85, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         let inline = editor.selection.start.paragraph.getInline(editor.selection.start.offset, 0).element;
         inline = inline.clone();
         inline.characterFormat.bold = false;
@@ -550,12 +550,12 @@ describe('Delete Validation ', () => {
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.acceptTab = true;
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
+        editorModule = new Editor(editor.documentHelper);
     });
     afterAll((done): void => {
         editor.destroy();
@@ -584,14 +584,14 @@ describe('Delete Validation ', () => {
     it('Tab in justify alignment validation', () => {
         editor.openBlank();
         let event: any = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 74, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.insertText('s');
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Justify');
     });
     it('update List Paragraph in table Validation', () => {
@@ -619,12 +619,12 @@ describe('Delete Validation ', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
+        editorModule = new Editor(editor.documentHelper);
     });
     afterAll((done): void => {
         editor.destroy();
@@ -689,10 +689,10 @@ describe('backspace with history preservation-1', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -735,10 +735,10 @@ describe('backspace with history preservation-2', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -774,10 +774,10 @@ describe('backspace with history preservation-3', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -807,16 +807,16 @@ describe('backspace with history preservation-3', () => {
         editor.editor.insertTable(2, 2);
         editor.selection.handleUpKey();
         let event: any = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onBackSpace();
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.delete();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('Back space on field separator validation', () => {
-        editor.viewer.onDocumentChanged([createDocumentHyperlink()]);
+        editor.documentHelper.onDocumentChanged([createDocumentHyperlink()]);
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         editor.selection.moveNextPosition();
         editor.editorModule.onBackSpace();
@@ -833,10 +833,10 @@ describe('backspace with history preservation in table', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -853,9 +853,9 @@ describe('backspace with history preservation in table', () => {
         editor.editorModule.insertText('s');
         editor.editorModule.insertTable(2, 2);
         let event: any = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onBackSpace();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
@@ -865,7 +865,7 @@ describe('backspace with history preservation in table', () => {
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertText('s');
         let event: any = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onBackSpace();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
@@ -875,14 +875,14 @@ describe('backspace with history preservation in table', () => {
         editor.editorHistory.isUndoing = false;
         editor.editor.insertTable(2, 2);
         editor.editor.insertTable(2, 2);
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         let event: any;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         editor.editorModule.onBackSpace();
     });
 });
@@ -897,10 +897,10 @@ describe('Enter validation with history preservation-1', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -921,7 +921,7 @@ describe('Enter validation with history preservation-1', () => {
     });
     it('selected content removal using enter', () => {
         (editor as any).clearPreservedCollectionsInViewer();
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.selectAll();
         editor.editorModule.onEnter();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
@@ -942,10 +942,10 @@ describe('shift Enter and tab key validation with history preservation-1', () =>
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
         editor.acceptTab = true;
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -958,21 +958,21 @@ describe('shift Enter and tab key validation with history preservation-1', () =>
     });
     it('shift Enter validation at empty line widget', () => {
         let event: any = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
     });
     it('shift Enter validation at inline', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.handleEndKey();
         editor.selection.handleControlLeftKey();
         let event: any = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
     });
     it('shift Enter validation at paragraph end', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.handleEndKey();
         editor.selection.handleControlLeftKey();
         let event: any = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.insertText('s');
         expect(() => { editor.editorModule.insertText('s'); }).not.toThrowError();
     });
@@ -985,10 +985,10 @@ describe('shift Enter and tab key validation with history preservation-2', () =>
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
         editor.acceptTab = true;
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1002,14 +1002,14 @@ describe('shift Enter and tab key validation with history preservation-2', () =>
     it('tab validation', () => {
         editor.openBlank()
         let event: any = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        expect(() => { editor.viewer.onKeyDownInternal(event); }).not.toThrowError();
+        expect(() => { editor.documentHelper.onKeyDownInternal(event); }).not.toThrowError();
     });
     it('shift Enter validation at inline', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.handleEndKey();
         editor.selection.handleControlLeftKey();
         let event: any = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        expect(() => { editor.viewer.onKeyDownInternal(event); }).not.toThrowError();
+        expect(() => { editor.documentHelper.onKeyDownInternal(event); }).not.toThrowError();
     });
 
 });
@@ -1020,10 +1020,10 @@ describe('Enter & insert Image validation with history preservation-2', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1037,79 +1037,79 @@ describe('Enter & insert Image validation with history preservation-2', () => {
     it('shift widgets', () => {
         let event: any;
         editor.open(getJson());
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
-        expect(viewer.pages.length).not.toBe(1);
+        documentHelper.onKeyDownInternal(event);
+        expect(documentHelper.pages.length).not.toBe(1);
     });
     it('insert Text at image validation', () => {
         let event: any;
         editor.open(JSON.stringify(imageJson));
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { offsetX: 637, offsetY: 270, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseDownInternal(event);
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseDownInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         let inline = editor.selection.start.paragraph.getInline(editor.selection.start.offset, 0).element;
         inline = inline.clone();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         editor.selection.characterFormat.fontFamily = "Verdana";
         editor.editorModule.insertText('s');
-        expect(viewer.pages.length).not.toBe(0);
+        expect(documentHelper.pages.length).not.toBe(0);
     });
 });
 
 describe('enter and tab key behaviour validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -1140,7 +1140,7 @@ describe('enter and tab key behaviour validation', () => {
         for (let i: number = 0; i < 45; i++) {
             editor.editorModule.handleEnterKey();
         }
-        expect(viewer.pages.length).not.toBe(0);
+        expect(documentHelper.pages.length).not.toBe(0);
     }, 300);
     // it('cut table and undo table insert validation', () => {
     //     editor.openBlank();
@@ -1161,23 +1161,23 @@ describe('enter and tab key behaviour validation', () => {
  */
 describe('Insert Hyperlink validation via dialog method', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -1200,10 +1200,10 @@ describe('Text insert behaviour validation with history preservation-1', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1226,7 +1226,7 @@ describe('Text insert behaviour validation with history preservation-1', () => {
         expect(start !== end).toBe(true);
     });
     it('text insert at start of inline', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         let start = editor.selection.start.location;
         editor.editorModule.insertText('s');
         let end = editor.selection.start.location;
@@ -1235,7 +1235,7 @@ describe('Text insert behaviour validation with history preservation-1', () => {
         expect(start !== end).toBe(true);
     });
     it('text insert at end of inline', () => {
-        editor.viewer.onDocumentChanged([createDocument()]);
+        editor.documentHelper.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
         let start = editor.selection.start.location;
         editor.editorModule.insertText('s');
@@ -1252,10 +1252,10 @@ describe('Text insert behaviour validation with history preservation-2', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1272,9 +1272,9 @@ describe('Text insert behaviour validation with history preservation-2', () => {
         let event: any;
         editor.editorModule.insertText('www.syncfusion.com');
         editor.editorModule.insertText(' ');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         let inline = editor.selection.start.paragraph.getInline(editor.selection.start.offset, 0).element;
         inline = inline.clone();
         editor.editorModule.insertText('s');
@@ -1286,56 +1286,54 @@ describe('Text insert behaviour validation with history preservation-2', () => {
         let event: any;
         editor.editorModule.insertText('www.syncfusion.com');
         editor.editorModule.insertText(' ');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         let inline = editor.selection.start.paragraph.getInline(editor.selection.start.offset, 0).element;
         inline = inline.clone();
         editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
-        expect(viewer.pages.length).not.toBe(0);
+        expect(documentHelper.pages.length).not.toBe(0);
     });
     it('insert Text at field seperator  validation', () => {
         editor.openBlank();
         let event: any;
         editor.editorModule.insertText('www.syncfusion.com');
         editor.editorModule.insertText(' ');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         let inline = editor.selection.start.paragraph.getInline(editor.selection.start.offset, 0).element;
         inline = inline.clone();
         editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
-        expect(viewer.pages.length).not.toBe(0);
+        expect(documentHelper.pages.length).not.toBe(0);
     });
 });
 describe('Insert Text and Insert table undo redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableHyperlinkDialog: true });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -1343,16 +1341,16 @@ describe('Insert Text and Insert table undo redo', () => {
     it('In backward selection insert hyperlink validation in Multiple paragraph', () => {
         editor.editorModule.insertTextInternal('Syncfusion', true);
         editor.editorModule.insertTable(2, 3);
-        editor.viewer.pages[0].bodyWidgets[0].childWidgets.length
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+        editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
     });
     it('In backward selection edit hyperlink validation in Multiple paragraph', () => {
         editor.editorHistoryModule.undo();
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
     });
     it('undo edit hyperlink in multiple paragraph', () => {
         editor.editorHistoryModule.redo();
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
     });
     it('undo redo multiple times with undo at last', () => {
         let i: number = 0;
@@ -1361,7 +1359,7 @@ describe('Insert Text and Insert table undo redo', () => {
             editor.editorHistoryModule.redo();
         }
         editor.editorHistoryModule.undo();
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
     });
     it('undo redo multiple times with redo at last', () => {
         let i: number = 0;
@@ -1370,7 +1368,7 @@ describe('Insert Text and Insert table undo redo', () => {
             editor.editorHistoryModule.undo();
         }
         editor.editorHistoryModule.redo();
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
     });
 });
 //#endregion
@@ -1383,10 +1381,10 @@ describe('Auto format URL on space', (): void => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -1443,10 +1441,10 @@ describe('Auto format URL on space', (): void => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -1495,10 +1493,10 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -1551,10 +1549,10 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -1585,10 +1583,10 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -1625,10 +1623,10 @@ describe('HyperLink Navigation validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -1644,53 +1642,53 @@ describe('HyperLink Navigation validation', () => {
         let event: any;
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
-        expect(viewer.pages.length).toBe(1);
+        expect(documentHelper.pages.length).toBe(1);
     });
     it('Hyperlink navigation on enter testing with mailto', () => {
         editor.openBlank()
         let event: any;
         editor.editorModule.insertText('mailto:document@gmail.com');
         editor.editorModule.insertText(' ');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
     });
     it('Hyperlink navigation on enter testing link type as file', () => {
         editor.openBlank()
         let event: any;
         editor.editorModule.editHyperlink(editor.selection, 'file:///c:/document', 'support@syncfusion.com');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
     });
 });
@@ -1701,10 +1699,10 @@ describe('HyperLink Navigation validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -1720,34 +1718,34 @@ describe('HyperLink Navigation validation', () => {
         editor.openBlank()
         let event: any;
         editor.editorModule.editHyperlink(editor.selection, 'support@syncfusion.com', 'support@syncfusion.com');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
     });
     it('Hyperlink navigation link type as webpage', () => {
         editor.openBlank()
         let event: any;
         editor.editorModule.editHyperlink(editor.selection, 'www.syncfusion.com', 'www.syncfusion.com');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
     });
     it('remove hyperlink validation', () => {
@@ -1755,14 +1753,14 @@ describe('HyperLink Navigation validation', () => {
         let event: any;
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
-        let viewer: LayoutViewer = editor.viewer;
+        let documentHelper: DocumentHelper = editor.documentHelper;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         editor.editorModule.removeHyperlink();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editorModule.removeHyperlink(); }).not.toThrowError();
         editor.editorHistory.undo();
         editor.editorHistory.redo();
@@ -1778,10 +1776,10 @@ describe('insert column testing with selection is not empty', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1797,10 +1795,10 @@ describe('insert column testing with selection is not empty', () => {
         editor.editor.insertTable(2, 2);
         let event: any;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editor.insertColumn(true); }).not.toThrowError();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editor.insertColumn(true); }).not.toThrowError();
     });
     it('insert column testing with selection containing single column', () => {
@@ -1808,10 +1806,10 @@ describe('insert column testing with selection is not empty', () => {
         editor.editor.insertTable(2, 2);
         let event: any;
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editor.insertRow(false); }).not.toThrowError();
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.editor.insertRow(false); }).not.toThrowError();
     });
     it('insert Row branch validation', () => {
@@ -1824,7 +1822,7 @@ describe('insert column testing with selection is not empty', () => {
         editor.editor.insertTable(2, 1);
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.deleteRow();
     });
 });
@@ -1835,10 +1833,10 @@ describe('insert column testing with selection is not empty', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1877,11 +1875,11 @@ describe('insert column testing with selection is not empty', () => {
         editor.selection.toggleItalic();
         let event: any;
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.selection.characterFormat.italic = false;
         editor.selection.characterFormat.bold = false;
         editor.editorModule.insertText('A');
@@ -1900,19 +1898,19 @@ describe('insert column testing with selection is not empty', () => {
         editor.editorModule.insertText('Adventure');
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.cut();
     });
 });
@@ -1924,10 +1922,10 @@ describe('insert column testing with selection is not empty', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1943,7 +1941,7 @@ describe('insert column testing with selection is not empty', () => {
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertText('s');
         let event: any = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
@@ -1957,10 +1955,10 @@ describe('insert row below on empty selection with row spanned cells', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1976,23 +1974,23 @@ describe('insert row below on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(false);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect((editor.selectionModule.start.paragraph.associatedCell.previousWidget as TableCellWidget).cellFormat.rowSpan).toBe(3);
     });
     it('insert row below on empty selection scenario 2', () => {
@@ -2000,22 +1998,22 @@ describe('insert row below on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(false);
         expect(editor.selectionModule.start.paragraph.associatedCell.cellFormat.columnSpan).toBe(2);
     });
@@ -2024,36 +2022,36 @@ describe('insert row below on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(false);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(false);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(3);
     });
@@ -2062,39 +2060,39 @@ describe('insert row below on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         // event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        // editor.viewer.onKeyDownInternal(event);
+        // editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(false);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerTable.childWidgets.length).toBe(6);
     });
@@ -2103,26 +2101,26 @@ describe('insert row below on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         editor.editor.insertRow(false);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(4);
@@ -2132,32 +2130,32 @@ describe('insert row below on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         editor.editor.insertRow(false);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(false);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(4);
     });
@@ -2169,10 +2167,10 @@ describe('insert row above on empty selection with row spanned cells', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -2188,26 +2186,26 @@ describe('insert row above on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         editor.editor.insertRow(true);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(5);
@@ -2217,32 +2215,32 @@ describe('insert row above on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         editor.editor.insertRow(false);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(true);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(4);
     });
@@ -2251,26 +2249,26 @@ describe('insert row above on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         editor.editor.insertRow(true);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(5);
@@ -2280,31 +2278,31 @@ describe('insert row above on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(true);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(5);
     });
@@ -2313,39 +2311,39 @@ describe('insert row above on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         // event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        // editor.viewer.onKeyDownInternal(event);
+        // editor.documentHelper.onKeyDownInternal(event);
         editor.editor.insertRow(true);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerTable.childWidgets.length).toBe(6);
     });
@@ -2354,31 +2352,31 @@ describe('insert row above on empty selection with row spanned cells', () => {
         let event: any;
         editor.editorModule.insertTable(5, 5);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editor.mergeCells();
         editor.editor.insertRow(true);
         expect(editor.selectionModule.start.paragraph.associatedCell.ownerRow.childWidgets.length).toBe(5);
@@ -2389,17 +2387,16 @@ describe('insert row above on empty selection with row spanned cells', () => {
 
 describe('paragraph format apply and removal onsingle backspace', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.openBlank();
     });
@@ -2407,7 +2404,6 @@ describe('paragraph format apply and removal onsingle backspace', () => {
         editor.destroy();
         document.body.innerHTML = '';
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -2427,13 +2423,13 @@ describe('paragraph format apply and removal onsingle backspace', () => {
     it('Apply list testing', () => {
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onEnter();
         editor.editorModule.insertText('Adventure Works Cycles');
         editor.selection.selectAll();
         editor.editor.applyNumbering('1%', 'Arabic');
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onEnter();
         expect(() => { editor.editorModule.onBackSpace(); }).not.toThrowError();
     });
@@ -2446,10 +2442,10 @@ describe('Selected content replace tesing-1', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -2506,10 +2502,10 @@ describe('Selected content replace tesing-1', () => {
 //         document.body.appendChild(ele);
 //         editor = new DocumentEditor({ enableEditor: true,isReadOnly: false });
 //         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
 //         editor.appendTo('#container');
 //     });
 //     afterAll((done) => {
@@ -2536,7 +2532,7 @@ describe('Selected content replace tesing-1', () => {
 //         paragraph2.inlines.push(span2);
 //         section2.blocks.push(paragraph2);
 //         wordDocument.sections.push(section2);
-//         editor.viewer.document = wordDocument;
+//         editor.documentHelper.document = wordDocument;
 //         editor.selection.selectAll();
 //         expect(() => { editor.editorModule.delete(); }).not.toThrowError();
 //     });

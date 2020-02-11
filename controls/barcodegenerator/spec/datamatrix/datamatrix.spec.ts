@@ -100,7 +100,10 @@ describe('Barcode Control ', () => {
             var children = document.getElementById('barcode').children[0]
 
 
-            expect(Math.round(Number(children.children[10].getAttribute("x"))) == 112 && Math.round(Number(children.children[10].getAttribute("y"))) == 34 && Math.round(Number(children.children[50].getAttribute("x"))) == 76 && Math.round(Number(children.children[50].getAttribute("y"))) == 117 && ((children.children[10].getAttribute("fill"))) == "black").toBe(true);
+            expect(Math.round(Number(children.children[10].getAttribute("x"))) == 112 
+            && Math.round(Number(children.children[10].getAttribute("y"))) == 34 && Math.round(Number(children.children[50].getAttribute("x"))) == 76 
+            && Math.round(Number(children.children[50].getAttribute("y"))) == 117 && children.getAttribute("id") ==="barcodecontent"
+            && ((children.children[10].getAttribute("fill"))) == "black").toBe(true);
             //output(children);
             done();
         });

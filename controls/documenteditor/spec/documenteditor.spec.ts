@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../src/document-editor/document-editor';
 import {
     Margin, Page, TableWidget, ImageElementBox, TableRowWidget,
-    TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, XmlHttpRequestHandler
+    TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, XmlHttpRequestHandler, DocumentHelper
 } from '../src/index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { Layout } from '../src/document-editor/implementation/viewer/layout';
@@ -33,14 +33,15 @@ describe('DocumentEditor', () => {
 
     describe('Document Editor API Testing', () => {
         let editor: DocumentEditor;
+
         beforeAll(() => {
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             editor = new DocumentEditor({});
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo("#container");
         });
         afterAll((done) => {
@@ -69,9 +70,8 @@ describe('DocumentEditor', () => {
             expect(editor.isShiftingEnabled).toBe(true);
         });
         it('page background color', () => {
-            let viewer: LayoutViewer = editor.viewer;
-            viewer.backgroundColor = '#000000';
-            expect(viewer.backgroundColor).not.toEqual('#FFFFFF');
+            editor.documentHelper.backgroundColor = '#000000';
+            expect(editor.documentHelper.backgroundColor).not.toEqual('#FFFFFF');
         });
     });
     describe('HTML DOM Testing', () => {
@@ -81,10 +81,10 @@ describe('DocumentEditor', () => {
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             editor = new DocumentEditor({});
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo("#container");
         });
         afterAll((done) => {
@@ -99,7 +99,7 @@ describe('DocumentEditor', () => {
             expect(editor.element.classList.contains("e-documenteditor")).toEqual(true);
         });
         it('Editable div container test', () => {
-            expect(editor.viewer.editableDiv.parentElement).toBe(editor.viewer.iframe.contentDocument.body);
+            expect(editor.documentHelper.editableDiv.parentElement).toBe(editor.documentHelper.iframe.contentDocument.body);
         });
         it('viewerContainer element testing', () => {
             let container = document.querySelector("#container");
@@ -155,10 +155,9 @@ describe('DocumentEditor', () => {
     });
 
     describe('Disposing method validation', () => {
-        it('page destroy validation', () => {
-            let page: Page = new Page();
+         it('page destroy validation', () => {
+            let page: Page = new Page(undefined);
             page.bodyWidgets = undefined;
-            page.viewer = undefined;
             expect(() => { page.destroy() }).not.toThrowError();
         });
         it('image element box validation', () => {
@@ -203,10 +202,10 @@ describe('DocumentEditor', () => {
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             editor = new DocumentEditor({});
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo("#container");
         });
         afterAll((done) => {
@@ -238,23 +237,23 @@ describe('DocumentEditor', () => {
     });
     describe('List Dialog testing', () => {
         let editor: DocumentEditor = undefined;
-        let viewer: LayoutViewer;
+        let documentHelper: DocumentHelper;
         beforeAll(() => {
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, Selection, ListDialog);
             editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableListDialog: true });
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo('#container');
         });
         afterAll((done) => {
             document.body.removeChild(document.getElementById('container'));
             editor.destroy();
             editor = undefined;
-            viewer = undefined;
+            documentHelper = undefined;
             setTimeout(function () {
                 done();
             }, 1000);
@@ -268,7 +267,7 @@ describe('DocumentEditor', () => {
     });
     describe('Table Dialog testing-1', () => {
         let editor: DocumentEditor = undefined;
-        let viewer: LayoutViewer;
+        let documentHelper: DocumentHelper;
         let tablePropertiesDialog: TablePropertiesDialog;
         let borderAndShadingDialog: BordersAndShadingDialog;
         beforeAll(() => {
@@ -276,10 +275,10 @@ describe('DocumentEditor', () => {
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, BordersAndShadingDialog, EditorHistory, TableOptionsDialog, CellOptionsDialog);
             editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true, enableEditorHistory: true, enableTableOptionsDialog: true });
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo('#container');
             tablePropertiesDialog = editor.tablePropertiesDialogModule;
             borderAndShadingDialog = editor.bordersAndShadingDialogModule;
@@ -287,10 +286,11 @@ describe('DocumentEditor', () => {
         afterAll((done) => {
             document.body.removeChild(document.getElementById('container'));
             editor.destroy();
+            documentHelper = editor.documentHelper;
             tablePropertiesDialog.destroy();
             borderAndShadingDialog.destroy();
             editor = undefined;
-            viewer = undefined;
+            documentHelper = undefined;
             setTimeout(function () {
                 done();
             }, 1000);
@@ -331,7 +331,7 @@ describe('DocumentEditor', () => {
     });
     describe('Table Dialog testing-2', () => {
         let editor: DocumentEditor = undefined;
-        let viewer: LayoutViewer;
+        let documentHelper: DocumentHelper;
         let tablePropertiesDialog: TablePropertiesDialog;
         let borderAndShadingDialog: BordersAndShadingDialog;
         beforeAll((done) => {
@@ -339,10 +339,10 @@ describe('DocumentEditor', () => {
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, BordersAndShadingDialog, EditorHistory, TableOptionsDialog, CellOptionsDialog);
             editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true, enableEditorHistory: true, enableTableOptionsDialog: true });
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo('#container');
             tablePropertiesDialog = editor.tablePropertiesDialogModule;
             borderAndShadingDialog = editor.bordersAndShadingDialogModule;
@@ -356,7 +356,7 @@ describe('DocumentEditor', () => {
             tablePropertiesDialog.destroy();
             borderAndShadingDialog.destroy();
             editor = undefined;
-            viewer = undefined;
+            documentHelper = undefined;
             setTimeout(function () {
                 done();
             }, 1000);
@@ -385,7 +385,7 @@ describe('DocumentEditor', () => {
     });
     describe('Table Dialog testing-3', () => {
         let editor: DocumentEditor = undefined;
-        let viewer: LayoutViewer;
+        let documentHelper: DocumentHelper;
         let tablePropertiesDialog: TablePropertiesDialog;
         let borderAndShadingDialog: BordersAndShadingDialog;
         beforeAll((done) => {
@@ -393,10 +393,10 @@ describe('DocumentEditor', () => {
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, BordersAndShadingDialog, EditorHistory, TableOptionsDialog, CellOptionsDialog);
             editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true, enableEditorHistory: true, enableTableOptionsDialog: true });
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo('#container');
             tablePropertiesDialog = editor.tablePropertiesDialogModule;
             borderAndShadingDialog = editor.bordersAndShadingDialogModule;
@@ -410,7 +410,7 @@ describe('DocumentEditor', () => {
             tablePropertiesDialog.destroy();
             borderAndShadingDialog.destroy();
             editor = undefined;
-            viewer = undefined;
+            documentHelper = undefined;
             setTimeout(function () {
                 done();
             }, 1000);
@@ -451,7 +451,7 @@ describe('DocumentEditor', () => {
     });
     describe('Table Dialog testing-4', () => {
         let editor: DocumentEditor = undefined;
-        let viewer: LayoutViewer;
+        let documentHelper: DocumentHelper;
         let tablePropertiesDialog: TablePropertiesDialog;
         let borderAndShadingDialog: BordersAndShadingDialog;
         beforeAll((done) => {
@@ -459,10 +459,10 @@ describe('DocumentEditor', () => {
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, BordersAndShadingDialog, EditorHistory, TableOptionsDialog, CellOptionsDialog);
             editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true, enableEditorHistory: true, enableTableOptionsDialog: true });
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo('#container');
             tablePropertiesDialog = editor.tablePropertiesDialogModule;
             borderAndShadingDialog = editor.bordersAndShadingDialogModule;
@@ -476,7 +476,7 @@ describe('DocumentEditor', () => {
             tablePropertiesDialog.destroy();
             borderAndShadingDialog.destroy();
             editor = undefined;
-            viewer = undefined;
+            documentHelper = undefined;
             setTimeout(function () {
                 done();
             }, 1000);
@@ -501,23 +501,22 @@ describe('DocumentEditor', () => {
     });
     describe('Prevent keyboard shortcut event', () => {
         let editor: DocumentEditor;
-        let viewer: LayoutViewer;
+        let documentHelper: DocumentHelper;
         beforeAll((): void => {
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, Selection);
             editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
             editor.acceptTab = true;
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo('#container');
-            viewer = editor.viewer as PageLayoutViewer;
         });
         afterAll((done): void => {
-            viewer.destroy();
-            viewer = undefined;
+            documentHelper.destroy();
+            documentHelper = undefined;
             editor.destroy();
             document.body.removeChild(document.getElementById('container'));
             editor = undefined;
@@ -534,7 +533,7 @@ describe('DocumentEditor', () => {
                 }
             }
             let event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-            editor.viewer.onKeyDownInternal(event as any);
+            editor.documentHelper.onKeyDownInternal(event as any);
             expect(editor.selection.characterFormat.bold).toBe(false);
         });
     });
@@ -1445,10 +1444,10 @@ describe("Initilize document editor", function () {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({});
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         currentAgent = Browser.userAgent;
         let iPhoneUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) ' +
             'AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
@@ -1471,15 +1470,14 @@ describe("Initilize document editor", function () {
 
 describe('Header Ajax value checking', () => {
     let editor: DocumentEditor;
-    let pagecontainer: Element;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({});
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo("#container");
     });
     afterAll((done) => {
@@ -1508,10 +1506,10 @@ describe('Enable comment checking in docmenteitor', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ isReadOnly: false, enableComment: true });
         editor.enableAllModules();
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo("#container");
     });
     afterAll((done) => {
@@ -1534,7 +1532,7 @@ describe('Enable comment checking in docmenteitor', () => {
     it('insert comment after enable comment as false', () => {
         editor.openBlank();
         editor.editor.insertComment();
-        expect(editor.viewer.comments.length).toBe(0);
+        expect(editor.documentHelper.comments.length).toBe(0);
     })
 
 });

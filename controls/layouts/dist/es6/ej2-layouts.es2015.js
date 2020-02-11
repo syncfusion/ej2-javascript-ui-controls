@@ -2384,7 +2384,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             for (let i = 0; i < panelElements.length; i++) {
                 let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                 EventHandler.add(panelElements[i], eventName, this.downResizeHandler, this);
-                if (Browser.info.name !== 'mise') {
+                if (Browser.info.name !== 'msie') {
                     EventHandler.add(panelElements[i], 'touchstart', this.touchDownResizeHandler, this);
                 }
             }
@@ -2400,7 +2400,10 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.lastMouseY = e.pageY;
         let moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
         let upEventName = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
-        EventHandler.add(document, moveEventName, this.moveResizeHandler, this);
+        if (!this.isMouseMoveBound) {
+            EventHandler.add(document, moveEventName, this.moveResizeHandler, this);
+            this.isMouseMoveBound = true;
+        }
         if (!this.isMouseUpBound) {
             EventHandler.add(document, upEventName, this.upResizeHandler, this);
             this.isMouseUpBound = true;
@@ -2429,7 +2432,10 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.downHandler(e);
         this.lastMouseX = e.changedTouches[0].pageX;
         this.lastMouseY = e.changedTouches[0].pageY;
-        EventHandler.add(document, 'touchmove', this.touchMoveResizeHandler, this);
+        if (!this.isMouseMoveBound) {
+            EventHandler.add(document, 'touchmove', this.touchMoveResizeHandler, this);
+            this.isMouseMoveBound = true;
+        }
         if (!this.isMouseUpBound) {
             EventHandler.add(document, 'touchend', this.upResizeHandler, this);
             this.isMouseUpBound = true;
@@ -2602,11 +2608,12 @@ let DashboardLayout = class DashboardLayout extends Component {
             let upEventName = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
             EventHandler.remove(document, moveEventName, this.moveResizeHandler);
             EventHandler.remove(document, upEventName, this.upResizeHandler);
-            if (Browser.info.name !== 'mise') {
+            if (Browser.info.name !== 'msie') {
                 EventHandler.remove(document, 'touchmove', this.touchMoveResizeHandler);
                 EventHandler.remove(document, 'touchend', this.upResizeHandler);
             }
             this.isMouseUpBound = false;
+            this.isMouseMoveBound = false;
             if (this.shadowEle) {
                 detach(this.shadowEle);
             }
@@ -4209,7 +4216,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             for (let i = 0; i < cell.querySelectorAll('.e-resize').length; i++) {
                 let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                 EventHandler.add(cell.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
-                if (Browser.info.name !== 'mise') {
+                if (Browser.info.name !== 'msie') {
                     EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
                 }
             }
@@ -4546,7 +4553,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                             let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                             let element = panelElements[i];
                             EventHandler.remove(element, eventName, this.downResizeHandler);
-                            if (Browser.info.name !== 'mise') {
+                            if (Browser.info.name !== 'msie') {
                                 EventHandler.remove(element, 'touchstart', this.touchDownResizeHandler);
                             }
                         }

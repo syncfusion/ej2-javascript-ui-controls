@@ -13,6 +13,7 @@ import { FollowCharacterType, ListLevelPattern } from '../../base/index';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { ListViewModel } from './list-view-model';
+import { DocumentHelper } from '../viewer';
 /**
  * The List dialog is used to create or modify lists.
  */
@@ -26,7 +27,7 @@ export class ListDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer = undefined;
+    public documentHelper: DocumentHelper = undefined;
     private viewModel: ListViewModel = undefined;
     private startAt: NumericTextBox = undefined;
     private textIndent: NumericTextBox = undefined;
@@ -77,9 +78,12 @@ export class ListDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
         this.viewModel = new ListViewModel();
+    }
+    get owner(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
     /**
      * @private
@@ -91,25 +95,25 @@ export class ListDialog {
      * @private
      */
     public showListDialog(): void {
-        let locale: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        locale.setLocale(this.owner.owner.locale);
+        let locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        locale.setLocale(this.documentHelper.owner.locale);
 
         if (!this.target) {
-            this.initListDialog(locale, this.owner.owner.enableRtl);
+            this.initListDialog(locale, this.documentHelper.owner.enableRtl);
         }
         this.isListCharacterFormat = true;
-        this.owner.dialog2.header = locale.getConstant('Define new Multilevel list');
-        this.owner.dialog2.height = 'auto';
-        this.owner.dialog2.width = 'auto';
-        this.owner.dialog2.content = this.target;
+        this.documentHelper.dialog2.header = locale.getConstant('Define new Multilevel list');
+        this.documentHelper.dialog2.height = 'auto';
+        this.documentHelper.dialog2.width = 'auto';
+        this.documentHelper.dialog2.content = this.target;
         let buttonClass: string;
-        let isRtl: boolean = this.owner.owner.enableRtl;
+        let isRtl: boolean = this.documentHelper.owner.enableRtl;
         if (isRtl) {
             buttonClass = 'e-flat e-list-dlg-font e-de-dlg-target.e-de-rtl e-font-rtl';
         } else {
             buttonClass = 'e-flat e-list-dlg-font e-font';
         }
-        this.owner.dialog2.buttons = [{
+        this.documentHelper.dialog2.buttons = [{
             click: this.showFontDialog,
             buttonModel: { content: locale.getConstant('Font'), cssClass: buttonClass }
         }, {
@@ -120,12 +124,12 @@ export class ListDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: locale.getConstant('Cancel'), cssClass: 'e-flat e-list-dlg' }
         }];
-        this.owner.dialog2.dataBind();
+        this.documentHelper.dialog2.dataBind();
         this.wireAndBindEvent(locale, isRtl);
-        this.owner.dialog2.beforeOpen = this.loadListDialog;
-        this.owner.dialog2.close = this.closeListDialog;
-        this.owner.dialog2.position = { X: 'center', Y: 'top' };
-        this.owner.dialog2.show();
+        this.documentHelper.dialog2.beforeOpen = this.loadListDialog;
+        this.documentHelper.dialog2.close = this.closeListDialog;
+        this.documentHelper.dialog2.position = { X: 'center', Y: 'top' };
+        this.documentHelper.dialog2.show();
     }
     /**
      * Shows the table properties dialog
@@ -133,7 +137,7 @@ export class ListDialog {
      */
     public initListDialog(locale: L10n, isRtl?: boolean): void {
         let instance: ListDialog = this;
-        let containerId: string = this.owner.owner.containerId;
+        let containerId: string = this.documentHelper.owner.containerId;
         let id: string = containerId + '_insert_list';
         this.target = createElement('div', { id: id, className: 'e-de-list-dlg' });
         // tslint:disable-next-line:max-line-length
@@ -166,7 +170,7 @@ export class ListDialog {
     }
     private wireAndBindEvent(locale: L10n, isRtl: boolean): void {
         let instance: ListDialog = this;
-        let containerId: string = this.owner.owner.containerId;
+        let containerId: string = this.documentHelper.owner.containerId;
         if (isRtl) {
             document.getElementById('e-de-list-dlg-div').classList.add('e-de-rtl');
             this.numberFormatDiv.classList.add('e-de-rtl');
@@ -258,7 +262,7 @@ export class ListDialog {
         this.viewModel.listLevel.paragraphFormat.firstLineIndent = args.value as number;
     }
     private updateRestartLevelBox(): void {
-        let containerId: string = this.owner.owner.containerId;
+        let containerId: string = this.documentHelper.owner.containerId;
         let listLevel: HTMLSelectElement = document.getElementById(containerId + '_listLevel') as HTMLSelectElement;
         let restartBy: HTMLSelectElement = document.getElementById(containerId + '_restartBy') as HTMLSelectElement;
         for (let i: number = 0; i < restartBy.options.length; i) {
@@ -292,7 +296,7 @@ export class ListDialog {
         this.viewModel.listLevelPattern = args.value as ListLevelPattern;
         let numberFormat: string = '%' + (this.levelNumber + 1).toString();
         // tslint:disable-next-line:max-line-length
-        let numberFormatTextBox: HTMLInputElement = document.getElementById(this.owner.owner.containerId + '_numberFormat') as HTMLInputElement;
+        let numberFormatTextBox: HTMLInputElement = document.getElementById(this.documentHelper.owner.containerId + '_numberFormat') as HTMLInputElement;
 
         if (this.listLevel.listLevelPattern === 'Bullet') {
             this.listLevel.numberFormat = '\uf0b7';
@@ -336,16 +340,16 @@ export class ListDialog {
         }
     }
     private loadListDialog = (): void => {
-        this.owner.updateFocus();
-        if (isNullOrUndefined(this.owner.owner)) {
+        this.documentHelper.updateFocus();
+        if (isNullOrUndefined(this.documentHelper.owner)) {
             return;
         }
         this.viewModel = new ListViewModel();
         this.viewModel.dialog = this;
-        if (this.owner.selection.paragraphFormat.listLevelNumber > 0) {
-            this.viewModel.levelNumber = this.owner.selection.paragraphFormat.listLevelNumber;
+        if (this.documentHelper.selection.paragraphFormat.listLevelNumber > 0) {
+            this.viewModel.levelNumber = this.documentHelper.selection.paragraphFormat.listLevelNumber;
         }
-        this.viewModel.list = this.owner.selection.paragraphFormat.getList();
+        this.viewModel.list = this.documentHelper.selection.paragraphFormat.getList();
         if (isNullOrUndefined(this.listLevel)) {
             return;
         }
@@ -356,13 +360,13 @@ export class ListDialog {
             this.listLevel.paragraphFormat = new WParagraphFormat(this.viewModel.listLevel);
         }
         this.updateDialogValues();
-        if (this.owner.selection.caret.style.display !== 'none') {
-            this.owner.selection.caret.style.display = 'none';
+        if (this.documentHelper.selection.caret.style.display !== 'none') {
+            this.documentHelper.selection.caret.style.display = 'none';
         }
     }
     private updateDialogValues(): void {
         // tslint:disable-next-line:max-line-length
-        let restartByTextBox: HTMLSelectElement = document.getElementById(this.owner.owner.containerId + '_restartBy') as HTMLSelectElement;
+        let restartByTextBox: HTMLSelectElement = document.getElementById(this.documentHelper.owner.containerId + '_restartBy') as HTMLSelectElement;
         if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
             this.startAt.value = this.viewModel.listLevel.startAt;
             this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
@@ -375,24 +379,24 @@ export class ListDialog {
         }
     }
     private showFontDialog = (): void => {
-        this.owner.owner.fontDialogModule.showFontDialog(this.listLevel.characterFormat);
+        this.documentHelper.owner.fontDialogModule.showFontDialog(this.listLevel.characterFormat);
     }
     private onApplyList = (): void => {
         if (!isNullOrUndefined(this.owner)) {
-            this.owner.selection.paragraphFormat.setList(this.list);
+            this.documentHelper.selection.paragraphFormat.setList(this.list);
         }
-        this.owner.dialog2.hide();
-        this.owner.updateFocus();
+        this.documentHelper.dialog2.hide();
+        this.documentHelper.updateFocus();
     }
     private onCancelButtonClick = (): void => {
         this.disposeBindingForListUI();
-        this.owner.dialog2.hide();
-        this.owner.updateFocus();
+        this.documentHelper.dialog2.hide();
+        this.documentHelper.updateFocus();
         this.isListCharacterFormat = false;
     }
     private closeListDialog = (): void => {
         this.disposeBindingForListUI();
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
         this.isListCharacterFormat = false;
     }
     private disposeBindingForListUI(): void {
@@ -448,7 +452,7 @@ export class ListDialog {
             }
             this.target = undefined;
         }
-        this.owner = undefined;
+        this.documentHelper = undefined;
         this.viewModel = undefined;
     }
 

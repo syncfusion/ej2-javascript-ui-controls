@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.49 (2020-02-11)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#263239` - The issue with destroying the `Tooltip` component with popup opened state has been resolved.
+
 ## 17.4.46 (2020-01-30)
 
 ### Dialog

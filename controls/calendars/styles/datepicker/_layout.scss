@@ -104,12 +104,12 @@
 // sass-lint:enable-all
 
 
-@media screen and (orientation: landscape) and (max-device-height: 360px) {
+@media screen and (orientation: landscape) and (max-height: 360px) {
 
-  .e-datepicker .e-calendar .e-month table tbody {
+  .e-datepicker .e-calendar.e-device .e-month table tbody {
     display: inline-block;
     height: $datepicker-calendar-tbody-landscape-height;
     overflow: auto;
-}
+  }
 }
 

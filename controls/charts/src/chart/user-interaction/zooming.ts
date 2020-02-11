@@ -10,8 +10,8 @@ import { Series } from '../series/chart-series';
 import { ZoomMode, ToolbarItems } from '../utils/enum';
 import { ZoomSettingsModel } from '../chart-model';
 import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
-import { IZoomCompleteEventArgs, ITouches, IZoomAxisRange } from '../../chart/model/chart-interface';
-import { zoomComplete } from '../../common/model/constants';
+import { IZoomCompleteEventArgs, ITouches, IZoomAxisRange, IAxisData, IZoomingEventArgs } from '../../chart/model/chart-interface';
+import { zoomComplete, onZooming } from '../../common/model/constants';
 import { withInBounds } from '../../common/utils/helper';
 
 /**
@@ -122,9 +122,9 @@ export class Zoom {
             }
             let svg: Element = chart.enableCanvas ? document.getElementById(this.elementId + '_tooltip_svg') : chart.svgObject;
             svg.appendChild(chart.svgRenderer.drawRectangle(new RectOption(
-                    this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill,
-                    { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')
-                ) as HTMLElement);
+                this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill,
+                { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')
+            ) as HTMLElement);
         }
     }
 
@@ -136,12 +136,12 @@ export class Zoom {
         let currentScale: number;
         let offset: number;
         this.isZoomed = true;
-        let translateX: number;
-        let translateY: number;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
         chart.disableTrackTooltip = true;
         let argsData: IZoomCompleteEventArgs;
+        let zoomingEventArgs: IZoomingEventArgs;
+        let zoomedAxisCollection: IAxisData[] = [];
         for (let i: number = 0; i < axes.length; i++) {
             let axis: Axis = axes[i] as Axis;
             argsData = {
@@ -161,7 +161,24 @@ export class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
+            zoomedAxisCollection.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
+        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, zoomingEventArgs, () => {
+                this.performDefferedZoom(chart);
+             });
+        } else {
+            this.performDefferedZoom(chart);
+        }
+    }
+
+    private performDefferedZoom(chart: Chart): void {
+        let translateX: number;
+        let translateY: number;
         if (this.zooming.enableDeferredZooming) {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
@@ -229,6 +246,8 @@ export class Zoom {
         let mode: ZoomMode = this.zooming.mode;
         let argsData: IZoomCompleteEventArgs;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
+        let onZoomingEventArg: IZoomingEventArgs;
+        let zoomedAxisCollections: IAxisData[] = [];
         for (let j: number = 0; j < axes.length; j++) {
             let axis: Axis = axes[j] as Axis;
             argsData = {
@@ -253,9 +272,20 @@ export class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
+            zoomedAxisCollections.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
-        this.zoomingRect = new Rect(0, 0, 0, 0);
-        this.performZoomRedraw(chart);
+
+        onZoomingEventArg = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
+        if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArg, () => { this.zoomingRect = new Rect(0, 0, 0, 0);
+                                                                     this.performZoomRedraw(chart); });
+        } else {
+            this.zoomingRect = new Rect(0, 0, 0, 0);
+            this.performZoomRedraw(chart);
+        }
     }
 
     /**
@@ -277,8 +307,10 @@ export class Zoom {
         this.performedUI =  true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let argsData: IZoomCompleteEventArgs;
-        for (let index: number = 0; index < axes.length; index++) {
-            let axis: Axis = axes[index] as Axis;
+        let onZoomingEventArgs: IZoomingEventArgs;
+        let zoomedAxisCollection: IAxisData[] = [];
+        for (let k: number = 0; k < axes.length; k++) {
+            let axis: Axis = axes[k] as Axis;
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -303,8 +335,17 @@ export class Zoom {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
+            zoomedAxisCollection.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
-        this.performZoomRedraw(chart);
+        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.performZoomRedraw(chart); });
+        } else {
+            this.performZoomRedraw(chart);
+        }
     }
 
     /**
@@ -377,6 +418,8 @@ export class Zoom {
         let argsData: IZoomCompleteEventArgs;
         let currentZF: number;
         let currentZP: number;
+        let onZoomingEventArgs: IZoomingEventArgs;
+        let zoomedAxisCollection: IAxisData[] = [];
         for (let index: number = 0; index < chart.axisCollections.length; index++) {
             let axis: Axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
@@ -411,7 +454,15 @@ export class Zoom {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
+                zoomedAxisCollection.push({
+                    zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                    axisRange: axis.visibleRange
+                });
             }
+        }
+        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArgs);
         }
     }
 

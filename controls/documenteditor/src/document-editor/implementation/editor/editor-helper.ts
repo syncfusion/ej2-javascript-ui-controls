@@ -708,6 +708,27 @@ export interface TextPositionInfo {
 /** 
  * @private
  */
+export interface PageInfo {
+    height: number;
+    width: number;
+    viewerWidth: number;
+    viewerHeight: number;
+
+}
+/** 
+ * @private
+ */
+export interface CanvasInfo {
+    height: number;
+    width: number;
+    viewerWidth: number;
+    viewerHeight: number;
+    containerHeight: number;
+    containerWidth: number;
+}
+/** 
+ * @private
+ */
 export interface CellCountInfo {
     count: number;
     cellFormats: WCellFormat[];

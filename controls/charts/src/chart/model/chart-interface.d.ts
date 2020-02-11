@@ -244,6 +244,9 @@ export interface ILoadedEventArgs extends IChartEventArgs {
     /** Defines the current chart instance */
     chart: Chart;
 }
+export interface IZoomingEventArgs extends IChartEventArgs {
+    axisCollection: IAxisData[];
+}
 export interface IPrintEventArgs extends IChartEventArgs {
     htmlContent: Element;
 }
@@ -263,6 +266,12 @@ export interface IBoxPlotQuartile {
     lowerQuartile: number;
     average: number;
     median: number;
+}
+export interface IAxisData {
+    zoomFactor: number;
+    zoomPosition: number;
+    axisRange: VisibleRangeModel;
+    axisName: string;
 }
 /** @private */
 /**

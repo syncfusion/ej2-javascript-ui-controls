@@ -1,4 +1,4 @@
-import { LayoutViewer, EditRangeStartElementBox } from '../viewer';
+import { LayoutViewer, EditRangeStartElementBox, DocumentHelper } from '../viewer';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { AddUserDialog } from './add-user-dialog';
@@ -11,7 +11,7 @@ import { ListView } from '@syncfusion/ej2-lists';
  * @private
  */
 export class RestrictEditing {
-    public viewer: LayoutViewer;
+    private documentHelper: DocumentHelper;
     public restrictPane: HTMLElement;
     public allowFormatting: CheckBox;
     private addUser: HTMLButtonElement;
@@ -44,12 +44,16 @@ export class RestrictEditing {
 
     public usersCollection: string[] = ['Everyone'];
     public highlightCheckBox: CheckBox;
-    constructor(viewer: LayoutViewer) {
-        this.viewer = viewer;
-        this.addUserDialog = new AddUserDialog(viewer, this);
-        this.enforceProtectionDialog = new EnforceProtectionDialog(viewer, this);
-        this.unProtectDialog = new UnProtectDocumentDialog(viewer, this);
+
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
+        this.addUserDialog = new AddUserDialog(documentHelper, this);
+        this.enforceProtectionDialog = new EnforceProtectionDialog(documentHelper, this);
+        this.unProtectDialog = new UnProtectDocumentDialog(documentHelper, this);
         this.base64 = new Base64();
+    }
+    get viewer(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
     public showHideRestrictPane(isShow: boolean): void {
         if (isShow) {
@@ -60,13 +64,13 @@ export class RestrictEditing {
             }
             this.restrictPane.style.display = 'block';
             this.isShowRestrictPane = true;
-            this.viewer.selection.isHighlightEditRegion = true;
+            this.documentHelper.selection.isHighlightEditRegion = true;
             this.wireEvents();
-            this.viewer.updateViewerSize();
+            this.documentHelper.updateViewerSize();
             this.loadPaneValue();
         } else {
             this.closePane();
-            this.viewer.updateFocus();
+            this.documentHelper.updateFocus();
         }
     }
 
@@ -87,8 +91,8 @@ export class RestrictEditing {
         this.closeButton.appendChild(closeSpan);
         this.restrictPane.appendChild(headerWholeDiv);
         this.initRestrictEditingPane(localValue);
-        this.viewer.optionsPaneContainer.setAttribute('style', 'display:inline-flex;');
-        this.viewer.optionsPaneContainer.insertBefore(this.restrictPane, this.viewer.viewerContainer);
+        this.documentHelper.optionsPaneContainer.setAttribute('style', 'display:inline-flex;');
+        this.documentHelper.optionsPaneContainer.insertBefore(this.restrictPane, this.documentHelper.viewerContainer);
     }
     // tslint:disable:max-func-body-length
     public initRestrictEditingPane(localObj: L10n): void {
@@ -222,7 +226,7 @@ export class RestrictEditing {
             this.stopProtectionDiv.style.display = 'none';
             this.restrictPaneWholeDiv.style.display = 'block';
         }
-        if (this.viewer.protectionType === 'ReadOnly') {
+        if (this.documentHelper.protectionType === 'ReadOnly') {
             this.stopReadOnlyOptions.style.display = 'block';
         } else {
             this.stopReadOnlyOptions.style.display = 'none';
@@ -230,7 +234,7 @@ export class RestrictEditing {
     }
     private closePane = (): void => {
         this.restrictPane.style.display = 'none';
-        this.viewer.updateViewerSize();
+        this.documentHelper.updateViewerSize();
     }
     private wireEvents(): void {
         this.addUser.addEventListener('click', this.addUserDialog.show);
@@ -263,7 +267,7 @@ export class RestrictEditing {
         }
     }
     public highlightClicked = (args: any) => {
-        this.viewer.selection.isHighlightEditRegion = args.checked;
+        this.documentHelper.selection.isHighlightEditRegion = args.checked;
     }
     /* tslint:enable:no-any */
     private protectDocument = (): void => {
@@ -276,23 +280,23 @@ export class RestrictEditing {
     }
 
     public loadPaneValue(): void {
-        this.protectionType = this.viewer.protectionType;
-        this.allowFormat.checked = !this.viewer.restrictFormatting;
-        this.readonly.checked = this.viewer.protectionType === 'ReadOnly';
+        this.protectionType = this.documentHelper.protectionType;
+        this.allowFormat.checked = !this.documentHelper.restrictFormatting;
+        this.readonly.checked = this.documentHelper.protectionType === 'ReadOnly';
         this.highlightCheckBox.checked = true;
         this.addedUser.enablePersistence = true;
-        this.addedUser.dataSource = this.viewer.userCollection;
+        this.addedUser.dataSource = this.documentHelper.userCollection;
         this.addedUser.refresh();
-        this.showStopProtectionPane(this.viewer.isDocumentProtected);
+        this.showStopProtectionPane(this.documentHelper.isDocumentProtected);
     }
 
     public navigateNextRegion = () => {
-        this.viewer.selection.navigateToNextEditingRegion();
+        this.documentHelper.selection.navigateToNextEditingRegion();
     }
     public addUserCollection(): void {
-        if (this.viewer.selection && this.viewer.selection.editRangeCollection.length > 0) {
-            for (let i: number = 0; i < this.viewer.selection.editRangeCollection.length; i++) {
-                let editStart: EditRangeStartElementBox = this.viewer.selection.editRangeCollection[i];
+        if (this.documentHelper.selection && this.documentHelper.selection.editRangeCollection.length > 0) {
+            for (let i: number = 0; i < this.documentHelper.selection.editRangeCollection.length; i++) {
+                let editStart: EditRangeStartElementBox = this.documentHelper.selection.editRangeCollection[i];
                 if (editStart.user !== '' && this.usersCollection.indexOf(editStart.user) === -1) {
                     this.usersCollection.push(editStart.user);
                 }
@@ -305,12 +309,12 @@ export class RestrictEditing {
         this.addedUser.refresh();
     }
     public showAllRegion = () => {
-        this.viewer.selection.showAllEditingRegion();
+        this.documentHelper.selection.showAllEditingRegion();
     }
     public updateUserInformation(): void {
         this.addedUser.uncheckAllItems();
-        if (this.viewer.selection.checkSelectionIsAtEditRegion) {
-            let editRange: EditRangeStartElementBox = this.viewer.selection.getEditRangeStartElement();
+        if (this.documentHelper.selection.checkSelectionIsAtEditRegion) {
+            let editRange: EditRangeStartElementBox = this.documentHelper.selection.getEditRangeStartElement();
             if (editRange) {
                 let index: number = (this.addedUser.dataSource as string[]).indexOf(editRange.user);
                 if (index > -1) {

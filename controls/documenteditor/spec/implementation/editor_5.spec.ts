@@ -55,10 +55,10 @@ describe('Insert table validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterEach((done) => {
@@ -71,8 +71,8 @@ describe('Insert table validation', () => {
     });
     it('insert table with paragraph testing', () => {
         tableWithPara(editor);
-        let lastParaLength = editor.viewer.pages[0].bodyWidgets[0].childWidgets.length - 1;
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[lastParaLength] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
+        let lastParaLength = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length - 1;
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[lastParaLength] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
     });
     it('insert table with paragraph multiple times undo operation', () => {
         tableWithPara(editor);
@@ -81,7 +81,7 @@ describe('Insert table validation', () => {
             editor.editorHistory.undo();
             count++;
         }
-        expect((((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
+        expect((((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
     });
     it('insert table with paragraph multiple times redo operation', () => {
         tableWithPara(editor);
@@ -95,7 +95,7 @@ describe('Insert table validation', () => {
             editor.editorHistory.redo();
             count++;
         }
-        expect((((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+        expect((((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
     });
     it('paragraph,table, paragraph combinations with undo, redo validation', () => {
         editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
@@ -112,7 +112,7 @@ describe('Insert table validation', () => {
             count++;
         }
         editor.editorHistory.undo();
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
     });
     it('paragraph, image, table, paragraph combinations with undo, redo validation', () => {
         let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
@@ -131,7 +131,7 @@ describe('Insert table validation', () => {
             count++;
         }
         editor.editorHistory.undo();
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
     });
 });
 describe('Insert table with header validation', () => {
@@ -141,10 +141,10 @@ describe('Insert table with header validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterEach((done) => {
@@ -157,28 +157,28 @@ describe('Insert table with header validation', () => {
     });
     it('insert table with paragraph on header validation', () => {
         let event: any = { offsetX: 573, offsetY: 56 };
-        editor.viewer.onDoubleTap(event);
+        editor.documentHelper.onDoubleTap(event);
         tableWithPara(editor);
-        let lastParaIndex: number = editor.viewer.pages[0].headerWidget.childWidgets.length - 1;
-        expect((((editor.viewer.pages[0].headerWidget.childWidgets[lastParaIndex] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
+        let lastParaIndex: number = editor.documentHelper.pages[0].headerWidget.childWidgets.length - 1;
+        expect((((editor.documentHelper.pages[0].headerWidget.childWidgets[lastParaIndex] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
     });
     it('insert table with paragraph on header multiple times undo operation validation', () => {
         let event: any = { offsetX: 573, offsetY: 56 };
-        editor.viewer.onDoubleTap(event);
+        editor.documentHelper.onDoubleTap(event);
         tableWithPara(editor);
         let count: number = 1;
         while (count <= 30) {
             editor.editorHistory.undo();
             count++;
         }
-        expect((((((editor.viewer.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
+        expect((((((editor.documentHelper.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
     });
 
     //Commented below test script cause for disconnecting 
-    
+
     // it('insert table with paragraph on header multiple times redo operation validation', () => {
     //     let event: any = { offsetX: 573, offsetY: 56 };
-    //     editor.viewer.onDoubleTap(event);
+    //     editor.documentHelper.onDoubleTap(event);
     //     tableWithPara(editor);
     //     let count: number = 1;
     //     while (count <= 30) {
@@ -190,11 +190,11 @@ describe('Insert table with header validation', () => {
     //         editor.editorHistory.redo();
     //         count++;
     //     }
-    //     expect((((((editor.viewer.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+    //     expect((((((editor.documentHelper.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
     // });
     // it('paragraph,table, paragraph combinations on header with undo, redo validation', () => {
     //     let event: any = { offsetX: 573, offsetY: 56 };
-    //     editor.viewer.onDoubleTap(event);
+    //     editor.documentHelper.onDoubleTap(event);
     //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
     //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
     //     tableWithPara(editor);
@@ -209,12 +209,12 @@ describe('Insert table with header validation', () => {
     //         count++;
     //     }
     //     editor.editorHistory.undo();
-    //     expect((((editor.viewer.pages[0].headerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
+    //     expect((((editor.documentHelper.pages[0].headerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
     // });
     // it('paragraph, image, table, paragraph combinations on header with undo, redo validation', () => {
     //     let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
     //     let event: any = { offsetX: 573, offsetY: 56 };
-    //     editor.viewer.onDoubleTap(event);
+    //     editor.documentHelper.onDoubleTap(event);
     //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
     //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
     //     editor.editor.insertImage(imageString, 100, 100);
@@ -230,7 +230,7 @@ describe('Insert table with header validation', () => {
     //         count++;
     //     }
     //     editor.editorHistory.undo();
-    //     expect((((editor.viewer.pages[0].headerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
+    //     expect((((editor.documentHelper.pages[0].headerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
     // });
 });
 describe('Insert table with footer validation', () => {
@@ -240,10 +240,10 @@ describe('Insert table with footer validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterEach((done) => {
@@ -255,29 +255,29 @@ describe('Insert table with footer validation', () => {
         }, 1000);
     });
     it('insert table with paragraph on footer validation', () => {
-        editor.viewer.viewerContainer.scrollTop = 850;
+        editor.documentHelper.viewerContainer.scrollTop = 850;
         let event: any = { offsetX: 506, offsetY: 980 };
-        editor.viewer.onDoubleTap(event);
+        editor.documentHelper.onDoubleTap(event);
         tableWithPara(editor);
-        let lastParaIndex: number = editor.viewer.pages[0].footerWidget.childWidgets.length - 1;
-        expect((((editor.viewer.pages[0].footerWidget.childWidgets[lastParaIndex] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
+        let lastParaIndex: number = editor.documentHelper.pages[0].footerWidget.childWidgets.length - 1;
+        expect((((editor.documentHelper.pages[0].footerWidget.childWidgets[lastParaIndex] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('dog');
     });
     it('insert table with paragraph on footer multiple times undo operation validation', () => {
-        editor.viewer.viewerContainer.scrollTop = 850;
+        editor.documentHelper.viewerContainer.scrollTop = 850;
         let event: any = { offsetX: 506, offsetY: 980 };
-        editor.viewer.onDoubleTap(event);
+        editor.documentHelper.onDoubleTap(event);
         tableWithPara(editor);
         let count: number = 1;
         while (count <= 30) {
             editor.editorHistory.undo();
             count++;
         }
-        expect((((((editor.viewer.pages[0].footerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
+        expect((((((editor.documentHelper.pages[0].footerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
     });
     it('insert table with paragraph on footer multiple times redo operation validation', () => {
-        editor.viewer.viewerContainer.scrollTop = 850;
+        editor.documentHelper.viewerContainer.scrollTop = 850;
         let event: any = { offsetX: 506, offsetY: 980 };
-        editor.viewer.onDoubleTap(event);
+        editor.documentHelper.onDoubleTap(event);
         tableWithPara(editor);
         let count: number = 1;
         while (count <= 30) {
@@ -289,12 +289,12 @@ describe('Insert table with footer validation', () => {
             editor.editorHistory.redo();
             count++;
         }
-        expect((((((editor.viewer.pages[0].footerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+        expect((((((editor.documentHelper.pages[0].footerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
     });
     it('paragraph,table, paragraph combinations on footer with undo, redo validation', () => {
-        editor.viewer.viewerContainer.scrollTop = 850;
+        editor.documentHelper.viewerContainer.scrollTop = 850;
         let event: any = { offsetX: 506, offsetY: 980 };
-        editor.viewer.onDoubleTap(event);
+        editor.documentHelper.onDoubleTap(event);
         editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
         editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
         tableWithPara(editor);
@@ -309,13 +309,13 @@ describe('Insert table with footer validation', () => {
             count++;
         }
         editor.editorHistory.undo();
-        expect((((editor.viewer.pages[0].footerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
+        expect((((editor.documentHelper.pages[0].footerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
     });
     // it('paragraph, image, table, paragraph combinations on footer with undo, redo validation',()=>{
     //     let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
-    //     editor.viewer.viewerContainer.scrollTop = 850;
+    //     editor.documentHelper.viewerContainer.scrollTop = 850;
     //     let event: any = { offsetX: 506, offsetY: 980 };
-    //     editor.viewer.onDoubleTap(event);
+    //     editor.documentHelper.onDoubleTap(event);
     //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
     //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
     //     editor.selectionModule.insertImage(imageString, 100, 100);
@@ -331,7 +331,7 @@ describe('Insert table with footer validation', () => {
     //         count++;
     //     }
     //     editor.editorHistory.undo();
-    //     expect((((editor.viewer.pages[0].footerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
+    //     expect((((editor.documentHelper.pages[0].footerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
     // });
 });
 describe('Insert left validation-', () => {
@@ -341,10 +341,10 @@ describe('Insert left validation-', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterEach((done) => {
@@ -359,7 +359,7 @@ describe('Insert left validation-', () => {
         tableWithPara(editor);
         editor.editorModule.insertTable(5, 5);
         editor.editor.insertColumn(true);
-        expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(6);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(6);
     });
     it('insert left with undo validation', () => {
         tableWithPara(editor);
@@ -370,7 +370,7 @@ describe('Insert left validation-', () => {
             editor.editorHistory.undo();
             count++;
         }
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[6] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('quick');
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[6] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('quick');
     });
     it('insert left redo validation', () => {
         tableWithPara(editor);
@@ -390,7 +390,7 @@ describe('Insert left validation-', () => {
             editor.editorHistory.redo();
             count++;
         }
-        expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(8);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(8);
     });
 });
 describe('Insert right validation-', () => {
@@ -400,10 +400,10 @@ describe('Insert right validation-', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterEach((done) => {
@@ -418,7 +418,7 @@ describe('Insert right validation-', () => {
         tableWithPara(editor);
         editor.editorModule.insertTable(5, 5);
         editor.editor.insertColumn(false);
-        expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(6);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(6);
     });
     it('insert right with undo validation', () => {
         tableWithPara(editor);
@@ -429,7 +429,7 @@ describe('Insert right validation-', () => {
             editor.editorHistory.undo();
             count++;
         }
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[6] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('quick');
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[6] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('quick');
     });
     it('insert right redo validation', () => {
         tableWithPara(editor);
@@ -449,7 +449,7 @@ describe('Insert right validation-', () => {
             editor.editorHistory.redo();
             count++;
         }
-        expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(8);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(8);
     });
 });
 describe('Insert above validation-', () => {
@@ -459,10 +459,10 @@ describe('Insert above validation-', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterEach((done) => {
@@ -477,7 +477,7 @@ describe('Insert above validation-', () => {
         tableWithPara(editor);
         editor.editorModule.insertTable(5, 5);
         editor.editor.insertRow(true);
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets.length).toBe(6);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets.length).toBe(6);
     });
     it('insert above with undo validation', () => {
         tableWithPara(editor);
@@ -488,7 +488,7 @@ describe('Insert above validation-', () => {
             editor.editorHistory.undo();
             count++;
         }
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[6] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('quick');
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[6] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('quick');
     });
     it('insert above redo validation', () => {
         tableWithPara(editor);
@@ -508,7 +508,7 @@ describe('Insert above validation-', () => {
             editor.editorHistory.redo();
             count++;
         }
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets.length).toBe(8);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets.length).toBe(8);
     });
 });
 describe('Insert below validation-', () => {
@@ -518,10 +518,10 @@ describe('Insert below validation-', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterEach((done) => {
@@ -536,7 +536,7 @@ describe('Insert below validation-', () => {
         tableWithPara(editor);
         editor.editorModule.insertTable(5, 5);
         editor.editor.insertRow(false);
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets.length).toBe(6);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets.length).toBe(6);
     });
     it('insert below with undo validation', () => {
         tableWithPara(editor);
@@ -547,7 +547,7 @@ describe('Insert below validation-', () => {
             editor.editorHistory.undo();
             count++;
         }
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[6] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('quick');
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[6] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('quick');
     });
     it('insert below redo validation', () => {
         tableWithPara(editor);
@@ -567,7 +567,7 @@ describe('Insert below validation-', () => {
             editor.editorHistory.redo();
             count++;
         }
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets.length).toBe(8);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget).childWidgets.length).toBe(8);
     });
     // it('insert above, below, left and right combination testing', () => {
     //     editor.editorModule.insertTable(5, 5);
@@ -611,10 +611,10 @@ describe('Delete row, column, table validation-', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterEach((done) => {
@@ -627,13 +627,13 @@ describe('Delete row, column, table validation-', () => {
     });
     it('delete row tesing', () => {
         editor.editorModule.insertTable(5, 5);
-        let rowCount: number = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length;
+        let rowCount: number = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length;
         editor.editor.deleteRow();
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length).not.toBe(rowCount);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length).not.toBe(rowCount);
     });
     it('delete row with undo, redo testing', () => {
         editor.editorModule.insertTable(5, 5);
-        let rowCount: number = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length;
+        let rowCount: number = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length;
         editor.editor.deleteRow();
         let count: number = 1;
         while (count <= 5) {
@@ -642,11 +642,11 @@ describe('Delete row, column, table validation-', () => {
             count++;
         }
         editor.editorHistory.undo();
-        expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length).toBe(rowCount);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets.length).toBe(rowCount);
     });
     it('delete column testing', () => {
         editor.editorModule.insertTable(5, 5);
-        let columnCount: number = ((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length;
+        let columnCount: number = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length;
         editor.editor.deleteColumn();
         let count: number = 1;
         while (count <= 5) {
@@ -655,17 +655,17 @@ describe('Delete row, column, table validation-', () => {
             count++;
         }
         editor.editorHistory.undo();
-        expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(columnCount);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets.length).toBe(columnCount);
     });
     it('delete table testing', () => {
         editor.editorModule.insertTable(5, 5);
-        let tableCount: number = editor.viewer.pages[0].bodyWidgets[0].childWidgets.length;
+        let tableCount: number = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length;
         editor.editor.deleteTable();
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).not.toBe(tableCount);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).not.toBe(tableCount);
     });
     it('delete table with undo, redo testing', () => {
         editor.editorModule.insertTable(5, 5);
-        let tableCount: number = editor.viewer.pages[0].bodyWidgets[0].childWidgets.length;
+        let tableCount: number = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length;
         editor.editor.deleteTable();
         let count: number = 1;
         while (count <= 5) {
@@ -674,7 +674,7 @@ describe('Delete row, column, table validation-', () => {
             count++;
         }
         editor.editorHistory.undo();
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(tableCount);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(tableCount);
     });
 });
 describe('Insert Field API Validation', () => {
@@ -684,10 +684,10 @@ describe('Insert Field API Validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -749,10 +749,10 @@ describe('Insert Table Validation with selectedd content replace', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -807,10 +807,10 @@ describe('Insert table Multiple time', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -838,10 +838,10 @@ describe('Insert table Multiple time', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -882,10 +882,10 @@ describe('Insert Field Format Validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {

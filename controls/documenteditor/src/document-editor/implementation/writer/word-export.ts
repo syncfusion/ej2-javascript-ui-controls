@@ -2,10 +2,11 @@
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { LayoutViewer, ImageInfo, HelperMethods } from '../index';
+import { ImageInfo, HelperMethods } from '../index';
 import { Dictionary, TabJustification, TabLeader } from '../../index';
 import { WCharacterFormat, WParagraphFormat, WTabStop } from '../index';
 import { ProtectionType } from '../../base';
+import { DocumentHelper } from '../viewer';
 
 /** 
  * Exports the document to Word format.
@@ -270,7 +271,6 @@ export class WordExport {
     private table: any;
     private row: any;
     private headerFooter: any;
-
     private document: any;
     private mSections: any;
     private mLists: any;
@@ -358,9 +358,9 @@ export class WordExport {
     /**
      * @private
      */
-    public save(viewer: LayoutViewer, fileName: string): void {
+    public save(documentHelper: DocumentHelper, fileName: string): void {
         this.fileName = fileName;
-        this.serialize(viewer);
+        this.serialize(documentHelper);
         this.mArchive.save(fileName + '.docx').then((mArchive: ZipArchive): void => {
             mArchive.destroy();
         });
@@ -369,8 +369,8 @@ export class WordExport {
     /**
      * @private
      */
-    public saveAsBlob(viewer: LayoutViewer): Promise<Blob> {
-        this.serialize(viewer);
+    public saveAsBlob(documentHelper: DocumentHelper): Promise<Blob> {
+        this.serialize(documentHelper);
         return new Promise((resolve: Function, reject: Function) => {
             this.mArchive.saveAsBlob().then((blob: Blob) => {
                 this.mArchive.destroy();
@@ -418,11 +418,11 @@ export class WordExport {
         }
     }
     // Saves the word document in the stream
-    private serialize(viewer: LayoutViewer): void {
+    private serialize(documentHelper: DocumentHelper): void {
         /* tslint:disable:no-any */
-        let document: any = viewer.owner.sfdtExportModule.write();
+        let document: any = documentHelper.owner.sfdtExportModule.write();
         this.setDocument(document);
-        this.mComments = viewer.comments;
+        this.mComments = documentHelper.comments;
         this.mArchive = new ZipArchive();
         this.mArchive.compressionLevel = 'Normal';
         this.commentParaIDInfo = {};

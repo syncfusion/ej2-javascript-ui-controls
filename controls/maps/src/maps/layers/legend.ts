@@ -22,7 +22,7 @@ export class Legend {
     public legendCollection: Object[];
     public legendRenderingCollections: Object[];
     private translate: Point;
-    private legendBorderRect: Rect = new Rect(0, 0, 0, 0);
+    public legendBorderRect: Rect = new Rect(0, 0, 0, 0);
     private maps: Maps;
     private totalPages: Object[] = [];
     private page: number = 0;

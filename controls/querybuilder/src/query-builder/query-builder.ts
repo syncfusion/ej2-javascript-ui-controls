@@ -631,7 +631,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             }
             if (!this.isImportRules) {
-                this.disableRuleCondition(target);
+                this.disableRuleCondition(target, rules);
             }
             if (Object.keys(rule).length) {
                 this.changeRule(rule, {
@@ -2154,13 +2154,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                     break;
                 case 'displayMode':
-                    if (newProp.displayMode === 'Horizontal') {
-                        addClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-                        removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
-                    } else {
-                        addClass(this.element.querySelectorAll('.e-rule-container'), 'e-vertical-mode');
-                        removeClass(this.element.querySelectorAll('.e-rule-container'), 'e-horizontal-mode');
-                    }
+                    this.refresh();
                     break;
                 case 'showButtons':
                     if (newProp.showButtons.ruleDelete) {
@@ -2419,7 +2413,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let elem: Element = groupElem.parentElement.parentElement.parentElement;
             detach(target);
             this.refreshLevelColl();
-            this.disableRuleCondition(elem);
+            this.disableRuleCondition(elem, rule);
             if (!this.isImportRules) {
                 this.trigger('change', args);
             }
@@ -2474,7 +2468,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             }
             detach(clnruleElem);
-            this.disableRuleCondition(groupElem);
+            if (!(rule.rules[0] && rule.rules[0].rules)) {
+                this.disableRuleCondition(groupElem, rule);
+            }
             if (!this.isImportRules) {
                 this.trigger('change', args);
             }
@@ -2493,13 +2489,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.isImportRules = false;
     }
 
-    private disableRuleCondition(groupElem: Element): void {
+    private disableRuleCondition(groupElem: Element, rules?: RuleModel): void {
         let count: number = groupElem.querySelector('.e-rule-list').childElementCount;
         let andElem: HTMLInputElement = groupElem.querySelector('.e-btngroup-and');
         let orElem: HTMLInputElement = groupElem.querySelector('.e-btngroup-or');
         if (count > 1) {
-            andElem.disabled = false; andElem.checked = true;
+            andElem.disabled = false;
             orElem.disabled = false;
+            rules && rules.condition === 'or' ? orElem.checked = true : andElem.checked = true;
         } else {
             andElem.checked = false; andElem.disabled = true;
             orElem.checked = false; orElem.disabled = true;

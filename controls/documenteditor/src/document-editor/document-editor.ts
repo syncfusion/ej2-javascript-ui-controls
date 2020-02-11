@@ -1,12 +1,12 @@
 // tslint:disable-next-line:max-line-length
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor, classList } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor, classList, Complex } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 // tslint:disable-next-line:max-line-length
-import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs } from './index';
+import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType } from './index';
 // tslint:disable-next-line:max-line-length
 import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from './index';
-import { LayoutViewer, PageLayoutViewer, BulletsAndNumberingDialog } from './index';
+import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
 import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';
@@ -29,10 +29,24 @@ import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog }
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
-import { DocumentEditorModel, ServerActionSettingsModel } from './document-editor-model';
-import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from './implementation';
+import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel } from './document-editor-model';
+import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';
 import { PasteOptions } from './index';
 import { CommentReviewPane } from './implementation/index';
+
+/**
+ * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
+ */
+export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings> {
+
+    /**
+     * Specifies the user preferred Search Highlight Color of Document Editor.
+     * @default '#FFE97F'
+     */
+    @Property('#FFE97F')
+    public searchHighlightColor: string;
+
+}
 
 /**
  * The Document editor component is used to draft, save or print rich text contents as page by page.
@@ -49,12 +63,19 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     set enableHeaderAndFooter(value: boolean) {
         this.enableHeaderFooterIn = value;
+        if (!value && this.selection && this.selection.isWebLayout) {
+            this.selection.isWebLayout = false;
+        }
         this.viewer.updateScrollBars();
     }
     /**
      * @private
      */
     public viewer: LayoutViewer;
+    /**
+     * @private
+     */
+    public documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -185,6 +206,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property('KeepSourceFormatting')
     public defaultPasteOption: PasteOptions;
+
+    /**
+     * Layout Type
+     * @default Pages
+     */
+    @Property('Pages')
+    public layoutType: LayoutType;
 
     /**
      * Current User
@@ -429,6 +457,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(false)
     public enableLocalPaste: boolean;
     /**
+     * Defines the settings for DocumentEditor customization.
+     * @default {}
+     */
+    @Complex<DocumentEditorSettingsModel>({}, DocumentEditorSettings)
+    public documentEditorSettings: DocumentEditorSettingsModel;
+    /**
      * Defines the settings of the DocumentEditor services
      */
     // tslint:disable-next-line:max-line-length
@@ -574,10 +608,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {number}
      */
     get pageCount(): number {
-        if (!this.isDocumentLoaded || isNullOrUndefined(this.viewer)) {
+        if (!this.isDocumentLoaded || isNullOrUndefined(this.viewer) || this.viewer instanceof WebLayoutViewer) {
             return 1;
         }
-        return this.viewer.pages.length;
+        return this.documentHelper.pages.length;
     }
     /**
      *  Gets the selection object of the document editor.
@@ -695,6 +729,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             || isNullOrUndefined(this.selectionModule) || !isNullOrUndefined(this.editor) && this.editor.restrictEditing;
     }
     /**
+     * @private
+     */
+    get isSpellCheck(): boolean {
+        return this.enableSpellCheck && this.spellChecker.enableSpellCheck;
+    }
+    /**
      * Specifies to enable image resizer option
      * default - false
      * @private
@@ -707,15 +747,20 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     constructor(options?: DocumentEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
-        this.viewer = new PageLayoutViewer(this);
-        this.parser = new SfdtReader(this.viewer);
+        this.documentHelper = new DocumentHelper(this);
+        if (this.layoutType === 'Pages') {
+            this.viewer = new PageLayoutViewer(this);
+        } else {
+            this.viewer = new WebLayoutViewer(this);
+        }
+        this.parser = new SfdtReader(this.documentHelper);
     }
     protected preRender(): void {
         this.findResultsList = [];
         //pre render section
     }
     protected render(): void {
-        this.viewer.initializeComponents();
+        this.documentHelper.initializeComponents();
         this.openBlank();
         if (!isNullOrUndefined(this.element)) {
             let container: HTMLElement = this.element;
@@ -740,8 +785,23 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             switch (prop) {
                 case 'zoomFactor':
                     if (this.viewer) {
-                        this.viewer.zoomFactor = model.zoomFactor;
+                        this.documentHelper.zoomFactor = model.zoomFactor;
                     }
+                    break;
+                case 'layoutType':
+                    if (this.selection && this.selection.isWebLayout) {
+                        break;
+                    }
+                    this.viewer.destroy();
+                    if (this.layoutType === 'Pages') {
+                        this.viewer = new PageLayoutViewer(this);
+                    } else {
+                        if (this.enableHeaderAndFooter === true) {
+                            this.selection.closeHeaderFooter();
+                        }
+                        this.viewer = new WebLayoutViewer(this);
+                    }
+                    this.editor.layoutWholeDocument();
                     break;
                 case 'locale':
                     this.localizeDialogs();
@@ -753,7 +813,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     break;
                 case 'currentUser':
                 case 'userColor':
-                    if (this.selection && this.viewer.isDocumentProtected) {
+                    if (this.selection && this.documentHelper.isDocumentProtected) {
                         this.selection.highlightEditRegion();
                     }
                     break;
@@ -762,16 +822,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.viewer.updateScrollBars();
                     break;
                 case 'zIndex':
-                    if (this.viewer.dialog) {
-                        this.viewer.dialog.zIndex = model.zIndex + 10;
+                    if (this.documentHelper.dialog) {
+                        this.documentHelper.dialog.zIndex = model.zIndex + 10;
                     }
-                    if (this.viewer.dialog2) {
-                        this.viewer.dialog2.zIndex = model.zIndex;
+                    if (this.documentHelper.dialog2) {
+                        this.documentHelper.dialog2.zIndex = model.zIndex;
                     }
                     break;
                 case 'showComments':
                     if (this.viewer) {
-                        this.viewer.showComments(model.showComments);
+                        this.documentHelper.showComments(model.showComments);
                     }
                     break;
                 case 'enableRtl':
@@ -780,8 +840,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 case 'enableComment':
                     if (this.viewer && this.showComments) {
                         this.showComments = this.showComments ? this.enableComment : false;
-                        this.viewer.showComments(model.enableComment);
+                        this.documentHelper.showComments(model.enableComment);
                     }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'documentEditorSettings':
                     this.viewer.updateScrollBars();
                     break;
             }
@@ -792,8 +855,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             let l10n: L10n = new L10n('documenteditor', this.defaultLocale);
             l10n.setLocale(this.locale);
             if (!isNullOrUndefined(enableRtl)) {
-                this.viewer.dialog.enableRtl = enableRtl;
-                this.viewer.dialog2.enableRtl = enableRtl;
+                this.documentHelper.dialog.enableRtl = enableRtl;
+                this.documentHelper.dialog2.enableRtl = enableRtl;
             }
             if (this.optionsPaneModule) {
                 this.optionsPaneModule.initOptionsPane(l10n, enableRtl);
@@ -870,6 +933,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
         this.sectionFormat = sectionFormat;
     }
+
     /**
      * Get the properties to be maintained in the persisted state.
      * @private
@@ -879,7 +943,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     private clearPreservedCollectionsInViewer(): void {
         if (this.viewer instanceof LayoutViewer) {
-            this.viewer.clearDocumentItems();
+            this.documentHelper.clearDocumentItems();
         }
     }
     /**
@@ -906,7 +970,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public fireSelectionChange(): void {
-        if (!this.viewer.isCompositionStart && Browser.isDevice && this.editorModule) {
+        if (!this.documentHelper.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
         let eventArgs: SelectionChangeEventArgs = { source: isBlazor() ? null : this };
@@ -923,7 +987,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public fireViewChange(): void {
-        if (this.viewer && this.viewer.pages.length > 0) {
+        if (this.viewer && this.documentHelper.pages.length > 0) {
             if ((this.viewer as PageLayoutViewer).visiblePages.length > 0) {
                 let pages: Page[] = (this.viewer as PageLayoutViewer).visiblePages;
                 let eventArgs: ViewChangeEventArgs = {
@@ -1086,7 +1150,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.enableSfdtExport || this.enableWordExport || this.enableTextExport || this.enableSelection || this.enableEditor) {
             modules.push({
-                member: 'SfdtExport', args: [this.viewer]
+                member: 'SfdtExport', args: [this.documentHelper]
             });
         }
         if (this.enableWordExport) {
@@ -1105,7 +1169,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             });
             if (this.enableContextMenu) {
                 modules.push({
-                    member: 'ContextMenu', args: [this.viewer]
+                    member: 'ContextMenu', args: [this.documentHelper]
                 });
             }
         }
@@ -1115,17 +1179,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             });
             if (this.enableOptionsPane) {
                 modules.push({
-                    member: 'OptionsPane', args: [this.viewer]
+                    member: 'OptionsPane', args: [this.documentHelper]
                 });
             }
         }
         if (this.enableEditor) {
             modules.push({
-                member: 'Editor', args: [this.viewer]
+                member: 'Editor', args: [this.documentHelper]
             });
             if (this.enableImageResizer) {
                 modules.push({
-                    member: 'ImageResizer', args: [this, this.viewer]
+                    member: 'ImageResizer', args: [this, this.documentHelper]
                 });
             }
             if (this.enableEditorHistory) {
@@ -1135,79 +1199,79 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
             if (this.enableHyperlinkDialog) {
                 modules.push({
-                    member: 'HyperlinkDialog', args: [this.viewer]
+                    member: 'HyperlinkDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableTableDialog) {
                 modules.push({
-                    member: 'TableDialog', args: [this.viewer]
+                    member: 'TableDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableBookmarkDialog) {
                 modules.push({
-                    member: 'BookmarkDialog', args: [this.viewer]
+                    member: 'BookmarkDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableTableOfContentsDialog) {
                 modules.push({
-                    member: 'TableOfContentsDialog', args: [this.viewer]
+                    member: 'TableOfContentsDialog', args: [this.documentHelper]
                 });
             }
             if (this.enablePageSetupDialog) {
                 modules.push({
-                    member: 'PageSetupDialog', args: [this.viewer]
+                    member: 'PageSetupDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableStyleDialog) {
                 modules.push({
-                    member: 'StylesDialog', args: [this.viewer]
+                    member: 'StylesDialog', args: [this.documentHelper]
                 });
                 modules.push({
-                    member: 'StyleDialog', args: [this.viewer]
+                    member: 'StyleDialog', args: [this.documentHelper]
                 });
                 modules.push({
-                    member: 'BulletsAndNumberingDialog', args: [this.viewer]
+                    member: 'BulletsAndNumberingDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableListDialog) {
                 modules.push({
-                    member: 'ListDialog', args: [this.viewer]
+                    member: 'ListDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableParagraphDialog) {
                 modules.push({
-                    member: 'ParagraphDialog', args: [this.viewer]
+                    member: 'ParagraphDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableFontDialog) {
                 modules.push({
-                    member: 'FontDialog', args: [this.viewer]
+                    member: 'FontDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableTablePropertiesDialog) {
                 modules.push({
-                    member: 'TablePropertiesDialog', args: [this.viewer]
+                    member: 'TablePropertiesDialog', args: [this.documentHelper]
                 });
                 modules.push({
-                    member: 'CellOptionsDialog', args: [this.viewer]
+                    member: 'CellOptionsDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableBordersAndShadingDialog) {
                 modules.push({
-                    member: 'BordersAndShadingDialog', args: [this.viewer]
+                    member: 'BordersAndShadingDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableTableOptionsDialog) {
                 modules.push({
-                    member: 'TableOptionsDialog', args: [this.viewer]
+                    member: 'TableOptionsDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableSpellCheck) {
                 modules.push({
-                    member: 'SpellChecker', args: [this.viewer]
+                    member: 'SpellChecker', args: [this.documentHelper]
                 });
                 modules.push({
-                    member: 'SpellCheckDialog', args: [this.viewer]
+                    member: 'SpellCheckDialog', args: [this.documentHelper]
                 });
             }
         }
@@ -1533,24 +1597,24 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNullOrUndefined(this.viewer)) {
             this.showComments = false;
             this.clearPreservedCollectionsInViewer();
-            this.viewer.userCollection.push('Everyone');
-            this.viewer.lists = [];
-            this.viewer.abstractLists = [];
-            this.viewer.styles = new WStyles();
-            this.viewer.cachedPages = [];
-            if (this.enableSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
-                this.viewer.triggerElementsOnLoading = true;
-                this.viewer.triggerSpellCheck = true;
+            this.documentHelper.userCollection.push('Everyone');
+            this.documentHelper.lists = [];
+            this.documentHelper.abstractLists = [];
+            this.documentHelper.styles = new WStyles();
+            this.documentHelper.cachedPages = [];
+            if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
+                this.documentHelper.triggerElementsOnLoading = true;
+                this.documentHelper.triggerSpellCheck = true;
             }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
-                this.viewer.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
+                this.documentHelper.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
                 if (this.editorModule) {
                     this.editorModule.intializeDefaultStyles();
                 }
             }
-            if (this.enableSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
-                this.viewer.triggerElementsOnLoading = false;
-                this.viewer.triggerSpellCheck = false;
+            if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
+                this.documentHelper.triggerElementsOnLoading = false;
+                this.documentHelper.triggerSpellCheck = false;
             }
         }
     }
@@ -1560,7 +1624,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns void
      */
     public scrollToPage(pageNumber: number): boolean {
-        if (isNullOrUndefined(this.viewer) || pageNumber < 1 || pageNumber > this.viewer.pages.length) {
+        if (isNullOrUndefined(this.viewer) || pageNumber < 1 || pageNumber > this.documentHelper.pages.length) {
             return false;
         }
         this.viewer.scrollToPage(pageNumber - 1);
@@ -1578,7 +1642,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableTableOfContentsDialog = this.enablePageSetupDialog = this.enableStyleDialog
             = this.enableListDialog = this.enableParagraphDialog = this.enableFontDialog
             = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
-            = this.enableTableOptionsDialog = this.enableSpellCheck = true;
+            = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment = true;
         // tslint:disable-next-line:max-line-length
         DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog);
     }
@@ -1596,7 +1660,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.element.style.height = height + 'px';
             }
             if (this.viewer) {
-                this.viewer.updateViewerSize();
+                this.documentHelper.updateViewerSize();
             }
         }
     }
@@ -1605,7 +1669,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public focusIn(): void {
         if (this.viewer) {
-            this.viewer.updateFocus();
+            this.documentHelper.updateFocus();
         }
     }
     /**
@@ -1630,7 +1694,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             throw new Error('Invalid operation.');
         }
         if (this.printModule) {
-            this.printModule.print(this.viewer as PageLayoutViewer, printWindow);
+            if (this.layoutType === 'Continuous') {
+                this.viewer = new PageLayoutViewer(this);
+                this.editor.layoutWholeDocument();
+                this.printModule.print(this.documentHelper, printWindow);
+                this.viewer = new WebLayoutViewer(this);
+                this.editor.layoutWholeDocument();
+            } else {
+                this.printModule.print(this.documentHelper, printWindow);
+            }
         } else {
             throw new Error('Invalid operation. Print is not enabled.');
         }
@@ -1654,15 +1726,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public save(fileName: string, formatType?: FormatType): void {
         fileName = fileName || 'Untitled';
-        if (isNullOrUndefined(this.viewer)) {
+        if (isNullOrUndefined(this.documentHelper)) {
             throw new Error('Invalid operation.');
         }
         if (formatType === 'Docx' && this.wordExportModule) {
             if (this.wordExportModule) {
-                this.wordExportModule.save(this.viewer, fileName);
+                this.wordExportModule.save(this.documentHelper, fileName);
             }
         } else if (formatType === 'Txt' && this.textExportModule) {
-            this.textExportModule.save(this.viewer, fileName);
+            this.textExportModule.save(this.documentHelper, fileName);
         } else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {
             let jsonString: string = this.serialize();
             let blob: Blob = new Blob([jsonString], {
@@ -1683,11 +1755,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         return new Promise((resolve: Function, reject: Function) => {
             if (formatType === 'Docx' && this.wordExportModule) {
-                resolve(this.wordExportModule.saveAsBlob(this.viewer));
+                resolve(this.wordExportModule.saveAsBlob(this.documentHelper));
             } else if (formatType === 'Txt' && this.textExportModule) {
-                resolve(this.textExportModule.saveAsBlob(this.viewer));
+                resolve(this.textExportModule.saveAsBlob(this.documentHelper));
             } else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {
-                resolve(this.sfdtExportModule.saveAsBlob(this.viewer));
+                resolve(this.sfdtExportModule.saveAsBlob(this.documentHelper));
             }
         });
     }
@@ -1713,14 +1785,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         let hfs: HeaderFooters = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
-            this.viewer.userCollection.push('Everyone');
-            this.viewer.cachedPages = [];
-            this.viewer.setDefaultDocumentFormat();
-            this.viewer.headersFooters.push(hfs);
-            this.viewer.onDocumentChanged(sections);
+            this.documentHelper.userCollection.push('Everyone');
+            this.documentHelper.cachedPages = [];
+            this.documentHelper.setDefaultDocumentFormat();
+            this.documentHelper.headersFooters.push(hfs);
+            this.documentHelper.onDocumentChanged(sections);
             if (this.editorModule) {
                 this.editorModule.intializeDefaultStyles();
-                let style: WStyle = this.viewer.styles.findByName('Normal') as WStyle;
+                let style: WStyle = this.documentHelper.styles.findByName('Normal') as WStyle;
                 paragraph.paragraphFormat.baseStyle = style;
                 paragraph.paragraphFormat.listFormat.baseStyle = style;
             }
@@ -1732,7 +1804,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public getStyleNames(styleType?: StyleType): string[] {
         if (this.viewer) {
-            return this.viewer.styles.getStyleNames(styleType);
+            return this.documentHelper.styles.getStyleNames(styleType);
         }
         return [];
     }
@@ -1742,7 +1814,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public getStyles(styleType?: StyleType): Object[] {
         if (this.viewer) {
-            return this.viewer.styles.getStyles(styleType);
+            return this.documentHelper.styles.getStyles(styleType);
         }
         return [];
     }
@@ -1752,7 +1824,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public getBookmarks(): string[] {
         let bookmarks: string[] = [];
         if (this.viewer) {
-            bookmarks = this.viewer.getBookmarks(true);
+            bookmarks = this.documentHelper.getBookmarks(true);
         }
         return bookmarks;
     }
@@ -1818,8 +1890,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public destroy(): void {
         super.destroy();
         this.destroyDependentModules();
-        if (!isNullOrUndefined(this.viewer)) {
-            this.viewer.destroy();
+        if (!isNullOrUndefined(this.documentHelper)) {
+            this.documentHelper.destroy();
         }
         this.viewer = undefined;
         if (!isNullOrUndefined(this.element)) {
@@ -1982,4 +2054,7 @@ export class ContainerServerActionSettings extends ServerActionSettings {
     @Property('Import')
     public import: string;
 }
+
+
+
 

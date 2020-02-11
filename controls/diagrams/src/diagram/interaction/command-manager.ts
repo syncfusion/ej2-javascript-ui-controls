@@ -1,5 +1,6 @@
 import { IElement, ISelectionChangeEventArgs, IConnectionChangeEventArgs } from '../objects/interface/IElement';
 import { IDragOverEventArgs, IBlazorConnectionChangeEventArgs, IBlazorSelectionChangeEventArgs } from '../objects/interface/IElement';
+import { ConnectorValue} from '../objects/interface/IElement';
 import { DiagramEventObjectCollection } from '../objects/interface/IElement';
 import { IDropEventArgs, IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { Connector, getBezierPoints, isEmptyVector, BezierSegment, BpmnFlow } from '../objects/connector';
@@ -200,22 +201,25 @@ export class CommandHandler {
             let connector: Connector = this.diagram.nameTable[args.connector.id];
             let nodeEndId: string = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
             let portEndId: string = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
-            oldChanges[nodeEndId] = args.newValue.connectorTargetValue.nodeId;
-            oldChanges[portEndId] = args.newValue.connectorTargetValue.portId;
-            newChanges[nodeEndId] = args.oldValue.connectorTargetValue.nodeId;
-            newChanges[portEndId] = args.oldValue.connectorTargetValue.portId;
+            let connectionEnd: boolean = args.connectorEnd === 'ConnectorTargetEnd';
+            let newValue: ConnectorValue = connectionEnd ? args.newValue.connectorTargetValue : args.newValue.connectorSourceValue;
+            let oldValue: ConnectorValue = connectionEnd ? args.oldValue.connectorTargetValue : args.oldValue.connectorSourceValue;
+            oldChanges[nodeEndId] = newValue.nodeId;
+            oldChanges[portEndId] = newValue.portId;
+            newChanges[nodeEndId] = oldValue.nodeId;
+            newChanges[portEndId] = oldValue.portId;
             if (args.cancel && args.connectorEnd !== 'ConnectorTargetEnd') {
-                connector.sourceID = args.oldValue.connectorTargetValue.nodeId;
+                connector.sourceID = oldValue.nodeId;
                 if (args.connector.sourcePortID) {
-                    connector.sourcePortID = args.oldValue.connectorTargetValue.portId;
+                    connector.sourcePortID = oldValue.portId;
                 }
                 this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
             }
             if (args.cancel && args.connectorEnd === 'ConnectorTargetEnd') {
                 if (args.connector.targetPortID) {
-                    connector.targetPortID = args.oldValue.connectorTargetValue.portId;
+                    connector.targetPortID = oldValue.portId;
                 }
-                connector.targetID = args.oldValue.connectorTargetValue.nodeId;
+                connector.targetID = oldValue.nodeId;
                 this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
             }
         }

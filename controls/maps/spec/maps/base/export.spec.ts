@@ -158,6 +158,27 @@ describe('Map layer testing', () => {
                     done();
                 }, 500);
             });
+        it('Checking to return base64 for png', (done: Function) => {
+                mapObj.export('PNG', 'map', PdfPageOrientation.Portrait, false);
+                setTimeout(() => {
+                    expect('').toBe('');
+                    done();
+                }, 500);
+            });
+        it('Checking to return base64 for SVG', (done: Function) => {
+                mapObj.export('SVG', 'map', PdfPageOrientation.Portrait, false);
+                setTimeout(() => {
+                    expect('').toBe('');
+                    done();
+                }, 500);
+            });
+        it('Checking to return base64 for PDF', (done: Function) => {
+                mapObj.export('PDF', 'map', PdfPageOrientation.Portrait, false);
+                setTimeout(() => {
+                    expect('').toBe('');
+                    done();
+                }, 500);
+            });
     });
     it('memory leak', () => {
         profile.sample();

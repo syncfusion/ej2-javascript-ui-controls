@@ -13,10 +13,10 @@ describe('Vertical merge cell continue validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(tableJson));
     });
@@ -29,7 +29,7 @@ describe('Vertical merge cell continue validation', () => {
         }, 1000);
     });
     it(' with splitted cell widget content is empty', () => {
-        let tableRow:TableRowWidget=(editor.viewer.pages[1].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget;
+        let tableRow:TableRowWidget=(editor.documentHelper.pages[1].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget;
         expect(tableRow.childWidgets.length).toBe(2);
     });
 });

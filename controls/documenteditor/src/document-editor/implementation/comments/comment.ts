@@ -74,7 +74,7 @@ export class CommentReviewPane {
     }
 
     public initReviewPane(localValue: L10n): void {
-        let reviewContainer: HTMLElement = this.owner.viewer.optionsPaneContainer;
+        let reviewContainer: HTMLElement = this.owner.documentHelper.optionsPaneContainer;
         reviewContainer.style.display = 'inline-flex';
         reviewContainer.appendChild(this.initPaneHeader(localValue));
         this.initCommentPane();
@@ -110,7 +110,7 @@ export class CommentReviewPane {
         if (this.commentPane && this.commentPane.isEditMode) {
             if (!isNullOrUndefined(this.commentPane.currentEditingComment)
                 && this.commentPane.isInsertingReply && this.commentPane.currentEditingComment.replyViewTextBox.value === '') {
-                this.owner.viewer.currentSelectedComment = undefined;
+                this.owner.documentHelper.currentSelectedComment = undefined;
                 this.commentPane.currentEditingComment.cancelReply();
                 this.owner.showComments = false;
             } else if (this.isNewComment || !isNullOrUndefined(this.commentPane.currentEditingComment)
@@ -134,12 +134,12 @@ export class CommentReviewPane {
                     position: { X: 'Center', Y: 'Center' }
                 });
             } else {
-                this.owner.viewer.currentSelectedComment = undefined;
+                this.owner.documentHelper.currentSelectedComment = undefined;
                 this.commentPane.currentEditingComment.cancelEditing();
                 this.owner.showComments = false;
             }
         } else {
-            this.owner.viewer.currentSelectedComment = undefined;
+            this.owner.documentHelper.currentSelectedComment = undefined;
             this.owner.showComments = false;
         }
     }
@@ -155,7 +155,7 @@ export class CommentReviewPane {
                     this.discardComment(this.commentPane.currentEditingComment.comment);
                 }
             }
-            this.owner.viewer.currentSelectedComment = undefined;
+            this.owner.documentHelper.currentSelectedComment = undefined;
             this.closeDialogUtils();
             this.owner.showComments = false;
         }
@@ -196,7 +196,7 @@ export class CommentReviewPane {
 
     public addComment(comment: CommentElementBox, isNewComment: boolean): void {
         this.isNewComment = isNewComment;
-        this.owner.viewer.currentSelectedComment = comment;
+        this.owner.documentHelper.currentSelectedComment = comment;
         this.commentPane.insertComment(comment);
         if (!isNewComment) {
             let commentView: CommentView = this.commentPane.comments.get(comment);
@@ -219,8 +219,8 @@ export class CommentReviewPane {
         if (comment.isReply) {
             comment = comment.ownerComment;
         }
-        if (this.owner && this.owner.viewer && this.owner.viewer.currentSelectedComment !== comment) {
-            this.owner.viewer.currentSelectedComment = comment;
+        if (this.owner && this.owner.viewer && this.owner.documentHelper.currentSelectedComment !== comment) {
+            this.owner.documentHelper.currentSelectedComment = comment;
         }
         this.commentPane.selectComment(comment);
     }
@@ -265,7 +265,7 @@ export class CommentReviewPane {
             let elements: NodeListOf<Element> = this.toolbar.element.querySelectorAll('.' + 'e-de-cmt-tbr');
             this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
             if (enable && this.owner && this.owner.viewer) {
-                enable = !(this.owner.viewer.comments.length === 0);
+                enable = !(this.owner.documentHelper.comments.length === 0);
             }
             this.toolbar.enableItems(elements[1].parentElement.parentElement, enable);
             this.toolbar.enableItems(elements[2].parentElement.parentElement, enable);
@@ -278,8 +278,8 @@ export class CommentReviewPane {
     }
 
     public layoutComments(): void {
-        for (let i: number = 0; i < this.owner.viewer.comments.length; i++) {
-            this.commentPane.addComment(this.owner.viewer.comments[i]);
+        for (let i: number = 0; i < this.owner.documentHelper.comments.length; i++) {
+            this.commentPane.addComment(this.owner.documentHelper.comments[i]);
         }
     }
 
@@ -433,11 +433,11 @@ export class CommentPane {
         let commentView: CommentView = new CommentView(this.owner, this, comment);
         let commentParent: HTMLElement = commentView.layoutComment(false);
         this.comments.add(comment, commentView);
-        if (this.owner.viewer.comments.indexOf(comment) === this.owner.viewer.comments.length - 1) {
+        if (this.owner.documentHelper.comments.indexOf(comment) === this.owner.documentHelper.comments.length - 1) {
             this.commentPane.appendChild(commentParent);
         } else {
-            let index: number = this.owner.viewer.comments.indexOf(comment);
-            let element: HTMLElement = this.comments.get(this.owner.viewer.comments[index + 1]).parentElement;
+            let index: number = this.owner.documentHelper.comments.indexOf(comment);
+            let element: HTMLElement = this.comments.get(this.owner.documentHelper.comments[index + 1]).parentElement;
             this.commentPane.insertBefore(commentParent, element);
             commentParent.focus();
         }
@@ -519,7 +519,7 @@ export class CommentPane {
     }
 
     public updateCommentStatus(): void {
-        if (this.owner.viewer.comments.length === 0) {
+        if (this.owner.documentHelper.comments.length === 0) {
             if (!this.noCommentIndicator.parentElement) {
                 this.commentPane.appendChild(this.noCommentIndicator);
             }
@@ -668,7 +668,7 @@ export class CommentView {
                 if (comment && comment.isReply) {
                     comment = this.comment.ownerComment;
                 }
-                if (comment && this.owner.viewer.currentSelectedComment === comment) {
+                if (comment && this.owner.documentHelper.currentSelectedComment === comment) {
                     return;
                 }
                 this.commentPane.currentEditingComment.cancelReply();
@@ -810,7 +810,7 @@ export class CommentView {
         }
         this.commentPane.currentEditingComment = this;
         this.commentPane.isInsertingReply = true;
-        if (this.owner.viewer.currentSelectedComment !== this.comment) {
+        if (this.owner.documentHelper.currentSelectedComment !== this.comment) {
             this.owner.selection.selectComment(this.comment);
         }
         this.commentPane.isEditMode = true;
@@ -861,7 +861,7 @@ export class CommentView {
 
     public hideMenuItemOnMouseLeave(): void {
         if (this.comment.isReply) {
-            if (this.owner.viewer.currentSelectedComment !== this.comment.ownerComment) {
+            if (this.owner.documentHelper.currentSelectedComment !== this.comment.ownerComment) {
                 this.hideMenuItems();
             }
         }

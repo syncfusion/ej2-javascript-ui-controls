@@ -39,6 +39,16 @@ export function valueAccessor(field: string, data: Object, column: ColumnModel):
 }
 
 /**
+ * Defines the method used to apply custom header cell values from external function and display this on each header cell rendered.
+ * @param  {string} field
+ * @param  {IColumn} column
+ * @hidden
+ */
+export function headerValueAccessor(field: string, column: ColumnModel): Object {
+    return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, column);
+}
+
+/**
  * The function used to update Dom using requestAnimationFrame.
  * @param  {Function} fn - Function that contains the actual action
  * @return {Promise<T>}

@@ -467,6 +467,48 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public signatureName: string;
 
     /**
+     * specifies the minHeight of the annotation.
+     * @default 0
+     */
+    @Property(0)
+    public minHeight: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     * @default 0
+     */
+    @Property(0)
+    public minWidth: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     * @default 0
+     */
+    @Property(0)
+    public maxHeight: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     * @default 0
+     */
+    @Property(0)
+    public maxWidth: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     * @default 'false'
+     */
+    @Property(false)
+    public isLock: boolean;
+
+    /**
+     * specifies the default settings of the annotation.
+     * @default ''
+     */
+    @Property('')
+    public annotationSettings: object;
+
+    /**
      * Represents the text style of annotation
      * @default ''
      */
@@ -479,6 +521,12 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Complex<PdfBoundsModel>({ x: 0, y: 0 }, PdfBounds)
     public labelBounds: PdfBoundsModel;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    @Property(null)
+    public customData: object;
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {

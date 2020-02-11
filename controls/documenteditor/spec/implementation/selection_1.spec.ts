@@ -82,23 +82,21 @@ let jsonStr =
 let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
 describe('Insert Picture', () => {
   let editor: DocumentEditor = undefined;
-  let viewer: LayoutViewer;
   beforeAll(() => {
     let ele: HTMLElement = createElement('div', { id: 'container' });
     document.body.appendChild(ele);
     DocumentEditor.Inject(Editor, Selection);
     editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-    (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-    (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-    (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-    (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
     editor.appendTo('#container');
   });
   afterAll((done) => {
     document.body.removeChild(document.getElementById('container'));
     editor.destroy();
     editor = undefined;
-    viewer = undefined;
     setTimeout(function () {
       done();
     }, 1000);
@@ -122,23 +120,21 @@ describe('Insert Picture', () => {
 });
 describe('Insert Picture Validation', () => {
   let editor: DocumentEditor = undefined;
-  let viewer: LayoutViewer;
   beforeAll(() => {
     let ele: HTMLElement = createElement('div', { id: 'container' });
     document.body.appendChild(ele);
     DocumentEditor.Inject(Selection, Editor);
     editor = new DocumentEditor({ enableSelection: true, enableEditor: true });
-    (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-    (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-    (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-    (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
     editor.appendTo('#container');
   });
   afterAll((done) => {
     document.body.removeChild(document.getElementById('container'));
     editor.destroy();
     editor = undefined;
-    viewer = undefined;
     setTimeout(function () {
       done();
     }, 1000);
@@ -151,30 +147,28 @@ describe('Insert Picture Validation', () => {
   });
   it('caret not to be shown when editable lose its focus', () => {
     let event: any = { preventDefault: function () { } };
-    editor.viewer.onFocusOut();
+    editor.documentHelper.onFocusOut();
     expect(editor.selection.caret.style.display).toBe('none');
   });
 });
 describe('Selection Based on client Coordinated validation', () => {
   let editor: DocumentEditor = undefined;
-  let viewer: LayoutViewer;
   beforeAll(() => {
     document.body.innerHTML = "";
     let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:1000px;height:600px' });
     document.body.appendChild(ele);
     DocumentEditor.Inject(Editor, Selection);
     editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-    (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-    (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-    (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-    (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
     editor.appendTo('#container');
   });
   afterAll((done) => {
     document.body.removeChild(document.getElementById('container'));
     editor.destroy();
     editor = undefined;
-    viewer = undefined;
     setTimeout(function () {
       done();
     }, 1000);

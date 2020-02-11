@@ -68,7 +68,7 @@ export class Legend extends BaseLegend {
         let seriesType: ChartDrawType | ChartSeriesType;
         let fill: string;
         for (let series of visibleSeriesCollection) {
-            if (series.category !== 'Indicator') {
+            if (series.category !== 'Indicator' && series.name !== '') {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
                     <ChartSeriesType>series.type;
                 // To set legend color when use pointColorMapping

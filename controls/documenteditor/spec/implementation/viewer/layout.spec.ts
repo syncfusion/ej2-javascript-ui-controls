@@ -13,10 +13,10 @@ describe("Insert and delete table validation", () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -54,10 +54,10 @@ describe('Table autoFit validation', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(sfdt));
     });
@@ -71,12 +71,12 @@ describe('Table autoFit validation', () => {
     });
 
     it('check preferedWidth Type', () => {
-        let tableWidget: TableWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
+        let tableWidget: TableWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
         expect(tableWidget.tableFormat.preferredWidthType).toBe('Percent');
     });
 
     it('check auto fit', function () {
-        var tableWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
+        var tableWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
         expect(tableWidget.tableFormat.allowAutoFit).toBe(true);
     });
 });

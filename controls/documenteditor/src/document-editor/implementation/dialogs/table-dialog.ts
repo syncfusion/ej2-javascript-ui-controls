@@ -1,6 +1,6 @@
-import { LayoutViewer } from '../index';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { DocumentHelper } from '../viewer';
 /**
  * The Table dialog is used to insert table at selection.
  */
@@ -11,14 +11,14 @@ export class TableDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private columnValueTexBox: NumericTextBox;
     private rowValueTextBox: NumericTextBox;
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
 
     private getModuleName(): string {
@@ -29,7 +29,7 @@ export class TableDialog {
      */
     public initTableDialog(localValue: L10n): void {
         let instance: TableDialog = this;
-        let id: string = this.owner.owner.containerId + '_insert_Table';
+        let id: string = this.documentHelper.owner.containerId + '_insert_Table';
         this.target = createElement('div', { id: id, className: 'e-de-insert-table' });
         let parentDiv: HTMLElement = createElement('div');
 
@@ -38,7 +38,7 @@ export class TableDialog {
         });
         let columnValue: HTMLElement = createElement('div', { className: 'e-de-insert-table-dlg-input' });
         this.columnsCountBox = createElement('input', {
-            attrs: { type: 'text' }, id: this.owner.owner.containerId + '_column'
+            attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + '_column'
         }) as HTMLInputElement;
         columnValue.appendChild(this.columnsCountBox);
 
@@ -47,7 +47,7 @@ export class TableDialog {
         });
         let rowValue: HTMLElement = createElement('div');
         this.rowsCountBox = createElement('input', {
-            attrs: { type: 'text' }, id: this.owner.owner.containerId + 'row'
+            attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + 'row'
         }) as HTMLInputElement;
         rowValue.appendChild(this.rowsCountBox);
 
@@ -82,20 +82,20 @@ export class TableDialog {
      * @private
      */
     public show(): void {
-        let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        localValue.setLocale(this.owner.owner.locale);
+        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initTableDialog(localValue);
         }
-        if (this.owner.selection.caret.style.display !== 'none') {
-            this.owner.selection.caret.style.display = 'none';
+        if (this.documentHelper.selection.caret.style.display !== 'none') {
+            this.documentHelper.selection.caret.style.display = 'none';
         }
-        this.owner.dialog.header = localValue.getConstant('Insert Table');
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = this.owner.updateFocus;
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = localValue.getConstant('Insert Table');
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.buttons = [{
             click: this.onInsertTableClick,
             buttonModel: { content: localValue.getConstant('Ok'), cssClass: 'e-flat e-table-ok', isPrimary: true }
         },
@@ -105,9 +105,9 @@ export class TableDialog {
         }];
         this.rowValueTextBox.value = 2;
         this.columnValueTexBox.value = 2;
-        this.owner.dialog.close = this.owner.updateFocus;
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.close = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
@@ -123,7 +123,7 @@ export class TableDialog {
      * @private
      */
     public onCancelButtonClick = (): void => {
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
     /**
      * @private
@@ -132,9 +132,9 @@ export class TableDialog {
         let rowCount: number = this.rowValueTextBox.value;
         let columnCount: number = this.columnValueTexBox.value;
         if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {
-            this.owner.owner.editor.insertTable(rowCount, columnCount);
+            this.documentHelper.owner.editor.insertTable(rowCount, columnCount);
         }
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
     /**
      * @private
@@ -162,7 +162,7 @@ export class TableDialog {
         }
         this.columnsCountBox = undefined;
         this.rowsCountBox = undefined;
-        this.owner = undefined;
+        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);

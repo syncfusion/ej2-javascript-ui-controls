@@ -1,49 +1,54 @@
-import { LayoutViewer, PageLayoutViewer } from './viewer';
+import { LayoutViewer, DocumentHelper } from './viewer';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /** 
  * @private
  */
 export class Zoom {
-    private viewer: LayoutViewer;
-
+    private documentHelper: DocumentHelper;
     public setZoomFactor(value: number): void {
         this.onZoomFactorChanged();
-        if (!isNullOrUndefined(this.viewer.selection)) {
-            this.viewer.selection.updateCaretPosition();
+        if (!isNullOrUndefined(this.documentHelper.selection)) {
+            this.documentHelper.selection.updateCaretPosition();
         }
-        this.viewer.updateTouchMarkPosition();
-        if (!isNullOrUndefined(this.viewer.owner.imageResizerModule)) {
-            this.viewer.owner.imageResizerModule.updateImageResizerPosition();
+        this.documentHelper.updateTouchMarkPosition();
+        if (!isNullOrUndefined(this.documentHelper.owner.imageResizerModule)) {
+            this.documentHelper.owner.imageResizerModule.updateImageResizerPosition();
         }
-        this.viewer.owner.fireZoomFactorChange();
+        this.documentHelper.owner.fireZoomFactorChange();
     }
-    constructor(viewer: LayoutViewer) {
-        this.viewer = viewer;
+    /**
+     * documentHelper definition
+     */
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
+    }
+    get viewer(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
 
     //Zoom Implementation Starts
     private onZoomFactorChanged(): void {
-        if (this.viewer.zoomFactor > 5) {
-            this.viewer.zoomFactor = 5;
-        } else if (this.viewer.zoomFactor < 0.1) {
-            this.viewer.zoomFactor = 0.1;
+        if (this.documentHelper.zoomFactor > 5) {
+            this.documentHelper.zoomFactor = 5;
+        } else if (this.documentHelper.zoomFactor < 0.1) {
+            this.documentHelper.zoomFactor = 0.1;
         }
         this.zoom();
     }
     private zoom(): void {
         let viewer: LayoutViewer = this.viewer;
-        viewer.clearContent();
-        (viewer as PageLayoutViewer).handleZoom();
-        viewer.updateFocus();
+        this.documentHelper.clearContent();
+        viewer.handleZoom();
+        this.documentHelper.updateFocus();
     }
     public onMouseWheelInternal = (event: MouseWheelEvent): void => {
         if (event.ctrlKey === true) {
             event.preventDefault();
-            let pageX: number = event.pageX - this.viewer.viewerContainer.offsetLeft;
-            if (pageX < this.viewer.pageContainer.offsetWidth) {
+            let pageX: number = event.pageX - this.documentHelper.viewerContainer.offsetLeft;
+            if (pageX < this.documentHelper.pageContainer.offsetWidth) {
                 let wheel: boolean = navigator.userAgent.match('Firefox') ? event.detail < 0 : event.wheelDelta > 0;
-                let zoomFactor: number = this.viewer.zoomFactor;
+                let zoomFactor: number = this.documentHelper.zoomFactor;
                 if (wheel) {
                     if (zoomFactor <= 4.90) {
                         zoomFactor += .10;
@@ -57,7 +62,7 @@ export class Zoom {
                         zoomFactor = 0.10;
                     }
                 }
-                this.viewer.zoomFactor = zoomFactor;
+                this.documentHelper.zoomFactor = zoomFactor;
             }
         }
     }

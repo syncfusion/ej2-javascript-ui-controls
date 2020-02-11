@@ -3,7 +3,7 @@ import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Br
 import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, extend, isBlazor } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';
@@ -529,7 +529,7 @@ export class DateTimePicker extends DatePicker {
         }
         removeClass([this.inputWrapper.container], INPUTFOCUS);
         let blurArguments: BlurEventArgs = {
-            model: this
+            model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (this.isTimePopupOpen()) {
             this.hide(e);
@@ -912,7 +912,7 @@ export class DateTimePicker extends DatePicker {
     private openPopup(e: KeyboardEvent | MouseEvent | Event): void {
         this.preventArgs = {
             cancel: false,
-            popup: this.popupObject,
+            popup: (isBlazor() && this.isServerRendered) ? null : this.popupObject,
             event: e || null
         };
         let eventArgs: PopupObjectArgs = this.preventArgs;
@@ -935,10 +935,11 @@ export class DateTimePicker extends DatePicker {
         });
     }
     private documentClickHandler(event: MouseEvent): void {
-        if (event.type !== 'touchstart') {
-            event.preventDefault();
-        }
         let target: HTMLElement = <HTMLElement>event.target;
+        if ((!isNullOrUndefined(this.popupObject) && (this.inputWrapper.container.contains(target) ||
+            (this.popupObject.element && this.popupObject.element.contains(target)))) && event.type !== 'touchstart') {
+                event.preventDefault();
+            }
         if (!(closest(target, '#' + (this.popupObject && this.popupObject.element.id))) && target !== this.inputElement
             && target !== this.timeIcon && target !== this.inputWrapper.container) {
             if (this.isTimePopupOpen()) {
@@ -949,7 +950,6 @@ export class DateTimePicker extends DatePicker {
             if (!Browser.isDevice) {
                 this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
                     && target === this.popupObject.element);
-                event.preventDefault();
             }
         }
     }
@@ -1294,7 +1294,7 @@ export class DateTimePicker extends DatePicker {
         if (this.popupObj || this.dateTimeWrapper) {
             this.preventArgs = {
                 cancel: false,
-                popup: this.popupObj || this.popupObject,
+                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || this.popupObject,
                 event: e || null
             };
             let eventArgs: PopupObjectArgs = this.preventArgs;

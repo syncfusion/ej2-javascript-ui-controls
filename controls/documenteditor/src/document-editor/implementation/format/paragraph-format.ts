@@ -259,7 +259,7 @@ export class WParagraphFormat {
         if (!isNullOrUndefined(this.ownerBase)) {
             // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page)) {
-                docParagraphFormat = (this.ownerBase as ParagraphWidget).bodyWidget.page.viewer.paragraphFormat;
+                docParagraphFormat = (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.paragraphFormat;
             }
         }
         return docParagraphFormat;

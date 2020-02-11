@@ -147,13 +147,13 @@ describe('Action module', () => {
             let columnHeader: HTMLElement = kanbanObj.element.querySelector('.e-header-cells') as HTMLElement;
             expect(columnHeader.classList.contains('e-toggle-header')).toEqual(true);
             expect(columnHeader.classList.contains('e-collapsed')).toEqual(false);
-            expect(columnHeader.children[1].classList.contains('e-column-expand')).toEqual(true);
-            expect(columnHeader.children[1].classList.contains('e-column-collapse')).toEqual(false);
-            util.triggerMouseEvent(columnHeader.children[1], 'click');
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-expand')).toEqual(true);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-collapse')).toEqual(false);
+            util.triggerMouseEvent(columnHeader.children[0].children[1], 'click');
             expect(columnHeader.classList.contains('e-toggle-header')).toEqual(true);
             expect(columnHeader.classList.contains('e-collapsed')).toEqual(false);
-            expect(columnHeader.children[1].classList.contains('e-column-expand')).toEqual(true);
-            expect(columnHeader.children[1].classList.contains('e-column-collapse')).toEqual(false);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-expand')).toEqual(true);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-collapse')).toEqual(false);
         });
 
         it('action begin testing with cancel as false and column collapsed', () => {
@@ -161,26 +161,26 @@ describe('Action module', () => {
             let columnHeader: HTMLElement = kanbanObj.element.querySelector('.e-header-cells') as HTMLElement;
             expect(columnHeader.classList.contains('e-toggle-header')).toEqual(true);
             expect(columnHeader.classList.contains('e-collapsed')).toEqual(false);
-            expect(columnHeader.children[1].classList.contains('e-column-expand')).toEqual(true);
-            expect(columnHeader.children[1].classList.contains('e-column-collapse')).toEqual(false);
-            util.triggerMouseEvent(columnHeader.children[1], 'click');
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-expand')).toEqual(true);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-collapse')).toEqual(false);
+            util.triggerMouseEvent(columnHeader.children[0].children[1], 'click');
             expect(columnHeader.classList.contains('e-toggle-header')).toEqual(true);
             expect(columnHeader.classList.contains('e-collapsed')).toEqual(true);
-            expect(columnHeader.children[1].classList.contains('e-column-expand')).toEqual(false);
-            expect(columnHeader.children[1].classList.contains('e-column-collapse')).toEqual(true);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-expand')).toEqual(false);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-collapse')).toEqual(true);
         });
 
         it('action begin testing with cancel as false and column expanded', () => {
             let columnHeader: HTMLElement = kanbanObj.element.querySelector('.e-header-cells') as HTMLElement;
             expect(columnHeader.classList.contains('e-toggle-header')).toEqual(true);
             expect(columnHeader.classList.contains('e-collapsed')).toEqual(true);
-            expect(columnHeader.children[1].classList.contains('e-column-expand')).toEqual(false);
-            expect(columnHeader.children[1].classList.contains('e-column-collapse')).toEqual(true);
-            util.triggerMouseEvent(columnHeader.children[1], 'click');
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-expand')).toEqual(false);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-collapse')).toEqual(true);
+            util.triggerMouseEvent(columnHeader.children[0].children[1], 'click');
             expect(columnHeader.classList.contains('e-toggle-header')).toEqual(true);
             expect(columnHeader.classList.contains('e-collapsed')).toEqual(false);
-            expect(columnHeader.children[1].classList.contains('e-column-expand')).toEqual(true);
-            expect(columnHeader.children[1].classList.contains('e-column-collapse')).toEqual(false);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-expand')).toEqual(true);
+            expect(columnHeader.children[0].children[1].classList.contains('e-column-collapse')).toEqual(false);
             expect(actionCompleteFunction).toHaveBeenCalled();
         });
 
@@ -190,14 +190,16 @@ describe('Action module', () => {
             columnHeaders.forEach((columnHeader: HTMLElement, index: number) => {
                 expect(columnHeader.classList.contains('e-toggle-header')).toEqual(true);
                 expect(columnHeader.classList.contains('e-collapsed')).toEqual(false);
-                expect(columnHeader.children[1].classList.contains('e-column-expand')).toEqual(true);
-                expect(columnHeader.children[1].classList.contains('e-column-collapse')).toEqual(false);
+                expect(columnHeader.children[0].classList.contains('e-header-wrap')).toEqual(true);
+                expect(columnHeader.children[0].children[1].classList.contains('e-column-expand')).toEqual(true);
+                expect(columnHeader.children[0].children[1].classList.contains('e-column-collapse')).toEqual(false);
                 expect(columnHeader.getAttribute('data-key')).toEqual(columnKeys[index]);
-                util.triggerMouseEvent(columnHeader.children[1], 'click');
+                util.triggerMouseEvent(columnHeader.children[0].children[1], 'click');
                 expect(columnHeader.classList.contains('e-toggle-header')).toEqual(true);
                 expect(columnHeader.classList.contains('e-collapsed')).toEqual(true);
-                expect(columnHeader.children[1].classList.contains('e-column-expand')).toEqual(false);
-                expect(columnHeader.children[1].classList.contains('e-column-collapse')).toEqual(true);
+                expect(columnHeader.children[0].classList.contains('e-header-wrap')).toEqual(true);
+                expect(columnHeader.children[0].children[1].classList.contains('e-column-expand')).toEqual(false);
+                expect(columnHeader.children[0].children[1].classList.contains('e-column-collapse')).toEqual(true);
                 expect(actionCompleteFunction).toHaveBeenCalled();
             });
         });
@@ -237,10 +239,10 @@ describe('Action module', () => {
 
         it('Particular column icon rendering testing', () => {
             let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
-            expect(headerCells[0].lastElementChild.classList.contains('e-column-expand')).toBe(false);
-            expect(headerCells[1].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
-            expect(headerCells[2].lastElementChild.classList.contains('e-column-expand')).toBe(false);
-            expect(headerCells[3].lastElementChild.classList.contains('e-column-expand')).toBe(true);
+            expect(headerCells[0].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(false);
+            expect(headerCells[1].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCells[2].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(false);
+            expect(headerCells[3].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(true);
         });
         it('Checked collapesd class added properly on header cell testing', () => {
             let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
@@ -267,21 +269,21 @@ describe('Action module', () => {
         });
 
         it('Single column collapse testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[3].classList.contains('e-collapsed')).toBe(true);
         });
 
         it('Single column expand testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-expand')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[3].classList.contains('e-collapsed')).toBe(false);
         });
 
         it('Maintain single collapsed state testing - drag the card', () => {
-            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].lastElementChild;
+            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(headerCell.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[1].classList.contains('e-collapsed')).toBe(true);
             let draggedElement: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="5"]').item(0) as HTMLElement;
@@ -304,7 +306,7 @@ describe('Action module', () => {
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-card.duplicate').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
-            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].lastElementChild;
+            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(headerCell.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[1].classList.contains('e-collapsed')).toBe(true);
         });
@@ -342,7 +344,7 @@ describe('Action module', () => {
         });
         it('Allow Toggle Column testing', () => {
             for (let i: number = 0; i < kanbanObj.columns.length; i++) {
-                let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[i].lastElementChild;
+                let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[i].children[0].lastElementChild;
                 expect(kanbanObj.columns[i].allowToggle).toBe(element.classList.contains('e-column-expand'));
             }
         });
@@ -357,7 +359,7 @@ describe('Action module', () => {
 
         it('Columns icons rendering testing', () => {
             for (let i: number = 0; i < kanbanObj.columns.length; i++) {
-                let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[i].lastElementChild;
+                let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[i].children[0].lastElementChild;
                 expect(headerCell.classList.contains('e-column-expand')).toBe(true);
             }
         });
@@ -377,84 +379,84 @@ describe('Action module', () => {
             }
         });
         it('First column collapse testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[0].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[0].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[0].classList.contains('e-collapsed')).toBe(true);
         });
         it('Second column collapse testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[1].classList.contains('e-collapsed')).toBe(true);
         });
         it('Third column collapse testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[2].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[2].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[2].classList.contains('e-collapsed')).toBe(true);
         });
         it('Forth column collapse testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[3].classList.contains('e-collapsed')).toBe(true);
         });
         it('Next column expanded when all columns collapsed state testing', () => {
-            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[0].lastElementChild;
+            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[0].children[0].lastElementChild;
             expect(headerCell.classList.contains('e-column-expand')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[0].classList.contains('e-collapsed')).toBe(false);
         });
         it('Next column testing - first column collapsed', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[0].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[0].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[0].classList.contains('e-collapsed')).toBe(true);
         });
         it('Next column testing - second column automatically expanded', () => {
             let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
-            expect(headerCells[1].lastElementChild.classList.contains('e-column-expand')).toBe(true);
+            expect(headerCells[1].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[1].classList.contains('e-collapsed')).toBe(false);
-            expect(headerCells[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCells[0].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[0].classList.contains('e-collapsed')).toBe(true);
-            expect(headerCells[2].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCells[2].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[2].classList.contains('e-collapsed')).toBe(true);
-            expect(headerCells[3].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCells[3].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[3].classList.contains('e-collapsed')).toBe(true);
         });
 
         it('Next column testing - second column collapsed', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[1].classList.contains('e-collapsed')).toBe(true);
         });
         it('Next column testing - third column automatically expanded', () => {
             let headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
-            expect(headerCell[2].lastElementChild.classList.contains('e-column-expand')).toBe(true);
+            expect(headerCell[2].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[2].classList.contains('e-collapsed')).toBe(false);
-            expect(headerCell[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCell[0].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[0].classList.contains('e-collapsed')).toBe(true);
-            expect(headerCell[1].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCell[1].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[1].classList.contains('e-collapsed')).toBe(true);
-            expect(headerCell[3].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCell[3].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[3].classList.contains('e-collapsed')).toBe(true);
         });
         it('Next column testing - third column collapsed', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[2].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[2].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[2].classList.contains('e-collapsed')).toBe(true);
         });
         it('Next column testing - forth column automatically expanded', () => {
             let headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
-            expect(headerCell[3].lastElementChild.classList.contains('e-column-expand')).toBe(true);
+            expect(headerCell[3].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[3].classList.contains('e-collapsed')).toBe(false);
-            expect(headerCell[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCell[0].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[0].classList.contains('e-collapsed')).toBe(true);
-            expect(headerCell[1].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCell[1].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[1].classList.contains('e-collapsed')).toBe(true);
-            expect(headerCell[2].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCell[2].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
             expect(kanbanObj.element.querySelectorAll('.e-content-cells')[2].classList.contains('e-collapsed')).toBe(true);
         });
     });
@@ -493,10 +495,10 @@ describe('Action module', () => {
         });
         it('Particular column icon rendering testing', () => {
             let headerCell: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
-            expect(headerCell[0].lastElementChild.classList.contains('e-column-expand')).toBe(false);
-            expect(headerCell[1].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
-            expect(headerCell[2].lastElementChild.classList.contains('e-column-expand')).toBe(false);
-            expect(headerCell[3].lastElementChild.classList.contains('e-column-expand')).toBe(true);
+            expect(headerCell[0].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(false);
+            expect(headerCell[1].children[0].lastElementChild.classList.contains('e-column-collapse')).toBe(true);
+            expect(headerCell[2].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(false);
+            expect(headerCell[3].children[0].lastElementChild.classList.contains('e-column-expand')).toBe(true);
         });
 
         it('Checked collapesd class added properly on header cell testing', () => {
@@ -523,7 +525,7 @@ describe('Action module', () => {
             }
         });
         it('Single column collapse testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="Close"]');
@@ -532,7 +534,7 @@ describe('Action module', () => {
             }
         });
         it('Single column expand testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-expand')).toBe(true);
             let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="Close"]');
@@ -541,7 +543,7 @@ describe('Action module', () => {
             }
         });
         it('Maintain single collapsed state testing - drag the card', () => {
-            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].lastElementChild;
+            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(headerCell.classList.contains('e-column-collapse')).toBe(true);
             let content: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells');
             expect((content.item(1) as HTMLElement).classList.contains('e-collapsed')).toBe(true);
@@ -564,7 +566,7 @@ describe('Action module', () => {
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-card.duplicate').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="InProgress"]');
             for (let i: number = 0; i < ele.length; i++) {
@@ -859,13 +861,13 @@ describe('Action module', () => {
 
         it('testing default culture', () => {
             let swimlaneRow: Element = kanbanObj.element.querySelector('.e-content-row.e-swimlane-row');
-            expect(swimlaneRow.querySelector('.e-swimlane-item-count').innerHTML).toEqual('- 10 Artikel');
+            expect(swimlaneRow.querySelector('.e-item-count').innerHTML).toEqual('- 10 Artikel');
         });
 
         it('testing to change arabic culture', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
                 let content: Element = kanbanObj.element.querySelector('.e-content-row.e-swimlane-row');
-                expect(content.querySelector('.e-swimlane-item-count').innerHTML).toEqual('- 10 العناصر');
+                expect(content.querySelector('.e-item-count').innerHTML).toEqual('- 10 العناصر');
                 done();
             };
             kanbanObj.locale = 'ar';
@@ -875,7 +877,7 @@ describe('Action module', () => {
         it('testing to change english culture  ', (done: DoneFn) => {
             kanbanObj.dataBound = () => {
                 let swimlane: Element = kanbanObj.element.querySelector('.e-content-row.e-swimlane-row');
-                expect(swimlane.querySelector('.e-swimlane-item-count').innerHTML).toEqual('- 10 items');
+                expect(swimlane.querySelector('.e-item-count').innerHTML).toEqual('- 10 items');
                 done();
             };
             kanbanObj.locale = 'en-US';

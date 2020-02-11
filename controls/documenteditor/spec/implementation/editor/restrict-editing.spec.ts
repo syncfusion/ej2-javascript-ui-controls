@@ -16,10 +16,10 @@ describe('Restrict editing Add edit region', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -42,7 +42,7 @@ describe('Restrict editing Add edit region', () => {
         editor.selection.handleShiftDownKey();
         editor.editor.insertEditRangeElement('Everyone');
         editor.editor.protect('ReadOnly');
-        expect(editor.viewer.editRanges.length).toBe(1);
+        expect(editor.documentHelper.editRanges.length).toBe(1);
     });
     it('highlight selection for editable region', () => {
         editor.selection.isHighlightEditRegion = true;
@@ -57,7 +57,7 @@ describe('Restrict editing Add edit region', () => {
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.editor.removeUserRestrictions('Everyone');
-        expect(editor.viewer.editRanges.get('Everyone').length).toBe(0);
+        expect(editor.documentHelper.editRanges.get('Everyone').length).toBe(0);
     });
 });
 
@@ -72,10 +72,10 @@ describe('Restrict editing Add edit region with everyone validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(paragraph));
     });
@@ -142,10 +142,10 @@ describe('Restrict editing Add edit region based on currentuser validation', () 
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(paragraph));
         editor.currentUser = 'sample@gmail.com';
@@ -162,7 +162,7 @@ describe('Restrict editing Add edit region based on currentuser validation', () 
     });
     it('highlightedit region validation', () => {
         editor.selection.isHighlightEditRegion = true;
-        expect(editor.viewer.editRanges.length).toBe(2);
+        expect(editor.documentHelper.editRanges.length).toBe(2);
     });
     it('Unhighlightedit region validation', () => {
         editor.selection.isHighlightEditRegion = false;
@@ -218,10 +218,10 @@ describe('Restrict editing Add edit region inside Table', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(table));
         editor.currentUser = 'sample@gmail.com';
@@ -265,10 +265,10 @@ describe('Restrict editing add and remove with history preservation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.selection.isHighlightEditRegion = true;
     });

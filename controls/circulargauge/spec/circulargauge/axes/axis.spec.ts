@@ -808,7 +808,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking tick, label position as cross', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Label_0');
-                expect(svg.getAttribute('x') == '583.5' || svg.getAttribute('x') == '575').toBe(true);
+                expect(svg.getAttribute('x') == '587.5' || svg.getAttribute('x') == '579.75').toBe(true);
                 expect(svg.getAttribute('y')).toBe('225');
                 svg = document.getElementById('container_Axis_Major_TickLine_0_0');
                 value = svg.getAttribute('d').split(' ');

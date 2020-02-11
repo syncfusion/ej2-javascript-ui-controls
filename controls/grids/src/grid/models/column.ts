@@ -5,7 +5,7 @@ import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandBut
 import { TextAlign, ClipMode, Action, SortDirection, EditType, ColumnType, CommandButtonType } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
-import { ValueAccessor, SortComparer } from '../base/type';
+import { ValueAccessor, SortComparer, HeaderValueAccessor } from '../base/type';
 import { getUid, templateCompiler, getForeignData, getObject } from '../base/util';
 
 /**
@@ -244,6 +244,14 @@ export class Column {
     public valueAccessor: ValueAccessor | string;
 
     /**
+     * Defines the method used to apply custom header cell values from external function and display this on each header cell rendered.
+     *      
+     * @default null    
+     */
+
+    public headerValueAccessor: HeaderValueAccessor | string;
+
+    /**
      * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.   
      * It have create and read functions.  
      * * create: It is used for creating custom components.  
@@ -479,7 +487,8 @@ export class Column {
             this.filterTemplateFn = templateCompiler(this.filterTemplate);
         }
 
-        if (this.isForeignColumn() && (isNullOrUndefined(this.editType) || this.editType === 'dropdownedit')) {
+        if (this.isForeignColumn() &&
+            (isNullOrUndefined(this.editType) || this.editType === 'dropdownedit' || this.editType === 'defaultedit')) {
             this.editType = 'dropdownedit';
             this.edit.params = extend({
                 dataSource: <DataManager>this.dataSource,
@@ -871,6 +880,29 @@ export interface ColumnModel {
      * @default null    
      */
     valueAccessor?: ValueAccessor | string;
+
+    /**    
+     * Defines the method used to apply custom header cell values from external function and display this on each cell rendered.     
+     *     
+     * ```html
+     * <div id="Grid"></div>
+     * ```
+     * ```typescript
+     * let gridObj: Grid = new Grid({
+     * dataSource: [{ EmployeeID: 1, EmployeeName: ['John', 'M'] }, { EmployeeID: 2, EmployeeName: ['Peter', 'A'] }],
+     * columns: [
+     *     { field: 'EmployeeID', headerText: 'Employee ID' },
+     *     { field: 'EmployeeName', headerText: 'Employee First Name', 
+     *       headerValueAccessor: (field: string,column: Column) => {
+     *             return "newheadername";
+     *         },
+     *     }]
+     * }); 
+     * ```
+     *  
+     * @default null    
+     */
+    headerValueAccessor?: HeaderValueAccessor | string;
 
     /**    
      * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.   

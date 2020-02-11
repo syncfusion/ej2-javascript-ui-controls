@@ -473,7 +473,8 @@ export interface ActionCompleteEventArgs {
     name?: string;
     /** Defines the editor mode. */
     editorMode?: string;
-    /** Defines the selected elements. 
+    /**
+     * Defines the selected elements. 
      * @deprecated
      */
     elements?: Node[];
@@ -491,7 +492,8 @@ export interface ActionBeginEventArgs {
     requestType?: string;
     /** Cancel the print action */
     cancel?: boolean;
-    /** Defines the current item. 
+    /**
+     * Defines the current item. 
      * @deprecated
      */
     item?: IToolbarItemModel | IDropDownItemModel;
@@ -499,7 +501,8 @@ export interface ActionBeginEventArgs {
     originalEvent?: MouseEvent | KeyboardEvent;
     /** Defines the event name. */
     name?: string;
-    /** Defines the url action details. 
+    /**
+     * Defines the url action details. 
      * @deprecated
      */
     itemCollection?: IItemCollectionArgs;
@@ -570,7 +573,8 @@ export interface IQuickToolbarOptions {
 }
 
 export interface BeforeQuickToolbarOpenArgs {
-    /** Defines the instance of the current popup element
+    /**
+     * Defines the instance of the current popup element
      * @deprecated
      */
     popup?: Popup;
@@ -747,7 +751,10 @@ export interface IExecutionGroup {
     value?: string;
 }
 
-/** @hidden @deprecated  */
+/**
+ * @hidden
+ * @deprecated 
+ */
 export const executeGroup: { [key: string]: IExecutionGroup } = {
     'bold': {
         command: 'Style',

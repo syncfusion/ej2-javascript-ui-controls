@@ -49,6 +49,8 @@ export const chartMouseUp : string = 'chartMouseUp';
 /** @private */
 export const zoomComplete: string = 'zoomComplete';
 /** @private */
+export const onZooming: string = 'onZooming';
+/** @private */
 export const dragComplete: string = 'dragComplete';
 /** @private */
 export const selectionComplete: string = 'selectionComplete';

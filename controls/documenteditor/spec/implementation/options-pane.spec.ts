@@ -1,4 +1,4 @@
-import { LayoutViewer, PageLayoutViewer } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../src/index';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
@@ -92,7 +92,7 @@ function getJson() {
 }
 describe('Options pane testing', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let optionsPane: OptionsPane;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach(() => {
@@ -100,10 +100,10 @@ describe('Options pane testing', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -112,7 +112,7 @@ describe('Options pane testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
@@ -120,7 +120,7 @@ describe('Options pane testing', () => {
 
     it('Showing optionspane testing using key press with single word', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper= editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
         keydown.keyCode = 13;
@@ -132,7 +132,7 @@ describe('Options pane testing', () => {
     });
     it('Displayed optionspane testing using key press with more line ', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets';
         keydown.keyCode = 13;
@@ -144,17 +144,17 @@ describe('Options pane testing', () => {
 describe('Previous & Next navigation Options pane support testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -163,14 +163,14 @@ describe('Previous & Next navigation Options pane support testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('previous navigation testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
         keydown.keyCode = 13;
@@ -181,7 +181,7 @@ describe('Previous & Next navigation Options pane support testing', () => {
     });
     it('next navigation testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper= editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
         keydown.keyCode = 13;
@@ -194,17 +194,17 @@ describe('Previous & Next navigation Options pane support testing', () => {
 describe('Options pane support testing with clicking list & hovering list', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -213,14 +213,14 @@ describe('Options pane support testing with clicking list & hovering list', () =
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('result list block with clicking testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
         keydown.keyCode = 13;
@@ -235,7 +235,7 @@ describe('Options pane support testing with clicking list & hovering list', () =
     });
     it('Getting results with clicking search icon testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
         optionsPane.searchIconClickInternal();
@@ -244,17 +244,17 @@ describe('Options pane support testing with clicking list & hovering list', () =
 describe('Options pane support validation', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -263,14 +263,14 @@ describe('Options pane support validation', () => {
         optionsPane.destroy();
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('Empty text with clicking search icon testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         let input: HTMLInputElement = optionsPane.optionsPane.querySelector('input');
         input.value = '';
@@ -292,7 +292,7 @@ describe('Options pane support validation', () => {
     });
     it('previous navigation with end testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
         let event: any = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -304,7 +304,7 @@ describe('Options pane support validation', () => {
     });
     it('next navigation with start testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
         keydown.keyCode = 13;
@@ -322,7 +322,7 @@ describe('Options pane support validation', () => {
 describe('Options pane replace support', () => {
     let editor: DocumentEditor;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         editor = undefined;
@@ -330,10 +330,10 @@ describe('Options pane replace support', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -342,14 +342,14 @@ describe('Options pane replace support', () => {
         optionsPane.destroy();
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('Replace with empty content testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
@@ -359,7 +359,7 @@ describe('Options pane replace support', () => {
     });
     it('Replace with text content testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'Adventure';
@@ -373,25 +373,25 @@ describe('Options pane replace support', () => {
     });
     it('Replace with backward selection testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'Adventure';
         keydown.keyCode = 39;
         keydown.ctrlKey = true;
         keydown.shiftKey = false;
-        viewer.onKeyDownInternal(keydown);
+        documentHelper.onKeyDownInternal(keydown);
         keydown.keyCode = 37;
         keydown.ctrlKey = true;
         keydown.shiftKey = true;
-        viewer.onKeyDownInternal(keydown);
+        documentHelper.onKeyDownInternal(keydown);
         optionsPane.onReplaceButtonClick();
     });
 });
 describe('Replace validation', () => {
     let editor: DocumentEditor;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         editor = undefined;
@@ -399,10 +399,10 @@ describe('Replace validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -411,14 +411,14 @@ describe('Replace validation', () => {
         optionsPane.destroy();
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('Replace text has no matches testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         optionsPane.onReplacePane();
@@ -428,7 +428,7 @@ describe('Replace validation', () => {
     });
     it('Replace text has no matches with end testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         optionsPane.onReplacePane();
@@ -439,7 +439,7 @@ describe('Replace validation', () => {
     });
     it('Replace text has empty string testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper= editor.documentHelper;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         optionsPane.onReplacePane();
@@ -451,7 +451,7 @@ describe('Replace validation', () => {
 describe('Replace All testing', () => {
     let editor: DocumentEditor;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper:DocumentHelper;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         editor = undefined;
@@ -459,10 +459,10 @@ describe('Replace All testing', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -471,14 +471,14 @@ describe('Replace All testing', () => {
         optionsPane.destroy();
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('Replace All testing without EditorHistory', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'the';
@@ -490,17 +490,17 @@ describe('Replace All testing', () => {
 describe('Search options testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -509,14 +509,14 @@ describe('Search options testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     // it('regular change testing', () => {
     //     editor.open(getJson());
-    //     viewer = editor.viewer as PageLayoutViewer;
+    //     documentHelper = editor.documentHelper;
     //     let event: any;
     //     event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 0 };
     //     let optionsPane = editor.optionsPaneModule;
@@ -536,7 +536,7 @@ describe('Search options testing', () => {
     // });
     it('match case testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 0 };
         let optionsPane = editor.optionsPaneModule;
@@ -556,7 +556,7 @@ describe('Search options testing', () => {
     });
     it('wholeWord case testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 0 };
         let optionsPane = editor.optionsPaneModule;
@@ -578,17 +578,17 @@ describe('Search options testing', () => {
 describe('Search options testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -597,14 +597,14 @@ describe('Search options testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('match case change validation', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 0 };
         let optionsPane = editor.optionsPaneModule;
@@ -618,7 +618,7 @@ describe('Search options testing', () => {
     });
     it('whole word change validation', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 0 };
         let optionsPane = editor.optionsPaneModule;
@@ -634,17 +634,17 @@ describe('Search options testing', () => {
 describe('search options down arrow click testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -653,14 +653,14 @@ describe('search options down arrow click testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('search optionspane testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 0 };
         let optionsPane = editor.optionsPaneModule;
@@ -671,7 +671,7 @@ describe('search options down arrow click testing', () => {
     });
     it('onkeydown validation1', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 39 };
         let optionsPane = editor.optionsPaneModule;
@@ -682,7 +682,7 @@ describe('search options down arrow click testing', () => {
     });
     it('onkeydown validation2', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 39 };
         let optionsPane = editor.optionsPaneModule;
@@ -701,17 +701,17 @@ describe('search options down arrow click testing', () => {
 describe('tab navigation testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -720,14 +720,14 @@ describe('tab navigation testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('search- tab navigation testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: false, which: 9 };
         event.keyCode = 9;
@@ -750,7 +750,7 @@ describe('tab navigation testing', () => {
     });
     it('search shift + tab navigation testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 9 };
         event.keyCode = 9;
@@ -762,7 +762,7 @@ describe('tab navigation testing', () => {
     });
     it('replace-tab focus testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 9 };
         event.keyCode = 9;
@@ -775,7 +775,7 @@ describe('tab navigation testing', () => {
     });
     it('replace- tab navigation with origin', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: false, which: 9 };
         event.keyCode = 9;
@@ -795,17 +795,17 @@ describe('tab navigation testing', () => {
 describe('open find pane and repalce pane testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(OptionsPane, Search);
+        DocumentEditor.Inject(OptionsPane, Search, Selection);
         editor = new DocumentEditor({ enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -814,14 +814,14 @@ describe('open find pane and repalce pane testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('focus list element testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: false, which: 9 };
         optionsPane.showHideOptionsPane(true);
@@ -842,7 +842,7 @@ describe('open find pane and repalce pane testing', () => {
     });
     it('previous and next list element navigation testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.optionsPaneModule.showHideOptionsPane(false);
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: false, which: 13 };
@@ -879,7 +879,7 @@ describe('open find pane and repalce pane testing', () => {
     });
     it('previous and next list element navigation testing validation', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: false, which: 13 };
         let optionsPane = editor.optionsPaneModule;
@@ -894,17 +894,17 @@ describe('open find pane and repalce pane testing', () => {
 describe('open find pane and repalce pane testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
         editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -913,14 +913,14 @@ describe('open find pane and repalce pane testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('find pane testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 9 };
         event.keyCode = 9;
@@ -930,7 +930,7 @@ describe('open find pane and repalce pane testing', () => {
     });
     it('replace pane testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any;
         event = { preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 9 };
         event.keyCode = 9;
@@ -941,7 +941,7 @@ describe('open find pane and repalce pane testing', () => {
     it('active class element testing in findPane', () => {
         editor.open(getJson());
         let event: any = { keyCode: 9, preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 27 };
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         optionsPane.onReplacePane();
         expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
@@ -963,7 +963,7 @@ describe('open find pane and repalce pane testing', () => {
     it('onkeydownoptionspane method validation', () => {
         editor.open(getJson());
         let event: any = { keyCode: 13, preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 27 };
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         event.target = (optionsPane as any).searchInput;
         optionsPane.onKeyDownOnOptionPane(event);
@@ -972,7 +972,7 @@ describe('open find pane and repalce pane testing', () => {
     it('active class element testing in replacePane', () => {
         editor.open(getJson());
         let event: any = { keyCode: 9, preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 27 };
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
         optionsPane.onReplacePane();
         expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
@@ -993,60 +993,95 @@ describe('open find pane and repalce pane testing', () => {
         optionsPane.onReplacePane();
         expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
     });
-    it('replace tab click testing using tab instance', () => {
-        editor.open(getJson());
-        let event: any = { previousIndex: 0, selectedIndex: 1 };
-        viewer = editor.viewer as PageLayoutViewer;
-        optionsPane.showHideOptionsPane(true);
-        optionsPane.selectedTabItem(event);
-        expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
-        //(optionsPane as any).replaceTabButtonHeader.parentElement.classList.add('e-active');
-        optionsPane.close();
-        optionsPane.showHideOptionsPane(true);
-        expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
+
+});
+
+describe("Find and Replace tab switch testing", function () {
+    let editor: DocumentEditor = undefined;
+    let optionsPane: OptionsPane;
+    let documentHelper: DocumentHelper;
+    let keydown: any = getEventObject('KeyboardEvent', 'keydown');
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, OptionsPane, Search);
+        editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        optionsPane = editor.optionsPaneModule;
     });
-    it('find tab click testing using tab instance', () => {
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        optionsPane.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+    it('replace tab click testing using tab instance', (done) => {
         editor.open(getJson());
         let event: any = { previousIndex: 0, selectedIndex: 1 };
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.showHideOptionsPane(true);
-        optionsPane.selectedTabItem(event);
-        event = { previousIndex: 1, selectedIndex: 0 };
-        optionsPane.selectedTabItem(event);
-        expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
+        optionsPane.tabInstance.select(1);
+        setTimeout(() => {
+            expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
+            optionsPane.close();
+            done();
+        }, 10);
+    });
+    it('find tab click testing using tab instance', (done) => {
+        editor.open(getJson());
+        let event: any = { previousIndex: 0, selectedIndex: 1 };
+        documentHelper = editor.documentHelper;
+        optionsPane.showHideOptionsPane(true);
+        setTimeout(() => {
+            optionsPane.tabInstance.select(0);
+            setTimeout(() => {
+                expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
+                optionsPane.close();
+                done();
+            });
+        }, 10);
     });
 });
+
 describe('Close Options pane support testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper:DocumentHelper;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(OptionsPane, Search);
         editor = new DocumentEditor({ enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterEach((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
     });
     it('Pressing back space testing with single character', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let optionsPane = editor.optionsPaneModule;
         let event: any = { keyCode: 8, preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 8 };
         optionsPane.showHideOptionsPane(true);
@@ -1055,7 +1090,7 @@ describe('Close Options pane support testing', () => {
     });
     it('Pressing ctrl+H for opening replace pane', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let optionsPane = editor.optionsPaneModule;
         optionsPane.isReplace = true;
         optionsPane.showHideOptionsPane(true);
@@ -1063,7 +1098,7 @@ describe('Close Options pane support testing', () => {
     });
     it('close optionspane testing', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let event: any = { keyCode: 8, preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 13 };
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = 'a';
@@ -1073,31 +1108,31 @@ describe('Close Options pane support testing', () => {
     it('close options pane using escape key testing', () => {
         editor.open(getJson());
         let event: any = { keyCode: 27, preventDefault: function () { }, target: { checked: true }, shiftKey: true, which: 27 };
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.onKeyDown(event);
     });
     it('selection (tab) character testing', () => {
         editor.open(getJson());
         let event: any = { preventDefault: function () { }, target: {}, shiftKey: false, which: 65, ctrlKey: true };
         let optionsPane = editor.optionsPaneModule;
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         optionsPane.showHideOptionsPane(true);
     });
 });
 describe('Close Options pane support testing', () => {
     let editor: DocumentEditor = undefined;
     let optionsPane: OptionsPane;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;;
     let keydown: any = getEventObject('KeyboardEvent', 'keydown');
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(OptionsPane, Search);
         editor = new DocumentEditor({ enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         optionsPane = editor.optionsPaneModule;
     });
@@ -1106,7 +1141,7 @@ describe('Close Options pane support testing', () => {
         editor.destroy();
         optionsPane.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 500);
@@ -1118,7 +1153,7 @@ describe('Close Options pane support testing', () => {
         optionsPane.destroy();
     });
     it('destroy method validation2', () => {
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         optionsPane.destroy();
         optionsPane.navigateNextResultButtonClick();
         optionsPane.navigatePreviousResultButtonClick();

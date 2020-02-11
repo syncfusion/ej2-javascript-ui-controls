@@ -30,7 +30,7 @@ $switch-line-height: 0 !default;
 $switch-handle-margin: auto 0 !default;
 $switch-handle-transition: all .2s linear !default;
 $switch-inner-transition: all .08s linear !default;
-$switch-inner-active: transparent !default;
+$switch-inner-active: $accent !default;
 $switch-off-active-left: 100% !default;
 $switch-off-text-indent: -9999px !default;
 $switch-on-text-indent: -9999px !default;

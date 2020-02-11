@@ -1,4 +1,3 @@
-import { LayoutViewer } from '../index';
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -6,6 +5,7 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { ListView } from '@syncfusion/ej2-lists';
 import { TableOfContentsSettings } from '../index';
 import { TabLeader } from '../../base/types';
+import { DocumentHelper } from '../viewer';
 /**
  * The Table of contents dialog is used to insert or edit table of contents at selection.
  */
@@ -14,7 +14,7 @@ export class TableOfContentsDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private pageNumber: CheckBox;
     private rightAlign: CheckBox;
     private tabLeader: DropDownList;
@@ -37,8 +37,8 @@ export class TableOfContentsDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
     private getModuleName(): string {
         return 'TableOfContentsDialog';
@@ -49,7 +49,7 @@ export class TableOfContentsDialog {
      */
     public initTableOfContentDialog(locale: L10n, isRtl?: boolean): void {
         let instance: TableOfContentsDialog = this;
-        let ownerId: string = this.owner.owner.containerId;
+        let ownerId: string = this.documentHelper.owner.containerId;
         let id: string = ownerId + '_toc_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-toc-dlg-container' });
         // tslint:disable-next-line:max-line-length
@@ -424,18 +424,18 @@ export class TableOfContentsDialog {
      * @private
      */
     public show(): void {
-        let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        localValue.setLocale(this.owner.owner.locale);
+        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initTableOfContentDialog(localValue, this.owner.owner.enableRtl);
+            this.initTableOfContentDialog(localValue, this.documentHelper.owner.enableRtl);
         }
-        this.owner.dialog.header = localValue.getConstant('Table of Contents');
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = this.loadTableofContentDialog;
-        this.owner.dialog.close = this.closeTableOfContentDialog;
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = localValue.getConstant('Table of Contents');
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = this.loadTableofContentDialog;
+        this.documentHelper.dialog.close = this.closeTableOfContentDialog;
+        this.documentHelper.dialog.buttons = [{
             click: this.applyTableOfContentProperties,
             buttonModel: { content: localValue.getConstant('Ok'), cssClass: 'e-flat e-toc-okay', isPrimary: true }
         },
@@ -443,14 +443,14 @@ export class TableOfContentsDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: localValue.getConstant('Cancel'), cssClass: 'e-flat e-toc-cancel' }
         }];
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
      */
     public loadTableofContentDialog = (): void => {
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
         this.pageNumber.checked = true;
         this.rightAlign.disabled = false;
         this.rightAlign.checked = true;
@@ -466,13 +466,13 @@ export class TableOfContentsDialog {
      */
     public closeTableOfContentDialog = (): void => {
         this.unWireEventsAndBindings();
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
      */
     public onCancelButtonClick = (): void => {
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
         this.unWireEventsAndBindings();
     }
     /* tslint:disable:no-any */
@@ -484,8 +484,8 @@ export class TableOfContentsDialog {
         value.focus();
     }
     private showStyleDialog = (): void => {
-        if (!isNullOrUndefined(this.owner.owner.styleDialogModule)) {
-            this.owner.owner.styleDialogModule.show((this.textBoxInput as HTMLInputElement).value);
+        if (!isNullOrUndefined(this.documentHelper.owner.styleDialogModule)) {
+            this.documentHelper.owner.styleDialogModule.show((this.textBoxInput as HTMLInputElement).value);
         }
     }
     private changeShowLevelValue = (event: any): void => {
@@ -745,8 +745,8 @@ export class TableOfContentsDialog {
             includeOutlineLevels: this.outline.checked
         };
         this.applyLevelSetting(tocSettings);
-        this.owner.owner.editorModule.insertTableOfContents(tocSettings);
-        this.owner.dialog.hide();
+        this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
+        this.documentHelper.dialog.hide();
     }
     /**
      * @private
@@ -807,7 +807,7 @@ export class TableOfContentsDialog {
         this.heading9 = undefined;
         this.normal = undefined;
         this.textBoxInput = undefined;
-        this.owner = undefined;
+        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);

@@ -169,10 +169,10 @@ export class WCharacterFormat {
         if (!isNullOrUndefined(this.ownerBase)) {
             // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph) && !isNullOrUndefined((this.ownerBase as TextElementBox).paragraph.bodyWidget)) {
-                docCharacterFormat = (this.ownerBase as TextElementBox).paragraph.bodyWidget.page.viewer.characterFormat;
+                docCharacterFormat = (this.ownerBase as TextElementBox).paragraph.bodyWidget.page.documentHelper.characterFormat;
             } else {
                 if (!isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)) {
-                    docCharacterFormat = (this.ownerBase as ParagraphWidget).bodyWidget.page.viewer.characterFormat;
+                    docCharacterFormat = (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.characterFormat;
                 }
             }
         }

@@ -331,4 +331,13 @@
     font-family: 'e-icons';
   }
 
+  .e-de-weblayout::before {
+    content: '\e193';
+    font-family: 'e-icons';
+  }
+
+  .e-de-printlayout::before {
+    content: '\e194';
+    font-family: 'e-icons';
+  }
 }

@@ -1,9 +1,9 @@
-import { SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat } from '../../src/index';
+import { SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, DocumentHelper, Page, Point } from '../../src/index';
 import { WParagraphFormat, WSectionFormat, WRowFormat, WCellFormat, WCharacterFormat } from '../../src/document-editor/implementation/format/index';
 import { WidthType, HeightType, Strikethrough, CellVerticalAlignment, Underline, BaselineAlignment } from '../../src/document-editor/base/types';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { LayoutViewer, PageLayoutViewer } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, WebLayoutViewer } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Editor } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -120,26 +120,26 @@ let json: Object = {
 };
 describe('Selection section Format validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeEach(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterEach((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -199,21 +199,21 @@ describe('Selection section Format validation', () => {
 });
 describe('Selection character and paragraph Format validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
         editor.selection.selectAll();
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
     });
@@ -221,7 +221,6 @@ describe('Selection character and paragraph Format validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -253,4 +252,47 @@ describe('Selection character and paragraph Format validation', () => {
         // editor.editorHistory.redo();
         // expect(editor.selection.paragraphFormat.beforeSpacing).toBe(15);
     });
+
+});
+describe('Selection header and footer  validation weblayout', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
+        document.body.innerHTML = '';
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, EditorHistory, Selection);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true, layoutType: 'Continuous' });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.open(JSON.stringify(json));
+        editor.selection.selectAll();
+        documentHelper = editor.documentHelper;
+    });
+    beforeEach(() => {
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        documentHelper = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('header and footer validation for weblayout', () => {
+        let page: Page = (editor.documentHelper.pages[0]);
+        let point: Point = new Point(0, 0);
+        let isheader: Boolean = editor.selection.isCursorInHeaderRegion(point, page);
+        let isfooter: Boolean = editor.selection.isCursorInFooterRegion(point, page);
+        expect(isheader).toBe(false);
+        expect(isfooter).toBe(false);
+    });
+    // it('selection highlighter validation', () => {
+    //   expect(editor.documentHelper.containerContext.globalAlpha).toBe(1);
+    //   expect(editor.documentHelper.selectionContext.globalAlpha).toBe(0.4);
+    //});
 });

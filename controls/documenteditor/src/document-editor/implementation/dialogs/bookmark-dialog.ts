@@ -1,7 +1,7 @@
 import { ListView } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
-import { LayoutViewer } from '../index';
 import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Bookmark dialog is used to add, navigate or delete bookmarks.
@@ -10,7 +10,7 @@ export class BookmarkDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private target: HTMLElement;
     private listviewInstance: ListView;
     private textBoxInput: HTMLElement;
@@ -20,8 +20,8 @@ export class BookmarkDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
     /**
      * @private
@@ -34,7 +34,7 @@ export class BookmarkDialog {
      */
     public initBookmarkDialog(localValue: L10n, bookmarks: string[], isRtl?: boolean): void {
         let instance: BookmarkDialog = this;
-        let id: string = this.owner.owner.containerId + '_insert_bookmark';
+        let id: string = this.documentHelper.owner.containerId + '_insert_bookmark';
         this.target = createElement('div', { id: id, className: 'e-de-bookmark' });
         let headerValue: string = localValue.getConstant('Bookmark name') + ':';
         let dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
@@ -59,7 +59,7 @@ export class BookmarkDialog {
 
         let listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview' });
         searchDiv.appendChild(listviewDiv);
-        let arts: string[] = this.owner.bookmarks.keys;
+        let arts: string[] = this.documentHelper.bookmarks.keys;
 
         this.listviewInstance = new ListView({
             dataSource: bookmarks,
@@ -116,30 +116,30 @@ export class BookmarkDialog {
      * @private
      */
     public show(): void {
-        let bookmarks: string[] = this.owner.getBookmarks();
-        let localObj: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        localObj.setLocale(this.owner.owner.locale);
+        let bookmarks: string[] = this.documentHelper.getBookmarks();
+        let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localObj.setLocale(this.documentHelper.owner.locale);
         // if (!this.target) {
-        this.initBookmarkDialog(localObj, bookmarks, this.owner.owner.enableRtl);
+        this.initBookmarkDialog(localObj, bookmarks, this.documentHelper.owner.enableRtl);
         //}
-        this.owner.dialog.header = localObj.getConstant('Bookmark');
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = this.owner.updateFocus;
-        this.owner.dialog.close = this.owner.updateFocus;
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = localObj.getConstant('Bookmark');
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.close = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.buttons = [{
             click: this.removeObjects.bind(this),
             buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-hyper-insert', isPrimary: true }
         }];
-        this.owner.dialog.dataBind();
+        this.documentHelper.dialog.dataBind();
         let hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
         if (!hasNoBookmark) {
             /* tslint:disable:no-any */
             let firstItem: any = bookmarks[0];
             this.listviewInstance.selectItem(firstItem);
         }
-        this.owner.dialog.show();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
@@ -154,8 +154,8 @@ export class BookmarkDialog {
         }
     }
     private addBookmark = (): void => {
-        this.owner.owner.editorModule.insertBookmark((this.textBoxInput as HTMLInputElement).value);
-        this.owner.dialog.hide();
+        this.documentHelper.owner.editorModule.insertBookmark((this.textBoxInput as HTMLInputElement).value);
+        this.documentHelper.dialog.hide();
     }
     /* tslint:disable:no-any */
     private selectHandler = (args: any): void => {
@@ -171,15 +171,15 @@ export class BookmarkDialog {
         this.enableOrDisableButton();
     }
     private removeObjects(): void {
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
 
     private gotoBookmark = (): void => {
-        this.owner.selection.selectBookmark((this.textBoxInput as HTMLInputElement).value);
+        this.documentHelper.selection.selectBookmark((this.textBoxInput as HTMLInputElement).value);
     }
 
     private deleteBookmark = (): void => {
-        this.owner.owner.editorModule.deleteBookmark((this.textBoxInput as HTMLInputElement).value);
+        this.documentHelper.owner.editorModule.deleteBookmark((this.textBoxInput as HTMLInputElement).value);
         this.show();
     }
     /**

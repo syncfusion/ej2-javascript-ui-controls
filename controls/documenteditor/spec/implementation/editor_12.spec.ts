@@ -804,10 +804,10 @@ describe('Rtl text with list format validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -867,10 +867,10 @@ describe('Rtl text with list format validation 2', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -908,10 +908,10 @@ describe('Paste content validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false, enableLocalPaste: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -938,10 +938,10 @@ describe('Paste Text Formatting formatting option', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -981,10 +981,10 @@ describe('Toc content creation validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1004,7 +1004,7 @@ describe('Toc content creation validation', () => {
         editor.editor.handleEnterKey();
         editor.selection.handleUpKey();
         editor.editor.insertTableOfContents(tocSettings);
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[6] as TextElementBox).text).toBe(text);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[6] as TextElementBox).text).toBe(text);
     });
     it('Applying style on selection not including para mark and inserting Toc', () => {
         editor.openBlank();
@@ -1016,7 +1016,7 @@ describe('Toc content creation validation', () => {
         editor.editor.handleEnterKey();
         editor.selection.handleUpKey();
         editor.editor.insertTableOfContents(tocSettings);
-        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[6] as TextElementBox).text).toBe(text);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[6] as TextElementBox).text).toBe(text);
     });
 });
 let imageJson: any = {
@@ -1463,10 +1463,10 @@ describe('Header footer editing validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1485,7 +1485,7 @@ describe('Header footer editing validation', () => {
             editor.editor.insertText('1');
             editor.editor.onEnter();
         }
-        expect(editor.viewer.pages.length).toBe(1);
+        expect(editor.documentHelper.pages.length).toBe(1);
     });
 });
 describe('Paste Heading content and TOC validation', () => {
@@ -1496,10 +1496,10 @@ describe('Paste Heading content and TOC validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableEditorHistory: true, isReadOnly: false, enableSfdtExport: true, enableLocalPaste: true });
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1524,7 +1524,7 @@ describe('Paste Heading content and TOC validation', () => {
         editor.editor.onEnter();
         editor.selection.handleUpKey();
         editor.editor.insertTableOfContents();
-        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(6);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(6);
     });
     it('Copy Paste word in paragraph', () => {
         editor.openBlank();
@@ -1545,7 +1545,7 @@ describe('Paste Heading content and TOC validation', () => {
         editor.openBlank();
         editor.editor.insertText('Hello World');
         editor.selection.selectAll();
-        editor.editor.applyStyle('Heading 1');        
+        editor.editor.applyStyle('Heading 1');
         editor.selection.copy();
         editor.selection.handleRightKey();
         editor.editor.onEnter();
@@ -1564,10 +1564,10 @@ describe('apply list to rtl paragraph with history validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false, enableLocalPaste: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -1580,29 +1580,29 @@ describe('apply list to rtl paragraph with history validation', () => {
         }, 1000);
     });
     it('apply RTL', () => {
-       editor.selection.paragraphFormat.bidi=true;
-       editor.editor.insertText('יקךךם');
-       editor.editor.onEnter();
-       editor.editor.insertText('יקךךם');
-       editor.editor.onEnter();
-       editor.editor.insertText('יקךךם');
-       editor.selection.selectAll();
-       editor.editor.applyNumbering('%1.','Arabic');
-       editor.selection.handleDownKey();
-       editor.selection.handleHomeKey();
-       editor.selection.handleUpKey();
-       editor.selection.handleTabKey(true,false);
-       expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
-       expect(((editor.selection.start.paragraph.nextWidget as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
+        editor.selection.paragraphFormat.bidi = true;
+        editor.editor.insertText('יקךךם');
+        editor.editor.onEnter();
+        editor.editor.insertText('יקךךם');
+        editor.editor.onEnter();
+        editor.editor.insertText('יקךךם');
+        editor.selection.selectAll();
+        editor.editor.applyNumbering('%1.', 'Arabic');
+        editor.selection.handleDownKey();
+        editor.selection.handleHomeKey();
+        editor.selection.handleUpKey();
+        editor.selection.handleTabKey(true, false);
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
+        expect(((editor.selection.start.paragraph.nextWidget as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
     });
-    it('undo after list apply to RTL',()=>{
+    it('undo after list apply to RTL', () => {
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
-    
+
     });
-    it('redo after list apply to RTL',()=>{
+    it('redo after list apply to RTL', () => {
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
-    
+
     });
 });

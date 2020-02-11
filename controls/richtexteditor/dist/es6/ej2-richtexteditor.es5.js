@@ -5,412 +5,1012 @@ import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-p
 import { ColorPicker, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var created = 'create';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var destroyed = 'destroy';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var load = 'load';
 /**
  * Specifies RichTextEditor internal events
  */
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var initialLoad = 'initial-load';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var initialEnd = 'initial-end';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var iframeMouseDown = 'iframe-click';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var destroy = 'destroy';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var toolbarClick = 'toolbarClick';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var toolbarRefresh = 'toolbar-refresh';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var refreshBegin = 'refresh-begin';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var toolbarUpdated = 'toolbar-updated';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var bindOnEnd = 'bind-on-end';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var renderColorPicker = 'render-color-picker';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var htmlToolbarClick = 'html-toolbar-click';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var markdownToolbarClick = 'markdown-toolbar-click';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var destroyColorPicker = 'destroy-color-picker';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var modelChanged = 'model-changed';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var keyUp = 'keyUp';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var keyDown = 'keyDown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var mouseUp = 'mouseUp';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var toolbarCreated = 'toolbarCreated';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var toolbarRenderComplete = 'toolbarRenderComplete';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var enableFullScreen = 'enableFullScreen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var disableFullScreen = 'disableFullScreen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var dropDownSelect = 'dropDownSelect';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var beforeDropDownItemRender = 'beforeDropDownItemRender';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var execCommandCallBack = 'execCommandCallBack';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageToolbarAction = 'image-toolbar-action';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var linkToolbarAction = 'link-toolbar-action';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var resizeStart = 'resizeStart';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var onResize = 'resizing';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var resizeStop = 'resizeStop';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var undo = 'undo';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var redo = 'redo';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var insertLink = 'insertLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var unLink = 'unLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var editLink = 'editLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var openLink = 'openLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var actionBegin = 'actionBegin';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var actionComplete = 'actionComplete';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var toolbarStatusUpdate = 'toolbarStatusUpdate';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var actionSuccess = 'actionSuccess';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var updateToolbarItem = 'updateToolbarItem';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var insertImage = 'insertImage';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var insertCompleted = 'insertCompleted';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageLeft = 'justifyLeft';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageRight = 'justifyRight';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageCenter = 'justifyCenter';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageBreak = 'break';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageInline = 'inline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageLink = 'insertImgLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageAlt = 'imgAltText';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageDelete = 'delete';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageCaption = 'caption';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageSize = 'imageSize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var sourceCode = 'sourceCode';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var updateSource = 'updateSource';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var toolbarOpen = 'toolbarOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var beforeDropDownOpen = 'beforeDropDownOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var selectionSave = 'selection-save';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var selectionRestore = 'selection-restore';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var expandPopupClick = 'expandPopupClick';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var count = 'count';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var contentFocus = 'contentFocus';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var contentBlur = 'contentBlur';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var mouseDown = 'mouseDown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var sourceCodeMouseDown = 'sourceCodeMouseDown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var editAreaClick = 'editAreaClick';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var scroll = 'scroll';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var contentscroll = 'contentscroll';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var colorPickerChanged = 'colorPickerChanged';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var tableColorPickerChanged = 'tableColorPickerChanged';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var focusChange = 'focusChange';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var selectAll$1 = 'selectAll';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var selectRange = 'selectRange';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var getSelectedHtml = 'getSelectedHtml';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var renderInlineToolbar = 'renderInlineToolbar';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var paste = 'paste-content';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imgModule = 'imageModule';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var rtlMode = 'rtl-mode';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var createTable = 'createTable';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var docClick = 'docClick';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var tableToolbarAction = 'table-toolbar-action';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var checkUndo = 'checkUndoStack';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var readOnlyMode = 'readOnlyMode';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var pasteClean = 'pasteClean';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var beforeDialogOpen = 'beforeDialogOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var dialogOpen = 'dialogOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var dialogClose = 'dialogClose';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var beforeQuickToolbarOpen = 'beforeQuickToolbarOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var quickToolbarOpen = 'quickToolbarOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var quickToolbarClose = 'quickToolbarClose';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var popupHide = 'popupHide';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageSelected = 'imageSelected';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageUploading = 'imageUploading';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageUploadSuccess = 'imageUploadSuccess';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageUploadFailed = 'imageUploadFailed';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var imageRemoving = 'imageRemoving';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var drop = 'drop';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var xhtmlValidation = 'xhtmlValidation';
 
 /**
  * RichTextEditor classes defined here.
  */
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE = 'e-richtexteditor';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTL = 'e-rtl';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_CONTENT = 'e-content';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_DISABLED = 'e-disabled';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_SCRIPT_SHEET = 'rte-iframe-script-sheet';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_STYLE_SHEET = 'rte-iframe-style-sheet';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TOOLBAR = 'e-rte-toolbar';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_FIXED = 'e-rte-tb-fixed';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_FLOAT = 'e-rte-tb-float';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_ABS_FLOAT = 'e-rte-tb-abs-float';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_INLINE = 'e-rte-inline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_INLINE = 'e-rte-tb-inline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_EXPAND_TB = 'e-rte-tb-expand';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_FULL_SCREEN = 'e-rte-full-screen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_QUICK_TB = 'e-rte-quick-toolbar';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_POP = 'e-rte-pop';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_QUICK_POP = 'e-rte-quick-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_QUICK_DROPDOWN = 'e-quick-dropdown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMAGE_POP = 'e-rte-image-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_INLINE_POP = 'e-rte-inline-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_INLINE_DROPDOWN = 'e-rte-inline-dropdown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_DROPDOWN_POPUP = 'e-rte-dropdown-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_DROPDOWN_ICONS = 'e-rte-dropdown-icons';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_DROPDOWN_ITEMS = 'e-rte-dropdown-items';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_DROPDOWN_BTN = 'e-rte-dropdown-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_CONTENT = 'e-rte-content';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_ITEM = 'e-toolbar-item';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_EXTENDED = 'e-toolbar-extended';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_WRAP = 'e-toolbar-wrapper';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_POPUP = 'e-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_SEPARATOR = 'e-separator';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_MINIMIZE = 'e-minimize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_MAXIMIZE = 'e-maximize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_BACK = 'e-back';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_SHOW = 'e-show';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_HIDE = 'e-hide';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_VISIBLE = 'e-visible';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_FOCUS = 'e-focused';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RM_WHITE_SPACE = 'e-remove-white-space';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMGRIGHT = 'e-imgright';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMGLEFT = 'e-imgleft';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMGCENTER = 'e-imgcenter';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMGBREAK = 'e-imgbreak';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_CAPTION = 'e-img-caption';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_CAPTION = 'e-rte-img-caption';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_CAPINLINE = 'e-caption-inline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMGINLINE = 'e-imginline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_COUNT = 'e-rte-character-count';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_WARNING = 'e-warning';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_ERROR = 'e-error';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_ICONS = 'e-icons';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_ACTIVE = 'e-active';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_EXPAND_OPEN = 'e-expand-open';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_ELEMENTS = 'e-rte-elements';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_BTN = 'e-tbar-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_HR_SEPARATOR = 'e-rte-horizontal-separator';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_IOS_FIX = 'e-tbar-ios-fixed';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_STATIC = 'e-tb-static';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_FORMATS_TB_BTN = 'e-formats-tbar-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_FONT_NAME_TB_BTN = 'e-font-name-tbar-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_FONT_SIZE_TB_BTN = 'e-font-size-tbar-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_FONT_COLOR_TARGET = 'e-rte-fontcolor-element';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_BACKGROUND_COLOR_TARGET = 'e-rte-backgroundcolor-element';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_COLOR_CONTENT = 'e-rte-color-content';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_FONT_COLOR_DROPDOWN = 'e-rte-fontcolor-dropdown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_BACKGROUND_COLOR_DROPDOWN = 'e-rte-backgroundcolor-dropdown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_COLOR_PALETTE = 'e-rte-square-palette';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_FONT_COLOR_PICKER = 'e-rte-fontcolor-colorpicker';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_BACKGROUND_COLOR_PICKER = 'e-rte-backgroundcolor-colorpicker';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_READONLY = 'e-rte-readonly';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TABLE_SEL = 'e-cell-select';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_DASH_BOR = 'e-dashed-border';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_ALT_BOR = 'e-alternate-border';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_COL_RES = 'e-column-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_ROW_RES = 'e-row-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TB_BOX_RES = 'e-table-box';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_HIDDEN = 'e-rte-hidden';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_PASTE_KEEP_FORMAT = 'e-rte-keepformat';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_PASTE_REMOVE_FORMAT = 'e-rte-removeformat';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_PASTE_PLAIN_FORMAT = 'e-rte-plainformat';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_PASTE_OK = 'e-rte-pasteok';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_PASTE_CANCEL = 'e-rte-pastecancel';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_DIALOG_MIN_HEIGHT = 'e-rte-dialog-minheight';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_RES_HANDLE = 'e-resize-handle';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_RES_EAST = 'e-south-east';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_IMAGE = 'e-rte-image';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RESIZE = 'e-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMG_FOCUS = 'e-img-focus';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_DRAG_IMAGE = 'e-rte-drag-image';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_UPLOAD_POPUP = 'e-rte-upload-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_POPUP_OPEN = 'e-popup-open';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMG_RESIZE = 'e-img-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_DROPAREA = 'e-droparea';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_IMG_INNER = 'e-img-inner';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_UPLOAD_FILES = 'e-upload-files';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_DIALOG_UPLOAD = 'e-rte-dialog-upload';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_RTE_RES_CNT = 'e-rte-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_CUSTOM_TILE = 'e-custom-tile';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_NOCOLOR_ITEM = 'e-nocolor-item';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLS_TABLE_BORDER = 'e-rte-table-border';
 
 /**
@@ -4915,47 +5515,58 @@ var ExecCommandCallBack = /** @__PURE__ @class */ (function () {
 /**
  * Constant values for Common
  */
-/* Keydown event trigger
+/**
+ * Keydown event trigger
  * @hidden
  */
 var KEY_DOWN = 'keydown';
-/* Undo and Redo action HTML plugin events
+/**
+ * Undo and Redo action HTML plugin events
  * @hidden
  */
 var ACTION = 'action';
-/* Formats plugin events
+/**
+ * Formats plugin events
  * @hidden
  */
 var FORMAT_TYPE = 'format-type';
-/* Keydown handler event trigger
+/**
+ * Keydown handler event trigger
  * @hidden
  */
 var KEY_DOWN_HANDLER = 'keydown-handler';
-/* List plugin events
+/**
+ * List plugin events
  * @hidden
  */
 var LIST_TYPE = 'list-type';
-/* Keyup handler event trigger
+/**
+ * Keyup handler event trigger
  * @hidden
  */
 var KEY_UP_HANDLER = 'keyup-handler';
-/* Keyup event trigger
+/**
+ * Keyup event trigger
  * @hidden
  */
 var KEY_UP = 'keyup';
-/* Model changed plugin event trigger
+/**
+ * Model changed plugin event trigger
  * @hidden
  */
 var MODEL_CHANGED_PLUGIN = 'model_changed_plugin';
-/* Model changed event trigger
+/**
+ * Model changed event trigger
  * @hidden
  */
 var MODEL_CHANGED = 'model_changed';
-/* PasteCleanup plugin for MSWord content
+/**
+ * PasteCleanup plugin for MSWord content
  * @hidden
  */
 var MS_WORD_CLEANUP_PLUGIN = 'ms_word_cleanup_plugin';
-/* PasteCleanup for MSWord content
+/**
+ * PasteCleanup for MSWord content
  * @hidden
  */
 var MS_WORD_CLEANUP = 'ms_word_cleanup';
@@ -5163,23 +5774,28 @@ var Formatter = /** @__PURE__ @class */ (function () {
 /**
  * Constant values for Markdown Parser
  */
-/* List plugin events
+/**
+ * List plugin events
  * @hidden
  */
 var LISTS_COMMAND = 'lists-commands';
-/* selectioncommand plugin events
+/**
+ * selectioncommand plugin events
  * @hidden
  */
 var selectionCommand = 'command-type';
-/* Link plugin events
+/**
+ * Link plugin events
  * @hidden
  */
 var LINK_COMMAND = 'link-commands';
-/* Clear plugin events
+/**
+ * Clear plugin events
  * @hidden
  */
 var CLEAR_COMMAND = 'clear-commands';
-/* Table plugin events
+/**
+ * Table plugin events
  * @hidden
  */
 var MD_TABLE = 'insert-table';
@@ -7243,7 +7859,8 @@ var MarkdownEditor = /** @__PURE__ @class */ (function () {
 /**
  * Constant values for EditorManager
  */
-/* Image plugin events
+/**
+ * Image plugin events
  * @hidden
  */
 var IMAGE = 'INSERT-IMAGE';
@@ -7256,42 +7873,54 @@ var DELETECOLUMN = 'DELETE-COLUMN';
 var REMOVETABLE = 'REMOVE-TABLE';
 var TABLEHEADER = 'TABLE-HEADER';
 var TABLE_VERTICAL_ALIGN = 'TABLE_VERTICAL_ALIGN';
-/* Alignments plugin events
+/**
+ * Alignments plugin events
  * @hidden
  */
 var ALIGNMENT_TYPE = 'alignment-type';
-/* Indents plugin events
+/**
+ * Indents plugin events
  * @hidden
  */
 var INDENT_TYPE = 'indent-type';
-/* Constant tag names
+/** Constant tag names
+ * @hidden
  */
-/** @hidden */
 var DEFAULT_TAG = 'p';
-/** @hidden */
+/**
+ * @hidden
+ */
 var BLOCK_TAGS = ['address', 'article', 'aside', 'audio', 'blockquote',
     'canvas', 'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'li', 'main', 'nav',
     'noscript', 'ol', 'output', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
     'thead', 'tr', 'ul', 'video'];
-/** @hidden */
+/**
+ * @hidden
+ */
 var IGNORE_BLOCK_TAGS = ['td', 'th'];
-/** @hidden */
+/**
+ * @hidden
+ */
 var TABLE_BLOCK_TAGS = ['table', 'tbody', 'td', 'tfoot', 'th',
     'thead', 'tr'];
-/* Selection plugin events
+/**
+ * Selection plugin events
  * @hidden
  */
 var SELECTION_TYPE = 'selection-type';
-/* Insert HTML plugin events
+/**
+ * Insert HTML plugin events
  * @hidden
  */
 var INSERTHTML_TYPE = 'inserthtml-type';
-/* Insert Text plugin events
+/**
+ * Insert Text plugin events
  * @hidden
  */
 var INSERT_TEXT_TYPE = 'insert-text-type';
-/* Clear Format HTML plugin events
+/**
+ * Clear Format HTML plugin events
  * @hidden
  */
 var CLEAR_TYPE = 'clear-type';
@@ -9948,7 +10577,10 @@ var Indents = /** @__PURE__ @class */ (function () {
 /**
  * RichTextEditor classes defined here.
  */
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 var CLASS_IMAGE_RIGHT = 'e-imgright';
 var CLASS_IMAGE_LEFT = 'e-imgleft';
 var CLASS_IMAGE_CENTER = 'e-imgcenter';
@@ -17922,7 +18554,10 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
  * Renderer
  */
 
-/** @hidden @deprecated  */
+/**
+ * @hidden
+ * @deprecated
+ */
 var executeGroup = {
     'bold': {
         command: 'Style',

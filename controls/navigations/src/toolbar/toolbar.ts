@@ -842,6 +842,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         for (let i: number = 0; i < items.length; i++) {
             if (isBlazor() && this.isServerRendered) {
+                this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
                 let itemEleBlaDom: HTEle = this.element.querySelector('.' + BZ_ITEMS);
                 innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
                 if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {

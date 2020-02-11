@@ -41,7 +41,7 @@ export interface UserHandleModel {
      *  * Bottom - Aligns the user handles at the bottom of an object
      *  * Left - Aligns the user handles at the left of an object
      *  * Right - Aligns the user handles at the right of an object
-     * @default 'top'
+     * @default 'Top'
      */
     side?: Side;
 

@@ -3079,13 +3079,16 @@ var BarcodeGenerator = /** @__PURE__ @class */ (function (_super) {
         this.renderElements();
     };
     BarcodeGenerator.prototype.initialize = function () {
-        //Initialize the height of the  barcode generator
+        //Initialize the height of the barcode generator
         this.element.style.height = this.getElementSize(this.height);
-        //Initialize the width of the  barcode generator
+        //Initialize the width of the barcode generator
         this.element.style.width = this.getElementSize(this.width);
         var svgMode = this.mode;
-        this.barcodeCanvas = this.barcodeRenderer.renderRootElement({ id: this.element.id, height: svgMode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
-            width: svgMode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5 }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
+        this.barcodeCanvas = this.barcodeRenderer.renderRootElement({
+            id: this.element.id + 'content',
+            height: svgMode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+            width: svgMode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
+        }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
         this.element.appendChild(this.barcodeCanvas);
     };
     BarcodeGenerator.prototype.renderElements = function () {
@@ -6757,9 +6760,9 @@ var QRCode = /** @__PURE__ @class */ (function () {
                         var x = _e[_d];
                         encodeData.push(numberInBool[x]);
                     }
-                    numberInString = null;
+                    numberInString = '';
                 }
-                if (i !== 1 && numberInString !== null) {
+                if (i !== 1 && numberInString !== '') {
                     if (i + 1 === dataStringArray.length && numberInString.length === 1) {
                         number = this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[i]);
                         numberInBool = this.intToBoolArray(number, 6);
@@ -7110,7 +7113,8 @@ var QRCodeGenerator = /** @__PURE__ @class */ (function (_super) {
         //Initialize the width of qrcode generator
         this.element.style.width = this.getElementSize(this.width);
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement({
-            id: this.element.id, height: this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+            id: this.element.id + 'content',
+            height: this.mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
             width: this.mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
         }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
         this.element.appendChild(this.barcodeCanvas);
@@ -8092,7 +8096,8 @@ var DataMatrixGenerator = /** @__PURE__ @class */ (function (_super) {
         var mode = this.mode;
         //initialize the canvas element
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement({
-            id: this.element.id, height: mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+            id: this.element.id + 'content',
+            height: mode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
             width: mode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
         }, this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight);
         this.element.appendChild(this.barcodeCanvas);

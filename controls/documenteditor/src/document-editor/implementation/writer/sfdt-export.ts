@@ -17,6 +17,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { HelperMethods } from '../editor/editor-helper';
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { TextPosition } from '../selection';
+import { DocumentHelper } from '../viewer';
 /**
  * Exports the document to Sfdt format.
  */
@@ -28,16 +29,19 @@ export class SfdtExport {
     private startColumnIndex: number = undefined;
     private endColumnIndex: number = undefined;
     private lists: number[] = undefined;
-    private viewer: LayoutViewer = undefined;
     private document: any = undefined;
     private writeInlineStyles: boolean = undefined;
     private editRangeId: number = -1;
     private isExport: boolean = true;
-    /** 
-     * @private
+    private documentHelper: DocumentHelper;
+    /**
+     * documentHelper definition
      */
-    constructor(owner: LayoutViewer) {
-        this.viewer = owner;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
+    }
+    get viewer(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
     private getModuleName(): string {
         return 'SfdtExport';
@@ -59,7 +63,7 @@ export class SfdtExport {
     /**
      * @private
      */
-    public saveAsBlob(viewer: LayoutViewer): Promise<Blob> {
+    public saveAsBlob(documentHelper: DocumentHelper): Promise<Blob> {
         let streamWriter: StreamWriter = new StreamWriter();
         streamWriter.write(this.serialize());
         let blob: Blob = streamWriter.buffer;
@@ -71,10 +75,10 @@ export class SfdtExport {
     }
     private updateEditRangeId(): void {
         let index: number = -1;
-        for (let i: number = 0; i < this.viewer.editRanges.keys.length; i++) {
-            let keys: string[] = this.viewer.editRanges.keys;
+        for (let i: number = 0; i < this.documentHelper.editRanges.keys.length; i++) {
+            let keys: string[] = this.documentHelper.editRanges.keys;
             for (let j: number = 0; j < keys[i].length; j++) {
-                let editRangeStart: EditRangeStartElementBox[] = this.viewer.editRanges.get(keys[i]);
+                let editRangeStart: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(keys[i]);
                 for (let z: number = 0; z < editRangeStart.length; z++) {
                     index++;
                     editRangeStart[z].editRangeId = index;
@@ -162,14 +166,14 @@ export class SfdtExport {
             }
         } else {
             this.isExport = true;
-            if (this.viewer.pages.length > 0) {
-                let page: Page = this.viewer.pages[0];
+            if (this.documentHelper.pages.length > 0) {
+                let page: Page = this.documentHelper.pages[0];
                 this.writePage(page);
             }
         }
-        this.writeStyles(this.viewer);
-        this.writeLists(this.viewer);
-        this.writeComments(this.viewer);
+        this.writeStyles(this.documentHelper);
+        this.writeLists(this.documentHelper);
+        this.writeComments(this.documentHelper);
         let doc: Document = this.document;
         this.clear();
         return doc;
@@ -181,14 +185,14 @@ export class SfdtExport {
         this.lists = [];
         this.document = {};
         this.document.sections = [];
-        this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
-        this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
-        this.document.defaultTabWidth = this.viewer.defaultTabWidth;
-        this.document.enforcement = this.viewer.isDocumentProtected;
-        this.document.hashValue = this.viewer.hashValue;
-        this.document.saltValue = this.viewer.saltValue;
-        this.document.formatting = this.viewer.restrictFormatting;
-        this.document.protectionType = this.viewer.protectionType;
+        this.document.characterFormat = this.writeCharacterFormat(this.documentHelper.characterFormat);
+        this.document.paragraphFormat = this.writeParagraphFormat(this.documentHelper.paragraphFormat);
+        this.document.defaultTabWidth = this.documentHelper.defaultTabWidth;
+        this.document.enforcement = this.documentHelper.isDocumentProtected;
+        this.document.hashValue = this.documentHelper.hashValue;
+        this.document.saltValue = this.documentHelper.saltValue;
+        this.document.formatting = this.documentHelper.restrictFormatting;
+        this.document.protectionType = this.documentHelper.protectionType;
     }
     /**
      * @private
@@ -209,7 +213,7 @@ export class SfdtExport {
         }
         let section: any = this.createSection(bodyWidget);
         this.document.sections.push(section);
-        this.writeHeaderFooters(this.viewer.headersFooters[bodyWidget.index], section);
+        this.writeHeaderFooters(this.documentHelper.headersFooters[bodyWidget.index], section);
         let firstBlock: BlockWidget = bodyWidget.childWidgets[index] as BlockWidget;
         do {
             firstBlock = this.writeBlock(firstBlock as BlockWidget, 0, section.blocks);
@@ -302,8 +306,8 @@ export class SfdtExport {
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
         let lineWidget: LineWidget = line.clone();
         let bidi: boolean = paragraph.paragraphFormat.bidi;
-        if (bidi || this.viewer.layout.isContainsRtl(lineWidget)) {
-            this.viewer.layout.reArrangeElementsForRtl(lineWidget, bidi);
+        if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
+            this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
         }
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
@@ -579,8 +583,8 @@ export class SfdtExport {
         let isEnd: boolean = line === this.endLine;
         let lineWidget: LineWidget = line.clone();
         let bidi: boolean = line.paragraph.paragraphFormat.bidi;
-        if (bidi || this.viewer.layout.isContainsRtl(lineWidget)) {
-            this.viewer.layout.reArrangeElementsForRtl(lineWidget, bidi);
+        if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
+            this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
         }
         let started: boolean = false;
         let ended: boolean = false;
@@ -616,14 +620,14 @@ export class SfdtExport {
     private createParagraph(paragraphWidget: ParagraphWidget): any {
         let paragraph: any = {};
         let isParaSelected: boolean = false;
-        if (this.viewer.selection && !this.viewer.selection.isEmpty && !this.isExport) {
-            let endPos: TextPosition = this.viewer.selection.end;
-            if (!this.viewer.selection.isForward) {
-                endPos = this.viewer.selection.start;
+        if (this.documentHelper.selection && !this.documentHelper.selection.isEmpty && !this.isExport) {
+            let endPos: TextPosition = this.documentHelper.selection.end;
+            if (!this.documentHelper.selection.isForward) {
+                endPos = this.documentHelper.selection.start;
             }
             let lastLine: LineWidget = endPos.paragraph.childWidgets[endPos.paragraph.childWidgets.length - 1] as LineWidget;
-            isParaSelected = this.viewer.selection.isParagraphLastLine(lastLine) && endPos.currentWidget === lastLine
-                && endPos.offset === this.viewer.selection.getLineLength(lastLine) + 1;
+            isParaSelected = this.documentHelper.selection.isParagraphLastLine(lastLine) && endPos.currentWidget === lastLine
+                && endPos.offset === this.documentHelper.selection.getLineLength(lastLine) + 1;
         } else {
             isParaSelected = true;
         }
@@ -860,11 +864,11 @@ export class SfdtExport {
         tableFormat.allowAutoFit = wTableFormat.hasValue('allowAutoFit') ? wTableFormat.allowAutoFit : undefined;
         return tableFormat;
     }
-    private writeStyles(viewer: LayoutViewer): void {
+    private writeStyles(documentHelper: DocumentHelper): void {
         let styles: Object[] = [];
         this.document.styles = [];
-        for (let i: number = 0; i < viewer.styles.length; i++) {
-            this.document.styles.push(this.writeStyle(viewer.styles.getItem(i) as WStyle));
+        for (let i: number = 0; i < documentHelper.styles.length; i++) {
+            this.document.styles.push(this.writeStyle(documentHelper.styles.getItem(i) as WStyle));
         }
     }
     private writeStyle(style: WStyle): any {
@@ -890,10 +894,10 @@ export class SfdtExport {
         }
         return wStyle;
     }
-    public writeComments(viewer: LayoutViewer): void {
+    public writeComments(documentHelper: DocumentHelper): void {
         this.document.comments = [];
-        for (let i: number = 0; i < viewer.comments.length; i++) {
-            this.document.comments.push(this.writeComment(viewer.comments[i]));
+        for (let i: number = 0; i < documentHelper.comments.length; i++) {
+            this.document.comments.push(this.writeComment(documentHelper.comments[i]));
         }
 
     }
@@ -917,11 +921,11 @@ export class SfdtExport {
         return blocks;
     }
 
-    private writeLists(viewer: LayoutViewer): void {
+    private writeLists(documentHelper: DocumentHelper): void {
         let abstractLists: number[] = [];
         this.document.lists = [];
-        for (let i: number = 0; i < viewer.lists.length; i++) {
-            let list: WList = viewer.lists[i];
+        for (let i: number = 0; i < documentHelper.lists.length; i++) {
+            let list: WList = documentHelper.lists[i];
             if (this.lists.indexOf(list.listId) > -1) {
                 this.document.lists.push(this.writeList(list));
                 if (abstractLists.indexOf(list.abstractListId) < 0) {
@@ -930,8 +934,8 @@ export class SfdtExport {
             }
         }
         this.document.abstractLists = [];
-        for (let i: number = 0; i < viewer.abstractLists.length; i++) {
-            let abstractList: WAbstractList = viewer.abstractLists[i];
+        for (let i: number = 0; i < documentHelper.abstractLists.length; i++) {
+            let abstractList: WAbstractList = documentHelper.abstractLists[i];
             if (abstractLists.indexOf(abstractList.abstractListId) > -1) {
                 this.document.abstractLists.push(this.writeAbstractList(abstractList));
             }
@@ -976,7 +980,7 @@ export class SfdtExport {
         this.lists = undefined;
         this.endLine = undefined;
         this.endOffset = undefined;
-        this.viewer = undefined;
+        this.documentHelper = undefined;
     }
     /* tslint:enable:no-any */
 }

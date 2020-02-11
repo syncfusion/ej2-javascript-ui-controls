@@ -5,412 +5,1012 @@ import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-p
 import { ColorPicker, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const created = 'create';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const destroyed = 'destroy';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const load = 'load';
 /**
  * Specifies RichTextEditor internal events
  */
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const initialLoad = 'initial-load';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const initialEnd = 'initial-end';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const iframeMouseDown = 'iframe-click';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const destroy = 'destroy';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const toolbarClick = 'toolbarClick';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const toolbarRefresh = 'toolbar-refresh';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const refreshBegin = 'refresh-begin';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const toolbarUpdated = 'toolbar-updated';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const bindOnEnd = 'bind-on-end';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const renderColorPicker = 'render-color-picker';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const htmlToolbarClick = 'html-toolbar-click';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const markdownToolbarClick = 'markdown-toolbar-click';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const destroyColorPicker = 'destroy-color-picker';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const modelChanged = 'model-changed';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const keyUp = 'keyUp';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const keyDown = 'keyDown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const mouseUp = 'mouseUp';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const toolbarCreated = 'toolbarCreated';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const toolbarRenderComplete = 'toolbarRenderComplete';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const enableFullScreen = 'enableFullScreen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const disableFullScreen = 'disableFullScreen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const dropDownSelect = 'dropDownSelect';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const beforeDropDownItemRender = 'beforeDropDownItemRender';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const execCommandCallBack = 'execCommandCallBack';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageToolbarAction = 'image-toolbar-action';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const linkToolbarAction = 'link-toolbar-action';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const resizeStart = 'resizeStart';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const onResize = 'resizing';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const resizeStop = 'resizeStop';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const undo = 'undo';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const redo = 'redo';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const insertLink = 'insertLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const unLink = 'unLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const editLink = 'editLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const openLink = 'openLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const actionBegin = 'actionBegin';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const actionComplete = 'actionComplete';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const toolbarStatusUpdate = 'toolbarStatusUpdate';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const actionSuccess = 'actionSuccess';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const updateToolbarItem = 'updateToolbarItem';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const insertImage = 'insertImage';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const insertCompleted = 'insertCompleted';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageLeft = 'justifyLeft';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageRight = 'justifyRight';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageCenter = 'justifyCenter';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageBreak = 'break';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageInline = 'inline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageLink = 'insertImgLink';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageAlt = 'imgAltText';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageDelete = 'delete';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageCaption = 'caption';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageSize = 'imageSize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const sourceCode = 'sourceCode';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const updateSource = 'updateSource';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const toolbarOpen = 'toolbarOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const beforeDropDownOpen = 'beforeDropDownOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const selectionSave = 'selection-save';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const selectionRestore = 'selection-restore';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const expandPopupClick = 'expandPopupClick';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const count = 'count';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const contentFocus = 'contentFocus';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const contentBlur = 'contentBlur';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const mouseDown = 'mouseDown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const sourceCodeMouseDown = 'sourceCodeMouseDown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const editAreaClick = 'editAreaClick';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const scroll = 'scroll';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const contentscroll = 'contentscroll';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const colorPickerChanged = 'colorPickerChanged';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const tableColorPickerChanged = 'tableColorPickerChanged';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const focusChange = 'focusChange';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const selectAll$1 = 'selectAll';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const selectRange = 'selectRange';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const getSelectedHtml = 'getSelectedHtml';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const renderInlineToolbar = 'renderInlineToolbar';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const paste = 'paste-content';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imgModule = 'imageModule';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const rtlMode = 'rtl-mode';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const createTable = 'createTable';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const docClick = 'docClick';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const tableToolbarAction = 'table-toolbar-action';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const checkUndo = 'checkUndoStack';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const readOnlyMode = 'readOnlyMode';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const pasteClean = 'pasteClean';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const beforeDialogOpen = 'beforeDialogOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const dialogOpen = 'dialogOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const dialogClose = 'dialogClose';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const beforeQuickToolbarOpen = 'beforeQuickToolbarOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const quickToolbarOpen = 'quickToolbarOpen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const quickToolbarClose = 'quickToolbarClose';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const popupHide = 'popupHide';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageSelected = 'imageSelected';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageUploading = 'imageUploading';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageUploadSuccess = 'imageUploadSuccess';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageUploadFailed = 'imageUploadFailed';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const imageRemoving = 'imageRemoving';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const drop = 'drop';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const xhtmlValidation = 'xhtmlValidation';
 
 /**
  * RichTextEditor classes defined here.
  */
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE = 'e-richtexteditor';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTL = 'e-rtl';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_CONTENT = 'e-content';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_DISABLED = 'e-disabled';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_SCRIPT_SHEET = 'rte-iframe-script-sheet';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_STYLE_SHEET = 'rte-iframe-style-sheet';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TOOLBAR = 'e-rte-toolbar';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_FIXED = 'e-rte-tb-fixed';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_FLOAT = 'e-rte-tb-float';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_ABS_FLOAT = 'e-rte-tb-abs-float';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_INLINE = 'e-rte-inline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_INLINE = 'e-rte-tb-inline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_EXPAND_TB = 'e-rte-tb-expand';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_FULL_SCREEN = 'e-rte-full-screen';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_QUICK_TB = 'e-rte-quick-toolbar';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_POP = 'e-rte-pop';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_QUICK_POP = 'e-rte-quick-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_QUICK_DROPDOWN = 'e-quick-dropdown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMAGE_POP = 'e-rte-image-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_INLINE_POP = 'e-rte-inline-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_INLINE_DROPDOWN = 'e-rte-inline-dropdown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_DROPDOWN_POPUP = 'e-rte-dropdown-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_DROPDOWN_ICONS = 'e-rte-dropdown-icons';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_DROPDOWN_ITEMS = 'e-rte-dropdown-items';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_DROPDOWN_BTN = 'e-rte-dropdown-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_CONTENT = 'e-rte-content';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_ITEM = 'e-toolbar-item';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_EXTENDED = 'e-toolbar-extended';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_WRAP = 'e-toolbar-wrapper';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_POPUP = 'e-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_SEPARATOR = 'e-separator';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_MINIMIZE = 'e-minimize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_MAXIMIZE = 'e-maximize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_BACK = 'e-back';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_SHOW = 'e-show';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_HIDE = 'e-hide';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_VISIBLE = 'e-visible';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_FOCUS = 'e-focused';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RM_WHITE_SPACE = 'e-remove-white-space';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMGRIGHT = 'e-imgright';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMGLEFT = 'e-imgleft';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMGCENTER = 'e-imgcenter';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMGBREAK = 'e-imgbreak';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_CAPTION = 'e-img-caption';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_CAPTION = 'e-rte-img-caption';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_CAPINLINE = 'e-caption-inline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMGINLINE = 'e-imginline';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_COUNT = 'e-rte-character-count';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_WARNING = 'e-warning';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_ERROR = 'e-error';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_ICONS = 'e-icons';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_ACTIVE = 'e-active';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_EXPAND_OPEN = 'e-expand-open';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_ELEMENTS = 'e-rte-elements';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_BTN = 'e-tbar-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_HR_SEPARATOR = 'e-rte-horizontal-separator';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_IOS_FIX = 'e-tbar-ios-fixed';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_STATIC = 'e-tb-static';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_FORMATS_TB_BTN = 'e-formats-tbar-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_FONT_NAME_TB_BTN = 'e-font-name-tbar-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_FONT_SIZE_TB_BTN = 'e-font-size-tbar-btn';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_FONT_COLOR_TARGET = 'e-rte-fontcolor-element';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_BACKGROUND_COLOR_TARGET = 'e-rte-backgroundcolor-element';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_COLOR_CONTENT = 'e-rte-color-content';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_FONT_COLOR_DROPDOWN = 'e-rte-fontcolor-dropdown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_BACKGROUND_COLOR_DROPDOWN = 'e-rte-backgroundcolor-dropdown';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_COLOR_PALETTE = 'e-rte-square-palette';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_FONT_COLOR_PICKER = 'e-rte-fontcolor-colorpicker';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_BACKGROUND_COLOR_PICKER = 'e-rte-backgroundcolor-colorpicker';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_READONLY = 'e-rte-readonly';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TABLE_SEL = 'e-cell-select';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_DASH_BOR = 'e-dashed-border';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_ALT_BOR = 'e-alternate-border';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_COL_RES = 'e-column-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_ROW_RES = 'e-row-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TB_BOX_RES = 'e-table-box';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_HIDDEN = 'e-rte-hidden';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_PASTE_KEEP_FORMAT = 'e-rte-keepformat';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_PASTE_REMOVE_FORMAT = 'e-rte-removeformat';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_PASTE_PLAIN_FORMAT = 'e-rte-plainformat';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_PASTE_OK = 'e-rte-pasteok';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_PASTE_CANCEL = 'e-rte-pastecancel';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_DIALOG_MIN_HEIGHT = 'e-rte-dialog-minheight';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_RES_HANDLE = 'e-resize-handle';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_RES_EAST = 'e-south-east';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_IMAGE = 'e-rte-image';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RESIZE = 'e-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMG_FOCUS = 'e-img-focus';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_DRAG_IMAGE = 'e-rte-drag-image';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_UPLOAD_POPUP = 'e-rte-upload-popup';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_POPUP_OPEN = 'e-popup-open';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMG_RESIZE = 'e-img-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_DROPAREA = 'e-droparea';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_IMG_INNER = 'e-img-inner';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_UPLOAD_FILES = 'e-upload-files';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_DIALOG_UPLOAD = 'e-rte-dialog-upload';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_RTE_RES_CNT = 'e-rte-resize';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_CUSTOM_TILE = 'e-custom-tile';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_NOCOLOR_ITEM = 'e-nocolor-item';
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLS_TABLE_BORDER = 'e-rte-table-border';
 
 /**
@@ -4853,47 +5453,58 @@ class ExecCommandCallBack {
 /**
  * Constant values for Common
  */
-/* Keydown event trigger
+/**
+ * Keydown event trigger
  * @hidden
  */
 const KEY_DOWN = 'keydown';
-/* Undo and Redo action HTML plugin events
+/**
+ * Undo and Redo action HTML plugin events
  * @hidden
  */
 const ACTION = 'action';
-/* Formats plugin events
+/**
+ * Formats plugin events
  * @hidden
  */
 const FORMAT_TYPE = 'format-type';
-/* Keydown handler event trigger
+/**
+ * Keydown handler event trigger
  * @hidden
  */
 const KEY_DOWN_HANDLER = 'keydown-handler';
-/* List plugin events
+/**
+ * List plugin events
  * @hidden
  */
 const LIST_TYPE = 'list-type';
-/* Keyup handler event trigger
+/**
+ * Keyup handler event trigger
  * @hidden
  */
 const KEY_UP_HANDLER = 'keyup-handler';
-/* Keyup event trigger
+/**
+ * Keyup event trigger
  * @hidden
  */
 const KEY_UP = 'keyup';
-/* Model changed plugin event trigger
+/**
+ * Model changed plugin event trigger
  * @hidden
  */
 const MODEL_CHANGED_PLUGIN = 'model_changed_plugin';
-/* Model changed event trigger
+/**
+ * Model changed event trigger
  * @hidden
  */
 const MODEL_CHANGED = 'model_changed';
-/* PasteCleanup plugin for MSWord content
+/**
+ * PasteCleanup plugin for MSWord content
  * @hidden
  */
 const MS_WORD_CLEANUP_PLUGIN = 'ms_word_cleanup_plugin';
-/* PasteCleanup for MSWord content
+/**
+ * PasteCleanup for MSWord content
  * @hidden
  */
 const MS_WORD_CLEANUP = 'ms_word_cleanup';
@@ -5096,23 +5707,28 @@ class Formatter {
 /**
  * Constant values for Markdown Parser
  */
-/* List plugin events
+/**
+ * List plugin events
  * @hidden
  */
 const LISTS_COMMAND = 'lists-commands';
-/* selectioncommand plugin events
+/**
+ * selectioncommand plugin events
  * @hidden
  */
 const selectionCommand = 'command-type';
-/* Link plugin events
+/**
+ * Link plugin events
  * @hidden
  */
 const LINK_COMMAND = 'link-commands';
-/* Clear plugin events
+/**
+ * Clear plugin events
  * @hidden
  */
 const CLEAR_COMMAND = 'clear-commands';
-/* Table plugin events
+/**
+ * Table plugin events
  * @hidden
  */
 const MD_TABLE = 'insert-table';
@@ -7149,7 +7765,8 @@ class MarkdownEditor {
 /**
  * Constant values for EditorManager
  */
-/* Image plugin events
+/**
+ * Image plugin events
  * @hidden
  */
 const IMAGE = 'INSERT-IMAGE';
@@ -7162,42 +7779,54 @@ const DELETECOLUMN = 'DELETE-COLUMN';
 const REMOVETABLE = 'REMOVE-TABLE';
 const TABLEHEADER = 'TABLE-HEADER';
 const TABLE_VERTICAL_ALIGN = 'TABLE_VERTICAL_ALIGN';
-/* Alignments plugin events
+/**
+ * Alignments plugin events
  * @hidden
  */
 const ALIGNMENT_TYPE = 'alignment-type';
-/* Indents plugin events
+/**
+ * Indents plugin events
  * @hidden
  */
 const INDENT_TYPE = 'indent-type';
-/* Constant tag names
+/** Constant tag names
+ * @hidden
  */
-/** @hidden */
 const DEFAULT_TAG = 'p';
-/** @hidden */
+/**
+ * @hidden
+ */
 const BLOCK_TAGS = ['address', 'article', 'aside', 'audio', 'blockquote',
     'canvas', 'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'li', 'main', 'nav',
     'noscript', 'ol', 'output', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
     'thead', 'tr', 'ul', 'video'];
-/** @hidden */
+/**
+ * @hidden
+ */
 const IGNORE_BLOCK_TAGS = ['td', 'th'];
-/** @hidden */
+/**
+ * @hidden
+ */
 const TABLE_BLOCK_TAGS = ['table', 'tbody', 'td', 'tfoot', 'th',
     'thead', 'tr'];
-/* Selection plugin events
+/**
+ * Selection plugin events
  * @hidden
  */
 const SELECTION_TYPE = 'selection-type';
-/* Insert HTML plugin events
+/**
+ * Insert HTML plugin events
  * @hidden
  */
 const INSERTHTML_TYPE = 'inserthtml-type';
-/* Insert Text plugin events
+/**
+ * Insert Text plugin events
  * @hidden
  */
 const INSERT_TEXT_TYPE = 'insert-text-type';
-/* Clear Format HTML plugin events
+/**
+ * Clear Format HTML plugin events
  * @hidden
  */
 const CLEAR_TYPE = 'clear-type';
@@ -9840,7 +10469,10 @@ class Indents {
 /**
  * RichTextEditor classes defined here.
  */
-/** @hidden @deprecated */
+/**
+ * @hidden
+ * @deprecated
+ */
 const CLASS_IMAGE_RIGHT = 'e-imgright';
 const CLASS_IMAGE_LEFT = 'e-imgleft';
 const CLASS_IMAGE_CENTER = 'e-imgcenter';
@@ -17793,7 +18425,10 @@ class DialogRenderer {
  * Renderer
  */
 
-/** @hidden @deprecated  */
+/**
+ * @hidden
+ * @deprecated
+ */
 const executeGroup = {
     'bold': {
         command: 'Style',

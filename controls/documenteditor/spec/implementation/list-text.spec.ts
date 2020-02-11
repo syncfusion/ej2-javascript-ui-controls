@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor } from '../../src/index';
+import { Editor, DocumentHelper } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -12,23 +12,23 @@ import { EditorHistory } from '../../src/document-editor/implementation/editor-h
 
 describe('Text insert validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -42,7 +42,7 @@ describe('Text insert validation of selection context type is List Text with und
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.insertText('s');
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
@@ -54,7 +54,7 @@ describe('Text insert validation of selection context type is List Text with und
     });
     it('redo after Text Insert at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.selection.paragraphFormat.getList()).toBe(undefined);        
+        expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('Multiple undo and redo after Text Insert at list text', () => {
         let i: number = 0;
@@ -70,23 +70,23 @@ describe('Text insert validation of selection context type is List Text with und
 
 describe('Backspace validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -100,7 +100,7 @@ describe('Backspace validation of selection context type is List Text with undo 
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.onBackSpace();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
@@ -112,7 +112,7 @@ describe('Backspace validation of selection context type is List Text with undo 
     });
     it('redo after Backspace at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.selection.paragraphFormat.getList()).toBe(undefined);        
+        expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('Multiple undo and redo after Backspace at list text', () => {
         let i: number = 0;
@@ -128,23 +128,23 @@ describe('Backspace validation of selection context type is List Text with undo 
 
 describe('Delete validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -158,7 +158,7 @@ describe('Delete validation of selection context type is List Text with undo and
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.delete();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
@@ -170,7 +170,7 @@ describe('Delete validation of selection context type is List Text with undo and
     });
     it('redo after Delete at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.selection.paragraphFormat.getList()).toBe(undefined);        
+        expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('Multiple undo and redo after Delete at list text', () => {
         let i: number = 0;
@@ -186,23 +186,23 @@ describe('Delete validation of selection context type is List Text with undo and
 
 describe('Apply Character Format -bold validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -216,9 +216,9 @@ describe('Apply Character Format -bold validation of selection context type is L
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.bold=true;
+        editor.selection.characterFormat.bold = true;
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(true);
     });
     it('undo after bold apply at list text', () => {
@@ -243,23 +243,23 @@ describe('Apply Character Format -bold validation of selection context type is L
 
 describe('Apply Character Format -Italic validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -273,9 +273,9 @@ describe('Apply Character Format -Italic validation of selection context type is
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.italic=true;
+        editor.selection.characterFormat.italic = true;
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(true);
     });
     it('undo after italic apply at list text', () => {
@@ -300,23 +300,23 @@ describe('Apply Character Format -Italic validation of selection context type is
 
 describe('Apply Character Format -Underline validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -330,9 +330,9 @@ describe('Apply Character Format -Underline validation of selection context type
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.underline='Single';
+        editor.selection.characterFormat.underline = 'Single';
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('Single');
     });
     it('undo after Underline apply at list text', () => {
@@ -357,23 +357,23 @@ describe('Apply Character Format -Underline validation of selection context type
 
 describe('Apply Character Format -Strikethrough validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -387,9 +387,9 @@ describe('Apply Character Format -Strikethrough validation of selection context 
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.strikethrough='SingleStrike';
+        editor.selection.characterFormat.strikethrough = 'SingleStrike';
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('SingleStrike');
     });
     it('undo after Strikethrough apply at list text', () => {
@@ -414,23 +414,23 @@ describe('Apply Character Format -Strikethrough validation of selection context 
 
 describe('Apply Character Format -BaselineAlignment validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -444,9 +444,9 @@ describe('Apply Character Format -BaselineAlignment validation of selection cont
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.baselineAlignment='Superscript';
+        editor.selection.characterFormat.baselineAlignment = 'Superscript';
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Superscript');
     });
     it('undo after BaselineAlignment apply at list text', () => {
@@ -471,23 +471,23 @@ describe('Apply Character Format -BaselineAlignment validation of selection cont
 
 describe('Apply Character Format -Fontsize validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -501,9 +501,9 @@ describe('Apply Character Format -Fontsize validation of selection context type 
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.fontSize=20;
+        editor.selection.characterFormat.fontSize = 20;
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(20);
     });
     it('undo after FontSize apply at list text', () => {
@@ -529,23 +529,23 @@ describe('Apply Character Format -Fontsize validation of selection context type 
 
 describe('Apply Character Format -FontFamily validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -559,9 +559,9 @@ describe('Apply Character Format -FontFamily validation of selection context typ
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.fontFamily='Arial';
+        editor.selection.characterFormat.fontFamily = 'Arial';
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Arial');
     });
     it('undo after FontSize apply at list text', () => {
@@ -586,23 +586,23 @@ describe('Apply Character Format -FontFamily validation of selection context typ
 
 describe('Apply Character Format -FontColor validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -616,9 +616,9 @@ describe('Apply Character Format -FontColor validation of selection context type
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.fontColor='Pink';
+        editor.selection.characterFormat.fontColor = 'Pink';
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('undo after FontColor apply at list text', () => {
@@ -643,23 +643,23 @@ describe('Apply Character Format -FontColor validation of selection context type
 
 describe('Apply Character Format -FontColor validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -673,9 +673,9 @@ describe('Apply Character Format -FontColor validation of selection context type
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.fontColor='Pink';
+        editor.selection.characterFormat.fontColor = 'Pink';
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('undo after FontColor apply at list text', () => {
@@ -700,23 +700,23 @@ describe('Apply Character Format -FontColor validation of selection context type
 
 describe('Apply Character Format -Highlight Color validation of selection context type is List Text with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -730,9 +730,9 @@ describe('Apply Character Format -Highlight Color validation of selection contex
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.selection.characterFormat.highlightColor='Yellow';
+        editor.selection.characterFormat.highlightColor = 'Yellow';
         expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('Yellow');
     });
     it('undo after FontColor apply at list text', () => {
@@ -757,23 +757,23 @@ describe('Apply Character Format -Highlight Color validation of selection contex
 
 describe('Restart Numbering with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -793,8 +793,8 @@ describe('Restart Numbering with undo and redo', () => {
         editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
         editor.editorModule.insertText('Sample');
-        editor.selection.handleUpKey();        
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.selection.handleUpKey();
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyRestartNumbering(editor.selection);
         expect(editor.selection.paragraphFormat.listText).toBe('I)');
@@ -824,23 +824,23 @@ describe('Restart Numbering with undo and redo', () => {
 
 describe('Restart Numbering at level number 1', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -855,21 +855,21 @@ describe('Restart Numbering at level number 1', () => {
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.selection.handleTabKey(true,false);
+        editor.selection.handleTabKey(true, false);
         editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyRestartNumbering(editor.selection);
         expect(editor.selection.paragraphFormat.listText).toBe('I.');
     });
     it('undo after Restart Numbering apply at list text', () => {
-        editor.editorHistory.undo();        
+        editor.editorHistory.undo();
         // expect(editor.selection.paragraphFormat.listText).toBe('II.');
     });
     it('redo after Restart Numbering apply at list text', () => {
-        editor.editorHistory.redo();        
+        editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.listText).toBe('I.');
     });
     it('Multiple undo and redo after Restart Numbering at list text', () => {
@@ -886,23 +886,23 @@ describe('Restart Numbering at level number 1', () => {
 
 describe('Continue Numbering validation with same level pattern with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -926,17 +926,17 @@ describe('Continue Numbering validation with same level pattern with undo and re
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyContinueNumbering(editor.selection);
         // expect(editor.selection.paragraphFormat.listText).toBe('3.');
     });
     it('undo after Continue Numbering apply at list text', () => {
-        editor.editorHistory.undo();        
+        editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listText).toBe('1.');
     });
     it('redo after Continue Numbering apply at list text', () => {
-        editor.editorHistory.redo();        
+        editor.editorHistory.redo();
         // expect(editor.selection.paragraphFormat.listText).toBe('3.');
     });
     it('Multiple undo and redo after Continue Numbering at list text', () => {
@@ -952,23 +952,23 @@ describe('Continue Numbering validation with same level pattern with undo and re
 });
 describe('Continue Numbering at level number 1', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -983,19 +983,19 @@ describe('Continue Numbering at level number 1', () => {
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.selection.handleTabKey(true,false);
+        editor.selection.handleTabKey(true, false);
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyContinueNumbering(editor.selection);
         // expect(editor.selection.paragraphFormat.listText).toBe('II)');
     });
     it('undo after Continue Numbering apply at list text', () => {
-        editor.editorHistory.undo();        
+        editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listText).toBe('I.');
     });
     it('redo after Continue Numbering apply at list text', () => {
-        editor.editorHistory.redo();        
+        editor.editorHistory.redo();
         // expect(editor.selection.paragraphFormat.listText).toBe('II)');
     });
     it('Multiple undo and redo after Continue Numbering at list text', () => {
@@ -1007,27 +1007,27 @@ describe('Continue Numbering at level number 1', () => {
         }
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listText).toBe('I.');
-    });    
+    });
 });
 describe('Continue Numbering at level number 1', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -1041,9 +1041,9 @@ describe('Continue Numbering at level number 1', () => {
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.selection.handleTabKey(true,false);
+        editor.selection.handleTabKey(true, false);
         editor.editorModule.insertText('Sample');
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyContinueNumbering(editor.selection);
         // expect(editor.selection.paragraphFormat.listText).toBe('2.');
@@ -1052,23 +1052,23 @@ describe('Continue Numbering at level number 1', () => {
 
 describe('Continue Numbering validation with different level pattern with undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -1091,18 +1091,18 @@ describe('Continue Numbering validation with different level pattern with undo a
         editor.editorModule.insertText('A');
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
-        editor.editorModule.insertText('Sample');    
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.editorModule.insertText('Sample');
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyContinueNumbering(editor.selection);
         // expect(editor.selection.paragraphFormat.listText).toBe('c.');
     });
     it('undo after Continue Numbering apply at list text', () => {
-        editor.editorHistory.undo();        
+        editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listText).toBe('A.');
     });
     it('redo after Continue Numbering apply at list text', () => {
-        editor.editorHistory.redo();        
+        editor.editorHistory.redo();
         // expect(editor.selection.paragraphFormat.listText).toBe('c.');
     });
     it('Multiple undo and redo after Continue Numbering at list text', () => {
@@ -1120,22 +1120,22 @@ describe('Continue Numbering validation with different level pattern with undo a
 
 describe('without history Restart Numbering and continue numbering validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true});
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -1152,36 +1152,36 @@ describe('without history Restart Numbering and continue numbering validation', 
         editor.editor.onEnter();
         editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample');        
-        editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.editorModule.insertText('Sample');
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyRestartNumbering(editor.selection);
         expect(editor.selection.paragraphFormat.listText).toBe('I)');
     });
     it('Continue numbering without history Apply validation', () => {
-       editor.editor.applyContinueNumbering(editor.selection);
-    //    expect(editor.selection.paragraphFormat.listText).toBe('III)');
+        editor.editor.applyContinueNumbering(editor.selection);
+        //    expect(editor.selection.paragraphFormat.listText).toBe('III)');
     });
 });
 
 describe('List continue numbering validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true});
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;

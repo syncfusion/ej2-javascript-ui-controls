@@ -1,4 +1,3 @@
-import { LayoutViewer } from '../index';
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Tab, SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { ListLevelPattern } from '../../base/types';
@@ -6,12 +5,13 @@ import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WListFormat } from '../../implementation/format/list-format';
+import { DocumentHelper } from '../viewer';
 /**
  * The Bullets and Numbering dialog is used to apply list format for a paragraph style.
  */
 /* tslint:disable:no-any */
 export class BulletsAndNumberingDialog {
-    private owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private target: HTMLElement;
     private isBullet: boolean = false;
     private symbol: string;
@@ -25,16 +25,16 @@ export class BulletsAndNumberingDialog {
      * @private
      */
     public numberListDiv: HTMLElement;
-   /**
-    * @private
-    */
+    /**
+     * @private
+     */
     public bulletListDiv: HTMLElement;
 
     /**
      * @private
      */
-    constructor(layoutViewer: LayoutViewer) {
-        this.owner = layoutViewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
     /**
      * @private
@@ -47,7 +47,7 @@ export class BulletsAndNumberingDialog {
      */
     public initNumberingBulletDialog(locale: L10n): void {
         let instance: BulletsAndNumberingDialog = this;
-        let id: string = this.owner.owner.containerId;
+        let id: string = this.documentHelper.owner.containerId;
         this.target = createElement('div', { id: id + '_insertNumberBulletDialog', className: 'e-de-number-bullet-dlg' });
         let tabTarget: HTMLElement = createElement('div', { id: id + '_tabNumberBulletDialog', className: 'e-de-tab-number-bullet-dlg' });
         this.target.appendChild(tabTarget);
@@ -70,6 +70,7 @@ export class BulletsAndNumberingDialog {
             width: 272,
             selecting: this.onTabSelect.bind(this)
         });
+        this.tabObj.isStringTemplate = true;
         //Render initialized Tab component
         this.tabObj.appendTo(tabTarget);
 
@@ -199,19 +200,19 @@ export class BulletsAndNumberingDialog {
         } else {
             this.abstractList = new WAbstractList();
         }
-        let locale: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        locale.setLocale(this.owner.owner.locale);
+        let locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        locale.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initNumberingBulletDialog(locale);
         }
-        this.owner.dialog.header = locale.getConstant('Numbering and Bullets');
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = this.loadNumberingBulletDialog;
-        this.owner.dialog.close = this.closeNumberingBulletDialog;
-        this.owner.dialog.position = { X: 'center', Y: 'center' };
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = locale.getConstant('Numbering and Bullets');
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = this.loadNumberingBulletDialog;
+        this.documentHelper.dialog.close = this.closeNumberingBulletDialog;
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog.buttons = [{
             click: this.onOkButtonClick,
             buttonModel: { content: locale.getConstant('Ok'), cssClass: 'e-flat e-numbering-bullet-okay', isPrimary: true }
         },
@@ -219,8 +220,8 @@ export class BulletsAndNumberingDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: locale.getConstant('Cancel'), cssClass: 'e-flat e-numbering-bullet-cancel' }
         }];
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
         this.tabObj.refresh();
     }
     /**
@@ -299,14 +300,14 @@ export class BulletsAndNumberingDialog {
      */
     public loadNumberingBulletDialog = (): void => {
         //Load 
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
      */
     public closeNumberingBulletDialog = (): void => {
         this.unWireEventsAndBindings();
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -317,24 +318,25 @@ export class BulletsAndNumberingDialog {
         this.numberFormat = undefined;
         this.symbol = undefined;
         this.fontFamily = undefined;
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
         this.unWireEventsAndBindings();
     }
     /**
      * @private
      */
     public onOkButtonClick = (): void => {
-        if (this.owner.owner.viewer.lists.length > 0) {
-            this.listFormat.list.listId = this.owner.owner.viewer.lists[this.owner.owner.viewer.lists.length - 1].listId + 1;
+        if (this.documentHelper.owner.documentHelper.lists.length > 0) {
+            /* tslint:disable-next-line:max-line-length */
+            this.listFormat.list.listId = this.documentHelper.owner.documentHelper.lists[this.documentHelper.owner.documentHelper.lists.length - 1].listId + 1;
             this.listFormat.listId = this.listFormat.list.listId;
         } else {
             this.listFormat.list.listId = 0;
             this.listFormat.listId = 0;
         }
 
-        if (this.owner.owner.viewer.abstractLists.length > 0) {
+        if (this.documentHelper.owner.documentHelper.abstractLists.length > 0) {
             /* tslint:disable-next-line:max-line-length */
-            this.abstractList.abstractListId = this.owner.owner.viewer.abstractLists[this.owner.owner.viewer.abstractLists.length - 1].abstractListId + 1;
+            this.abstractList.abstractListId = this.documentHelper.owner.documentHelper.abstractLists[this.documentHelper.owner.documentHelper.abstractLists.length - 1].abstractListId + 1;
         } else {
             this.abstractList.abstractListId = 0;
         }
@@ -351,7 +353,7 @@ export class BulletsAndNumberingDialog {
         this.abstractList.levels.push(listLevel);
         this.listFormat.listLevelNumber = 0;
         this.listFormat.list.abstractList = this.abstractList;
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
     /**
      * @private
@@ -363,7 +365,7 @@ export class BulletsAndNumberingDialog {
      * @private
      */
     public destroy(): void {
-        this.owner = undefined;
+        this.documentHelper = undefined;
         if (this.listFormat) {
             this.listFormat.destroy();
             this.listFormat = undefined;

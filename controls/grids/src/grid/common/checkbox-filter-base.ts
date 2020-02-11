@@ -286,6 +286,7 @@ export class CheckBoxFilterBase {
         let isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.dlg.setAttribute('aria-label', this.getLocalizedLabel('ExcelFilterDialogARIA'));
+        this.parent.element.appendChild(this.dlg);
         this.dialogObj.appendTo(this.dlg as HTMLElement);
         this.dialogObj.element.style.maxHeight = this.options.height + 'px';
         this.dialogObj.show();

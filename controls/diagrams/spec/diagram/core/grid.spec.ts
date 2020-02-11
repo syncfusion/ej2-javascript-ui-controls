@@ -1336,4 +1336,80 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+
+
+    describe('Diagram grid dot test cases', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement; let diagramCanvas: HTMLElement;
+        let mouseevents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramGriddots' });
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                width: '800px', height: '500px',
+                snapSettings: {
+                    gridType: 'Dots',
+                },
+            });
+            diagram.appendTo('#diagramGriddots');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseevents.clickEvent(diagramCanvas, 10, 10);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Diagram grid dot test cases - intial rendering', (done: Function) => {
+            var diagramgriddot = document.getElementById("diagramGriddots_pattern")
+            expect(diagramgriddot.children.length === 72).toBe(true);
+            expect(diagramgriddot.children[0] instanceof SVGCircleElement && diagramgriddot.children[0].getAttribute('fill') === 'lightgray'
+                && diagramgriddot.children[0].getAttribute("cx") === "0" && diagramgriddot.children[0].getAttribute("cy") === "0"
+                && diagramgriddot.children[5].getAttribute("cy") === "0"
+                && diagramgriddot.children[20].getAttribute("cx") === "40" && diagramgriddot.children[20].getAttribute("cy") === "60"
+                && diagramgriddot.children[71].getAttribute("cx") === "100" && diagramgriddot.children[71].getAttribute("cy") === "100").toBe(true);
+            diagram.snapSettings.horizontalGridlines.dotIntervals = [1, 30, 0.5, 30, 0.5, 30, 0.5, 30, 0.5, 30];
+            diagram.snapSettings.verticalGridlines.dotIntervals = [1, 30, 0.5, 30, 0.5, 30, 0.5, 30, 0.5, 30];
+            diagram.snapSettings.horizontalGridlines.lineColor = 'black';
+            diagram.dataBind()
+            var diagramgriddot1 = document.getElementById("diagramGriddots_pattern")
+            expect(diagramgriddot1.children[0].getAttribute('fill') === 'black' && diagramgriddot1.children[0].getAttribute("cx") === "0"
+            && diagramgriddot1.children[0].getAttribute("cy") === "0"
+            && diagramgriddot1.children[5].getAttribute("cy") === "0"
+            && diagramgriddot1.children[20].getAttribute("cx") === "61.5" && diagramgriddot1.children[20].getAttribute("cy") === "92"
+            && diagramgriddot1.children[71].getAttribute("cx") === "153" && diagramgriddot1.children[71].getAttribute("cy") === "153").toBe(true);
+            diagram.snapSettings.horizontalGridlines.dotIntervals = [3, 20, 1, 20, 1, 20, 1, 20, 1, 20];
+            diagram.snapSettings.verticalGridlines.dotIntervals = [3, 20, 1, 20, 1, 20];
+            diagram.dataBind()
+            var diagramgriddot1 = document.getElementById("diagramGriddots_pattern");
+            expect(diagramgriddot1.children[0].getAttribute('fill') === 'black' && diagramgriddot1.children[0].getAttribute("cx") === "0"
+            && diagramgriddot1.children[0].getAttribute("cy") === "0"
+            && diagramgriddot1.children[5].getAttribute("cy") === "23"
+            && diagramgriddot1.children[20].getAttribute("cx") === "0" && diagramgriddot1.children[20].getAttribute("cy") === "107"
+            && diagramgriddot1.children[47].getAttribute("cx") === "65" && diagramgriddot1.children[47].getAttribute("cy") === "107").toBe(true);
+            diagram.snapSettings.gridType = 'Lines';
+            diagram.snapSettings.horizontalGridlines.lineColor = 'lightgray';
+            diagram.dataBind()
+            var diagramgriddot2 = document.getElementById("diagramGriddots_pattern")
+            expect(diagramgriddot2.children.length === 10 && diagramgriddot2.children[0] instanceof SVGPathElement &&
+                diagramgriddot2.children[0].getAttribute("d") === "M0,0.625 L100,0.625 Z"
+                && diagramgriddot2.children[9].getAttribute("d") === "M80.125,0 L80.125,100 Z").toBe(true);
+            diagram.snapSettings.gridType = 'Dots';
+            diagram.dataBind();
+            expect(diagramgriddot1.children[0].getAttribute('fill') === 'black' && diagramgriddot1.children[0].getAttribute("cx") === "0"
+            && diagramgriddot1.children[0].getAttribute("cy") === "0"
+            && diagramgriddot1.children[5].getAttribute("cy") === "23"
+            && diagramgriddot1.children[20].getAttribute("cx") === "0" && diagramgriddot1.children[20].getAttribute("cy") === "107"
+            && diagramgriddot1.children[47].getAttribute("cx") === "65" && diagramgriddot1.children[47].getAttribute("cy") === "107").toBe(true);
+            done();
+        });
+
+    });
 });

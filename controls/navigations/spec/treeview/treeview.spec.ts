@@ -4421,6 +4421,78 @@ describe('TreeView control', () => {
                 expect(treeObj1.getTreeData('11-01')[0]['nodeChild'][0]['nodeText']).toBe('Videos');
             });
         });
+        describe('Performance testing', () => {
+            let treeObj: TreeView;
+            let mouseEventArgs: any;
+            let originalTimeout: any;
+            let tapEvent: any;
+            beforeEach((): void => {
+                mouseEventArgs = {
+                    preventDefault: (): void => {},
+                    stopImmediatePropagation: (): void => {},
+                    target: null,
+                    type: null,
+                    shiftKey: false,
+                    ctrlKey: false,
+                    originalEvent:{ target: null}
+                };
+                tapEvent = {
+                    originalEvent: mouseEventArgs,
+                    tapCount: 1
+                };
+                let ele: HTMLElement = createElement('div', { id: 'tree' });
+                document.body.appendChild(ele);
+                originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            });
+            afterEach((): void => {
+                if (treeObj)
+                    treeObj.destroy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+                document.body.innerHTML = '';
+            });
+            it('with 1000 nodes', (done) => {
+                let hierarchicalData: { [key: string]: Object }[] = [];
+                let parent:number = 1;let child:number = 2;let child1:number = 4;let child2:number = 1000;
+                for (let m:number = 1; m <= parent; m++) {
+                    let childArray1:{ [key: string]: Object }[] = [];
+                    for (let n:number = 1; n <= child; n++) {
+                        let childArray2:{ [key: string]: Object }[] = [];
+                        for (let o:number = 1; o <= child1; o++) {
+                            let childArray3:{ [key: string]: Object }[] = [];
+                            for (let p:number = 1; p <= child2; p++) {
+                                childArray3.push({ id: "d" + m + n + o + p, name: "Node" + m + n + o + p });
+                            }
+                            childArray2.push({ id: "c" + m + n + o, name: "Node" + m + n + o, child: childArray3, expanded: true });
+                        }
+                        childArray1.push({ id: "b" + m + n, name: "Node" + m + n, child: childArray2, expanded: true });
+                    }
+                    hierarchicalData.push({ id: "a" + m, name: "Node" + m, child: childArray1, expanded: true });
+                }
+                let startDate:number;
+                let timeTaken:number;
+                // Render the TreeView by mapping its fields property with data source properties
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData, id: "id", text: "name", child: "child", },
+                    showCheckBox: true,
+                    nodeChecked: function (args) {
+                        timeTaken = new Date().getTime() - startDate;
+                    },
+                    nodeChecking: function (args) {   
+                        startDate = new Date().getTime();
+                    }
+                });
+                treeObj.appendTo('#tree');    
+                setTimeout(() => {
+                    mouseEventArgs.target = (treeObj.element as any).querySelector("[data-uid='c111'] .e-ripple-container");
+                    (<any>treeObj).touchClickObj.tap(tapEvent);
+                    setTimeout(() => {
+                        expect(timeTaken).toBeLessThan(500);
+                        done();
+                    },2000 );  
+                },10000 );            
+            });
+        });
     });
     describe('Local data binding testing', () => {
         describe('Default functionality testing', () => {

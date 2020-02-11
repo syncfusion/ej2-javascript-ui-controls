@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-pdfviewer/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-pdfviewer)
-
 # ej2-pdfviewer
 
 Syncfusion PDF Viewer control for JavaScript enables you to view and print PDF files from your web applications.

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.49 (2020-02-11)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- Issue with script error throws while selecting value from popup in touch mode has been resolved.
+
 ## 17.4.47 (2020-02-05)
 
 ### DatePicker

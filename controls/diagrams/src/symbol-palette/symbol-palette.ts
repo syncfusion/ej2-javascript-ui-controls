@@ -6,7 +6,7 @@ import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syn
 import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel } from '../diagram/index';
 import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, BpmnShape, PointModel, IElement } from '../diagram/index';
-import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel } from './symbol-palette-model';
+import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel, SymbolDragSizeModel } from './symbol-palette-model';
 import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';
 import { SvgRenderer } from '../diagram/rendering/svg-renderer';
 import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';
@@ -17,7 +17,7 @@ import { getOuterBounds } from '../diagram/utility/connector';
 import { Point } from '../diagram/primitives/point';
 import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';
 import { Rect } from '../diagram/primitives/rect';
-
+import { SymbolSizeModel } from '../diagram/objects/preview-model';
 let getObjectType: Function = (obj: Object): Object => {
     let conn: Connector = obj as Connector;
     if (conn.sourcePoint || conn.targetPoint || conn.sourceID || conn.targetID
@@ -80,6 +80,31 @@ export class Palette extends ChildProperty<Palette> {
 
     /** @private */
     public isInteraction: boolean;
+
+}
+
+/**
+ * customize the drag size of the individual palette items.
+ */
+export class SymbolDragSize extends ChildProperty<SymbolDragSize> {
+
+    /**
+     * Sets the drag width of the symbols
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Property()
+    public width: number;
+
+    /**
+     * Sets the drag height of the symbols
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Property()
+    public height: number;
 
 }
 
@@ -281,6 +306,15 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      */
     @Complex<SymbolPreviewModel>({}, SymbolPreview)
     public symbolPreview: SymbolPreviewModel;
+
+    /**
+     * Defines the size of a drop symbol
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<SymbolDragSizeModel>({}, SymbolDragSize)
+    public symbolDragSize: SymbolDragSizeModel;
 
     /**
      * Enables/Disables search option in symbol palette
@@ -957,10 +991,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let symbolPreviewWidth: number = symbol.wrapper.children[0].desiredSize.width + symbol.style.strokeWidth;
         let symbolPreviewHeight: number = symbol.wrapper.children[0].desiredSize.height + symbol.style.strokeWidth;
         let content: DiagramElement = (symbol.wrapper.children[0] as Container).children[0];
-
-        if (this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
-            symbolPreviewWidth = (this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
-            symbolPreviewHeight = (this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
+        let symbolPreview: SymbolSizeModel = (symbol as Node).previewSize;
+        if ((symbol && (symbolPreview.width || symbolPreview.height)) ||
+        this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
+            symbolPreviewWidth = (symbolPreview.width || this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
+            symbolPreviewHeight = (symbolPreview.height || this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
             sw = symbolPreviewWidth / content.actualSize.width;
             sh = symbolPreviewHeight / content.actualSize.height;
             sw = sh = Math.min(sw, sh);

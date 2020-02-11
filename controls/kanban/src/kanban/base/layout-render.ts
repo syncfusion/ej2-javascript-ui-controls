@@ -1,4 +1,4 @@
-import { append, createElement, formatUnit, EventHandler, addClass, remove } from '@syncfusion/ej2-base';
+import { append, createElement, formatUnit, EventHandler, addClass, remove, extend } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardRenderedEventArgs, ColumnRenderedEventArgs, HeaderArgs } from '../base/interface';
 import { ColumnsModel, StackedHeadersModel } from '../models/index';
@@ -17,6 +17,7 @@ export class LayoutRender extends MobileLayout {
     public scrollLeft: number;
     private swimlaneRow: HeaderArgs[];
     private columnData: { [key: string]: Object[] };
+    private swimlaneData: { [key: string]: Object[] };
     /**
      * Constructor for layout module
      */
@@ -25,6 +26,7 @@ export class LayoutRender extends MobileLayout {
         this.parent = parent;
         this.columnKeys = [];
         this.swimlaneIndex = 0;
+        this.swimlaneData = {};
         this.scrollLeft = 0;
         this.wireEvents();
     }
@@ -35,6 +37,7 @@ export class LayoutRender extends MobileLayout {
         }
         this.columnData = this.getColumnCards();
         this.kanbanRows = this.getRows();
+        this.swimlaneData = this.getSwimlaneCards();
         if (this.parent.isAdaptive) {
             let parent: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
             if (parent) {
@@ -90,34 +93,39 @@ export class LayoutRender extends MobileLayout {
                 addClass([th], classList);
                 let headerWrapper: HTMLElement = createElement('div', { className: cls.HEADER_WRAP_CLASS });
                 th.appendChild(headerWrapper);
+                let noOfCard: number = this.columnData[column.keyField].length;
+                let headerTitle: HTMLElement = createElement('div', { className: cls.HEADER_TITLE_CLASS });
+                headerWrapper.appendChild(headerTitle);
                 if (column.template) {
+                    let templateArgs: Object = {
+                        keyField: column.keyField, headerText: column.headerText, minCount: column.minCount, maxCount: column.maxCount,
+                        allowToggle: column.allowToggle, isExpanded: column.isExpanded, showItemCount: column.showItemCount, count: noOfCard
+                    };
                     addClass([th], cls.TEMPLATE_CLASS);
-                    let templateHeader: HTMLElement[] = this.parent.templateParser(column.template)(column);
-                    append(templateHeader, headerWrapper);
+                    let templateHeader: HTMLElement[] = this.parent.templateParser(column.template)(templateArgs);
+                    append(templateHeader, headerTitle);
                 } else {
                     let header: HTMLElement = createElement('div', { className: cls.HEADER_TEXT_CLASS, innerHTML: column.headerText });
-                    headerWrapper.appendChild(header);
+                    headerTitle.appendChild(header);
                     if (column.showItemCount) {
-                        let cardCount: number = this.columnData[column.keyField].length;
-                        header.appendChild(createElement('div', {
-                            className: cls.TOTAL_CARD,
-                            innerHTML: '- ' + cardCount.toString() + ' ' + this.parent.localeObj.getConstant('items')
-                        }));
+                        let itemCount: HTMLElement = createElement('div', {
+                            className: cls.CARD_ITEM_COUNT,
+                            innerHTML: '- ' + noOfCard.toString() + ' ' + this.parent.localeObj.getConstant('items')
+                        });
+                        headerTitle.appendChild(itemCount);
                     }
+                }
+                if (column.allowToggle) {
+                    let name: string = (column.isExpanded && index === -1) ? cls.COLUMN_EXPAND : cls.COLUMN_COLLAPSE;
+                    let icon: HTMLElement = createElement('div', { className: cls.HEADER_ICON_CLASS + ' ' + cls.ICON_CLASS + ' ' + name });
+                    headerWrapper.appendChild(icon);
+                    this.wireEvents(icon, 'columnExpandCollapse');
                 }
                 let dataObj: HeaderArgs[] = [{ keyField: column.keyField, textField: column.headerText }];
                 let args: ColumnRenderedEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
                 this.parent.trigger(events.columnRendered, args, (columnArgs: ColumnRenderedEventArgs) => {
                     if (!columnArgs.cancel) {
                         tr.appendChild(th);
-                        if (column.allowToggle) {
-                            let name: string = (column.isExpanded && index === -1) ? cls.COLUMN_EXPAND : cls.COLUMN_COLLAPSE;
-                            let iconDiv: HTMLElement = createElement('div', {
-                                className: cls.HEADER_ICON_CLASS + ' ' + cls.ICON_CLASS + ' ' + name
-                            });
-                            th.appendChild(iconDiv);
-                            this.wireEvents(iconDiv, 'columnExpandCollapse');
-                        }
                     }
                 });
             }
@@ -180,30 +188,37 @@ export class LayoutRender extends MobileLayout {
     private renderSwimlaneRow(tBody: HTMLElement, row: HeaderArgs, isCollapsed: boolean): void {
         let name: string = cls.CONTENT_ROW_CLASS + ' ' + cls.SWIMLANE_ROW_CLASS;
         let className: string = isCollapsed ? ' ' + cls.COLLAPSED_CLASS : '';
-        let tr: HTMLElement = createElement('tr', {
-            className: name + className, attrs: { 'data-key': row.keyField }
-        });
+        let tr: HTMLElement = createElement('tr', { className: name + className, attrs: { 'data-key': row.keyField } });
         let col: number = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         let td: HTMLElement = createElement('td', {
             className: cls.CONTENT_CELLS_CLASS,
             attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
         });
+        let swimlaneHeader: HTMLElement = createElement('div', { className: cls.SWIMLANE_HEADER });
+        td.appendChild(swimlaneHeader);
         let iconClass: string = isCollapsed ? cls.SWIMLANE_ROW_COLLAPSE : cls.SWIMLANE_ROW_EXPAND;
         let iconDiv: HTMLElement = createElement('div', { className: cls.ICON_CLASS + ' ' + iconClass });
-        td.appendChild(iconDiv);
+        swimlaneHeader.appendChild(iconDiv);
+        let headerWrap: HTMLElement = createElement('div', { className: cls.HEADER_WRAP_CLASS });
+        swimlaneHeader.appendChild(headerWrap);
+        let cardCount: number = this.swimlaneData[row.keyField].length;
         if (this.parent.swimlaneSettings.template) {
+            let templateArgs: Object = extend({}, row, { count: cardCount }, true);
             addClass([td], cls.TEMPLATE_CLASS);
-            let swimlaneTemplate: HTMLElement[] = this.parent.templateParser(this.parent.swimlaneSettings.template)(row);
-            append(swimlaneTemplate, td);
+            let swimlaneTemplate: HTMLElement[] = this.parent.templateParser(this.parent.swimlaneSettings.template)(templateArgs);
+            append(swimlaneTemplate, headerWrap);
         } else {
-            td.appendChild(createElement('div', {
+            headerWrap.appendChild(createElement('div', {
                 className: cls.SWIMLANE_ROW_TEXT,
                 innerHTML: row.textField,
                 attrs: { 'data-role': row.textField }
             }));
-            if (this.parent.swimlaneSettings.showItemCount) {
-                td.appendChild(createElement('div', { className: cls.SWIMLANE_ITEM_COUNT }));
-            }
+        }
+        if (this.parent.swimlaneSettings.showItemCount) {
+            swimlaneHeader.appendChild(createElement('div', {
+                className: cls.CARD_ITEM_COUNT,
+                innerHTML: `- ${cardCount.toString()} ${this.parent.localeObj.getConstant('items')}`
+            }));
         }
         tr.appendChild(td);
         let dataObj: HeaderArgs[] = [{ keyField: row.keyField, textField: row.textField }];
@@ -225,11 +240,8 @@ export class LayoutRender extends MobileLayout {
             let dataCount: number = 0;
             for (let column of this.parent.columns) {
                 if (this.isColumnVisible(column)) {
-                    let columnData: Object[] = this.columnData[column.keyField];
-                    if (this.parent.swimlaneSettings.keyField) {
-                        columnData = columnData.filter((data: { [key: string]: Object }) =>
-                            data[this.parent.swimlaneSettings.keyField] === rows[index].keyField);
-                    }
+                    let columnData: Object[] = this.parent.swimlaneSettings.keyField ?
+                        this.getColumnData(column.keyField, this.swimlaneData[rows[index].keyField]) : this.columnData[column.keyField];
                     dataCount += columnData.length;
                     let columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     let cardWrapper: HTMLElement = createElement('div', { className: cls.CARD_WRAPPER_CLASS });
@@ -250,19 +262,19 @@ export class LayoutRender extends MobileLayout {
                             let tooltipClass: string = this.parent.enableTooltip ? ' ' + cls.TOOLTIP_TEXT : '';
                             if (this.parent.cardSettings.showHeader) {
                                 let cardHeader: HTMLElement = createElement('div', { className: cls.CARD_HEADER_CLASS });
+                                let cardCaption: HTMLElement = createElement('div', { className: cls.CARD_HEADER_TEXT_CLASS });
                                 let cardText: HTMLElement = createElement('div', {
-                                    className: cls.CARD_HEADER_TEXT_CLASS + tooltipClass,
+                                    className: cls.CARD_HEADER_TITLE_CLASS + tooltipClass,
                                     innerHTML: data[this.parent.cardSettings.headerField] || ''
                                 });
-                                cardHeader.appendChild(cardText);
+                                cardHeader.appendChild(cardCaption);
+                                cardCaption.appendChild(cardText);
                                 cardElement.appendChild(cardHeader);
                             }
-                            let cardContent: HTMLElement = createElement('div', { className: cls.CARD_CONTENT_CLASS });
-                            let cardText: HTMLElement = createElement('div', {
-                                className: cls.CARD_CONTENT_TEXT_CLASS + tooltipClass,
+                            let cardContent: HTMLElement = createElement('div', {
+                                className: cls.CARD_CONTENT_CLASS + tooltipClass,
                                 innerHTML: data[this.parent.cardSettings.contentField] || ''
                             });
-                            cardContent.appendChild(cardText);
                             cardElement.appendChild(cardContent);
                         }
                         let args: CardRenderedEventArgs = { data: data, element: cardElement, cancel: false };
@@ -277,10 +289,6 @@ export class LayoutRender extends MobileLayout {
                         });
                     }
                 }
-            }
-            if (swimlaneRows.length > 0 && this.parent.swimlaneSettings.showItemCount && !this.parent.swimlaneSettings.template) {
-                let localeText: string = this.parent.localeObj.getConstant('items');
-                swimlaneRows[index].querySelector('.' + cls.SWIMLANE_ITEM_COUNT).innerHTML = '- ' + dataCount.toString() + ' ' + localeText;
             }
             if (dataCount === 0) {
                 removeTrs.push(tr);
@@ -340,7 +348,7 @@ export class LayoutRender extends MobileLayout {
     }
 
     private createStackedRow(rows: StackedHeadersModel[]): HTMLElement {
-        let tr: HTMLElement = createElement('tr', { className: cls.HEADER_ROW_CLASS + ' e-stacked-header-row' });
+        let tr: HTMLElement = createElement('tr', { className: cls.HEADER_ROW_CLASS + ' ' + cls.STACKED_HEADER_ROW_CLASS });
         let stackedHeaders: string[] = [];
         this.parent.columns.forEach((column: ColumnsModel) => {
             let headerText: string = '';
@@ -362,7 +370,7 @@ export class LayoutRender extends MobileLayout {
             }
             let div: HTMLElement = createElement('div', { className: cls.HEADER_TEXT_CLASS, innerHTML: stackedHeaders[h] });
             let th: HTMLElement = createElement('th', {
-                className: cls.HEADER_CELLS_CLASS + ' e-stacked-header-cell',
+                className: cls.HEADER_CELLS_CLASS + ' ' + cls.STACKED_HEADER_CELL_CLASS,
                 attrs: { 'colspan': colSpan.toString() }
             });
             tr.appendChild(th).appendChild(div);
@@ -383,8 +391,9 @@ export class LayoutRender extends MobileLayout {
             }
             let cardWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_CELLS_CLASS));
             cardWrappers.forEach((cell: HTMLElement) => {
-                if (!cell.classList.contains(cls.MULTI_CLONE_CONTENT_CELL)) {
-                    (cell.querySelector('.' + cls.CARD_WRAPPER_CLASS) as HTMLElement).style.height = formatUnit(height);
+                let cardWrapper: HTMLElement = cell.querySelector('.' + cls.CARD_WRAPPER_CLASS);
+                if (!cardWrapper.classList.contains(cls.MULTI_CARD_WRAPPER)) {
+                    cardWrapper.style.height = formatUnit(height);
                     EventHandler.add(cell, 'touchmove', this.onAdaptiveScroll, this);
                 }
             });
@@ -486,21 +495,37 @@ export class LayoutRender extends MobileLayout {
         });
     }
 
+    private getColumnData(columnValue: string, dataSource: Object[] = this.parent.kanbanData): Object[] {
+        let cardData: Object[] = [];
+        let columnKeys: string[] = columnValue.split(',');
+        for (let key of columnKeys) {
+            let keyData: Object[] = dataSource.filter((cardObj: { [key: string]: Object }) =>
+                cardObj[this.parent.keyField] === key.trim());
+            cardData = cardData.concat(keyData);
+        }
+        return cardData;
+    }
+
     private getColumnCards(): { [key: string]: Object[] } {
         let columnData: { [key: string]: Object[] } = {};
         this.columnKeys = [];
         this.parent.columns.forEach((column: ColumnsModel) => {
-            let cardData: Object[] = [];
-            let columnKeys: string[] = column.keyField.split(',');
-            for (let key of columnKeys) {
-                this.columnKeys.push(key.trim());
-                let keyData: Object[] = this.parent.kanbanData.filter((cardObj: { [key: string]: Object }) =>
-                    cardObj[this.parent.keyField] === key.trim());
-                cardData = cardData.concat(keyData);
-            }
+            this.columnKeys = this.columnKeys.concat(column.keyField.split(',').map((e: string) => e.trim()));
+            let cardData: Object[] = this.getColumnData(column.keyField);
             columnData[column.keyField] = cardData;
         });
         return columnData;
+    }
+
+    private getSwimlaneCards(): { [key: string]: Object[] } {
+        let swimlaneData: { [key: string]: Object[] } = {};
+        if (this.parent.swimlaneSettings.keyField) {
+            this.kanbanRows.forEach((row: HeaderArgs) =>
+                swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: { [key: string]: Object }) =>
+                    this.columnKeys.indexOf(<string>obj[this.parent.keyField]) > -1 &&
+                    obj[this.parent.swimlaneSettings.keyField] === row.keyField));
+        }
+        return swimlaneData;
     }
 
     private wireEvents(element?: HTMLElement, action?: string): void {

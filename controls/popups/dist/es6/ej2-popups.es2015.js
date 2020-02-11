@@ -1863,7 +1863,8 @@ let Dialog = class Dialog extends Component {
             this.dlgContainer = this.element.parentElement;
             this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
         }
-        if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true) {
+        if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true
+            && !isNullOrUndefined(this.element.parentElement)) {
             let parentEle = this.isModal ? this.dlgContainer.parentElement : this.element.parentElement;
             this.refElement = this.createElement('div', { className: DLG_REF_ELEMENT });
             parentEle.insertBefore(this.refElement, (this.isModal ? this.dlgContainer : this.element));
@@ -2055,6 +2056,9 @@ let Dialog = class Dialog extends Component {
             this.element.insertBefore(this.contentEle, this.element.children[0]);
         }
         if (this.height === 'auto') {
+            if (!this.isBlazorServerRender() && Browser.isIE && this.element.style.width === '' && !isNullOrUndefined(this.width)) {
+                this.element.style.width = formatUnit(this.width);
+            }
             this.setMaxHeight();
         }
     }
@@ -2137,6 +2141,10 @@ let Dialog = class Dialog extends Component {
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
             (this.targetEle.offsetHeight - 20) + 'px' : (window.innerHeight - 20) + 'px';
         this.element.style.display = display;
+        if (Browser.isIE && this.height === 'auto' && !isNullOrUndefined(this.contentEle)
+            && this.element.offsetHeight < this.contentEle.offsetHeight) {
+            this.element.style.height = '100%';
+        }
     }
     setEnableRTL() {
         if (!this.isBlazorServerRender()) {
@@ -2552,7 +2560,7 @@ let Dialog = class Dialog extends Component {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             removeClass([this.element], this.cssClass.split(' '));
         }
-        if (!isNullOrUndefined(this.refElement)) {
+        if (!isNullOrUndefined(this.refElement) && !isNullOrUndefined(this.refElement.parentElement)) {
             this.refElement.parentElement.insertBefore((this.isModal ? this.dlgContainer : this.element), this.refElement);
             detach(this.refElement);
             this.refElement = undefined;
@@ -4148,16 +4156,18 @@ let Tooltip = class Tooltip extends Component {
      * @memberof Tooltip
      */
     destroy() {
-        super.destroy();
+        if (!isBlazor()) {
+            super.destroy();
+            if (this.popupObj) {
+                this.popupObj.destroy();
+            }
+            if (this.tooltipEle) {
+                remove(this.tooltipEle);
+            }
+        }
         removeClass([this.element], ROOT$1);
         this.unwireEvents(this.opensOn);
         this.unwireMouseEvents(this.element);
-        if (this.popupObj) {
-            this.popupObj.destroy();
-        }
-        if (this.tooltipEle) {
-            remove(this.tooltipEle);
-        }
         this.tooltipEle = null;
         this.popupObj = null;
     }

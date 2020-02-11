@@ -1,5 +1,6 @@
-import { closest, classList, createElement, remove, addClass, removeClass,
-         isNullOrUndefined, Base, formatUnit } from '@syncfusion/ej2-base';
+import {
+    closest, classList, createElement, remove, addClass, removeClass, isNullOrUndefined, Base, formatUnit
+} from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardClickEventArgs, ActionEventArgs } from '../base/interface';
 import { ColumnsModel } from '../models';
@@ -104,7 +105,6 @@ export class Action {
 
     public columnToggle(target: HTMLTableHeaderCellElement): void {
         let colIndex: number = target.cellIndex;
-        let headerLimits: HTMLElement = target.querySelector('.' + cls.LIMITS_CLASS);
         let targetRow: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
         let colSelector: string = `.e-header-table col:nth-child(${colIndex + 1}),.e-content-table col:nth-child(${colIndex + 1})`;
         let targetIcon: Element = target.querySelector('.' + cls.COLUMN_EXPAND + ',.' + cls.COLUMN_COLLAPSE);
@@ -112,31 +112,20 @@ export class Action {
         if (target.classList.contains(cls.COLLAPSED_CLASS)) {
             removeClass(colGroup, cls.COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
-                colGroup.forEach((col: HTMLElement) => {
-                    col.style.width = formatUnit(this.parent.layoutModule.getWidth());
-                });
+                colGroup.forEach((col: HTMLElement) => col.style.width = formatUnit(this.parent.layoutModule.getWidth()));
             }
             classList(targetIcon, [cls.COLUMN_EXPAND], [cls.COLUMN_COLLAPSE]);
             for (let row of targetRow) {
                 let targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}:nth-child(${colIndex + 1})`);
                 removeClass([targetCol, target], cls.COLLAPSED_CLASS);
                 remove(targetCol.querySelector('.' + cls.COLLAPSE_HEADER_TEXT));
-                let limitEle: Element = targetCol.querySelector('.' + cls.LIMITS_CLASS);
-                if (limitEle) {
-                    removeClass([limitEle], cls.HIDE_LIMITS);
-                }
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
-            if (headerLimits) {
-                removeClass([headerLimits], cls.HIDE_LIMITS);
-            }
             (this.parent.columns[colIndex] as Base<HTMLElement>).setProperties({ isExpanded: true }, true);
         } else {
             addClass(colGroup, cls.COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
-                colGroup.forEach((col: HTMLElement) => {
-                    col.style.width = formatUnit(events.toggleWidth);
-                });
+                colGroup.forEach((col: HTMLElement) => col.style.width = formatUnit(events.toggleWidth));
             }
             classList(targetIcon, [cls.COLUMN_COLLAPSE], [cls.COLUMN_EXPAND]);
             for (let row of targetRow) {
@@ -148,13 +137,6 @@ export class Action {
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], cls.COLLAPSED_CLASS);
-                let limitEle: Element = targetCol.querySelector('.' + cls.LIMITS_CLASS);
-                if (limitEle) {
-                    addClass([limitEle], cls.HIDE_LIMITS);
-                }
-            }
-            if (headerLimits) {
-                addClass([headerLimits], cls.HIDE_LIMITS);
             }
             this.columnToggleArray.push(target.getAttribute('data-key'));
             (this.parent.columns[colIndex] as Base<HTMLElement>).setProperties({ isExpanded: false }, true);

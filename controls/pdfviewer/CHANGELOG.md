@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-## 17.4.47 (2020-02-05)
+## 17.4.49 (2020-02-11)
+
+### PDF Viewer
+
+#### New Features
+
+- `#235592` - Provided the support for setting the lower zoomfactor value to the PDF Viewer control.
+- `#259521` - Provided the support for importing the form fields data from JSON object.
+- `#261558` - Provided the support for customizing the distance measurement annotation leader length property.
+- `#256687` - Provided the support for setting the custom data for annotation objects.
+- `#252340` - Provided the support for setting the minimum or maximum size and isLock properties at individual annotation level.
+- `#262008` - Exposed the event for notifying annotation mouse over action.
+- `#F149148` - Provided the binding support for the enableFormFields property.
+
+#### Bug Fixes
+
+- `#262525` – The render PDF pages method triggers properly for the provided PDF document.
+- `#262692` - The text markup resizer position is now updated properly for the provided document.
+- `#262692` - The text content bounds are now rendered properly for the provided document.
 
 ### PDF Viewer
 

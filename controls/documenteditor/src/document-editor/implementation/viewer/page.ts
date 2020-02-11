@@ -2,7 +2,6 @@ import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
 import { WidthType, WColor, AutoFitType } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
-import { LayoutViewer } from './viewer';
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import { ElementInfo, HelperMethods, Point, WidthInfo } from '../editor/editor-helper';
@@ -10,6 +9,7 @@ import { HeaderFooterType, TabLeader } from '../../base/types';
 import { TextPosition } from '..';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { TextHelper } from './text-helper';
+import { LayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 /** 
  * @private
  */
@@ -49,7 +49,21 @@ export class Rect {
         this.height = height;
     }
 }
-
+/**
+ * @private
+ */
+export class Padding {
+    public right: number = 10;
+    public left: number = 10;
+    public top: number = 10;
+    public bottom: number = 10;
+    constructor(right: number, left: number, top: number, bottom: number) {
+        this.right = right;
+        this.left = left;
+        this.top = top;
+        this.bottom = bottom;
+    }
+}
 /** 
  * @private
  */
@@ -485,7 +499,7 @@ export abstract class BlockContainer extends Widget {
      * @private
      */
     public getHierarchicalIndex(hierarchicalIndex: string): string {
-        let viewer: LayoutViewer = undefined;
+        let documentHelper: DocumentHelper = undefined;
         let node: BlockContainer = this;
         if (node instanceof BodyWidget) {
             hierarchicalIndex = node.index + ';' + hierarchicalIndex;
@@ -497,8 +511,8 @@ export abstract class BlockContainer extends Widget {
             }
         }
         if (!isNullOrUndefined(node.page)) {
-            viewer = this.page.viewer;
-            let pageIndex: number = viewer.pages.indexOf(this.page);
+            documentHelper = this.page.documentHelper;
+            let pageIndex: number = documentHelper.pages.indexOf(this.page);
             return pageIndex + ';' + hierarchicalIndex;
         }
         return hierarchicalIndex;
@@ -524,12 +538,12 @@ export class BodyWidget extends BlockContainer {
      * @private
      */
     public getHierarchicalIndex(hierarchicalIndex: string): string {
-        let viewer: LayoutViewer = undefined;
+        let documentHelper: DocumentHelper = undefined;
         let node: BodyWidget = this;
         hierarchicalIndex = node.index + ';' + hierarchicalIndex;
         if (!isNullOrUndefined(node.page)) {
-            viewer = this.page.viewer;
-            let pageIndex: number = viewer.pages.indexOf(this.page);
+            documentHelper = this.page.documentHelper;
+            let pageIndex: number = documentHelper.pages.indexOf(this.page);
             return pageIndex + ';' + hierarchicalIndex;
         }
         return hierarchicalIndex;
@@ -808,14 +822,12 @@ export abstract class BlockWidget extends Widget {
     public getContainerWidth(): number {
         if (this.isInsideTable) {
             return this.associatedCell.getCellWidth();
-        }
-        else {
+        } else {
             let bodyWidget: BlockContainer = this.bodyWidget;
             let sectionFormat: WSectionFormat = bodyWidget.sectionFormat;
             return sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin);
         }
     }
-
     /**
      * @private
      */
@@ -1017,7 +1029,7 @@ export class ParagraphWidget extends BlockWidget {
                         matchedValue = matchedValue + text;
                     }
                     if (text !== '') {
-                        width += this.bodyWidget.page.viewer.textHelper.getWidth(text, span.characterFormat);
+                        width += this.bodyWidget.page.documentHelper.textHelper.getWidth(text, span.characterFormat);
                     }
                     if (matchedValue === match[0]) {
                         break;
@@ -1053,7 +1065,7 @@ export class ParagraphWidget extends BlockWidget {
         // tslint:disable-next-line:no-constant-condition
         do {
             if (element instanceof TextElementBox && element.text !== '') {
-                width += this.bodyWidget.page.viewer.textHelper.getWidth(element.text, element.characterFormat);
+                width += this.bodyWidget.page.documentHelper.textHelper.getWidth(element.text, element.characterFormat);
             } else if (element instanceof FieldElementBox && element.fieldType === 0) {
                 let fieldBegin: FieldElementBox = element as FieldElementBox;
                 if (fieldBegin.fieldEnd != null) {
@@ -1536,7 +1548,7 @@ export class TableWidget extends BlockWidget {
     public isAutoFit(): boolean {
         let bodyWidget: BlockContainer = this.bodyWidget;
         if (!isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.page)) {
-            return bodyWidget.page.viewer.layout.getParentTable(this).tableFormat.allowAutoFit;
+            return bodyWidget.page.documentHelper.layout.getParentTable(this).tableFormat.allowAutoFit;
         }
         return false;
     }
@@ -1557,7 +1569,12 @@ export class TableWidget extends BlockWidget {
         let isAutoFit: boolean = this.tableFormat.allowAutoFit;
         // For continuous layout, window width should be considered. 
         // If preferred width exceeds this limit, it can take upto maximum of 2112 pixels (1584 points will be assigned by Microsoft Word).
-        containerWidth = this.getOwnerWidth(true);
+        //tslint:disable-next-line:max-line-length
+        if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && isAutoFit && !this.isInsideTable)) {
+            containerWidth = HelperMethods.convertPixelToPoint(this.bodyWidget.page.viewer.clientArea.width - this.bodyWidget.page.viewer.padding.right * 3);
+        } else {
+            containerWidth = this.getOwnerWidth(true);
+        }
         let isZeroWidth: boolean = (isAutoWidth && this.tableFormat.preferredWidth === 0 && !isAutoFit);
         tableWidth = this.getTableClientWidth(containerWidth);
         if (isZeroWidth && !this.isDefaultFormatUpdated) {
@@ -3428,11 +3445,11 @@ export class LineWidget implements IWidget {
         let startElement: ElementBox = this.children[this.children.length - 1] as ElementBox;
         let endElement: ElementBox;
         let element: ElementBox = startElement;
-        let viewer: LayoutViewer = this.paragraph.bodyWidget.page.viewer;
-        let textHelper: TextHelper = viewer.textHelper;
+        let documentHelper: DocumentHelper = this.paragraph.bodyWidget.page.documentHelper;
+        let textHelper: TextHelper = documentHelper.textHelper;
         let isApplied: boolean = false;
         let count: number = 0;
-        let lineLength: number = viewer.selection.getLineLength(this);
+        let lineLength: number = documentHelper.selection.getLineLength(this);
         let validOffset: number = 0;
         while (element) {
             if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
@@ -3726,7 +3743,7 @@ export abstract class ElementBox {
     /**
      * @private
      */
-    public linkFieldCharacter(viewer: LayoutViewer): void {
+    public linkFieldCharacter(documentHelper: DocumentHelper): void {
         if (!(this instanceof FieldElementBox)) {
             return;
         }
@@ -3734,8 +3751,8 @@ export abstract class ElementBox {
             let fieldBegin: FieldElementBox = this as FieldElementBox;
             if (isNullOrUndefined(fieldBegin.fieldEnd)) {
                 this.linkFieldTraversingForward(this.line, fieldBegin, fieldBegin);
-                if (viewer.fields.indexOf(fieldBegin) === -1) {
-                    viewer.fields.push(fieldBegin);
+                if (documentHelper.fields.indexOf(fieldBegin) === -1) {
+                    documentHelper.fields.push(fieldBegin);
                 }
             }
         } else if (this.fieldType === 2) {
@@ -4075,6 +4092,10 @@ export class TextElementBox extends ElementBox {
     /**
      * @private
      */
+    public trimEndWidth: number = 0;
+    /**
+     * @private
+     */
     public errorCollection?: ErrorTextElementBox[];
     /**
      * @private
@@ -4388,6 +4409,10 @@ export class ListTextElementBox extends ElementBox {
      * @private
      */
     public text: string;
+    /**
+     * @private
+     */
+    public trimEndWidth: number = 0;
     /**
      * @private
      */
@@ -6160,19 +6185,19 @@ export class CommentCharacterElementBox extends ElementBox {
             this.commentMark.appendChild(span);
         }
         if (this.line && isNullOrUndefined(this.commentMark.parentElement)) {
-            let viewer: LayoutViewer = this.line.paragraph.bodyWidget.page.viewer;
-            viewer.pageContainer.appendChild(this.commentMark);
+            let documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
+            documentHelper.pageContainer.appendChild(this.commentMark);
             this.commentMark.addEventListener('click', this.selectComment.bind(this));
         }
     }
 
     public selectComment(): void {
-        let viewer: LayoutViewer = this.line.paragraph.bodyWidget.page.viewer;
-        if (viewer.owner) {
-            if (!viewer.owner.commentReviewPane.commentPane.isEditMode) {
-                viewer.selectComment(this.comment);
+        let documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
+        if (documentHelper.owner) {
+            if (!documentHelper.owner.commentReviewPane.commentPane.isEditMode) {
+                documentHelper.selectComment(this.comment);
             } else {
-                viewer.owner.showComments = true;
+                documentHelper.owner.showComments = true;
             }
         }
     }
@@ -6293,7 +6318,7 @@ export class Page {
      * Specifies the Viewer
      * @private
      */
-    public viewer: LayoutViewer;
+    public documentHelper: DocumentHelper;
     /**
      * Specifies the Bonding Rectangle
      * @private
@@ -6325,12 +6350,13 @@ export class Page {
      * 
      */
     public allowNextPageRendering: boolean = true;
+
     /**
      * @private
      */
     get index(): number {
-        if (this.viewer) {
-            return this.viewer.pages.indexOf(this);
+        if (this.documentHelper) {
+            return this.documentHelper.pages.indexOf(this);
         }
         return -1;
     }
@@ -6340,7 +6366,7 @@ export class Page {
     get previousPage(): Page {
         let index: number = this.index;
         if (index > 0) {
-            return this.viewer.pages[index - 1];
+            return this.documentHelper.pages[index - 1];
         }
         return undefined;
     }
@@ -6349,8 +6375,8 @@ export class Page {
      */
     get nextPage(): Page {
         let index: number = this.index;
-        if (index < this.viewer.pages.length - 1) {
-            return this.viewer.pages[index + 1];
+        if (index < this.documentHelper.pages.length - 1) {
+            return this.documentHelper.pages[index + 1];
         }
         return undefined;
     }
@@ -6366,34 +6392,41 @@ export class Page {
     /** 
      * Initialize the constructor of Page
      */
-    constructor() {
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
         // let text: string = 'DocumentEditor';
+
     }
+    get viewer(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
+    }
+
     public destroy(): void {
         if (this.headerWidget) {
-            if (this.viewer && this.viewer.owner.editor) {
-                this.viewer.owner.editor.removeFieldInWidget(this.headerWidget);
+            if (this.viewer && this.documentHelper.owner.editor) {
+                this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidget);
             }
             this.headerWidget.destroy();
         }
         this.headerWidget = undefined;
         if (this.footerWidget) {
-            if (this.viewer && this.viewer.owner.editor) {
-                this.viewer.owner.editor.removeFieldInWidget(this.footerWidget);
+            if (this.viewer && this.documentHelper.owner.editor) {
+                this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidget);
             }
             this.footerWidget.destroy();
         }
         this.footerWidget = undefined;
         this.bodyWidgets = [];
         this.bodyWidgets = undefined;
-        if (!isNullOrUndefined(this.viewer)) {
-            if (!isNullOrUndefined(this.viewer.pages)) {
-                this.viewer.removePage(this);
+        if (!isNullOrUndefined(this.documentHelper)) {
+            if (!isNullOrUndefined(this.documentHelper.pages)) {
+                this.documentHelper.removePage(this);
             }
         }
-        this.viewer = undefined;
+        this.documentHelper = undefined;
     }
 }
+
 /** 
  * @private
  */

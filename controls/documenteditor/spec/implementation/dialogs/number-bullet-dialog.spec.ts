@@ -31,12 +31,12 @@ describe('NumberBullet dialog', () => {
         editor = new DocumentEditor({
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        numBulletDialog = new BulletsAndNumberingDialog(editor.viewer);
+        numBulletDialog = new BulletsAndNumberingDialog(editor.documentHelper);
         menu = editor.contextMenuModule;
     });
     afterAll((done) => {
@@ -77,7 +77,7 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.onCancelButtonClick();
@@ -86,7 +86,7 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.closeNumberingBulletDialog();
@@ -95,79 +95,79 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-list-numbered-none').item(0).dispatchEvent(new Event('click'));
+        editor.documentHelper.dialog.element.getElementsByClassName('e-de-list-numbered-none').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-number-dot', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-list-numbered-number-dot').item(0).dispatchEvent(new Event('click'));
+        editor.documentHelper.dialog.element.getElementsByClassName('e-de-list-numbered-number-dot').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-number-brace', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-list-numbered-number-brace').item(0).dispatchEvent(new Event('click'));
+        editor.documentHelper.dialog.element.getElementsByClassName('e-de-list-numbered-number-brace').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-up-roman', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-list-numbered-up-roman').item(0).dispatchEvent(new Event('click'));
+        editor.documentHelper.dialog.element.getElementsByClassName('e-de-list-numbered-up-roman').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-up-letter', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-list-numbered-up-letter').item(0).dispatchEvent(new Event('click'));
+        editor.documentHelper.dialog.element.getElementsByClassName('e-de-list-numbered-up-letter').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-low-letter-brace', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-list-numbered-low-letter-brace').item(0).dispatchEvent(new Event('click'));
+        editor.documentHelper.dialog.element.getElementsByClassName('e-de-list-numbered-low-letter-brace').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-numbered-low-letter-dot', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-numbered-low-letter-dot').item(0).dispatchEvent(new Event('click'));
+        editor.documentHelper.dialog.element.getElementsByClassName('e-de-numbered-low-letter-dot').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-numbered-low-roman', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-list-numbered-low-roman').item(0).dispatchEvent(new Event('click'));
+        editor.documentHelper.dialog.element.getElementsByClassName('e-de-list-numbered-low-roman').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-icon-bullet-list-none', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-none').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
@@ -176,7 +176,7 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-dot').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
@@ -185,7 +185,7 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-circle').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
@@ -194,7 +194,7 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-square').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
@@ -203,7 +203,7 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-flower').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
@@ -212,7 +212,7 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-arrow').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
@@ -221,7 +221,7 @@ describe('NumberBullet dialog', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
         numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-tick').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();

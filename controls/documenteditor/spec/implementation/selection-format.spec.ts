@@ -180,10 +180,10 @@ describe('Selection Format validation, Paragraph Format validation- 4', () => {
 //         document.body.appendChild(ele);
 //         DocumentEditor.Inject(Editor, Selection);
 //         editor = new DocumentEditor({ enableEditor: true,enableSelection: true, isReadOnly: false });
-//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
 //         editor.appendTo('#container');
 //     });
 //     afterAll((done) => {
@@ -202,18 +202,18 @@ describe('Selection Format validation, Paragraph Format validation- 4', () => {
 //         let event: any;
 
 //         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-//         editor.viewer.onKeyDownInternal(event);
+//         editor.documentHelper.onKeyDownInternal(event);
 //         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-//         editor.viewer.onKeyDownInternal(event);
+//         editor.documentHelper.onKeyDownInternal(event);
 //         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-//         editor.viewer.onKeyDownInternal(event);
+//         editor.documentHelper.onKeyDownInternal(event);
 //         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-//         editor.viewer.onKeyDownInternal(event);
+//         editor.documentHelper.onKeyDownInternal(event);
 //         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-//         editor.viewer.onKeyDownInternal(event);
+//         editor.documentHelper.onKeyDownInternal(event);
 //         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-//         editor.viewer.onKeyDownInternal(event);
+//         editor.documentHelper.onKeyDownInternal(event);
 //         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-//         editor.viewer.onKeyDownInternal(event);
+//         editor.documentHelper.onKeyDownInternal(event);
 //     });
 // });

@@ -1107,9 +1107,9 @@ export class QRCode {
                     numberInBool = this.intToBoolArray(number, 11);
                     number = 0;
                     for (let x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
-                    numberInString = null;
+                    numberInString = '';
                 }
-                if (i !== 1 && numberInString !== null) {
+                if (i !== 1 && numberInString !== '') {
                     if (i + 1 === dataStringArray.length && numberInString.length === 1) {
                         number = this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[i]);
                         numberInBool = this.intToBoolArray(number, 6);

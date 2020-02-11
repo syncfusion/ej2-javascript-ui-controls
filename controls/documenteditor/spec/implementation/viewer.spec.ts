@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { PageLayoutViewer } from '../../src/index';
+import { PageLayoutViewer, DocumentHelper } from '../../src/index';
 import { Editor } from '../../src/index';
 import { Selection } from '../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
@@ -38,18 +38,18 @@ function setMouseCoordinates(eventarg: any, x: number, y: number): Object {
 
 describe('double tap and trible tap testing', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:100%' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -66,7 +66,7 @@ describe('double tap and trible tap testing', () => {
         let event: any = getEventObject('MouseEvent', 'dblclick');
         event = setMouseCoordinates(event, 345, 130);
         editor.selection.moveToLineStart();
-        viewer.onDoubleTap(event);
+        documentHelper.onDoubleTap(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(11);
     });
@@ -74,18 +74,18 @@ describe('double tap and trible tap testing', () => {
 
 describe('Double tap touch testing', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -104,15 +104,15 @@ describe('Double tap touch testing', () => {
         touches.push(clientX_Y);
         changedTouches.push(clientX_Y);
         touchevent = { touches, changedTouches, preventDefault: function () { } };
-        viewer.isTouchInput = true;
-        viewer.onTouchStartInternal(touchevent);
-        viewer.onTouchMoveInternal(touchevent);
-        viewer.onTouchUpInternal(touchevent);
-        (viewer as any).tapCount = 1;
-        viewer.onTouchStartInternal(touchevent);
-        viewer.onTouchMoveInternal(touchevent);
-        viewer.onTouchUpInternal(touchevent);
-        expect((viewer as any).tapCount).toBe(2);
+        documentHelper.isTouchInput = true;
+        documentHelper.onTouchStartInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchUpInternal(touchevent);
+        (editor.documentHelper).tapCount = 1;
+        documentHelper.onTouchStartInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchUpInternal(touchevent);
+        expect((editor.documentHelper).tapCount).toBe(2);
     });
     it('Double tap validation', () => {
         editor.openBlank();
@@ -120,7 +120,7 @@ describe('Double tap touch testing', () => {
         let event: any = getEventObject('MouseEvent', 'dblclick');
         event = setMouseCoordinates(event, 345, 160);
         editor.selection.moveToLineStart();
-        viewer.onDoubleTap(event);
+        documentHelper.onDoubleTap(event);
         expect(editor.selection.text).toBe('Syncfusion ');
     })
     it('Triple tap touch', () => {
@@ -132,32 +132,32 @@ describe('Double tap touch testing', () => {
         touches.push(clientX_Y);
         changedTouches.push(clientX_Y);
         touchevent = { touches, changedTouches, preventDefault: function () { } };
-        viewer.isTouchInput = true;
-        viewer.onTouchStartInternal(touchevent);
-        viewer.onTouchMoveInternal(touchevent);
-        viewer.onTouchUpInternal(touchevent);
-        (viewer as any).tapCount = 2;
-        viewer.onTouchStartInternal(touchevent);
-        viewer.onTouchMoveInternal(touchevent);
-        viewer.onTouchUpInternal(touchevent);
-        expect((viewer as any).tapCount).toBe(1);
+        documentHelper.isTouchInput = true;
+        documentHelper.onTouchStartInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchUpInternal(touchevent);
+        (editor.documentHelper).tapCount = 2;
+        documentHelper.onTouchStartInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchUpInternal(touchevent);
+        expect((editor.documentHelper).tapCount).toBe(1);
     });
 });
 
 describe('update cursor position validation', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:100%' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -178,12 +178,12 @@ describe('update cursor position validation', () => {
 
         let event: any = {
             preventDefault: () => { return true },
-            offsetX: viewer.currentPage.boundingRectangle.x + editor.selection.start.location.x,
-            offsetY: editor.selection.start.location.y - viewer.viewerContainer.scrollTop + viewer.currentPage.boundingRectangle.y,
+            offsetX: documentHelper.currentPage.boundingRectangle.x + editor.selection.start.location.x,
+            offsetY: editor.selection.start.location.y - documentHelper.viewerContainer.scrollTop + documentHelper.currentPage.boundingRectangle.y,
             ctrlKey: true
         };
-        viewer.onMouseMoveInternal(event);
-        expect(viewer.viewerContainer.style.cursor).toBe('pointer');
+        documentHelper.onMouseMoveInternal(event);
+        expect(documentHelper.viewerContainer.style.cursor).toBe('pointer');
     });
 });
 
@@ -194,18 +194,20 @@ function getImageString(): string {
 describe('Branch validation', () => {
     let editor: DocumentEditor;
     let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         document.body.innerHTML = '';
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:600px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory, ContextMenu);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -218,14 +220,14 @@ describe('Branch validation', () => {
     it('Hide Context menu on window resize', () => {
         editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
-        viewer.onDoubleTap({ offsetX: 10000, offsetY: 10000 } as any);
+        documentHelper.onDoubleTap({ offsetX: 10000, offsetY: 10000 } as any);
         expect(editor.selection.text).toBe('Syncfusion Software\r');
     });
     it('Fit full page validation', () => {
         viewer.onPageFitTypeChanged('FitOnePage');
-        let zoomFactor: number = viewer.zoomFactor;
+        let zoomFactor: number = documentHelper.zoomFactor;
         viewer.onPageFitTypeChanged('FitOnePage');
-        expect(zoomFactor).toBe(viewer.zoomFactor);
+        expect(zoomFactor).toBe(documentHelper.zoomFactor);
     });
     it('Get Current header footer validation', () => {
         let paragraph: ParagraphWidget = new ParagraphWidget();
@@ -244,7 +246,7 @@ describe('Branch validation', () => {
         let sections: BodyWidget[] = [];
         sections.push(section);
         sections.push(section2);
-        viewer.onDocumentChanged(sections);
+        documentHelper.onDocumentChanged(sections);
 
         expect(viewer.getHeaderFooterType(section, false)).toBe('FirstPageFooter');
         expect(viewer.getHeaderFooterType(section, true)).toBe('FirstPageHeader');
@@ -253,7 +255,7 @@ describe('Branch validation', () => {
 
     });
     it('Cursor over image testing', () => {
-        editor.viewer.zoomFactor = 1;
+        editor.documentHelper.zoomFactor = 1;
         let paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.index = 0;
         let line: LineWidget = new LineWidget(paragraph);
@@ -272,31 +274,31 @@ describe('Branch validation', () => {
         section.childWidgets.push(paragraph);
         let sections: BodyWidget[] = [];
         sections.push(section);
-        viewer.onDocumentChanged(sections);
+        documentHelper.onDocumentChanged(sections);
         let event: any = {
-            offsetX: 110 + viewer.currentPage.boundingRectangle.x,
-            offsetY: 110 + viewer.currentPage.boundingRectangle.y,
+            offsetX: 110 + documentHelper.currentPage.boundingRectangle.x,
+            offsetY: 110 + documentHelper.currentPage.boundingRectangle.y,
             ctrlKey: false
         };
-        (viewer as any).updateCursor(event);
+        (editor.documentHelper).updateCursor(event);
         // expect(viewer.viewerContainer.style.cursor).toBe('move');
     });
 });
 describe('Handle Key down', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         document.body.innerHTML = '';
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:600px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, ImageResizer);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableImageResizer: true, isReadOnly: false, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -308,12 +310,12 @@ describe('Handle Key down', () => {
     });
     it('Mouse down on image resizer area', () => {
         editor.openBlank();
-        viewer.editableDiv.innerHTML = 'S';
+        documentHelper.editableDiv.innerHTML = 'S';
         editor.editorModule.onTextInputInternal({} as any);
         editor.selection.selectAll();
         expect(editor.selectionModule.text).toBe('S\r');
         editor.editorModule.onBackSpace();
-        viewer.editableDiv.innerHTML = String.fromCharCode(160);
+        documentHelper.editableDiv.innerHTML = String.fromCharCode(160);
         editor.editorModule.onTextInputInternal({} as any);
         editor.selection.selectAll();
         expect(editor.selectionModule.text).not.toBe(String.fromCharCode(160) + '\r');
@@ -323,19 +325,19 @@ describe('Handle Key down', () => {
 
 describe('Key down validation', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         document.body.innerHTML = '';
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:600px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory, OptionsPane);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSearch: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -351,10 +353,10 @@ describe('Key down validation', () => {
             preventDefault: () => { return true; },
             ctrlKey: true
         }
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(editor.optionsPaneModule.optionsPane.style.display).not.toBe('none');
         event.which = 27;
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(editor.optionsPaneModule.optionsPane.style.display).toBe('none');
     });
     it('Create empty document', () => {
@@ -365,7 +367,7 @@ describe('Key down validation', () => {
         }
         let spy = jasmine.createSpy('documentchange');
         editor.documentChange = spy;
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(spy).toHaveBeenCalled();
     });
     it('shift end and home key validation', () => {
@@ -375,15 +377,15 @@ describe('Key down validation', () => {
             ctrlKey: true,
             shiftKey: true,
         }
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset).toBe(1);
         event.keyCode = 36;
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         event.keyCode = 40;
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         event.keyCode = 77;
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(0);
     });
 });
@@ -397,10 +399,10 @@ describe('Tab key validation list level', () => {
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -417,10 +419,10 @@ describe('Tab key validation list level', () => {
         editor.editorModule.insertText('Adventure Work Cycles');
         let prevLocation = editor.selection.start.location.x;
         event = { keyCode: 33, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(prevLocation).toBe(editor.selection.start.location.x);
         event = { keyCode: 34, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(prevLocation).toBe(editor.selection.start.location.x);
     });
     it('tab key validation', () => {
@@ -428,17 +430,17 @@ describe('Tab key validation list level', () => {
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(prevlocation).toBe(editor.selection.start.location.x);
     });
     it('Enter at empty list validation', () => {
@@ -453,18 +455,18 @@ describe('Tab key validation list level', () => {
 
 describe('Viewer API validation', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -479,19 +481,19 @@ describe('Viewer API validation', () => {
     });
 
     it('Key up validation', () => {
-        viewer.isControlPressed = true;
+        documentHelper.isControlPressed = true;
         let event: any = {
             preventDefault: () => { return true; },
             keyCode: 17,
         }
-        viewer.onKeyUpInternal(event);
-        expect(viewer.isControlPressed).toBe(false);
+        documentHelper.onKeyUpInternal(event);
+        expect(documentHelper.isControlPressed).toBe(false);
     });
     it('Pinch Zoom in validation', () => {
-        (viewer as any).onPinchInInternal();
-        expect(viewer.zoomFactor).toBe(0.99);
-        (viewer as any).onPinchOutInternal();
-        expect(viewer.zoomFactor).toBe(1);
+        (editor.documentHelper as any).onPinchInInternal();
+        expect(documentHelper.zoomFactor).toBe(0.99);
+        (editor.documentHelper as any).onPinchOutInternal();
+        expect(documentHelper.zoomFactor).toBe(1);
     });
     it('Delete API validation', () => {
         editor.editorModule.insertText('Syncfusion Software');
@@ -526,10 +528,10 @@ describe('Tab key validation with accept tab false', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -545,7 +547,7 @@ describe('Tab key validation with accept tab false', () => {
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(prevlocation).toBe(editor.selection.start.location.x);
     });
     it('shift tab key validation with accept tab false', () => {
@@ -553,7 +555,7 @@ describe('Tab key validation with accept tab false', () => {
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(prevlocation).toBe(editor.selection.start.location.x);
     });
     it('control tab key validation with accept tab false', () => {
@@ -561,25 +563,25 @@ describe('Tab key validation with accept tab false', () => {
         editor.editor.applyNumbering('%1.', 'Arabic');
         let prevlocation = editor.selection.start.location.x;
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(prevlocation).toBe(editor.selection.start.location.x);
     });
 
 });
 describe('Header footer maximum height validation', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -599,28 +601,28 @@ describe('Header footer maximum height validation', () => {
         editor.editor.onEnter();
         let event: any = getEventObject('MouseEvent', 'dblclick');
         event = setMouseCoordinates(event, 345, 80);
-        editor.viewer.onDoubleTap(event);
+        editor.documentHelper.onDoubleTap(event);
         for (let i = 0; i < 50; i++) {
             editor.editor.onEnter();
         }
-        expect(editor.viewer.pages.length).toBe(1);
-        expect((editor.viewer.pages[0].bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(450);
+        expect(editor.documentHelper.pages.length).toBe(1);
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(450);
     });
 });
 describe('Long Touch Testing', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:100%' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, ContextMenu);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableContextMenu: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
@@ -640,11 +642,11 @@ describe('Long Touch Testing', () => {
         touches.push(clientX_Y);
         changedTouches.push(clientX_Y);
         touchevent = { touches, changedTouches, preventDefault: function () { } };
-        viewer.isTouchInput = true;
-        viewer.onTouchStartInternal(touchevent);
-        viewer.onLongTouch(touchevent);
-        let selStart: string = viewer.selection.start.hierarchicalPosition;
-        let selEnd: string = viewer.selection.end.hierarchicalPosition;
+        documentHelper.isTouchInput = true;
+        documentHelper.onTouchStartInternal(touchevent);
+        documentHelper.onLongTouch(touchevent);
+        let selStart: string = documentHelper.selection.start.hierarchicalPosition;
+        let selEnd: string = documentHelper.selection.end.hierarchicalPosition;
         expect(selStart).not.toBe(selEnd);
-    });    
+    });
 });

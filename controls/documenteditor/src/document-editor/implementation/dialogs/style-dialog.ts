@@ -6,16 +6,17 @@ import { StyleType } from '../../base';
 import { BulletsAndNumberingDialog } from './index';
 import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
-import { LayoutViewer, WCharacterFormat, WParagraphFormat } from '../index';
+import { WCharacterFormat, WParagraphFormat } from '../index';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { DropDownButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Style dialog is used to create or modify styles.
  */
 export class StyleDialog {
-    private owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private target: HTMLElement = undefined;
     private styleType: DropDownList = undefined;
     private styleBasedOn: DropDownList = undefined;
@@ -54,8 +55,8 @@ export class StyleDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
     /**
      * @private
@@ -70,7 +71,7 @@ export class StyleDialog {
     public initStyleDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: StyleDialog = this;
         this.localObj = localValue;
-        let id: string = this.owner.owner.containerId + '_style';
+        let id: string = this.documentHelper.owner.containerId + '_style';
         this.target = createElement('div', { id: id, className: 'e-de-style-dialog' });
         let container: HTMLElement = createElement('div');
         // tslint:disable-next-line:max-line-length
@@ -83,7 +84,7 @@ export class StyleDialog {
         let name: HTMLElement = createElement('div', { className: 'e-de-style-name', innerHTML: localValue.getConstant('Name') + ':' });
         nameWholeDiv.appendChild(name);
         // tslint:disable-next-line:max-line-length
-        let nameValue: HTMLInputElement = createElement('input', { id: this.owner.owner.containerId + '_style_name', styles: 'width:210px;', className: 'e-input e-de-style-dlg-name-input' }) as HTMLInputElement;
+        let nameValue: HTMLInputElement = createElement('input', { id: this.documentHelper.owner.containerId + '_style_name', styles: 'width:210px;', className: 'e-input e-de-style-dlg-name-input' }) as HTMLInputElement;
         nameValue.addEventListener('keyup', this.updateOkButton);
         nameValue.addEventListener('input', this.updateOkButton);
         nameValue.addEventListener('blur', this.updateNextStyle);
@@ -180,9 +181,9 @@ export class StyleDialog {
         });
         formatBtn.style.height = '31px';
         parentDiv.appendChild(formatBtn);
-        let items: ItemModel[] = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
-        { text: localValue.getConstant('Paragraph') + '..', id: 'style_paragraph' },
-        { text: localValue.getConstant('Numbering') + '..', id: 'style_numbering' }];
+        let items: ItemModel[] = [{ text: localValue.getConstant('Font') + '...', id: 'style_font' },
+        { text: localValue.getConstant('Paragraph') + '...', id: 'style_paragraph' },
+        { text: localValue.getConstant('Numbering') + '...', id: 'style_numbering' }];
         this.styleDropdwn = new DropDownButton({
             items: items, cssClass: 'e-de-style-format-dropdwn', enableRtl: isRtl,
             beforeItemRender: (args: MenuEventArgs) => {
@@ -250,18 +251,18 @@ export class StyleDialog {
         let fontGroupButton: HTMLElement = createElement('div', { className: 'e-de-style-font-group-button' });
         parentDiv.appendChild(fontGroupButton);
         // tslint:disable-next-line:max-line-length
-        this.bold = this.createButtonElement(fontGroupButton, 'e-de-bold', 'e-de-style-bold-button-size', this.owner.owner.containerId + '_style_bold');
+        this.bold = this.createButtonElement(fontGroupButton, 'e-de-bold', 'e-de-style-bold-button-size', this.documentHelper.owner.containerId + '_style_bold');
         this.bold.addEventListener('click', this.setBoldProperty);
         // tslint:disable-next-line:max-line-length
-        this.italic = this.createButtonElement(fontGroupButton, 'e-de-italic', 'e-de-style-icon-button-size', this.owner.owner.containerId + '_style_italic');
+        this.italic = this.createButtonElement(fontGroupButton, 'e-de-italic', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_italic');
         this.italic.addEventListener('click', this.setItalicProperty);
         // tslint:disable-next-line:max-line-length
-        this.underline = this.createButtonElement(fontGroupButton, 'e-de-underline', 'e-de-style-icon-button-size', this.owner.owner.containerId + '_style_underline');
+        this.underline = this.createButtonElement(fontGroupButton, 'e-de-underline', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_underline');
         this.underline.addEventListener('click', this.setUnderlineProperty);
         let fontColorElement: HTMLElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
         parentDiv.appendChild(fontColorElement);
         // tslint:disable-next-line:max-line-length
-        this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', enableRtl: isRtl, change: this.fontColorUpdate, locale: this.owner.owner.locale });
+        this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale });
         this.fontColor.appendTo(fontColorElement);
     }
     private setBoldProperty = (): void => {
@@ -449,7 +450,7 @@ export class StyleDialog {
         let typedName: string = (args.srcElement as HTMLInputElement).value;
         // tslint:disable-next-line:max-line-length
         if (this.getTypeValue() === this.localObj.getConstant('Paragraph') && !isNullOrUndefined(typedName) && typedName !== '' && !this.isUserNextParaUpdated) {
-            let styles: string[] = this.owner.owner.viewer.styles.getStyleNames(this.getTypeValue());
+            let styles: string[] = this.documentHelper.styles.getStyleNames(this.getTypeValue());
             if (this.isEdit) {
                 styles = styles.filter((e: string) => e !== this.editStyleName);
             }
@@ -506,8 +507,8 @@ export class StyleDialog {
      * @private
      */
     public showFontDialog = (): void => {
-        if (!isNullOrUndefined(this.owner.owner.fontDialogModule)) {
-            this.owner.owner.showFontDialog(this.characterFormat);
+        if (!isNullOrUndefined(this.documentHelper.owner.fontDialogModule)) {
+            this.documentHelper.owner.showFontDialog(this.characterFormat);
         }
         this.updateCharacterFormat();
     }
@@ -515,15 +516,15 @@ export class StyleDialog {
      * @private
      */
     public showParagraphDialog = (): void => {
-        if (!isNullOrUndefined(this.owner.owner.paragraphDialogModule)) {
-            this.owner.owner.showParagraphDialog(this.paragraphFormat);
+        if (!isNullOrUndefined(this.documentHelper.owner.paragraphDialogModule)) {
+            this.documentHelper.owner.showParagraphDialog(this.paragraphFormat);
         }
     }
     /**
      * @private
      */
     public showNumberingBulletDialog = (): void => {
-        this.numberingBulletDialog = new BulletsAndNumberingDialog(this.owner.owner.viewer);
+        this.numberingBulletDialog = new BulletsAndNumberingDialog(this.documentHelper);
         if (this.style instanceof WParagraphStyle && (!isNullOrUndefined(this.style.paragraphFormat))) {
             // tslint:disable-next-line:max-line-length
             this.numberingBulletDialog.showNumberBulletDialog((this.style as WParagraphStyle).paragraphFormat.listFormat, this.abstractList);
@@ -533,25 +534,25 @@ export class StyleDialog {
      * @private
      */
     public show(styleName?: string, header?: string): void {
-        let localObj: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
+        let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         this.isEdit = (!isNullOrUndefined(styleName) && styleName.length > 0) ? true : false;
         this.editStyleName = styleName;
         this.abstractList = new WAbstractList();
         // tslint:disable-next-line:max-line-length
-        let style: WCharacterStyle | WParagraphStyle = this.owner.owner.viewer.styles.findByName(styleName) as WCharacterStyle | WParagraphStyle;
+        let style: WCharacterStyle | WParagraphStyle = this.documentHelper.styles.findByName(styleName) as WCharacterStyle | WParagraphStyle;
         this.style = !this.isEdit ? new WParagraphStyle() : style ? style : this.getStyle(styleName) as WCharacterStyle | WParagraphStyle;
-        localObj.setLocale(this.owner.owner.locale);
+        localObj.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initStyleDialog(localObj, this.owner.owner.enableRtl);
+            this.initStyleDialog(localObj, this.documentHelper.owner.enableRtl);
         }
         if (isNullOrUndefined(header)) {
             header = localObj.getConstant('Create New Style');
         }
-        this.owner.owner.viewer.dialog2.header = header;
-        this.owner.owner.viewer.dialog2.height = 'auto';
-        this.owner.owner.viewer.dialog2.width = 'auto';
-        this.owner.owner.viewer.dialog2.content = this.target;
-        this.owner.owner.viewer.dialog2.buttons = [{
+        this.documentHelper.dialog2.header = header;
+        this.documentHelper.dialog2.height = 'auto';
+        this.documentHelper.dialog2.width = 'auto';
+        this.documentHelper.dialog2.content = this.target;
+        this.documentHelper.dialog2.buttons = [{
             click: this.onOkButtonClick,
             buttonModel: { content: localObj.getConstant('Ok'), cssClass: 'e-flat e-style-okay', isPrimary: true }
         },
@@ -560,11 +561,11 @@ export class StyleDialog {
             buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-style-cancel' }
         }];
         this.toggleDisable();
-        this.owner.owner.viewer.dialog2.dataBind();
-        this.owner.owner.viewer.dialog2.beforeOpen = this.loadStyleDialog;
-        this.owner.owner.viewer.dialog2.close = this.closeStyleDialog;
-        this.owner.owner.viewer.dialog2.position = { X: 'center', Y: 'center' };
-        this.owner.owner.viewer.dialog2.show();
+        this.documentHelper.dialog2.dataBind();
+        this.documentHelper.dialog2.beforeOpen = this.loadStyleDialog;
+        this.documentHelper.dialog2.close = this.closeStyleDialog;
+        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog2.show();
     }
     /**
      * @private
@@ -572,14 +573,14 @@ export class StyleDialog {
     public onOkButtonClick = (): void => {
         let styleName: string = this.styleNameElement.value;
         if (styleName.length > 0) {
-            let style: WStyle = this.owner.owner.viewer.styles.findByName(styleName) as WStyle;
+            let style: WStyle = this.documentHelper.styles.findByName(styleName) as WStyle;
             let name: string;
             if (!isNullOrUndefined(style)) {
                 this.style.type = this.getTypeValue();
-                this.style.basedOn = this.owner.owner.viewer.styles.findByName(this.styleBasedOn.value as string) as WStyle;
+                this.style.basedOn = this.documentHelper.styles.findByName(this.styleBasedOn.value as string) as WStyle;
                 // tslint:disable-next-line:max-line-length
                 if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked Style')) {
-                    this.style.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value as string) as WStyle;
+                    this.style.next = this.documentHelper.styles.findByName(this.styleParagraph.value as string) as WStyle;
                     (this.style as WParagraphStyle).characterFormat.mergeFormat((style as WParagraphStyle).characterFormat);
                     (this.style as WParagraphStyle).paragraphFormat.mergeFormat((style as WParagraphStyle).paragraphFormat, true);
                     this.updateList();
@@ -592,21 +593,21 @@ export class StyleDialog {
                 name = style.name;
                 style = this.style;
 
-                this.owner.owner.isShiftingEnabled = true;
-                this.owner.owner.editorModule.layoutWholeDocument();
-                this.owner.owner.isShiftingEnabled = false;
+                this.documentHelper.owner.isShiftingEnabled = true;
+                this.documentHelper.owner.editorModule.layoutWholeDocument();
+                this.documentHelper.owner.isShiftingEnabled = false;
             } else {
                 /* tslint:disable-next-line:no-any */
                 let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
                 tmpStyle.copyStyle(this.style);
                 /* tslint:disable-next-line:no-any */
-                let basedOn: any = this.owner.owner.viewer.styles.findByName(this.styleBasedOn.value as string) as WStyle;
+                let basedOn: any = this.documentHelper.styles.findByName(this.styleBasedOn.value as string) as WStyle;
                 // tslint:disable-next-line:max-line-length
                 if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked Style')) {
                     if (styleName === this.styleParagraph.value) {
                         tmpStyle.next = tmpStyle;
                     } else {
-                        tmpStyle.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value as string) as WStyle;
+                        tmpStyle.next = this.documentHelper.styles.findByName(this.styleParagraph.value as string) as WStyle;
                     }
                     this.updateList();
                 }
@@ -616,11 +617,11 @@ export class StyleDialog {
                 tmpStyle.name = styleName;
                 tmpStyle.basedOn = basedOn;
                 /* tslint:disable-next-line:no-any */
-                this.owner.owner.viewer.styles.push(tmpStyle as any);
+                this.documentHelper.styles.push(tmpStyle as any);
                 name = styleName;
-                this.owner.owner.editorModule.applyStyle(name);
+                this.documentHelper.owner.editorModule.applyStyle(name);
             }
-            this.owner.owner.viewer.dialog2.hide();
+            this.documentHelper.dialog2.hide();
         } else {
             throw new Error('Enter valid Style name');
         }
@@ -631,21 +632,21 @@ export class StyleDialog {
     private updateList(): void {
         let listId: number = (this.style as WParagraphStyle).paragraphFormat.listFormat.listId;
         if (listId > -1) {
-            if (this.owner.owner.viewer.lists.filter((a: WList) => (a.listId === listId)).length === 0) {
-                this.owner.owner.viewer.lists.push((this.style as WParagraphStyle).paragraphFormat.listFormat.list);
+            if (this.documentHelper.lists.filter((a: WList) => (a.listId === listId)).length === 0) {
+                this.documentHelper.lists.push((this.style as WParagraphStyle).paragraphFormat.listFormat.list);
             } else {
-                this.owner.owner.viewer.lists = this.owner.owner.viewer.lists.filter((a: WList) => (a.listId !== listId));
-                this.owner.owner.viewer.lists.push((this.style as WParagraphStyle).paragraphFormat.listFormat.list);
+                this.documentHelper.lists = this.documentHelper.lists.filter((a: WList) => (a.listId !== listId));
+                this.documentHelper.lists.push((this.style as WParagraphStyle).paragraphFormat.listFormat.list);
             }
         }
         if (this.abstractList.abstractListId !== -1) {
-            this.owner.owner.viewer.abstractLists.push(this.abstractList);
+            this.documentHelper.abstractLists.push(this.abstractList);
         }
     }
     private createLinkStyle(name: string, isEdit?: boolean): WStyle {
         let charStyle: WCharacterStyle;
         if (isEdit) {
-            charStyle = this.owner.owner.viewer.styles.findByName((name + ' Char'), 'Character') as WCharacterStyle;
+            charStyle = this.documentHelper.styles.findByName((name + ' Char'), 'Character') as WCharacterStyle;
         } else {
             charStyle = new WCharacterStyle();
         }
@@ -654,13 +655,13 @@ export class StyleDialog {
         charStyle.characterFormat = this.style.characterFormat.cloneFormat();
         charStyle.basedOn = this.style.basedOn;
         if (!isEdit) {
-            this.owner.owner.viewer.styles.push(charStyle);
+            this.documentHelper.styles.push(charStyle);
         }
-        return this.owner.owner.viewer.styles.findByName(charStyle.name, 'Character') as WStyle;
+        return this.documentHelper.styles.findByName(charStyle.name, 'Character') as WStyle;
     }
     /* tslint:disable-next-line:no-any */
     private loadStyleDialog = (args: any): void => {
-        this.owner.owner.viewer.updateFocus();
+        this.documentHelper.updateFocus();
         this.isUserNextParaUpdated = false;
         /* tslint:disable-next-line:max-line-length */
         this.styleNameElement = this.target.getElementsByClassName('e-input e-de-style-dlg-name-input').item(0) as HTMLInputElement;
@@ -674,7 +675,7 @@ export class StyleDialog {
             name = this.editStyleName;
         }
         /* tslint:disable-next-line:max-line-length */
-        this.okButton = this.owner.dialog2.element.getElementsByClassName('e-flat e-style-okay').item(0) as HTMLButtonElement;
+        this.okButton = this.documentHelper.dialog2.element.getElementsByClassName('e-flat e-style-okay').item(0) as HTMLButtonElement;
         this.enableOrDisableOkButton();
         this.updateStyleNames(this.getTypeValue(), name);
         this.updateCharacterFormat(this.style.characterFormat);
@@ -787,7 +788,7 @@ export class StyleDialog {
         }
     }
     private updateStyleNames(type: StyleType, name?: string): void {
-        let styles: string[] = this.owner.owner.viewer.styles.getStyleNames(type);
+        let styles: string[] = this.documentHelper.styles.getStyleNames(type);
         this.styleParagraph.dataSource = styles;
         this.styleParagraph.index = null;
         if (name) {
@@ -822,12 +823,12 @@ export class StyleDialog {
             this.styleBasedOn.dataSource = styles;
             this.styleBasedOn.index = null;
             let basedOnIndex: number = 0;
-            if (this.owner.owner.selectionModule) {
+            if (this.documentHelper.owner.selectionModule) {
                 let styleName: string;
                 if (type === 'Character') {
-                    styleName = this.owner.owner.selection.characterFormat.styleName;
+                    styleName = this.documentHelper.owner.selection.characterFormat.styleName;
                 } else {
-                    styleName = this.owner.owner.selection.paragraphFormat.styleName;
+                    styleName = this.documentHelper.owner.selection.paragraphFormat.styleName;
                 }
                 basedOnIndex = styles.indexOf(styleName);
             }
@@ -845,11 +846,11 @@ export class StyleDialog {
 
     private getStyle(styleName: string): WStyle {
         /* tslint:disable-next-line:max-line-length */
-        if (isNullOrUndefined(this.owner.owner.viewer.styles.findByName(styleName))) {
+        if (isNullOrUndefined(this.documentHelper.styles.findByName(styleName))) {
             /* tslint:disable-next-line:max-line-length */
-            this.owner.owner.editor.createStyle(this.owner.owner.viewer.preDefinedStyles.get(styleName));
+            this.documentHelper.owner.editor.createStyle(this.documentHelper.preDefinedStyles.get(styleName));
         }
-        return this.owner.owner.viewer.styles.findByName(styleName) as WStyle;
+        return this.documentHelper.styles.findByName(styleName) as WStyle;
     }
     /**
      * @private
@@ -858,19 +859,19 @@ export class StyleDialog {
         if (!this.isEdit && this.style) {
             this.style.destroy();
         }
-        this.owner.owner.viewer.dialog2.hide();
+        this.documentHelper.dialog2.hide();
     }
     /**
      * @private
      */
     public closeStyleDialog = (): void => {
-        this.owner.owner.viewer.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
      */
     public destroy(): void {
-        this.owner = undefined;
+        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);

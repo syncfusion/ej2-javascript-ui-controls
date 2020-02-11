@@ -1,4 +1,4 @@
-import { PageLayoutViewer } from './viewer';
+import { DocumentHelper } from './viewer';
 import { Page } from './viewer/page';
 import { print } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -7,33 +7,35 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 export class Print {
     /**
+     * 
      * Gets module name.
      */
     private getModuleName(): string {
         return 'Print';
     }
+
     /**
      * Prints the current viewer
      * @param viewer 
      * @param printWindow 
      * @private
      */
-    public print(viewer: PageLayoutViewer, printWindow?: Window): void {
-        this.printWindow(viewer, navigator.userAgent, printWindow);
+    public print(documentHelper: DocumentHelper, printWindow?: Window): void {
+        this.printWindow(documentHelper, navigator.userAgent, printWindow);
     }
     /**
      * Opens print window and displays current page to print.
      * @private
      */
-    public printWindow(viewer: PageLayoutViewer, browserUserAgent: string, printWindow?: Window): void {
-        let height: number = this.getPageHeight(viewer.pages);
-        let width: number = this.getPageWidth(viewer.pages);
+    public printWindow(documentHelper: DocumentHelper, browserUserAgent: string, printWindow?: Window): void {
+        let height: number = this.getPageHeight(documentHelper.pages);
+        let width: number = this.getPageWidth(documentHelper.pages);
         let printElement: HTMLDivElement = document.createElement('div');
         printElement.style.width = '100%';
         printElement.style.height = '100%';
         printElement.style.overflow = 'scroll';
         // Rendering canvas to print
-        this.generatePrintContent(viewer, printElement);
+        this.generatePrintContent(documentHelper, printElement);
 
         if (isNullOrUndefined(printWindow)) {
             printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
@@ -67,17 +69,17 @@ export class Print {
      * Generates print content.
      * @private
      */
-    public generatePrintContent(viewer: PageLayoutViewer, element: HTMLDivElement): void {
+    public generatePrintContent(documentHelper: DocumentHelper, element: HTMLDivElement): void {
         // Rendering canvas to print
         let htmlString: string = '';
-        for (let i: number = 0; i < viewer.pages.length; i++) {
-            let page: Page = viewer.pages[i];
+        for (let i: number = 0; i < documentHelper.pages.length; i++) {
+            let page: Page = documentHelper.pages[i];
             let pageHeight: number = page.boundingRectangle.height;
             let pageWidth: number = page.boundingRectangle.width;
-            viewer.render.isPrinting = true;
-            viewer.render.renderWidgets(page, 0, 0, 0, 0);
-            let canvasURL: string = viewer.render.pageCanvas.toDataURL();
-            viewer.render.isPrinting = false;
+            documentHelper.render.isPrinting = true;
+            documentHelper.render.renderWidgets(page, 0, 0, 0, 0);
+            let canvasURL: string = documentHelper.render.pageCanvas.toDataURL();
+            documentHelper.render.isPrinting = false;
             // tslint:disable-next-line:max-line-length
             htmlString += '<div><img src=' + canvasURL + ' style="margin:0px;display:block;width: ' + pageWidth.toString() + 'px; height:' + pageHeight.toString() + 'px; "/></div><br/>';
         }

@@ -132,7 +132,7 @@ export class RowHistoryFormat {
         let currentRowHeightType: HeightType = this.rowFormat.heightType;
         //Restore old values.
         owner.editorModule.tableResize.updateRowHeight(this.rowFormat.ownerBase, isRedo ? this.displacement : (-this.displacement));
-        owner.viewer.layout.reLayoutTable(this.rowFormat.ownerBase.ownerTable);
+        owner.documentHelper.layout.reLayoutTable(this.rowFormat.ownerBase.ownerTable);
         if (this.rowFormat.heightType !== this.rowHeightType) {
             this.rowFormat.heightType = this.rowHeightType;
         }

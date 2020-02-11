@@ -338,7 +338,9 @@
       }
 
     &.e-device .e-group-body .e-rule-container .e-rule-value .e-multiselect,
-    &.e-device .e-group-body .e-rule-container .e-rule-value .e-multi-select-wrapper {
+    &.e-device .e-group-body .e-rule-container .e-rule-value .e-multi-select-wrapper,
+    & .e-group-body .e-rule-container.e-vertical-mode .e-rule-value .e-multi-select-wrapper,
+    & .e-group-body .e-rule-container.e-vertical-mode .e-rule-value .e-multiselect {
       max-width: $qrybldr-device-multi-maxwidth;
     }
 

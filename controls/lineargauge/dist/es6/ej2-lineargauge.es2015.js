@@ -2570,10 +2570,11 @@ let LinearGauge = class LinearGauge extends Component {
             this.annotationsModule.renderAnnotationElements();
         }
         this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
+        removeElement('gauge-measuretext');
     }
     renderBorder() {
         let width = this.border.width;
-        if (width > 0) {
+        if (width > 0 || (this.background || this.themeStyle.backgroundColor)) {
             let rect = new RectOption(this.element.id + '_LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width), null, null);
             this.svgObject.appendChild(this.renderer.drawRectangle(rect));
         }

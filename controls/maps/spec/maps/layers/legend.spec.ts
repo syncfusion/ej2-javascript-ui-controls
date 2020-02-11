@@ -840,6 +840,83 @@ describe('Map marker properties tesing', () => {
         });
     });
 
+    describe('Legend Testing in OSM SubLayer', () => {
+        let id: string = 'legend';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                layers: [
+                    {
+                        layerType:'OSM'
+                    },
+                    {
+                        type:'SubLayer',
+                        shapeData: World_Map,
+                        shapeDataPath: 'Country',
+                        shapePropertyPath: 'name',
+                        dataSource: [
+                            { Country: 'China', Membership: 'Permanent' },
+                            { Country: 'France', Membership: 'Permanent' },
+                            { Country: 'Russia', Membership: 'Permanent' },
+                            { Country: 'United Kingdom', Membership: 'Permanent' },
+                            { Country: 'United States', Membership: 'Permanent' },
+                            { Country: 'Bolivia', Membership: 'Non-Permanent' },
+                            { Country: 'Eq. Guinea', Membership: 'Non-Permanent' },
+                            { Country: 'Ethiopia', Membership: 'Non-Permanent' },
+                            { Country: "Côte d'Ivoire", Membership: 'Permanent' },
+                            { Country: 'Kazakhstan', Membership: 'Non-Permanent' },
+                            { Country: 'Kuwait', Membership: 'Non-Permanent' },
+                            { Country: 'Netherlands', Membership: 'Non-Permanent' },
+                            { Country: 'Peru', Membership: 'Non-Permanent' },
+                            { Country: 'Poland', Membership: 'Non-Permanent' },
+                            { Country: 'Sweden', Membership: 'Non-Permanent' }
+                        ],
+                        tooltipSettings: {
+                            visible: true,
+                            valuePath: 'Country',
+                        },
+                        shapeSettings: {
+                            fill: '#E5E5E5',
+                            colorMapping: [
+                                {
+                                    value: 'Permanent',
+                                    color: '#EDB46F'
+                                },
+                                {
+                                    color: '#F1931B',
+                                    value: 'Non-Permanent'
+                                }
+                            ],
+                            colorValuePath: 'Membership'
+                        }
+                    }
+                ],
+                legendSettings: {
+                    visible: true,
+                    mode: 'Interactive'
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Check with default legend in OSM sublayer', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBe(3);
+            };
+            map.legendSettings.mode = 'Default';
+            map.refresh();
+        });
+    });
+
     describe('Marker testing', () => {
         let id: string = 'legend';
         let map: Maps;

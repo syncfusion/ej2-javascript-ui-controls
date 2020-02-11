@@ -1,4 +1,4 @@
-import { LayoutViewer } from '../viewer';
+import { DocumentHelper } from '../viewer';
 import { L10n, createElement } from '@syncfusion/ej2-base';
 import { ListView } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -8,15 +8,14 @@ import { DialogUtility } from '@syncfusion/ej2-popups';
  * @private
  */
 export class AddUserDialog {
-    private viewer: LayoutViewer;
+    private documentHelper: DocumentHelper;
     private target: HTMLElement;
     private textBoxInput: HTMLInputElement;
     private userList: ListView;
     private addButton: Button;
     private owner: RestrictEditing;
-    constructor(viewer: LayoutViewer, owner: RestrictEditing) {
-        this.viewer = viewer;
-        this.owner = owner;
+    constructor(documentHelper: DocumentHelper, owner: RestrictEditing) {
+        this.documentHelper = documentHelper;
     }
 
     /**
@@ -24,7 +23,7 @@ export class AddUserDialog {
      */
     public initUserDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: AddUserDialog = this;
-        let id: string = this.viewer.owner.containerId + '_addUser';
+        let id: string = this.documentHelper.owner.containerId + '_addUser';
         this.target = createElement('div', { id: id, className: 'e-de-user-dlg' });
         let headerValue: string = localValue.getConstant('Enter User');
         let dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
@@ -76,18 +75,18 @@ export class AddUserDialog {
      * @private
      */
     public show = (): void => {
-        let localObj: L10n = new L10n('documenteditor', this.viewer.owner.defaultLocale);
-        localObj.setLocale(this.viewer.owner.locale);
+        let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localObj.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initUserDialog(localObj, this.viewer.owner.enableRtl);
+            this.initUserDialog(localObj, this.documentHelper.owner.enableRtl);
         }
-        this.viewer.dialog.header = localObj.getConstant('Add Users');
-        this.viewer.dialog.height = 'auto';
-        this.viewer.dialog.width = 'auto';
-        this.viewer.dialog.content = this.target;
-        this.viewer.dialog.beforeOpen = this.loadUserDetails;
-        this.viewer.dialog.close = this.viewer.updateFocus;
-        this.viewer.dialog.buttons = [
+        this.documentHelper.dialog.header = localObj.getConstant('Add Users');
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = this.loadUserDetails;
+        this.documentHelper.dialog.close = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.buttons = [
             {
                 click: this.okButtonClick,
                 buttonModel: {
@@ -101,21 +100,21 @@ export class AddUserDialog {
                 click: this.deleteButtonClick,
                 buttonModel: { content: localObj.getConstant('Delete'), cssClass: 'e-flat e-user-delete' }
             }];
-        this.viewer.dialog.dataBind();
-        this.viewer.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
 
     public loadUserDetails = (): void => {
-        this.viewer.restrictEditingPane.addedUser.dataSource = this.viewer.userCollection;
-        this.viewer.restrictEditingPane.addedUser.refresh();
+        this.documentHelper.restrictEditingPane.addedUser.dataSource = this.documentHelper.userCollection;
+        this.documentHelper.restrictEditingPane.addedUser.refresh();
     }
     /**
      * @private
      */
     public okButtonClick = (): void => {
-        this.viewer.restrictEditingPane.showStopProtectionPane(false);
-        this.viewer.restrictEditingPane.loadPaneValue();
-        this.viewer.dialog.hide();
+        this.documentHelper.restrictEditingPane.showStopProtectionPane(false);
+        this.documentHelper.restrictEditingPane.loadPaneValue();
+        this.documentHelper.dialog.hide();
     }
 
     /**
@@ -123,7 +122,7 @@ export class AddUserDialog {
      */
     public hideDialog = (): void => {
         this.textBoxInput.value = '';
-        this.viewer.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
 
     /**
@@ -134,10 +133,10 @@ export class AddUserDialog {
     }
     public addButtonClick = (): void => {
         if (this.validateUserName(this.textBoxInput.value)) {
-            if (this.viewer.userCollection.indexOf(this.textBoxInput.value) === -1) {
-                this.viewer.userCollection.push(this.textBoxInput.value);
+            if (this.documentHelper.userCollection.indexOf(this.textBoxInput.value) === -1) {
+                this.documentHelper.userCollection.push(this.textBoxInput.value);
             }
-            this.userList.dataSource = this.viewer.userCollection;
+            this.userList.dataSource = this.documentHelper.userCollection;
             this.userList.refresh();
             this.textBoxInput.value = '';
         } else {
@@ -169,10 +168,10 @@ export class AddUserDialog {
 
     }
     public deleteButtonClick = (): void => {
-        let index: number = this.viewer.userCollection.indexOf(this.userList.getSelectedItems().text as string);
+        let index: number = this.documentHelper.userCollection.indexOf(this.userList.getSelectedItems().text as string);
         if (index > -1) {
-            this.viewer.userCollection.splice(index, 1);
-            this.userList.dataSource = this.viewer.userCollection;
+            this.documentHelper.userCollection.splice(index, 1);
+            this.userList.dataSource = this.documentHelper.userCollection;
             this.userList.refresh();
         }
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.49 (2020-02-11)
+
+### Button Group
+
+#### Bug Fixes
+
+- CSS validation issues has been resolved.
+
 ## 17.4.39 (2019-12-17)
 
 ### DropDownButton

@@ -18,10 +18,10 @@ describe('Section Break API Validation', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -39,7 +39,7 @@ describe('Section Break API Validation', () => {
         editor.editorModule.insertText('Section 1');
         editor.selection.moveUp();
         editor.editorModule.insertSectionBreak();
-        expect((editor.viewer as PageLayoutViewer).pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
         expect(editor.selection.start.paragraph.bodyWidget.index).toBe(1);
     });
     it('Undo redo mutiple times', () => {
@@ -47,7 +47,7 @@ describe('Section Break API Validation', () => {
             editor.editorHistory.undo();
             editor.editorHistory.redo();
         }
-        expect((editor.viewer as PageLayoutViewer).pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
         expect(editor.selection.start.paragraph.bodyWidget.index).toBe(1);
     });
 });
@@ -60,10 +60,10 @@ describe('Section Break API Validation', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -78,7 +78,7 @@ describe('Section Break API Validation', () => {
     it('Insert Section break inside table', () => {
         editor.editorModule.insertTable(2, 2);
         editor.editorModule.insertSectionBreak();
-        expect((editor.viewer as PageLayoutViewer).pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
         expect(editor.selection.start.paragraph.isInsideTable).toBe(true);
         expect(editor.selection.start.paragraph.bodyWidget.previousRenderedWidget.childWidgets.length).toBe(1);
     });
@@ -87,7 +87,7 @@ describe('Section Break API Validation', () => {
         editor.editorModule.insertTable(2, 2);
         editor.selection.moveDown();
         editor.editorModule.insertSectionBreak();
-        expect((editor.viewer as PageLayoutViewer).pages.length).toBe(2);
+        expect(editor.documentHelper.pages.length).toBe(2);
         expect(editor.selection.start.paragraph.isInsideTable).toBe(true);
         expect(editor.selection.start.paragraph.bodyWidget.previousRenderedWidget.childWidgets.length).toBe(2);
     });
@@ -119,10 +119,10 @@ let style: any = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pageHeig
 //         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
 //         DocumentEditor.Inject(Editor, Selection, EditorHistory);
 //         editor.enableEditorHistory = true;
-//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
 //         editor.appendTo('#container');
 //     });
 //     afterEach((done) => {
@@ -163,10 +163,10 @@ describe('List document with multilevel layouting validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(listObj));
     });
@@ -203,10 +203,10 @@ describe('Apply Borders Validation', () => {
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -266,10 +266,10 @@ describe('Apply AllBorders', () => {
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -327,10 +327,10 @@ describe('Apply Single border', () => {
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -440,10 +440,10 @@ describe('Apply Borders Validation with selection', () => {
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -519,10 +519,10 @@ describe('Apply AllBorders with selection', () => {
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
@@ -589,10 +589,10 @@ describe('Apply Single border with selection', () => {
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -741,10 +741,10 @@ describe('Table shift downward validation when field is present inside header wi
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, enableEditorHistory: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -758,18 +758,18 @@ describe('Table shift downward validation when field is present inside header wi
     });
     it('header height valdiation', () => {
         editor.open(JSON.stringify(headerTable));
-        let height: number = editor.viewer.pages[0].headerWidget.height;
+        let height: number = editor.documentHelper.pages[0].headerWidget.height;
         expect(height).toBeLessThanOrEqual(108);
     });
     it('header table border render validation', () => {
-        let cellWidget: TableCellWidget = ((editor.viewer.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[2] as TableCellWidget;
+        let cellWidget: TableCellWidget = ((editor.documentHelper.pages[0].headerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[2] as TableCellWidget;
         expect(cellWidget.cellFormat.columnSpan).toBe(1);
     });
     it('header height validation after text insert', () => {
-        let height: number = editor.viewer.pages[0].headerWidget.height;
+        let height: number = editor.documentHelper.pages[0].headerWidget.height;
         editor.editor.insertText('s');
-        expect(height).toEqual(editor.viewer.pages[0].headerWidget.height);
+        expect(height).toEqual(editor.documentHelper.pages[0].headerWidget.height);
         editor.editor.insertText('s');
-        expect(height).toEqual(editor.viewer.pages[0].headerWidget.height);
+        expect(height).toEqual(editor.documentHelper.pages[0].headerWidget.height);
     });
 });

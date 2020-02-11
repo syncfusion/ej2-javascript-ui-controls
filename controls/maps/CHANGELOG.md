@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.4.49 (2020-02-11)
+
+### Maps
+
+#### Bug Fixes
+
+- `#263056`  - Now, Legend will be rendered properly when the OSM map is used along with a geometric sublayer.
+
 ## 17.4.47 (2020-02-05)
 
 ### Maps

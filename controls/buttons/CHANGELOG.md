@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.49 (2020-02-11)
+
+### Button
+
+#### Bug Fixes
+
+- CSS validation issues has been resolved.
+
 ## 17.4.46 (2020-01-30)
 
 ### Chips

@@ -18,10 +18,10 @@ describe('Insert Table Dialog Test Case Validation', () => {
         DocumentEditor.Inject(EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableTableDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -35,19 +35,19 @@ describe('Insert Table Dialog Test Case Validation', () => {
         }, 2000);
     });
     it('On Insert Button testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         dialog.onInsertTableClick();
         dialog.destroy();
     });
     it('On Cancel Button testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         dialog.onCancelButtonClick();
         dialog.destroy();
     });
     it('Insert Table using event testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         let event: any;
         event = { keyCode: 13, preventDefault: () => { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -67,10 +67,10 @@ describe('Insert Table Dialog Test Case Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -83,7 +83,7 @@ describe('Insert Table Dialog Test Case Validation', () => {
         }, 2000);
     });
     it('Insert Table Value Null Condition testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         let event: any;
         event = { keyCode: 13, preventDefault: () => { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -93,14 +93,14 @@ describe('Insert Table Dialog Test Case Validation', () => {
         dialog.destroy();
     });
     it('Insert Table Destory Parent Element testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         (dialog as any).columnsCountBox = document.createElement('div');
         (dialog as any).rowsCountBox = document.createElement('div');
         dialog.destroy();
     });
     it('Insert Table Parent Destroy Element testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         (dialog as any).target = document.createElement('div');
         document.body.appendChild((dialog as any).target);
@@ -116,10 +116,10 @@ describe('Insert Table Key and Destroy Test Case Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
@@ -132,7 +132,7 @@ describe('Insert Table Key and Destroy Test Case Validation', () => {
         }, 2000);
     });
     it('Insert Table Diff Event Key Condition testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         let event: any;
         event = { keyCode: 35, preventDefault: () => { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -141,12 +141,12 @@ describe('Insert Table Key and Destroy Test Case Validation', () => {
         dialog.destroy();
     });
     it('Insert Table Destory testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         dialog.show();
         dialog.destroy();
     });
     it('Insert Table Destory testing', () => {
-        dialog = new TableDialog(editor.viewer);
+        dialog = new TableDialog(editor.documentHelper);
         (dialog as any).target = undefined;
         dialog.show();
         dialog.destroy();

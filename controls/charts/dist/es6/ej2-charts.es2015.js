@@ -947,6 +947,8 @@ const chartMouseUp = 'chartMouseUp';
 /** @private */
 const zoomComplete = 'zoomComplete';
 /** @private */
+const onZooming = 'onZooming';
+/** @private */
 const dragComplete = 'dragComplete';
 /** @private */
 const selectionComplete = 'selectionComplete';
@@ -9622,6 +9624,9 @@ __decorate([
 ], Chart.prototype, "zoomComplete", void 0);
 __decorate([
     Event()
+], Chart.prototype, "onZooming", void 0);
+__decorate([
+    Event()
 ], Chart.prototype, "scrollStart", void 0);
 __decorate([
     Event()
@@ -17911,6 +17916,8 @@ class Toolkit {
         let argsData;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
+        let zoomingEventArgs;
+        let zoomedAxisCollection = [];
         for (let i = 0; i < chart.axisCollections.length; i++) {
             let axis = chart.axisCollections[i];
             argsData = {
@@ -17927,7 +17934,23 @@ class Toolkit {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
+            zoomedAxisCollection.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
+        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, zoomingEventArgs, () => {
+                this.setDefferedZoom(chart);
+            });
+            return false;
+        }
+        else {
+            return (this.setDefferedZoom(chart));
+        }
+    }
+    setDefferedZoom(chart) {
         chart.disableTrackTooltip = false;
         chart.zoomModule.isZoomed = chart.zoomModule.isPanning = chart.isChartDrag = chart.delayRedraw = false;
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
@@ -18097,12 +18120,12 @@ class Zoom {
         let currentScale;
         let offset;
         this.isZoomed = true;
-        let translateX;
-        let translateY;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
         chart.disableTrackTooltip = true;
         let argsData;
+        let zoomingEventArgs;
+        let zoomedAxisCollection = [];
         for (let i = 0; i < axes.length; i++) {
             let axis = axes[i];
             argsData = {
@@ -18123,7 +18146,24 @@ class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
+            zoomedAxisCollection.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
+        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, zoomingEventArgs, () => {
+                this.performDefferedZoom(chart);
+            });
+        }
+        else {
+            this.performDefferedZoom(chart);
+        }
+    }
+    performDefferedZoom(chart) {
+        let translateX;
+        let translateY;
         if (this.zooming.enableDeferredZooming) {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
@@ -18189,6 +18229,8 @@ class Zoom {
         let mode = this.zooming.mode;
         let argsData;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
+        let onZoomingEventArg;
+        let zoomedAxisCollections = [];
         for (let j = 0; j < axes.length; j++) {
             let axis = axes[j];
             argsData = {
@@ -18214,9 +18256,22 @@ class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
+            zoomedAxisCollections.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
-        this.zoomingRect = new Rect(0, 0, 0, 0);
-        this.performZoomRedraw(chart);
+        onZoomingEventArg = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
+        if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArg, () => {
+                this.zoomingRect = new Rect(0, 0, 0, 0);
+                this.performZoomRedraw(chart);
+            });
+        }
+        else {
+            this.zoomingRect = new Rect(0, 0, 0, 0);
+            this.performZoomRedraw(chart);
+        }
     }
     /**
      * Function that handles the Mouse wheel zooming.
@@ -18237,8 +18292,10 @@ class Zoom {
         this.performedUI = true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let argsData;
-        for (let index = 0; index < axes.length; index++) {
-            let axis = axes[index];
+        let onZoomingEventArgs;
+        let zoomedAxisCollection = [];
+        for (let k = 0; k < axes.length; k++) {
+            let axis = axes[k];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18263,8 +18320,18 @@ class Zoom {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
+            zoomedAxisCollection.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
-        this.performZoomRedraw(chart);
+        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.performZoomRedraw(chart); });
+        }
+        else {
+            this.performZoomRedraw(chart);
+        }
     }
     /**
      * Function that handles the Pinch zooming.
@@ -18335,6 +18402,8 @@ class Zoom {
         let argsData;
         let currentZF;
         let currentZP;
+        let onZoomingEventArgs;
+        let zoomedAxisCollection = [];
         for (let index = 0; index < chart.axisCollections.length; index++) {
             let axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
@@ -18370,7 +18439,15 @@ class Zoom {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
+                zoomedAxisCollection.push({
+                    zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                    axisRange: axis.visibleRange
+                });
             }
+        }
+        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArgs);
         }
     }
     // Series transformation style applied here.
@@ -21128,7 +21205,7 @@ class Legend extends BaseLegend {
         let seriesType;
         let fill;
         for (let series of visibleSeriesCollection) {
-            if (series.category !== 'Indicator') {
+            if (series.category !== 'Indicator' && series.name !== '') {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? series.drawType :
                     series.type;
                 // To set legend color when use pointColorMapping
@@ -21529,9 +21606,7 @@ class AnnotationBase {
             removeElement$1(annotationElement.id);
         }
         let annotationRendered = () => {
-            let elementRect = annotationElement.getBoundingClientRect();
-            annotationElement.style.left = this.setAlignmentValue(this.annotation.horizontalAlignment, elementRect.width, location.x) + 'px';
-            annotationElement.style.top = this.setAlignmentValue(this.annotation.verticalAlignment, elementRect.height, location.y) + 'px';
+            annotationElement.style.transform = 'translate(-50%, -50%)';
         };
         annotationRendered.bind(location, this);
         updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate', chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index], undefined, annotationRendered);
@@ -30381,6 +30456,7 @@ class CartesianChart {
             pointMove: (args) => {
                 this.stockChart.trigger('pointMove', args);
             },
+            onZooming: (args) => { this.stockChart.trigger(onZooming, args); },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),
             zoomSettings: this.copyObject(stockChart.zoomSettings),
@@ -32711,6 +32787,9 @@ __decorate$9([
 __decorate$9([
     Event()
 ], StockChart.prototype, "pointMove", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "onZooming", void 0);
 __decorate$9([
     Property('None')
 ], StockChart.prototype, "selectionMode", void 0);
@@ -41169,5 +41248,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, onZooming, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

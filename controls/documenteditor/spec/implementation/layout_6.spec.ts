@@ -12,10 +12,10 @@ describe('RTL List Paragraph layout validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({});
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(RTL_List));
     });
@@ -28,13 +28,13 @@ describe('RTL List Paragraph layout validation', () => {
         }, 1000);
     });
     it('List numbering bidi true validation', () => {
-        let paraWidget: ParagraphWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget);
+        let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget);
         let line: LineWidget = paraWidget.childWidgets[0] as LineWidget;
         expect(paraWidget.paragraphFormat.bidi).toBe(true);
         expect(line.children[2] instanceof ListTextElementBox).toBe(true);
     });
     it('Bullet list bidi true validation', () => {
-        let paraWidget: ParagraphWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[5] as ParagraphWidget);
+        let paraWidget: ParagraphWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[5] as ParagraphWidget);
         let line: LineWidget = paraWidget.childWidgets[0] as LineWidget;
         expect(paraWidget.paragraphFormat.textAlignment).toBe('Right');
         expect(line.children[2] instanceof ListTextElementBox).toBe(true);

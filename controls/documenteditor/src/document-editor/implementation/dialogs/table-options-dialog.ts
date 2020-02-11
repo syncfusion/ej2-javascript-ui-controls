@@ -7,6 +7,7 @@ import { isNullOrUndefined, L10n, createElement } from '@syncfusion/ej2-base';
 import { SelectionTableFormat } from '../index';
 import { TableWidget } from '../viewer/page';
 import { CellOptionsDialog } from './index';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Table options dialog is used to modify default cell margins and cell spacing of selected table.
@@ -15,7 +16,7 @@ export class TableOptionsDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -50,10 +51,10 @@ export class TableOptionsDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
-    /**
+    /*
      * @private
      */
     get tableFormat(): WTableFormat {
@@ -72,9 +73,9 @@ export class TableOptionsDialog {
      * @private
      */
     public initTableOptionsDialog(localValue: L10n, isRtl?: boolean): void {
-        let instance: LayoutViewer = this.owner;
+        let instance: LayoutViewer = this.documentHelper.owner.viewer;
         this.target = createElement('div', {
-            id: this.owner.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
+            id: this.documentHelper.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
         let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'width: 504px;position: relative;height: auto;margin-bottom: 14px'
@@ -134,7 +135,7 @@ export class TableOptionsDialog {
      * @private
      */
     public loadCellMarginsDialog(): void {
-        let tableFormat: SelectionTableFormat = this.owner.selection.tableFormat;
+        let tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
         this.cellSpaceTextBox.value = tableFormat.cellSpacing;
         this.bottomMarginBox.value = tableFormat.bottomMargin;
         this.topMarginBox.value = tableFormat.topMargin;
@@ -152,7 +153,7 @@ export class TableOptionsDialog {
      * @private
      */
     public applyTableCellProperties = (): void => {
-        let tableFormat: SelectionTableFormat = this.owner.selection.tableFormat;
+        let tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
         if (!isNullOrUndefined(this.bottomMarginBox.value || this.leftMarginBox.value
             || this.rightMarginBox.value || this.topMarginBox.value || this.cellSpaceTextBox.value)
             && (tableFormat.bottomMargin !== this.bottomMarginBox.value
@@ -160,9 +161,9 @@ export class TableOptionsDialog {
                 || tableFormat.rightMargin !== this.rightMarginBox.value
                 || tableFormat.topMargin !== this.topMarginBox.value
                 || tableFormat.cellSpacing !== this.cellSpaceTextBox.value)) {
-            this.owner.owner.tablePropertiesDialogModule.isTableOptionsUpdated = true;
+            this.documentHelper.owner.tablePropertiesDialogModule.isTableOptionsUpdated = true;
             this.applyTableOptions(this.tableFormat);
-            this.owner.owner.tablePropertiesDialogModule.applyTableSubProperties();
+            this.documentHelper.owner.tablePropertiesDialogModule.applyTableSubProperties();
         }
         this.closeCellMarginsDialog();
     }
@@ -170,10 +171,10 @@ export class TableOptionsDialog {
      * @private
      */
     public applySubTableOptions(tableFormat: WTableFormat): void {
-        this.owner.owner.editorHistory.initComplexHistory(this.owner.selection, 'TableMarginsSelection');
+        this.documentHelper.owner.editorHistory.initComplexHistory(this.documentHelper.selection, 'TableMarginsSelection');
         this.applyTableOptionsHistory(tableFormat);
-        if (!isNullOrUndefined(this.owner.owner.editorHistory.currentHistoryInfo)) {
-            this.owner.owner.editorHistory.updateComplexHistory();
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
+            this.documentHelper.owner.editorHistory.updateComplexHistory();
         }
     }
     /**
@@ -186,25 +187,25 @@ export class TableOptionsDialog {
      * @private
      */
     public applyTableOptionsHistory(tableFormat: WTableFormat): void {
-        this.owner.owner.editorModule.initHistory('TableOptions');
+        this.documentHelper.owner.editorModule.initHistory('TableOptions');
         this.applySubTableOptionsHelper(tableFormat);
     }
     /**
      * @private
      */
     public applySubTableOptionsHelper(tableFormat: WTableFormat): void {
-        let ownerTable: TableWidget = this.owner.selection.start.currentWidget.paragraph.associatedCell.ownerTable;
-        ownerTable = ownerTable.combineWidget(this.owner) as TableWidget;
+        let ownerTable: TableWidget = this.documentHelper.selection.start.currentWidget.paragraph.associatedCell.ownerTable;
+        ownerTable = ownerTable.combineWidget(this.documentHelper.owner.viewer) as TableWidget;
         let currentTableFormat: WTableFormat = ownerTable.tableFormat;
-        if (!isNullOrUndefined(this.owner.owner.editorHistory.currentBaseHistoryInfo)) {
-            this.owner.owner.editorHistory.currentBaseHistoryInfo.addModifiedTableOptions(currentTableFormat);
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
+            this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.addModifiedTableOptions(currentTableFormat);
         }
         currentTableFormat.cellSpacing = tableFormat.cellSpacing;
         currentTableFormat.leftMargin = tableFormat.leftMargin;
         currentTableFormat.topMargin = tableFormat.topMargin;
         currentTableFormat.rightMargin = tableFormat.rightMargin;
         currentTableFormat.bottomMargin = tableFormat.bottomMargin;
-        this.owner.owner.tablePropertiesDialogModule.calculateGridValue(ownerTable);
+        this.documentHelper.owner.tablePropertiesDialogModule.calculateGridValue(ownerTable);
     }
     /**
      * @private
@@ -222,31 +223,31 @@ export class TableOptionsDialog {
      * @private
      */
     public closeCellMarginsDialog = (): void => {
-        this.owner.dialog.hide();
-        this.owner.dialog.element.style.pointerEvents = '';
-        this.owner.updateFocus();
+        this.documentHelper.dialog.hide();
+        this.documentHelper.dialog.element.style.pointerEvents = '';
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
      */
     public show(): void {
-        let documentLocale: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        documentLocale.setLocale(this.owner.owner.locale);
+        let documentLocale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        documentLocale.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initTableOptionsDialog(documentLocale, this.owner.owner.enableRtl);
+            this.initTableOptionsDialog(documentLocale, this.documentHelper.owner.enableRtl);
         }
         this.loadCellMarginsDialog();
-        this.owner.dialog.header = documentLocale.getConstant('Table Options');
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = undefined;
-        this.owner.dialog.position = { X: 'center', Y: 'center' };
-        //  this.owner.dialog.cssClass = 'e-de-table-margin-size';
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.open = undefined;
-        this.owner.dialog.beforeOpen = this.owner.updateFocus;
-        this.owner.dialog.close = this.removeEvents;
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = documentLocale.getConstant('Table Options');
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = undefined;
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
+        //  this.documentHelper.dialog.cssClass = 'e-de-table-margin-size';
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.open = undefined;
+        this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.close = this.removeEvents;
+        this.documentHelper.dialog.buttons = [{
             click: this.applyTableCellProperties,
             buttonModel: { content: documentLocale.getConstant('Ok'), cssClass: 'e-flat e-table-cell-okay', isPrimary: true }
         },
@@ -254,8 +255,8 @@ export class TableOptionsDialog {
             click: this.closeCellMarginsDialog,
             buttonModel: { content: documentLocale.getConstant('Cancel'), cssClass: 'e-flat e-table-cell-cancel' }
         }];
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
@@ -271,8 +272,8 @@ export class TableOptionsDialog {
      * @private
      */
     public removeEvents = (): void => {
-        this.owner.dialog2.element.style.pointerEvents = '';
-        this.owner.updateFocus();
+        this.documentHelper.dialog2.element.style.pointerEvents = '';
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -290,7 +291,7 @@ export class TableOptionsDialog {
         }
         this.dialog = undefined;
         this.target = undefined;
-        this.owner = undefined;
+        this.documentHelper = undefined;
         this.cellspacingTextBox = undefined;
         this.allowSpaceCheckBox = undefined;
     }

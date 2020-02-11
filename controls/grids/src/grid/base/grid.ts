@@ -802,7 +802,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public pageTemplateChange: boolean = false;
     /** @hidden */
     public isAutoGen: boolean = false;
-    private mediaBindInstance: Function[] = [];
+    private mediaBindInstance: Object = {};
 
     //Module Declarations
     /**
@@ -2451,7 +2451,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.mediaCol.push(col);
         this.media[col.uid] = window.matchMedia(col.hideAtMedia);
         this.mediaQueryUpdate(index, this.media[col.uid]);
-        this.mediaBindInstance.push(this.mediaQueryUpdate.bind(this, index));
+        this.mediaBindInstance[index] = this.mediaQueryUpdate.bind(this, index);
         this.media[col.uid].addListener(this.mediaBindInstance[index] as null);
     }
 
@@ -2503,7 +2503,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private removeMediaListener(): void {
         for (let i: number = 0; i < this.mediaCol.length; i++) {
-            this.media[this.mediaCol[i].uid].removeListener(this.mediaBindInstance[i] as null);
+            this.media[this.mediaCol[i].uid].removeListener(this.mediaBindInstance[this.mediaCol[i].index] as null);
         }
     }
 

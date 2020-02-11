@@ -706,7 +706,7 @@ describe('DDList', () => {
                     expect(listObj.isPopupOpen).toBe(false);
                     done();
                 }, 400)
-            }, 400);
+            }, 600);
         });
         /**
          * read only property
@@ -1702,23 +1702,31 @@ describe('DDList', () => {
         /**
          * Tab Key
          */
-        it("Tab key ", () => {
+        it("Tab key ", (done) => {
             list.showPopup();
-            keyEventArgs.action = 'tab';
-            list.keyActionHandler(keyEventArgs);
-            expect(list.isPopupOpen).toBe(false);
-            expect(list.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
+            setTimeout(() => {
+                keyEventArgs.action = 'tab';
+                list.keyActionHandler(keyEventArgs);
+                setTimeout(() => {
+                    expect(list.isPopupOpen).toBe(false);
+                    done();
+                }, 300);
+            }, 450);
         });
         /**
          * Shift+Tab Key
          */
-        it("Shift+Tab key ", () => {
+        it("Shift+Tab key ", (done) => {
             list.showPopup();
-            expect(list.isPopupOpen).toBe(true);
-            keyEventArgs.action = 'close';
-            list.keyActionHandler(keyEventArgs);
-            expect(list.isPopupOpen).toBe(false);
-            expect(list.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
+            setTimeout(() => {
+                expect(list.isPopupOpen).toBe(true);
+                keyEventArgs.action = 'close';
+                list.keyActionHandler(keyEventArgs);
+                setTimeout(() => {
+                    expect(list.isPopupOpen).toBe(false);
+                    done();
+                }, 300);
+            }, 450)
         });
         /**
          * DownKey
@@ -5136,14 +5144,18 @@ describe('DDList', () => {
                 ele.remove();
             }
         })
-        it("Enter key ", () => {
+        it("Enter key ", (done) => {
             listObj.value = 'J';
             listObj.dataBind();
             listObj.showPopup();
-            keyEventArgs.action = 'enter';
-            listObj.mobileKeyActionHandler(keyEventArgs);
-            expect(listObj.isPopupOpen).toBe(false);
-            expect(listObj.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
+            setTimeout(() => {
+                keyEventArgs.action = 'enter';
+                listObj.mobileKeyActionHandler(keyEventArgs);
+                setTimeout(() => {
+                    expect(listObj.isPopupOpen).toBe(false);
+                    done();
+                }, 300);
+            }, 450);
         });
     });
     describe('EJ2-33412', () => {

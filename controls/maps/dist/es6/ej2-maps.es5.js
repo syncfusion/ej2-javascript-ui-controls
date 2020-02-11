@@ -4539,6 +4539,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                             var jsonObject = JSON.parse(json);
                             var resource = jsonObject['resourceSets'][0]['resources'][0];
                             var imageUrl = resource['imageUrl'];
+                            imageUrl = imageUrl.replace('http', 'https');
                             var subDomains = resource['imageUrlSubdomains'];
                             var maxZoom = resource['zoomMax'];
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing_1.imageUrl) {
@@ -4845,7 +4846,8 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             _this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
+            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
+                : this.currentFactor), null);
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -5459,48 +5461,64 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
      * @param type
      * @param fileName
      */
-    ExportUtils.prototype.export = function (type, fileName, orientation) {
+    ExportUtils.prototype.export = function (type, fileName, exportDownload, orientation) {
         var _this = this;
-        var element = createElement('canvas', {
-            id: 'ej2-canvas',
-            attrs: {
-                'width': this.control.availableSize.width.toString(),
-                'height': this.control.availableSize.height.toString()
-            }
-        });
-        var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-        orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-        var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            this.control.svgObject.outerHTML +
-            '</svg>';
-        var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-            [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-        if (type === 'SVG') {
-            this.triggerDownload(fileName, type, url, isDownload);
-        }
-        else {
-            var image_1 = new Image();
-            var ctx_1 = element.getContext('2d');
-            image_1.onload = (function () {
-                ctx_1.drawImage(image_1, 0, 0);
-                window.URL.revokeObjectURL(url);
-                if (type === 'PDF') {
-                    var document_1 = new PdfDocument();
-                    var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                    document_1.pageSettings.orientation = orientation;
-                    imageString = imageString.slice(imageString.indexOf(',') + 1);
-                    document_1.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
-                    if (isDownload) {
-                        document_1.save(fileName + '.pdf');
-                        document_1.destroy();
-                    }
-                }
-                else {
-                    _this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+        var promise = new Promise(function (resolve, reject) {
+            var canvasElement = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
                 }
             });
-            image_1.src = url;
-        }
+            var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                _this.control.svgObject.outerHTML +
+                '</svg>';
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (exportDownload) {
+                    _this.triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                var image_1 = new Image();
+                var ctx_1 = canvasElement.getContext('2d');
+                image_1.onload = (function () {
+                    ctx_1.drawImage(image_1, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (type === 'PDF') {
+                        var document_1 = new PdfDocument();
+                        var imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                        document_1.pageSettings.orientation = orientation;
+                        imageString = imageString.slice(imageString.indexOf(',') + 1);
+                        document_1.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
+                        if (exportDownload) {
+                            document_1.save(fileName + '.pdf');
+                            document_1.destroy();
+                        }
+                        else {
+                            resolve(null);
+                        }
+                    }
+                    else {
+                        if (exportDownload) {
+                            _this.triggerDownload(fileName, type, canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                        }
+                        else {
+                            resolve(canvasElement.toDataURL('image/png'));
+                        }
+                    }
+                });
+                image_1.src = url;
+            }
+        });
+        return promise;
     };
     /**
      * To trigger the download element
@@ -5575,6 +5593,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         _this.baseTranslatePoint = new Point(0, 0);
         /** @public */
         _this.zoomTranslatePoint = new Point(0, 0);
+        /** @private */
+        _this.isTileMapSubLayer = false;
         /** @private */
         _this.markerNullCount = 0;
         /** @private */
@@ -5741,8 +5761,17 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Maps.prototype.renderMap = function () {
-        if (!this.isTileMap && this.legendModule && this.legendSettings.visible) {
-            this.legendModule.renderLegend();
+        if (this.legendModule && this.legendSettings.visible) {
+            if (!this.isTileMap) {
+                this.legendModule.renderLegend();
+            }
+            else {
+                var layerCount = this.layersCollection.length - 1;
+                if (!this.layersCollection[layerCount].isBaseLayer) {
+                    this.isTileMapSubLayer = true;
+                    this.legendModule.renderLegend();
+                }
+            }
         }
         this.createTile();
         if (this.zoomSettings.enable && this.zoomModule) {
@@ -5774,9 +5803,37 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             var element = document.getElementById(this.element.id);
             var tileElement = document.getElementById(this.element.id + '_tile_parent');
             var tile = tileElement.getBoundingClientRect();
-            var bottom = svg.bottom - tile.bottom - element.offsetTop;
-            var left = parseFloat(tileElement.style.left) + element.offsetLeft;
-            var top_1 = parseFloat(tileElement.style.top) + element.offsetTop;
+            var bottom = void 0;
+            var top_1;
+            var left = void 0;
+            left = parseFloat(tileElement.style.left) + element.offsetLeft;
+            var titleTextSize = measureText(this.titleSettings.text, this.titleSettings.textStyle);
+            var subTitleTextSize = measureText(this.titleSettings.subtitleSettings.text, this.titleSettings.subtitleSettings.textStyle);
+            if (this.isTileMap && this.isTileMapSubLayer && this.legendSettings.position === 'Bottom' && this.legendSettings.visible) {
+                if (this.legendSettings.mode !== 'Default') {
+                    if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
+                        top_1 = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize.height / 2)
+                            - (this.legendModule.legendBorderRect.height / 2);
+                    }
+                    else {
+                        top_1 = parseFloat(tileElement.style.top) + element.offsetTop - this.mapAreaRect.y;
+                    }
+                }
+                else {
+                    left = this.legendModule.legendBorderRect.x;
+                    if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
+                        top_1 = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize['height'] / 2)
+                            - this.legendModule.legendBorderRect.y;
+                    }
+                    else {
+                        top_1 = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize['height'] / 2);
+                    }
+                }
+            }
+            else {
+                bottom = svg.bottom - tile.bottom - element.offsetTop;
+                top_1 = parseFloat(tileElement.style.top) + element.offsetTop;
+            }
             top_1 = (bottom <= 11) ? top_1 : (top_1 * 2);
             left = (bottom <= 11) ? left : (left * 2);
             tileElement.style.top = top_1 + 'px';
@@ -6464,8 +6521,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     /**
      * To add marker
      * @param minLatitude
-     * @param maxLatitude
      * @param minLongitude
+     * @param maxLatitude
      * @param maxLongitude
      */
     Maps.prototype.zoomToCoordinates = function (minLatitude, minLongitude, maxLatitude, maxLongitude) {
@@ -6779,9 +6836,18 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * @param type
      * @param fileName
      */
-    Maps.prototype.export = function (type, fileName, orientation) {
+    Maps.prototype.export = function (type, fileName, orientation, isDownload) {
         var exportMap = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+        if (isNullOrUndefined(isDownload) || isDownload) {
+            return new Promise(function (resolve, reject) {
+                resolve(exportMap.export(type, fileName, true, orientation));
+            });
+        }
+        else {
+            return new Promise(function (resolve, reject) {
+                resolve(exportMap.export(type, fileName, isDownload, orientation));
+            });
+        }
     };
     /**
      * To find visibility of layers and markers for required modules load.

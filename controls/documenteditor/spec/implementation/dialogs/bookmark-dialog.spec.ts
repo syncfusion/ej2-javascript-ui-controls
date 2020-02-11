@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { FontDialog } from '../../../src/document-editor/implementation/dialogs/font-dialog';
 import { TestHelper } from '../../test-helper.spec';
@@ -16,19 +16,18 @@ import { LineInfo } from '../../../src/document-editor/implementation/editor/edi
 
 describe('BookMark add validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper:DocumentHelper;
     beforeAll((): void => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, ContextMenu, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, enableBookmarkDialog: true, isReadOnly: false, enableContextMenu: true, enableFontDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
 
     });
     afterAll((done) => {
@@ -44,15 +43,15 @@ describe('BookMark add validation', () => {
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
     });
     it('undo validation in Bookmark', () => {
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
     });
     it('redo validation in bookmark', () => {
         editor.editorHistory.redo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -61,7 +60,7 @@ describe('BookMark add validation', () => {
             editor.editorHistory.redo();
             i++;
         }
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
     });
 
 });
@@ -69,19 +68,18 @@ describe('BookMark add validation', () => {
 
 describe('Goto and Delete BookMark validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper:DocumentHelper;
     beforeAll((): void => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, ContextMenu, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, enableBookmarkDialog: true, isReadOnly: false, enableContextMenu: true, enableFontDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         editor.destroy();
@@ -106,16 +104,16 @@ describe('Goto and Delete BookMark validation', () => {
     });
     it('Delete Bookmark', () => {
         (editor.bookmarkDialogModule as any).deleteBookmark();
-        expect(editor.viewer.bookmarks.keys.length).toBe(0);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(0);
         (editor.bookmarkDialogModule as any).removeObjects();
     });
     it('undo validation', () => {
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
     });
     it('redo validation', () => {
         editor.editorHistory.redo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -124,7 +122,7 @@ describe('Goto and Delete BookMark validation', () => {
             editor.editorHistory.redo();
             i++;
         }
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
     });
 });
 
@@ -132,24 +130,21 @@ describe('Goto and Delete BookMark validation', () => {
 
 describe('Edit validation in Bookmark', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, EditorHistory);
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableBookmarkDialog: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -161,7 +156,7 @@ describe('Edit validation in Bookmark', () => {
         (editor.bookmarkDialogModule as any).addBookmark();
         editor.selection.handleHomeKey();
         editor.editorModule.insertText('s');
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
     });
     it('Backspace in bookmark validation', () => {
         editor.openBlank();
@@ -173,8 +168,8 @@ describe('Edit validation in Bookmark', () => {
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] instanceof BookmarkElementBox).toBe(true);
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] instanceof BookmarkElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] instanceof BookmarkElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] instanceof BookmarkElementBox).toBe(true);
     });
     it('Backspace in bookmark validation', () => {
         editor.editorModule.onBackSpace();
@@ -201,24 +196,21 @@ describe('Edit validation in Bookmark', () => {
 
 describe('DeleteSelected content on backspace ', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, EditorHistory);
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableBookmarkDialog: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -230,7 +222,7 @@ describe('DeleteSelected content on backspace ', () => {
         (editor.bookmarkDialogModule as any).addBookmark();
         editor.selection.handleHomeKey();
         editor.editorModule.insertText('sample 1');
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
     });
     it('Backspace at bookmark start validation', () => {
         editor.selection.handleLeftKey();
@@ -240,17 +232,17 @@ describe('DeleteSelected content on backspace ', () => {
         editor.selection.handleShiftRightKey();
         editor.selection.handleShiftRightKey();
         editor.editorModule.onBackSpace();
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('undo validation', () => {
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('redo validation', () => {
         editor.editorHistory.redo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -259,8 +251,8 @@ describe('DeleteSelected content on backspace ', () => {
             editor.editorHistory.redo();
             i++;
         }
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -270,30 +262,27 @@ describe('DeleteSelected content on backspace ', () => {
             i++;
         }
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
     });
 });
 describe('DeleteSelected content on backspace at bookmar end', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, EditorHistory);
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableBookmarkDialog: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -307,7 +296,7 @@ describe('DeleteSelected content on backspace at bookmar end', () => {
         editor.selection.handleShiftHomeKey();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
-        expect(viewer.bookmarks.keys.length).toBe(1);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
     it('Backspace at bookmark start validation', () => {
         editor.selection.handleRightKey();
@@ -316,17 +305,17 @@ describe('DeleteSelected content on backspace at bookmar end', () => {
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.editorModule.onBackSpace();
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('undo validation', () => {
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('redo validation', () => {
         editor.editorHistory.redo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -335,8 +324,8 @@ describe('DeleteSelected content on backspace at bookmar end', () => {
             editor.editorHistory.redo();
             i++;
         }
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -346,8 +335,8 @@ describe('DeleteSelected content on backspace at bookmar end', () => {
             i++;
         }
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as BookmarkElementBox).bookmarkType).toBe(1);
     });
 });
 
@@ -357,24 +346,21 @@ describe('DeleteSelected content on backspace at bookmar end', () => {
 
 describe('DeleteSelected content on delete at bookmark start', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, EditorHistory);
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableBookmarkDialog: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -386,7 +372,7 @@ describe('DeleteSelected content on delete at bookmark start', () => {
         (editor.bookmarkDialogModule as any).addBookmark();
         editor.selection.handleHomeKey();
         editor.editorModule.insertText('sample 1');
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
     });
     it('Backspace at bookmark start validation', () => {
         editor.selection.handleLeftKey();
@@ -396,17 +382,17 @@ describe('DeleteSelected content on delete at bookmark start', () => {
         editor.selection.handleShiftRightKey();
         editor.selection.handleShiftRightKey();
         editor.editorModule.delete();
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('undo validation', () => {
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('redo validation', () => {
         editor.editorHistory.redo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -415,8 +401,8 @@ describe('DeleteSelected content on delete at bookmark start', () => {
             editor.editorHistory.redo();
             i++;
         }
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -426,30 +412,27 @@ describe('DeleteSelected content on delete at bookmark start', () => {
             i++;
         }
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(6);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(0);
     });
 });
 describe('DeleteSelected content on onDelete at bookmar end', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, EditorHistory);
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false, enableBookmarkDialog: true, enableEditorHistory: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -463,7 +446,7 @@ describe('DeleteSelected content on onDelete at bookmar end', () => {
         editor.selection.handleShiftHomeKey();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
-        expect(viewer.bookmarks.keys.length).toBe(1);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
     it('Backspace at bookmark start validation', () => {
         editor.selection.handleRightKey();
@@ -472,17 +455,17 @@ describe('DeleteSelected content on onDelete at bookmar end', () => {
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.editorModule.delete();
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('undo validation', () => {
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('redo validation', () => {
         editor.editorHistory.redo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -491,8 +474,8 @@ describe('DeleteSelected content on onDelete at bookmar end', () => {
             editor.editorHistory.redo();
             i++;
         }
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(4);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('undo and redo validation', () => {
         let i: number = 1;
@@ -502,7 +485,7 @@ describe('DeleteSelected content on onDelete at bookmar end', () => {
             i++;
         }
         editor.editorHistory.undo();
-        expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
-        expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as BookmarkElementBox).bookmarkType).toBe(1);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as BookmarkElementBox).bookmarkType).toBe(1);
     });
 });

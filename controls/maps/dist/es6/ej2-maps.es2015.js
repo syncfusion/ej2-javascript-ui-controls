@@ -4321,6 +4321,7 @@ class LayerPanel {
                             let jsonObject = JSON.parse(json);
                             let resource = jsonObject['resourceSets'][0]['resources'][0];
                             let imageUrl = resource['imageUrl'];
+                            imageUrl = imageUrl.replace('http', 'https');
                             let subDomains = resource['imageUrlSubdomains'];
                             let maxZoom = resource['zoomMax'];
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
@@ -4617,7 +4618,8 @@ class LayerPanel {
             this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
+            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
+                : this.currentFactor), null);
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -5219,47 +5221,63 @@ class ExportUtils {
      * @param type
      * @param fileName
      */
-    export(type, fileName, orientation) {
-        let element = createElement('canvas', {
-            id: 'ej2-canvas',
-            attrs: {
-                'width': this.control.availableSize.width.toString(),
-                'height': this.control.availableSize.height.toString()
-            }
-        });
-        let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-        orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-        let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            this.control.svgObject.outerHTML +
-            '</svg>';
-        let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-            [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-        if (type === 'SVG') {
-            this.triggerDownload(fileName, type, url, isDownload);
-        }
-        else {
-            let image = new Image();
-            let ctx = element.getContext('2d');
-            image.onload = (() => {
-                ctx.drawImage(image, 0, 0);
-                window.URL.revokeObjectURL(url);
-                if (type === 'PDF') {
-                    let document = new PdfDocument();
-                    let imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                    document.pageSettings.orientation = orientation;
-                    imageString = imageString.slice(imageString.indexOf(',') + 1);
-                    document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
-                    if (isDownload) {
-                        document.save(fileName + '.pdf');
-                        document.destroy();
-                    }
-                }
-                else {
-                    this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+    export(type, fileName, exportDownload, orientation) {
+        let promise = new Promise((resolve, reject) => {
+            let canvasElement = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': this.control.availableSize.width.toString(),
+                    'height': this.control.availableSize.height.toString()
                 }
             });
-            image.src = url;
-        }
+            let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+            let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                this.control.svgObject.outerHTML +
+                '</svg>';
+            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (exportDownload) {
+                    this.triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                let image = new Image();
+                let ctx = canvasElement.getContext('2d');
+                image.onload = (() => {
+                    ctx.drawImage(image, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (type === 'PDF') {
+                        let document = new PdfDocument();
+                        let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                        document.pageSettings.orientation = orientation;
+                        imageString = imageString.slice(imageString.indexOf(',') + 1);
+                        document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                        if (exportDownload) {
+                            document.save(fileName + '.pdf');
+                            document.destroy();
+                        }
+                        else {
+                            resolve(null);
+                        }
+                    }
+                    else {
+                        if (exportDownload) {
+                            this.triggerDownload(fileName, type, canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                        }
+                        else {
+                            resolve(canvasElement.toDataURL('image/png'));
+                        }
+                    }
+                });
+                image.src = url;
+            }
+        });
+        return promise;
     }
     /**
      * To trigger the download element
@@ -5319,6 +5337,8 @@ let Maps = class Maps extends Component {
         this.baseTranslatePoint = new Point(0, 0);
         /** @public */
         this.zoomTranslatePoint = new Point(0, 0);
+        /** @private */
+        this.isTileMapSubLayer = false;
         /** @private */
         this.markerNullCount = 0;
         /** @private */
@@ -5481,8 +5501,17 @@ let Maps = class Maps extends Component {
         }
     }
     renderMap() {
-        if (!this.isTileMap && this.legendModule && this.legendSettings.visible) {
-            this.legendModule.renderLegend();
+        if (this.legendModule && this.legendSettings.visible) {
+            if (!this.isTileMap) {
+                this.legendModule.renderLegend();
+            }
+            else {
+                let layerCount = this.layersCollection.length - 1;
+                if (!this.layersCollection[layerCount].isBaseLayer) {
+                    this.isTileMapSubLayer = true;
+                    this.legendModule.renderLegend();
+                }
+            }
         }
         this.createTile();
         if (this.zoomSettings.enable && this.zoomModule) {
@@ -5514,9 +5543,37 @@ let Maps = class Maps extends Component {
             let element = document.getElementById(this.element.id);
             let tileElement = document.getElementById(this.element.id + '_tile_parent');
             let tile = tileElement.getBoundingClientRect();
-            let bottom = svg.bottom - tile.bottom - element.offsetTop;
-            let left = parseFloat(tileElement.style.left) + element.offsetLeft;
-            let top = parseFloat(tileElement.style.top) + element.offsetTop;
+            let bottom;
+            let top;
+            let left;
+            left = parseFloat(tileElement.style.left) + element.offsetLeft;
+            let titleTextSize = measureText(this.titleSettings.text, this.titleSettings.textStyle);
+            let subTitleTextSize = measureText(this.titleSettings.subtitleSettings.text, this.titleSettings.subtitleSettings.textStyle);
+            if (this.isTileMap && this.isTileMapSubLayer && this.legendSettings.position === 'Bottom' && this.legendSettings.visible) {
+                if (this.legendSettings.mode !== 'Default') {
+                    if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
+                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize.height / 2)
+                            - (this.legendModule.legendBorderRect.height / 2);
+                    }
+                    else {
+                        top = parseFloat(tileElement.style.top) + element.offsetTop - this.mapAreaRect.y;
+                    }
+                }
+                else {
+                    left = this.legendModule.legendBorderRect.x;
+                    if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
+                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize['height'] / 2)
+                            - this.legendModule.legendBorderRect.y;
+                    }
+                    else {
+                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize['height'] / 2);
+                    }
+                }
+            }
+            else {
+                bottom = svg.bottom - tile.bottom - element.offsetTop;
+                top = parseFloat(tileElement.style.top) + element.offsetTop;
+            }
             top = (bottom <= 11) ? top : (top * 2);
             left = (bottom <= 11) ? left : (left * 2);
             tileElement.style.top = top + 'px';
@@ -6200,8 +6257,8 @@ let Maps = class Maps extends Component {
     /**
      * To add marker
      * @param minLatitude
-     * @param maxLatitude
      * @param minLongitude
+     * @param maxLatitude
      * @param maxLongitude
      */
     zoomToCoordinates(minLatitude, minLongitude, maxLatitude, maxLongitude) {
@@ -6510,9 +6567,18 @@ let Maps = class Maps extends Component {
      * @param type
      * @param fileName
      */
-    export(type, fileName, orientation) {
+    export(type, fileName, orientation, isDownload) {
         let exportMap = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+        if (isNullOrUndefined(isDownload) || isDownload) {
+            return new Promise((resolve, reject) => {
+                resolve(exportMap.export(type, fileName, true, orientation));
+            });
+        }
+        else {
+            return new Promise((resolve, reject) => {
+                resolve(exportMap.export(type, fileName, isDownload, orientation));
+            });
+        }
     }
     /**
      * To find visibility of layers and markers for required modules load.

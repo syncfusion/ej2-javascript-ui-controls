@@ -426,7 +426,7 @@ export class FormFields {
     }
     // tslint:disable-next-line
     private checkIsReadonly(data: any, inputField: any): void {
-        if (data.IsReadonly) {
+        if (data.IsReadonly || (!this.pdfViewer.enableFormFields)) {
             inputField.disabled = true;
             inputField.style.cursor = 'default';
             inputField.style.backgroundColor = 'none';
@@ -435,6 +435,34 @@ export class FormFields {
             let borderColor: any = data.BackColor;
             inputField.style.backgroundColor = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 0.2 + ')';
             inputField.style.color = 'black';
+        }
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    public formFieldsReadOnly(isReadonly: boolean): void {
+        // tslint:disable-next-line
+        let formFields: any = document.getElementsByClassName('e-pdfviewer-formFields');
+        this.makeformFieldsReadonly(formFields, isReadonly);
+        // tslint:disable-next-line
+        let signatureFields: any = document.getElementsByClassName('e-pdfviewer-signatureformFields');
+        this.makeformFieldsReadonly(signatureFields, isReadonly);
+    }
+    // tslint:disable-next-line
+    private makeformFieldsReadonly(formFields: any, isReadonly: boolean) {
+        for (let i: number = 0; i < formFields.length; i++) {
+            if (formFields[i]) {
+                // tslint:disable-next-line
+                let inputField: any = formFields[i];
+                if (!isReadonly) {
+                    inputField.disabled = true;
+                    inputField.style.cursor = 'default';
+                } else {
+                    // tslint:disable-next-line
+                    inputField.disabled = false;
+                }
+            }
         }
     }
     // tslint:disable-next-line
@@ -717,7 +745,7 @@ export class FormFields {
      * @private
      */
     public destroy(): void {
-        window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
+        this.currentTarget = null;
     }
 
     /**

@@ -499,7 +499,7 @@ export class Toolbar {
      */
     public updateZoomButtons(): void {
         if (this.pdfViewer.magnificationModule && !this.isMagnificationToolDisabled && !Browser.isDevice) {
-            if (this.pdfViewer.magnificationModule.zoomFactor <= 0.5) {
+            if (this.pdfViewer.magnificationModule.zoomFactor <= 0.1) {
                 this.toolbar.enableItems(this.zoomInItem.parentElement, true);
                 this.toolbar.enableItems(this.zoomOutItem.parentElement, false);
             } else if (this.pdfViewer.magnificationModule.zoomFactor >= 4) {
@@ -774,12 +774,12 @@ export class Toolbar {
 
     private createZoomDropdown(): void {
         // tslint:disable-next-line:max-line-length
-        let items: { [key: string]: Object }[] = [{ percent: '50%', id: '0' }, { percent: '75%', id: '1' }, { percent: '100%', id: '2' }, { percent: '125%', id: '3' },
+        let items: { [key: string]: Object }[] = [{ percent: '10%', id: '0' }, { percent: '25%', id: '1' }, { percent: '50%', id: '2' }, { percent: '75%', id: '3' }, { percent: '100%', id: '4' }, { percent: '125%', id: '5' },
         // tslint:disable-next-line:max-line-length
-        { percent: '150%', id: '4' }, { percent: '200%', id: '5' }, { percent: '400%', id: '6' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Page'), id: '7' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Width'), id: '8' }, { percent: this.pdfViewer.localeObj.getConstant('Automatic'), id: '9' }
+        { percent: '150%', id: '6' }, { percent: '200%', id: '7' }, { percent: '400%', id: '8' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Page'), id: '9' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Width'), id: '10' }, { percent: this.pdfViewer.localeObj.getConstant('Automatic'), id: '11' }
         ];
         // tslint:disable-next-line:max-line-length
-        this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '402px', showClearButton: false });
+        this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false });
         this.zoomDropDown.appendTo(this.pdfViewerBase.getElement('_zoomDropDown'));
     }
 
@@ -1235,8 +1235,13 @@ export class Toolbar {
             if (this.zoomDropDown.text === currentPercent) {
                 (this.zoomDropDown.element as HTMLInputElement).value = currentPercent;
             }
-            if (this.zoomDropDown.index === 9) {
-                this.zoomDropDown.value = 2;
+            if (this.zoomDropDown.index === 11) {
+                this.zoomDropDown.value = 4;
+            }
+            if (zoomFactor <= 0.25) {
+                this.pdfViewerBase.isMinimumZoom = true;
+            } else {
+                this.pdfViewerBase.isMinimumZoom = false;
             }
             // tslint:disable-next-line
             this.zoomDropDown.text = currentPercent;

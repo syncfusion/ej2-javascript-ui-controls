@@ -190,9 +190,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Allows additional HTML attributes such as title, name, etc., and
      * accepts n number of attributes in a key-value pair format.
      * 
-     * {% codeBlock src="dropdownlist/html-attributes-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="dropdownlist/html-attributes-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='dropdownlist/htmlAttributes/index.md' %}{% endcodeBlock %}
      *
      * @default {}
      */
@@ -202,9 +200,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Accepts the external `Query`
      * that execute along with data processing.
      * 
-     * {% codeBlock src="dropdownlist/query-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="dropdownlist/query-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='dropdownlist/query/index.md' %}{% endcodeBlock %}
      * 
      * @default null
      * @deprecated
@@ -700,7 +696,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 currentTarget !== this.inputWrapper.container) || this.getModuleName() !== 'dropdownlist' &&
             !this.inputWrapper.container.contains(target) || this.isTabKey) {
             this.isDocumentClick = this.isPopupOpen ? true : false;
-            this.focusOutAction();
+            this.focusOutAction(e);
             this.isTabKey = false;
         }
         if (this.isRequested && !this.isPopupOpen && !this.isPreventBlur) {
@@ -709,9 +705,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    protected focusOutAction(): void {
+    protected focusOutAction(e?: MouseEvent | KeyboardEventArgs): void {
         this.isInteracted = false;
-        this.focusOut();
+        this.focusOut(e);
         this.onFocusOut();
     }
 
@@ -1428,9 +1424,15 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected setHiddenValue(): void {
         if (!isNullOrUndefined(this.value)) {
-            this.hiddenElement.innerHTML = '<option selected>' + this.text + '</option>';
-            let selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
-            selectedElement.setAttribute('value', this.value.toString());
+            if (this.isServerBlazor && this.hiddenElement.querySelector('option')) {
+                let selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
+                selectedElement.textContent = this.text;
+                selectedElement.setAttribute('value', this.value.toString());
+            } else {
+                this.hiddenElement.innerHTML = '<option selected>' + this.text + '</option>';
+                let selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
+                selectedElement.setAttribute('value', this.value.toString());
+            }
         } else {
             this.hiddenElement.innerHTML = '';
         }
@@ -2388,6 +2390,11 @@ export class DropDownList extends DropDownBase implements IInput {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
+        let isChangeValue: boolean = Object.keys(newProp).indexOf('value') !== -1 && isNullOrUndefined(newProp.value);
+        let isChangeText: boolean = Object.keys(newProp).indexOf('text') !== -1 && isNullOrUndefined(newProp.text);
+        if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {
+            this.itemData = null;
+        }
     }
     protected updateDataSource(props?: DropDownListModel): void {
         if (this.inputElement.value !== '' || (!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
@@ -2682,7 +2689,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             !isNullOrUndefined(this.selectedLI) && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
-            this.clearAll();
+            this.clearAll(e);
         }
     }
     /**
@@ -2711,12 +2718,12 @@ export class DropDownList extends DropDownBase implements IInput {
      * Moves the focus from the component if the component is already focused. 
      * @returns void.
      */
-    public focusOut(): void {
+    public focusOut(e?: MouseEvent | KeyboardEventArgs): void {
         if (!this.enabled) {
             return;
         }
         this.isTyped = true;
-        this.hidePopup();
+        this.hidePopup(e);
         this.targetElement().blur();
         removeClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
     }

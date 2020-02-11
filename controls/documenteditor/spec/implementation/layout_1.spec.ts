@@ -18267,10 +18267,10 @@ describe('Document Layout behaviour validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor();
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -18293,10 +18293,10 @@ describe('Tab Character width calculation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor)
         editor = new DocumentEditor({ isReadOnly: false, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -18331,15 +18331,15 @@ describe('Tab Character width calculation', () => {
         sections.push(section);
         let hfs: HeaderFooters = editor.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         (editor as any).clearPreservedCollectionsInViewer();
-        editor.viewer.headersFooters.push(hfs);
+        editor.documentHelper.headersFooters.push(hfs);
         editor.editorModule.intializeDefaultStyles();
-        let basedOn = editor.viewer.styles.findByName('Normal') as WStyle;
+        let basedOn = editor.documentHelper.styles.findByName('Normal') as WStyle;
         let styles = new WParagraphStyle();
         styles.name = 'Headers';
         styles.type = 'Paragraph';
         styles.basedOn = basedOn;
         styles.next = basedOn;
-        editor.viewer.styles.push(styles);
+        editor.documentHelper.styles.push(styles);
         paragraph.paragraphFormat.baseStyle = styles;
         paragraph.paragraphFormat.listFormat.baseStyle = styles;
         let tabStop: WTabStop = new WTabStop();
@@ -18347,7 +18347,7 @@ describe('Tab Character width calculation', () => {
         tabStop.tabJustification = 'Left';
         tabStop.tabLeader = 'Underscore';
         styles.paragraphFormat.tabs.push(tabStop);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         expect(textElement.width + tabElement.width).toBe(HelperMethods.convertPointToPixel(tabStop.position));
         let elementWidth: number = textElement.width;
         editor.selection.moveToLineEnd();
@@ -18379,15 +18379,15 @@ describe('Tab Character width calculation', () => {
         sections.push(section);
         let hfs: HeaderFooters = editor.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         (editor as any).clearPreservedCollectionsInViewer();
-        editor.viewer.headersFooters.push(hfs);
+        editor.documentHelper.headersFooters.push(hfs);
         editor.editorModule.intializeDefaultStyles();
-        let basedOn = editor.viewer.styles.findByName('Normal') as WStyle;
+        let basedOn = editor.documentHelper.styles.findByName('Normal') as WStyle;
         let styles = new WParagraphStyle();
         styles.name = 'Headers';
         styles.type = 'Paragraph';
         styles.basedOn = basedOn;
         styles.next = basedOn;
-        editor.viewer.styles.push(styles);
+        editor.documentHelper.styles.push(styles);
         paragraph.paragraphFormat.baseStyle = styles;
         paragraph.paragraphFormat.listFormat.baseStyle = styles;
         let tabStop: WTabStop = new WTabStop();
@@ -18395,7 +18395,7 @@ describe('Tab Character width calculation', () => {
         tabStop.tabJustification = 'Center';
         tabStop.tabLeader = 'Underscore';
         styles.paragraphFormat.tabs.push(tabStop);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         expect(textElement.width + tabElement.width).toBe(HelperMethods.convertPointToPixel(tabStop.position));
         let elementWidth: number = textElement.width;
         editor.selection.moveToLineEnd();
@@ -18429,15 +18429,15 @@ describe('Tab Character width calculation', () => {
         sections.push(section);
         let hfs: HeaderFooters = editor.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         (editor as any).clearPreservedCollectionsInViewer();
-        editor.viewer.headersFooters.push(hfs);
+        editor.documentHelper.headersFooters.push(hfs);
         editor.editorModule.intializeDefaultStyles();
-        let basedOn = editor.viewer.styles.findByName('Normal') as WStyle;
+        let basedOn = editor.documentHelper.styles.findByName('Normal') as WStyle;
         let styles = new WParagraphStyle();
         styles.name = 'Headers';
         styles.type = 'Paragraph';
         styles.basedOn = basedOn;
         styles.next = basedOn;
-        editor.viewer.styles.push(styles);
+        editor.documentHelper.styles.push(styles);
         paragraph.paragraphFormat.baseStyle = styles;
         paragraph.paragraphFormat.listFormat.baseStyle = styles;
         let tabStop: WTabStop = new WTabStop();
@@ -18445,7 +18445,7 @@ describe('Tab Character width calculation', () => {
         tabStop.tabJustification = 'Center';
         tabStop.tabLeader = 'Underscore';
         styles.paragraphFormat.tabs.push(tabStop);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         expect(textElement.width + tabElement.width).toBe(HelperMethods.convertPointToPixel(tabStop.position));
         let elementWidth: number = textElement.width;
         editor.selection.moveToLineEnd();

@@ -271,6 +271,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     private panelsInitialModel: PanelModel[];
     protected isRenderComplete: boolean;
     protected isMouseUpBound: boolean;
+    protected isMouseMoveBound: boolean;
     protected contentTemplateChild: HTMLElement[];
     private isBlazor: boolean = false;
     private isInlineRendering: boolean = false;
@@ -770,7 +771,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             for (let i: number = 0; i < panelElements.length; i++) {
                 let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                 EventHandler.add((<HTMLElement>panelElements[i]), eventName, this.downResizeHandler, this);
-                if (Browser.info.name !== 'mise') {
+                if (Browser.info.name !== 'msie') {
                     EventHandler.add((<HTMLElement>panelElements[i]), 'touchstart', this.touchDownResizeHandler, this);
                 }
             }
@@ -787,7 +788,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.lastMouseY = e.pageY;
         let moveEventName: string = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
         let upEventName: string = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
-        EventHandler.add(document, moveEventName, this.moveResizeHandler, this);
+        if (!this.isMouseMoveBound) {
+            EventHandler.add(document, moveEventName, this.moveResizeHandler, this);
+            this.isMouseMoveBound = true;
+        }
         if (!this.isMouseUpBound) {
             EventHandler.add(document, upEventName, this.upResizeHandler, this);
             this.isMouseUpBound = true;
@@ -817,7 +821,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.downHandler(e);
         this.lastMouseX = e.changedTouches[0].pageX;
         this.lastMouseY = e.changedTouches[0].pageY;
-        EventHandler.add(document, 'touchmove', this.touchMoveResizeHandler, this);
+        if (!this.isMouseMoveBound) {
+            EventHandler.add(document, 'touchmove', this.touchMoveResizeHandler, this);
+            this.isMouseMoveBound = true;
+        }
         if (!this.isMouseUpBound) {
             EventHandler.add(document, 'touchend', this.upResizeHandler, this);
             this.isMouseUpBound = true;
@@ -988,11 +995,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             let upEventName: string = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
             EventHandler.remove(document, moveEventName, this.moveResizeHandler);
             EventHandler.remove(document, upEventName, this.upResizeHandler);
-            if (Browser.info.name !== 'mise') {
+            if (Browser.info.name !== 'msie') {
                 EventHandler.remove(document, 'touchmove', this.touchMoveResizeHandler);
                 EventHandler.remove(document, 'touchend', this.upResizeHandler);
             }
             this.isMouseUpBound = false;
+            this.isMouseMoveBound = false;
             if (this.shadowEle) {
                 detach(this.shadowEle);
             }
@@ -2587,7 +2595,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             for (let i: number = 0; i < cell.querySelectorAll('.e-resize').length; i++) {
                 let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                 EventHandler.add(cell.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
-                if (Browser.info.name !== 'mise') {
+                if (Browser.info.name !== 'msie') {
                     EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
                 }
             }
@@ -2939,7 +2947,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                             let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                             let element: HTMLElement = <HTMLElement>panelElements[i];
                             EventHandler.remove(element, eventName, this.downResizeHandler);
-                            if (Browser.info.name !== 'mise') {
+                            if (Browser.info.name !== 'msie') {
                                 EventHandler.remove(element, 'touchstart', this.touchDownResizeHandler);
                             }
                         }

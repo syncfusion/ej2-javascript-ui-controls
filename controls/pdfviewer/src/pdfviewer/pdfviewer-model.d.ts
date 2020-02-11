@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -172,6 +172,11 @@ export interface StrikethroughSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -209,6 +214,11 @@ export interface UnderlineSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -245,6 +255,11 @@ export interface HighlightSettingsModel {
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
 
 }
 
@@ -308,6 +323,36 @@ export interface LineSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -370,6 +415,36 @@ export interface ArrowSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -417,6 +492,36 @@ export interface RectangleSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -463,6 +568,36 @@ export interface CircleSettingsModel {
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
 
 }
 
@@ -548,6 +683,36 @@ export interface PolygonSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -574,6 +739,36 @@ export interface StampSettingsModel {
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
 
 }
 
@@ -621,6 +816,31 @@ export interface CustomStampSettingsModel {
      * Specifies to maintain the newly added custom stamp element in the menu items.
      */
     isAddToSubMenu?: boolean;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
 
 }
 
@@ -684,6 +904,41 @@ export interface DistanceSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
+    /**
+     * specifies the leader length of the annotation.
+     */
+    leaderLength?: number;
+
 }
 
 /**
@@ -741,6 +996,36 @@ export interface PerimeterSettingsModel {
      */
     borderDashArray?: number;
 
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -782,6 +1067,36 @@ export interface AreaSettingsModel {
      * specified the thickness of the annotation.
      */
     thickness?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
 }
 
@@ -830,6 +1145,36 @@ export interface RadiusSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
 }
 
 /**
@@ -872,6 +1217,36 @@ export interface VolumeSettingsModel {
      */
     thickness?: number;
 
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -903,6 +1278,16 @@ export interface StickyNotesSettingsModel {
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
+    /**
+     * specifies the lock action of the annotation.
+     */
+    isLock?: boolean;
 
 }
 
@@ -1027,6 +1412,36 @@ export interface FreeTextSettingsModel {
      * specifies the annotation selector settings of the annotation.
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
 
 }
 
@@ -1254,6 +1669,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @default false
      */
     enableTextMarkupResizer?: boolean;
+
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     * @default false
+     */
+    enableMultiPageAnnotation?: boolean;
 
     /**
      * Enable or disables the download option of PdfViewer.
@@ -1720,6 +2141,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'AnnotationMoved'
      */
     annotationMove?: EmitType<AnnotationMoveEventArgs>;
+
+    /**
+     * Triggers when mouse over the annotation object.
+     * @event
+     */
+    annotationMouseover?: EmitType<AnnotationMouseoverEventArgs>;
 
     /**
      * Triggers when an imported annotations started in the PDF document.

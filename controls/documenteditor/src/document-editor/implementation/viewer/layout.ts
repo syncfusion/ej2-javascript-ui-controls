@@ -14,13 +14,14 @@ import {
     TableRowWidget, TableWidget, TextElementBox, Widget, CommentElementBox
 } from './page';
 import { TextSizeInfo } from './text-helper';
-import { LayoutViewer, PageLayoutViewer } from './viewer';
+import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 
 /** 
  * @private
  */
 export class Layout {
-    private viewer: LayoutViewer;
+    //private viewer:LayoutViewer;
+    private documentHelper: DocumentHelper;
     private value: number;
     /**
      * @private
@@ -29,6 +30,7 @@ export class Layout {
     /**
      * @private
      */
+    public isRelayout: boolean = true;
     public isInitialLoad: boolean = true;
     private fieldBegin: FieldElementBox = undefined;
     private maxTextHeight: number = 0;
@@ -67,24 +69,27 @@ export class Layout {
     }
 
     /**
-     * viewer definition
+     * documentHelper definition
      */
-    constructor(viewer: LayoutViewer) {
-        this.viewer = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
+    }
+    get viewer(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
     /**
      * @private
      */
     public layout(): void {
         // Todo: Need to handle complete document layout(relayout).
-        let page: Page = this.viewer.pages[0];
+        let page: Page = this.documentHelper.pages[0];
         let body: BodyWidget = page.bodyWidgets[0];
     }
     /**
      * Releases un-managed and - optionally - managed resources.
      */
     public destroy(): void {
-        this.viewer = undefined;
+        this.documentHelper = undefined;
         this.value = undefined;
         this.allowLayout = undefined;
         this.isInitialLoad = undefined;
@@ -104,10 +109,10 @@ export class Layout {
             let section: BodyWidget = sections[i] as BodyWidget;
             page = this.viewer.createNewPage(section);
             this.addBodyWidget(this.viewer.clientActiveArea, section);
-            if (this.viewer.pages.length > 1) {
+            if (this.documentHelper.pages.length > 1) {
                 let pageIndex: number = 0;
-                for (let i: number = 0; i < this.viewer.pages.length; i++) {
-                    let prevPage: Page = this.viewer.pages[i];
+                for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+                    let prevPage: Page = this.documentHelper.pages[i];
                     let prevSectionIndex: number = prevPage.sectionIndex;
                     let index: number = section.index;
                     if (prevSectionIndex > index || prevPage === page) {
@@ -115,23 +120,24 @@ export class Layout {
                     }
                     pageIndex++;
                 }
-                if (pageIndex < this.viewer.pages.length - 1) {
-                    this.viewer.insertPage(pageIndex, page);
+                if (pageIndex < this.documentHelper.pages.length - 1) {
+                    this.documentHelper.insertPage(pageIndex, page);
                 }
             }
             this.layoutSection(section, 0, this.viewer);
         }
-        this.layoutComments(this.viewer.comments);
+        this.layoutComments(this.documentHelper.comments);
         this.updateFieldElements();
         /* tslint:disable:align */
         setTimeout((): void => {
-            if (this.viewer) {
-                this.viewer.isScrollHandler = true;
-                if (this.viewer.owner.enableSpellCheck && this.viewer.owner.spellChecker.enableOptimizedSpellCheck) {
-                    this.viewer.triggerElementsOnLoading = true;
+            if (this.documentHelper) {
+                this.documentHelper.isScrollHandler = true;
+                if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck) {
+                    this.documentHelper.triggerElementsOnLoading = true;
                 }
+                this.documentHelper.clearContent();
                 this.viewer.updateScrollBars();
-                this.viewer.isScrollHandler = false;
+                this.documentHelper.isScrollHandler = false;
                 this.isInitialLoad = false;
             }
         }, 50);
@@ -200,7 +206,7 @@ export class Layout {
         let sectionIndex: number = node.page.sectionIndex;
         let typeIndex: number = (this.viewer as PageLayoutViewer).getHeaderFooter(node.headerFooterType);
         let clone: HeaderFooterWidget = node.clone();
-        this.viewer.headersFooters[sectionIndex][typeIndex] = clone;
+        this.documentHelper.headersFooters[sectionIndex][typeIndex] = clone;
         for (let j: number = 0; j < clone.childWidgets.length; j++) {
             let child: BlockWidget = clone.childWidgets[j] as BlockWidget;
             if (child instanceof TableWidget) {
@@ -229,7 +235,7 @@ export class Layout {
             for (let i: number = 0; i < line.children.length; i++) {
                 let element: ElementBox = line.children[i] as ElementBox;
                 if (element instanceof FieldElementBox && element.fieldType !== 0) {
-                    element.linkFieldCharacter(this.viewer);
+                    element.linkFieldCharacter(this.documentHelper);
                 }
             }
         }
@@ -374,7 +380,7 @@ export class Layout {
             paragraphWidget.paragraphFormat.listFormat.listId === -1) {
             let top: number = 0;
             let bottom: number = 0;
-            let width: number = this.viewer.textHelper.getParagraphMarkWidth(paragraphWidget.characterFormat);
+            let width: number = this.documentHelper.textHelper.getParagraphMarkWidth(paragraphWidget.characterFormat);
             let left: number = area.x;
             if (paragraphWidget.paragraphFormat.textAlignment === 'Center') {
                 left += (area.width - width) / 2;
@@ -403,20 +409,25 @@ export class Layout {
         line.paragraph = paragraphWidget;
         return line;
     }
-    private isFirstElementWithPageBreak(paragraphWidget: ParagraphWidget): boolean {
+    /**
+     * @private
+     */
+    public isFirstElementWithPageBreak(paragraphWidget: ParagraphWidget): boolean {
         let isPageBreak: boolean = false;
-        let lineWidget: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
-        if (lineWidget) {
-            let element: ElementBox = lineWidget.children[0];
-            while (element) {
-                if (element instanceof BookmarkElementBox && element.name.indexOf('_') >= 0) {
-                    element = element.nextElement;
-                    continue;
+        if (this.viewer instanceof PageLayoutViewer) {
+            let lineWidget: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
+            if (lineWidget) {
+                let element: ElementBox = lineWidget.children[0];
+                while (element) {
+                    if (element instanceof BookmarkElementBox && element.name.indexOf('_') >= 0) {
+                        element = element.nextElement;
+                        continue;
+                    }
+                    if (element instanceof TextElementBox && element.text === '\f') {
+                        isPageBreak = true;
+                    }
+                    break;
                 }
-                if (element instanceof TextElementBox && element.text === '\f') {
-                    isPageBreak = true;
-                }
-                break;
             }
         }
         return isPageBreak;
@@ -512,8 +523,8 @@ export class Layout {
         let text: string = '';
         let index: number = element.indexInOwner;
         if (element instanceof FieldElementBox) {
-            if (element.fieldType === 0 && this.viewer.fields.indexOf(element) === -1) {
-                this.viewer.fields.push(element);
+            if (element.fieldType === 0 && this.documentHelper.fields.indexOf(element) === -1) {
+                this.documentHelper.fields.push(element);
             }
             this.layoutFieldCharacters(element);
             if (element.line.isLastLine() && isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
@@ -535,10 +546,10 @@ export class Layout {
         if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
             element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
             if (element instanceof BookmarkElementBox) {
-                if (element.bookmarkType === 0 && !this.viewer.bookmarks.containsKey(element.name)) {
-                    this.viewer.bookmarks.add(element.name, element);
-                } else if (element.bookmarkType === 1 && this.viewer.bookmarks.containsKey(element.name)) {
-                    let bookmrkElement: BookmarkElementBox = this.viewer.bookmarks.get(element.name);
+                if (element.bookmarkType === 0 && !this.documentHelper.bookmarks.containsKey(element.name)) {
+                    this.documentHelper.bookmarks.add(element.name, element);
+                } else if (element.bookmarkType === 1 && this.documentHelper.bookmarks.containsKey(element.name)) {
+                    let bookmrkElement: BookmarkElementBox = this.documentHelper.bookmarks.get(element.name);
                     if (isNullOrUndefined(bookmrkElement.reference)) {
                         bookmrkElement.reference = element;
                         element.reference = bookmrkElement;
@@ -559,7 +570,7 @@ export class Layout {
         }
         let width: number = element.width;
         if (element instanceof FieldTextElementBox) {
-            text = this.viewer.getFieldResult((element as FieldTextElementBox).fieldBegin, element.paragraph.bodyWidget.page);
+            text = this.documentHelper.getFieldResult((element as FieldTextElementBox).fieldBegin, element.paragraph.bodyWidget.page);
             if (text !== '') {
                 (element as FieldTextElementBox).text = text;
             } else {
@@ -572,7 +583,12 @@ export class Layout {
         }
         // Here field code width and height update need to skipped based on the hidden property.
         if (element instanceof TextElementBox) {
-            width = this.viewer.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
+            // if (this.isRelayout) {
+            width = this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
+            /*} else {
+                width = element.trimEndWidth;
+            }*/
+
             if (element.text === '\t') {
                 element.width = this.getTabWidth(paragraph, this.viewer, index, line, element as TabElementBox);
             }
@@ -637,7 +653,7 @@ export class Layout {
             this.moveToNextLine(element.line);
             if (text === '\v' && isNullOrUndefined(element.nextNode)) {
                 this.layoutEmptyLineWidget(paragraph, true, line, true);
-            } else if (text === '\f') {
+            } else if (text === '\f' && this.viewer instanceof PageLayoutViewer) {
                 if (isNullOrUndefined(element.nextNode)) {
                     this.moveToNextPage(this.viewer, element.line, true);
                 } else {
@@ -652,11 +668,11 @@ export class Layout {
      */
     public hasValidElement(paragraph: ParagraphWidget): boolean {
         let line: LineWidget = paragraph.firstChild as LineWidget;
-        if (line && !isNullOrUndefined(this.viewer.selection)) {
+        if (line && !isNullOrUndefined(this.documentHelper.selection)) {
             let elementBox: ElementBox = line.children[0];
             while (elementBox) {
                 if (elementBox instanceof FieldElementBox) {
-                    elementBox = this.viewer.selection.getNextValidElementForField(elementBox);
+                    elementBox = this.documentHelper.selection.getNextValidElementForField(elementBox);
                     if (!elementBox.line.paragraph.equals(paragraph)) {
                         return false;
                     }
@@ -671,10 +687,10 @@ export class Layout {
     }
     private updateFieldText(element: ElementBox): void {
         // tslint:disable-next-line:max-line-length
-        let text: string = this.viewer.getFieldResult((element as FieldTextElementBox).fieldBegin, element.paragraph.bodyWidget.page);
+        let text: string = this.documentHelper.getFieldResult((element as FieldTextElementBox).fieldBegin, element.paragraph.bodyWidget.page);
         if (text !== '') {
             (element as FieldTextElementBox).text = text;
-            this.viewer.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
+            this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
         }
     }
     private checkLineWidgetWithClientArea(line: LineWidget, element: ElementBox): void {
@@ -706,7 +722,7 @@ export class Layout {
         }
     }
     private splitBySpecialCharacters(span: TextElementBox): void {
-        if (this.viewer.textHelper.isRTLText(span.text) && this.viewer.textHelper.containsSpecialChar(span.text)) {
+        if (this.documentHelper.textHelper.isRTLText(span.text) && this.documentHelper.textHelper.containsSpecialChar(span.text)) {
             let inlineIndex: number = span.line.children.indexOf(span);
             let text: string = span.text;
             let specialChars: string = '*|.\:[]{}`\;()@&$#%!~';
@@ -786,20 +802,20 @@ export class Layout {
     private layoutFieldCharacters(element: FieldElementBox): void {
         if (element.fieldType === 0) {
             if (!this.isFieldCode && (!isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
-                this.viewer.fieldStacks.push(element);
+                this.documentHelper.fieldStacks.push(element);
                 this.isFieldCode = true;
                 element.hasFieldEnd = true;
             }
-        } else if (this.viewer.fieldStacks.length > 0) {
+        } else if (this.documentHelper.fieldStacks.length > 0) {
             if (element.fieldType === 2) {
-                let field: FieldElementBox = this.viewer.fieldStacks[this.viewer.fieldStacks.length - 1];
+                let field: FieldElementBox = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
                 if (field.fieldSeparator === element && (!isNullOrUndefined(field.fieldEnd) || field.hasFieldEnd)) {
                     this.isFieldCode = false;
                 }
             } else {
-                let field: FieldElementBox = this.viewer.fieldStacks[this.viewer.fieldStacks.length - 1];
+                let field: FieldElementBox = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
                 if (element === field.fieldEnd) {
-                    this.viewer.fieldStacks.pop();
+                    this.documentHelper.fieldStacks.pop();
                     this.isFieldCode = false;
                 }
             }
@@ -815,7 +831,7 @@ export class Layout {
         let whiteSpaceCount: number = 0;
         isShiftEnter = isNullOrUndefined(isShiftEnter) ? false : isShiftEnter;
         //Calculate line height and descent based on formatting defined in paragraph.
-        let paragraphMarkSize: TextSizeInfo = this.viewer.textHelper.getParagraphMarkSize(paragraph.characterFormat);
+        let paragraphMarkSize: TextSizeInfo = this.documentHelper.textHelper.getParagraphMarkSize(paragraph.characterFormat);
         let maxHeight: number = paragraphMarkSize.Height;
         let beforeSpacing: number = this.getBeforeSpacing(paragraph);
         let lineWidget: LineWidget;
@@ -903,11 +919,11 @@ export class Layout {
         if (!this.isFieldCode) {
             if (!isNullOrUndefined(paragraph.paragraphFormat)
                 && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)
-                && !isNullOrUndefined(this.viewer.getListById(paragraph.paragraphFormat.listFormat.listId)) &&
+                && !isNullOrUndefined(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId)) &&
                 paragraph.paragraphFormat.listFormat.listLevelNumber >= 0
                 && paragraph.paragraphFormat.listFormat.listLevelNumber < 9) {
                 this.clearListElementBox(paragraph);
-                this.layoutList(paragraph, this.viewer);
+                this.layoutList(paragraph, this.documentHelper);
             } else if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId === -1) {
                 this.clearListElementBox(paragraph);
             }
@@ -917,9 +933,9 @@ export class Layout {
      * Layouts list.
      * @param viewer     
      */
-    private layoutList(paragraph: ParagraphWidget, viewer: LayoutViewer): void {
-        let list: WList = viewer.getListById(paragraph.paragraphFormat.listFormat.listId);
-        viewer.updateClientWidth(-HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
+    private layoutList(paragraph: ParagraphWidget, documentHelper: DocumentHelper): void {
+        let list: WList = documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
+        this.viewer.updateClientWidth(-HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
         let currentListLevel: WListLevel = this.getListLevel(list, paragraph.paragraphFormat.listFormat.listLevelNumber);
         // if (isNullOrUndefined(currentListLevel)) {
         //     return;
@@ -937,7 +953,7 @@ export class Layout {
             element.text = this.getListNumber(paragraph.paragraphFormat.listFormat);
         }
 
-        if (this.viewer.isIosDevice) {
+        if (this.documentHelper.isIosDevice) {
             let text: string = element.text;
             text = text === '\uf0b7' ? '\u25CF' : text === '\uf06f' + '\u0020' ? '\u25CB' : text;
             if (text !== element.text) {
@@ -945,13 +961,13 @@ export class Layout {
                 element.listLevel.characterFormat.fontFamily = '';
             }
         }
-        viewer.textHelper.updateTextSize(element, paragraph);
+        documentHelper.textHelper.updateTextSize(element, paragraph);
         let moveToNextPage: boolean;
         if (this.viewer instanceof PageLayoutViewer
             && this.viewer.clientActiveArea.height < element.height && this.viewer.clientActiveArea.y !== this.viewer.clientArea.y) {
             moveToNextPage = true;
         }
-        viewer.cutFromLeft(viewer.clientActiveArea.x + element.width);
+        this.viewer.cutFromLeft(this.viewer.clientActiveArea.x + element.width);
         //Adds the text element to the line
         lineWidget.children.splice(0, 0, element);
         if (currentListLevel.followCharacter !== 'None') {
@@ -959,12 +975,12 @@ export class Layout {
             if (currentListLevel.followCharacter === 'Tab') {
                 element.text = '\t';
                 let index: number = lineWidget.children.indexOf(element);
-                element.width = this.getTabWidth(paragraph, viewer, index, lineWidget, element);
+                element.width = this.getTabWidth(paragraph, this.viewer, index, lineWidget, element);
             } else {
                 element.text = ' ';
-                viewer.textHelper.updateTextSize(element, paragraph);
+                documentHelper.textHelper.updateTextSize(element, paragraph);
             }
-            viewer.cutFromLeft(viewer.clientActiveArea.x + element.width);
+            this.viewer.cutFromLeft(this.viewer.clientActiveArea.x + element.width);
             //Adds the tabSpace to the line
             lineWidget.children.splice(1, 0, element);
             element.line = lineWidget;
@@ -975,7 +991,7 @@ export class Layout {
             return;
         }
         if (currentListLevel.followCharacter !== 'None') {
-            viewer.updateClientWidth(HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
+            this.viewer.updateClientWidth(HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
         }
     }
     /**
@@ -1103,9 +1119,11 @@ export class Layout {
                 index += prevLength - text.length;
             }
             splittedElementBox.characterFormat.copyFormat(elementBox.characterFormat);
-            splittedElementBox.width = this.viewer.textHelper.getWidth(splittedElementBox.text, characterFormat);
+            splittedElementBox.width = this.documentHelper.textHelper.getWidth(splittedElementBox.text, characterFormat);
+            splittedElementBox.trimEndWidth = splittedElementBox.width;
             elementBox.text = elementBox.text.substr(0, index);
             elementBox.width -= splittedElementBox.width;
+            elementBox.trimEndWidth = elementBox.width;
             splittedElementBox.height = elementBox.height;
             splittedElementBox.baselineOffset = elementBox.baselineOffset;
             this.splitErrorCollection(elementBox, splittedElementBox);
@@ -1159,7 +1177,7 @@ export class Layout {
         let index: number = this.getTextSplitIndexByCharacter(this.viewer.clientArea.width, this.viewer.clientActiveArea.width, text, width, characterFormat);
         let splitWidth: number = 0;
         if (index < textElement.length) {
-            splitWidth = this.viewer.textHelper.measureTextExcludingSpaceAtEnd(text.substring(0, index), characterFormat);
+            splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.substring(0, index), characterFormat);
             text = text.substring(index);
         }
         if (splitWidth > this.viewer.clientActiveArea.width && textElement.indexInOwner > 0) {
@@ -1174,8 +1192,10 @@ export class Layout {
             splittedElement.errorCollection = textElement.errorCollection;
             textElement.text = textElement.text.substr(0, index);
             splittedElement.characterFormat.copyFormat(textElement.characterFormat);
-            splittedElement.width = this.viewer.textHelper.getWidth(splittedElement.text, characterFormat);
+            splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, characterFormat);
+            splittedElement.trimEndWidth = splittedElement.width;
             textElement.width -= splittedElement.width;
+            textElement.trimEndWidth = textElement.width;
             splittedElement.height = textElement.height;
             splittedElement.baselineOffset = textElement.baselineOffset;
             lineWidget.children.splice(textElement.indexInOwner + 1, 0, splittedElement);
@@ -1221,12 +1241,14 @@ export class Layout {
                     splittedElement.text = splittedText;
                     splittedElement.characterFormat.copyFormat(textElement.characterFormat);
                     splittedElement.line = lineWidget;
-                    splittedElement.width = this.viewer.textHelper.getWidth(splittedElement.text, format);
+                    splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, format);
+                    splittedElement.trimEndWidth = splittedElement.width;
                     splittedElement.height = textElement.height;
                     splittedElement.baselineOffset = textElement.baselineOffset;
                     lineWidget.children.splice(indexOf, 0, splittedElement);
                     textElement.text = text;
                     textElement.width -= splittedElement.width;
+                    textElement.trimEndWidth = textElement.width;
                     if (textElement.width === 0) {
                         lineWidget.children.splice(lineWidget.children.indexOf(textElement), 1);
                     }
@@ -1257,7 +1279,7 @@ export class Layout {
             index = characterUptoWS;
             //Checks whether text not starts with white space. If starts with white space, no need to check previous text blocks.
             if (index > 0) {
-                textWidth = this.viewer.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, index), characterFormat);
+                textWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, index), characterFormat);
             }
             if (this.viewer.clientActiveArea.width < textWidth) {
                 //Check and split the previous text elements to next line.            
@@ -1348,7 +1370,7 @@ export class Layout {
 
         if (isNaN(this.maxTextHeight)) {
             //Calculate line height and descent based on formatting defined in paragraph.
-            let measurement: TextSizeInfo = this.viewer.textHelper.measureText('a', paragraph.characterFormat);
+            let measurement: TextSizeInfo = this.documentHelper.textHelper.measureText('a', paragraph.characterFormat);
             height = measurement.Height;
             maxDescent = height - measurement.BaselineOffset;
         } else {
@@ -1522,7 +1544,7 @@ export class Layout {
                         spaceCount -= text.length - HelperMethods.trimEnd(text).length;
                     }
                     if (whiteSpaceCount < spaceCount) {
-                        width = this.viewer.textHelper.measureTextExcludingSpaceAtEnd(text, textElement.characterFormat);
+                        width = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text, textElement.characterFormat);
                         spaceCount = whiteSpaceCount;
                     }
 
@@ -1571,7 +1593,7 @@ export class Layout {
             // cellWidget.childWidgets.push(paragraphWidget);
             paragraphWidget.containerWidget = cellWidget;
         } else {
-            if (!paragraphWidget.isEndsWithPageBreak) {
+            if (!paragraphWidget.isEndsWithPageBreak || viewer instanceof WebLayoutViewer) {
                 paragraphWidget.height = viewer.clientActiveArea.y - paragraphWidget.y;
             }
             //Adds the paragraph widget to the Header Footer/ Body widget.
@@ -1588,8 +1610,10 @@ export class Layout {
                 this.shiftFooterChildLocation(paragraphWidget.bodyWidget, this.viewer);
             }
         }
+        if (viewer instanceof WebLayoutViewer && paragraphWidget.containerWidget instanceof BodyWidget) {
+            paragraphWidget.containerWidget.height += paragraphWidget.height;
+        }
     }
-
     /**
      * @private
      */
@@ -1642,7 +1666,7 @@ export class Layout {
                     splittedElement.text = text.substr(index);
                     splittedElement.characterFormat.copyFormat(textElement.characterFormat);
                     textElement.text = text.substr(0, index);
-                    this.viewer.textHelper.getTextSize(splittedElement, characterFormat);
+                    this.documentHelper.textHelper.getTextSize(splittedElement, characterFormat);
                     textElement.width -= splittedElement.width;
                     textElement.height = splittedElement.height;
                     if (textElement.width === 0) {
@@ -1707,19 +1731,19 @@ export class Layout {
      * @private
      */
     public getListNumber(listFormat: WListFormat, isAutoList?: boolean): string {
-        let list: WList = this.viewer.getListById(listFormat.listId);
+        let list: WList = this.documentHelper.getListById(listFormat.listId);
         let levelNumber: number = listFormat.listLevelNumber;
         let listLevel: WListLevel = this.getListLevel(list, listFormat.listLevelNumber);
         // tslint:disable-next-line:max-line-length
         let levelOverride: WLevelOverride = !isNullOrUndefined(list.levelOverrides) ? list.levelOverrides[levelNumber] as WLevelOverride : undefined;
         // If LevelOverride exists and have either override list level or StartAtOverride, then only list numbering will be restarted.
         // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(levelOverride) && this.viewer.renderedLevelOverrides.indexOf(levelOverride) === -1 && isNullOrUndefined(levelOverride.overrideListLevel)) {
+        if (!isNullOrUndefined(levelOverride) && this.documentHelper.renderedLevelOverrides.indexOf(levelOverride) === -1 && isNullOrUndefined(levelOverride.overrideListLevel)) {
             //Add List Override style
-            this.viewer.renderedLevelOverrides.push(levelOverride);
-            if (this.viewer.renderedLists.containsKey(this.viewer.getAbstractListById(list.abstractListId))) {
+            this.documentHelper.renderedLevelOverrides.push(levelOverride);
+            if (this.documentHelper.renderedLists.containsKey(this.documentHelper.getAbstractListById(list.abstractListId))) {
                 // tslint:disable-next-line:max-line-length
-                let levels: Dictionary<number, number> = this.viewer.renderedLists.get(this.viewer.getAbstractListById(list.abstractListId));
+                let levels: Dictionary<number, number> = this.documentHelper.renderedLists.get(this.documentHelper.getAbstractListById(list.abstractListId));
                 if (levels.containsKey(levelNumber)) {
                     levels.remove(levelNumber);
                 }
@@ -1756,21 +1780,21 @@ export class Layout {
      * @param document 
      */
     private updateListValues(list: WList, listLevelNumber: number): void {
-        if (!this.viewer.renderedLists.containsKey(this.viewer.getAbstractListById(list.abstractListId))) {
+        if (!this.documentHelper.renderedLists.containsKey(this.documentHelper.getAbstractListById(list.abstractListId))) {
             let startVal: Dictionary<number, number> = new Dictionary<number, number>();
-            this.viewer.renderedLists.add(this.viewer.getAbstractListById(list.abstractListId), startVal);
+            this.documentHelper.renderedLists.add(this.documentHelper.getAbstractListById(list.abstractListId), startVal);
             let listLevel: WListLevel = this.getListLevel(list, listLevelNumber);
             for (let i: number = 0; i <= listLevelNumber; i++) {
                 startVal.add(i, this.getListStartValue(i, list));
             }
         } else {
             // tslint:disable-next-line:max-line-length
-            let levels: Dictionary<number, number> = this.viewer.renderedLists.get(this.viewer.getAbstractListById(list.abstractListId));
+            let levels: Dictionary<number, number> = this.documentHelper.renderedLists.get(this.documentHelper.getAbstractListById(list.abstractListId));
             if (levels.containsKey(listLevelNumber)) {
                 let startAt: number = levels.get(listLevelNumber);
                 levels.set(listLevelNumber, startAt + 1);
                 let levelNumber: number = listLevelNumber + 1;
-                while (levelNumber < this.viewer.getAbstractListById(list.abstractListId).levels.length) {
+                while (levelNumber < this.documentHelper.getAbstractListById(list.abstractListId).levels.length) {
                     let listLevel: WListLevel = this.getListLevel(list, levelNumber);
                     // if (!isNullOrUndefined(listLevel)) {
                     if (levels.containsKey(levelNumber) && listLevel.restartLevel > listLevelNumber) {
@@ -1809,8 +1833,8 @@ export class Layout {
     private getListText(listAdv: WList, listLevelNumber: number, currentListLevel: WListLevel): string {
         let listText: string = currentListLevel.numberFormat;
         // tslint:disable-next-line:max-line-length
-        if (this.viewer.renderedLists.containsKey(this.viewer.getAbstractListById(listAdv.abstractListId))) {
-            let levels: Dictionary<number, number> = this.viewer.renderedLists.get(this.viewer.getAbstractListById(listAdv.abstractListId));
+        if (this.documentHelper.renderedLists.containsKey(this.documentHelper.getAbstractListById(listAdv.abstractListId))) {
+            let levels: Dictionary<number, number> = this.documentHelper.renderedLists.get(this.documentHelper.getAbstractListById(listAdv.abstractListId));
             let keys: number[] = levels.keys;
             for (let i: number = 0; i < keys.length; i++) {
                 let levelNumber: number = keys[i];
@@ -1946,7 +1970,7 @@ export class Layout {
      */
     public getListLevel(list: WList, listLevelNumber: number): WListLevel {
         if (!isNullOrUndefined(list)) {
-            let abstractList: WAbstractList = this.viewer.getAbstractListById(list.abstractListId);
+            let abstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
             if (!isNullOrUndefined(list) && abstractList.levels.length <= listLevelNumber
                 && listLevelNumber >= 0 && listLevelNumber < 9) {
                 this.addListLevels(abstractList);
@@ -1971,7 +1995,7 @@ export class Layout {
      */
     // tslint:disable-next-line:max-line-length
     private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox | ListTextElementBox): number {
-        let elementWidth: number = element ? this.viewer.textHelper.getTextSize(element as TextElementBox, element.characterFormat) : 0;
+        let elementWidth: number = element ? this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat) : 0;
         let fPosition: number = 0;
         let isCustomTab: boolean = false;
         let tabs: WTabStop[] = paragraph.paragraphFormat.getUpdatedTabs();
@@ -1999,7 +2023,7 @@ export class Layout {
         let leftIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
         let position: number = viewer.clientActiveArea.x -
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
-        let defaultTabWidth: number = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
+        let defaultTabWidth: number = HelperMethods.convertPointToPixel(this.documentHelper.defaultTabWidth);
         if (tabs.length === 0) {
             if (position > 0 && defaultTabWidth > position && isList ||
                 defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
@@ -2080,7 +2104,7 @@ export class Layout {
                 elementBox.width = 0;
             } else {
                 if (elementBox instanceof TextElementBox) {
-                    this.viewer.textHelper.getTextSize(elementBox, elementBox.characterFormat);
+                    this.documentHelper.textHelper.getTextSize(elementBox, elementBox.characterFormat);
                 }
             }
             if (elementBox instanceof TextElementBox && (elementBox as TextElementBox).text === '\t') {
@@ -2110,7 +2134,7 @@ export class Layout {
             }
             let splitWidth: number = width;
             if ((nextIndex < length - 1 || (nextIndex === length - 1 && text[nextIndex - 1] === ' ')) && index !== nextIndex) {
-                splitWidth = this.viewer.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, nextIndex), characterFormat);
+                splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, nextIndex), characterFormat);
             }
             if (splitWidth <= clientActiveWidth) {
                 index = nextIndex;
@@ -2137,7 +2161,7 @@ export class Layout {
         for (let i: number = 0; i < length; i++) {
             let splitWidth: number = width;
             if (i + 1 < length) {
-                splitWidth = this.viewer.textHelper.measureTextExcludingSpaceAtEnd(text.substring(0, i + 1), characterFormat);
+                splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.substring(0, i + 1), characterFormat);
             }
             if (splitWidth > clientActiveAreaWidth) {
                 if (i === 0 && splitWidth > totalClientWidth) {
@@ -2167,7 +2191,7 @@ export class Layout {
                 lineText = elementText + lineText;
                 if (trimSpace && (elementText.trim() !== '' || elementText === '\t')) {
                     if (HelperMethods.endsWith(elementText)) {
-                        width += this.viewer.textHelper.measureTextExcludingSpaceAtEnd(elementText, element.characterFormat);
+                        width += this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(elementText, element.characterFormat);
                     } else {
                         width += element.width;
                     }
@@ -2221,7 +2245,7 @@ export class Layout {
         if (this.isSameStyle(paragraph, false)) {
             return 0;
         } else {
-            return beforeSpacing;
+            return HelperMethods.convertPointToPixel(beforeSpacing);
         }
     }
     public getAfterSpacing(paragraph: ParagraphWidget): number {
@@ -2465,10 +2489,12 @@ export class Layout {
         if (tableWidget.isBidiTable) {
             row.shiftWidgetForRtlTable(this.viewer.clientArea, tableWidget, row);
         }
-        if (!isNullOrUndefined(tableWidget.containerWidget)
-            && tableWidget.containerWidget.childWidgets.indexOf(tableWidget) >= 0 &&
-            !(tableWidget.containerWidget instanceof HeaderFooterWidget)) {
-            tableWidget.containerWidget.height += row.height;
+        if (this.viewer instanceof PageLayoutViewer) {
+            if (!isNullOrUndefined(tableWidget.containerWidget)
+                && tableWidget.containerWidget.childWidgets.indexOf(tableWidget) >= 0 &&
+                !(tableWidget.containerWidget instanceof HeaderFooterWidget)) {
+                tableWidget.containerWidget.height += row.height;
+            }
         }
         this.updateHeightForRowWidget(viewer, false, tableCollection, rowCollection, row, false, endRowWidget, isInitialLayout);
         viewer.cutFromTop(row.y + row.height);
@@ -2564,8 +2590,8 @@ export class Layout {
     private isRowSpanEnd(row: TableRowWidget, viewer: LayoutViewer): boolean {
         let rowIndex: number = row.index;
         let rowSpan: number = 1;
-        for (let i: number = 0; i < viewer.splittedCellWidgets.length; i++) {
-            let splittedCell: TableCellWidget = viewer.splittedCellWidgets[i];
+        for (let i: number = 0; i < this.documentHelper.splittedCellWidgets.length; i++) {
+            let splittedCell: TableCellWidget = this.documentHelper.splittedCellWidgets[i];
             // tslint:disable-next-line:max-line-length
             rowSpan = (isNullOrUndefined(splittedCell) || isNullOrUndefined(splittedCell.cellFormat)) ? rowSpan : splittedCell.cellFormat.rowSpan;
             if (rowIndex - splittedCell.rowIndex === rowSpan - 1) {
@@ -2601,7 +2627,7 @@ export class Layout {
     private splitWidgets(tableRowWidget: TableRowWidget, viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], splittedWidget: TableRowWidget, isLastRow: boolean): TableRowWidget {
         if (this.isFirstLineFitForRow(viewer.clientArea.bottom, tableRowWidget) && tableRowWidget.childWidgets.length > 0) {
             splittedWidget = this.getSplittedWidgetForRow(viewer.clientArea.bottom, tableCollection, rowCollection, tableRowWidget);
-            if (viewer.splittedCellWidgets.length > 0 || splittedWidget !== tableRowWidget) {
+            if (this.documentHelper.splittedCellWidgets.length > 0 || splittedWidget !== tableRowWidget) {
                 if (isLastRow) {
                     for (let i: number = 0; i < splittedWidget.childWidgets.length; i++) {
                         let cell: TableCellWidget = splittedWidget.childWidgets[i] as TableCellWidget;
@@ -2698,13 +2724,13 @@ export class Layout {
         cellSpacing = (!isNullOrUndefined(row.ownerTable) && !isNullOrUndefined(row.ownerTable.tableFormat)) ? HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.cellSpacing) : 0;
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
-            if (row.ownerTable.isInsideTable || (viewer.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing <= viewer.clientArea.bottom)) {
+            if (row.ownerTable.isInsideTable || (this.documentHelper.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing <= viewer.clientArea.bottom)) {
                 if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
                     || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
                     this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);
                 }
                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, undefined, isInitialLayout);
-                if (viewer.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
+                if (this.documentHelper.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
                     isLastRow = true;
                 }
@@ -2712,7 +2738,7 @@ export class Layout {
             } else {
                 isInitialLayout = false;
                 //Split widget for next page
-                if (viewer.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height <= viewer.clientArea.bottom) {
+                if (this.documentHelper.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height <= viewer.clientArea.bottom) {
                     let isRowSpanEnd: boolean = this.isRowSpanEnd(row, viewer);
                     if (!isRowSpanEnd) {
                         if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
@@ -2741,9 +2767,9 @@ export class Layout {
                             row.ownerTable.continueHeader = false;
                             row.ownerTable.headerHeight = 0;
                             let pages: Page[] = undefined;
-                            // if (viewer instanceof PageLayoutViewer) {
-                            pages = (viewer as PageLayoutViewer).pages;
-                            // }
+                            if (viewer instanceof PageLayoutViewer) {
+                                pages = this.documentHelper.pages;
+                            }
                             if (!isNullOrUndefined(pages)) {
                                 for (let i: number = 0; i < pages.length; i++) {
                                     if (pages[i].repeatHeaderRowTableWidget) {
@@ -2828,7 +2854,7 @@ export class Layout {
 
                     let pageIndex: number = 0;
                     if (!isNullOrUndefined(prevBodyWidget)) {
-                        pageIndex = viewer.pages.indexOf(prevBodyWidget.page);
+                        pageIndex = this.documentHelper.pages.indexOf(prevBodyWidget.page);
                     }
 
                     let index: number = (row.ownerTable.containerWidget as BodyWidget).index;
@@ -2858,9 +2884,9 @@ export class Layout {
                     }
                     moveRowToNextTable = false;
                     if (row.ownerTable.header && tableRowWidget.height < viewer.clientArea.bottom) {
-                        // if (viewer instanceof PageLayoutViewer) {
-                        (viewer as PageLayoutViewer).currentRenderingPage.repeatHeaderRowTableWidget = true;
-                        // }
+                        if (viewer instanceof PageLayoutViewer) {
+                            (viewer as PageLayoutViewer).documentHelper.currentRenderingPage.repeatHeaderRowTableWidget = true;
+                        }
                         //Updates table widgets location.
                         viewer.updateClientAreaForBlock(row.ownerTable, true, tableWidgets);
                         // tslint:disable-next-line:max-line-length
@@ -2897,7 +2923,7 @@ export class Layout {
                     row.ownerTable.header = false;
                     row.ownerTable.continueHeader = false;
                     row.ownerTable.headerHeight = 0;
-                    let pages: Page[] = (viewer as PageLayoutViewer).pages;
+                    let pages: Page[] = this.documentHelper.pages;
                     for (let i: number = 0; i < pages.length; i++) {
                         if (pages[i].repeatHeaderRowTableWidget) {
                             pages[i].repeatHeaderRowTableWidget = false;
@@ -2906,8 +2932,8 @@ export class Layout {
                 }
             }
             if (tableWidgets.length > 2 && row.ownerTable.header && tableRowWidget.height < viewer.clientActiveArea.bottom &&
-                !(viewer as PageLayoutViewer).currentRenderingPage.repeatHeaderRowTableWidget) {
-                (viewer as PageLayoutViewer).currentRenderingPage.repeatHeaderRowTableWidget = true;
+                !(viewer as PageLayoutViewer).documentHelper.currentRenderingPage.repeatHeaderRowTableWidget) {
+                (viewer as PageLayoutViewer).documentHelper.currentRenderingPage.repeatHeaderRowTableWidget = true;
             }
         }
     }
@@ -3119,7 +3145,7 @@ export class Layout {
         let splittedCell: TableCellWidget = this.getSplittedWidget(viewer.clientArea.bottom, false, tableCollection, rowCollection, cellWidget);
         if (!isNullOrUndefined(splittedCell)) {
             //Adds the splitted contents of a vertical merged cell, in order preserve in next page.
-            viewer.splittedCellWidgets.push(splittedCell);
+            this.documentHelper.splittedCellWidgets.push(splittedCell);
         }
     }
     /**
@@ -3157,9 +3183,9 @@ export class Layout {
         }
         // tslint:disable-next-line:max-line-length
         // Special case: when the child widgets of row is equal to 0 then the splitted widgets in the viewer is added in the table row widgets. 
-        if ((isNullOrUndefined(rowWidget.childWidgets) || rowWidget.childWidgets.length === 0) && viewer.splittedCellWidgets.length > 0) {
-            for (let j: number = 0; j < viewer.splittedCellWidgets.length; j++) {
-                let widget: TableCellWidget = viewer.splittedCellWidgets[j] as TableCellWidget;
+        if ((isNullOrUndefined(rowWidget.childWidgets) || rowWidget.childWidgets.length === 0) && this.documentHelper.splittedCellWidgets.length > 0) {
+            for (let j: number = 0; j < this.documentHelper.splittedCellWidgets.length; j++) {
+                let widget: TableCellWidget = this.documentHelper.splittedCellWidgets[j] as TableCellWidget;
                 if (Math.round(left) <= Math.round(widget.x - widget.margin.left)) {
                     if (this.insertRowSpannedWidget(rowWidget, viewer, left, j)) {
                         j--;
@@ -3181,8 +3207,8 @@ export class Layout {
                 }
             }
         }
-        if (viewer.splittedCellWidgets.length > 0) {
-            viewer.splittedCellWidgets = [];
+        if (this.documentHelper.splittedCellWidgets.length > 0) {
+            this.documentHelper.splittedCellWidgets = [];
         }
     }
     /**
@@ -3197,8 +3223,8 @@ export class Layout {
         if (rowWidget.ownerTable.tableFormat.cellSpacing > 0) {
             cellSpacing = HelperMethods.convertPointToPixel(rowWidget.ownerTable.tableFormat.cellSpacing);
         }
-        for (let i: number = 0; i < viewer.splittedCellWidgets.length; i++) {
-            let splittedCell: TableCellWidget = viewer.splittedCellWidgets[i];
+        for (let i: number = 0; i < this.documentHelper.splittedCellWidgets.length; i++) {
+            let splittedCell: TableCellWidget = this.documentHelper.splittedCellWidgets[i];
             if (Math.round(left) === Math.round(splittedCell.x - splittedCell.margin.left)) {
                 rowWidget.childWidgets.splice(index, 0, splittedCell);
                 splittedCell.containerWidget = rowWidget;
@@ -3206,7 +3232,7 @@ export class Layout {
                 if (splittedCell.y !== rowWidget.y + splittedCell.margin.top + cellSpacing) {
                     this.updateChildLocationForRow(rowWidget.y, rowWidget);
                 }
-                viewer.splittedCellWidgets.splice(i, 1);
+                this.documentHelper.splittedCellWidgets.splice(i, 1);
                 return true;
             }
         }
@@ -3509,7 +3535,7 @@ export class Layout {
         //     document = WordDocument.getDocumentOf(lineWidget.paragraph.currentNode);
         // }
         //checks first line of the page is exceed the page height
-        if (this.viewer.isFirstLineFitInShiftWidgets) {
+        if (this.documentHelper.isFirstLineFitInShiftWidgets) {
             if (this.viewer.clientActiveArea.y === this.viewer.clientArea.y && paraWidget.y + lineWidget.height >= bottom) {
                 return true;
             }
@@ -3855,8 +3881,8 @@ export class Layout {
         let block: BlockWidget = blockAdv;
         let splittedWidget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         let nextBlock: BlockWidget = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
-        if (isNullOrUndefined(nextBlock) || this.viewer.blockToShift === block) {
-            this.viewer.blockToShift = undefined;
+        if (isNullOrUndefined(nextBlock) || this.documentHelper.blockToShift === block) {
+            this.documentHelper.blockToShift = undefined;
         }
         let updateNextBlockList: boolean = true;
         while (nextBlock instanceof BlockWidget && nextBlock.bodyWidget.sectionIndex === sectionIndex) {
@@ -3868,24 +3894,24 @@ export class Layout {
             //     viewer.fieldEndParagraph = undefined;
             // }
             block = nextBlock as BlockWidget;
-            if (viewer.blockToShift === block) {
-                viewer.blockToShift = undefined;
+            if (this.documentHelper.blockToShift === block) {
+                this.documentHelper.blockToShift = undefined;
             }
             updateNextBlockList = false;
             let nextWidget: Widget = undefined;
             nextWidget = block.getSplitWidgets()[0] as ParagraphWidget;
             // tslint:disable-next-line:max-line-length
-            if (viewer.fieldStacks.length === 0 && !isNullOrUndefined(nextWidget) && currentWidget.containerWidget === nextWidget.containerWidget
+            if (this.documentHelper.fieldStacks.length === 0 && !isNullOrUndefined(nextWidget) && currentWidget.containerWidget === nextWidget.containerWidget
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(currentWidget.y + currentWidget.height, 2))) {
-                if (!isNullOrUndefined(viewer.blockToShift)) {
-                    viewer.blockToShift = block;
+                if (!isNullOrUndefined(this.documentHelper.blockToShift)) {
+                    this.documentHelper.blockToShift = block;
                 }
                 break;
 
             }
             updateNextBlockList = true;
-            if (viewer.owner.isShiftingEnabled && viewer.fieldStacks.length === 0) {
-                viewer.blockToShift = block;
+            if (viewer.owner.isShiftingEnabled && this.documentHelper.fieldStacks.length === 0) {
+                this.documentHelper.blockToShift = block;
                 break;
             } else if (isNullOrUndefined(this.viewer.owner.editorModule) || !this.viewer.owner.editorModule.isInsertingTOC) {
                 block = block.combineWidget(this.viewer) as BlockWidget;
@@ -3900,7 +3926,7 @@ export class Layout {
                 if (block instanceof TableWidget) {
                     this.clearTableWidget(block as TableWidget, true, true);
                     (block as TableWidget).isGridUpdated = false;
-                    paragraph = this.viewer.selection.getFirstParagraphInFirstCell(block as TableWidget);
+                    paragraph = this.documentHelper.selection.getFirstParagraphInFirstCell(block as TableWidget);
                 } else {
                     paragraph = block as ParagraphWidget;
                 }
@@ -3908,13 +3934,16 @@ export class Layout {
                     this.viewer.owner.editorModule.updateWholeListItems(paragraph);
                 }
                 viewer.updateClientAreaForBlock(block, true);
-                this.viewer.layout.layoutBlock(block, 0);
+                if (this.viewer instanceof WebLayoutViewer) {
+                    block.containerWidget.height -= block.height;
+                }
+                this.documentHelper.layout.layoutBlock(block, 0);
                 viewer.updateClientAreaForBlock(block, false);
             }
             splittedWidget = nextBlock.getSplitWidgets() as BlockWidget[];
             nextBlock = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
         }
-        if (!viewer.owner.isShiftingEnabled || (this.viewer.blockToShift !== block)) {
+        if (!viewer.owner.isShiftingEnabled || (this.documentHelper.blockToShift !== block)) {
             this.viewer.owner.editorModule.updateListItemsTillEnd(block, updateNextBlockList);
         }
     }
@@ -3923,7 +3952,7 @@ export class Layout {
      */
     public updateClientAreaForLine(paragraph: ParagraphWidget, startLineWidget: LineWidget, elementIndex: number): void {
         //Clears the line widget starting from current line.
-        let top: number = this.viewer.selection.getTop(startLineWidget);
+        let top: number = this.documentHelper.selection.getTop(startLineWidget);
         let left: number = this.viewer.clientArea.x;
         this.viewer.cutFromTop(top);
         this.viewer.cutFromLeft(left);
@@ -3946,7 +3975,7 @@ export class Layout {
      */
     public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean): void {
         isBidi = isNullOrUndefined(isBidi) ? false : isBidi;
-        if (this.viewer.blockToShift === paragraphWidget) {
+        if (this.documentHelper.blockToShift === paragraphWidget) {
             this.layoutBodyWidgetCollection(paragraphWidget.index, paragraphWidget.containerWidget, paragraphWidget, false);
             this.isBidiReLayout = true;
         } else {
@@ -3957,9 +3986,11 @@ export class Layout {
         // let isElementMoved: boolean = elementBoxIndex > 0;
         if (paragraphWidget.isInsideTable) {
             this.isBidiReLayout = true;
+            // this.isRelayout = true;
             this.reLayoutTable(paragraphWidget);
             this.isBidiReLayout = false;
         } else {
+            // this.isRelayout = true;
             this.reLayoutLine(paragraphWidget, lineIndex, isBidi);
         }
         if (paragraphWidget.bodyWidget instanceof HeaderFooterWidget &&
@@ -3977,6 +4008,9 @@ export class Layout {
         //Combine splitted table in to single table
         let currentTable: TableWidget = table.combineWidget(this.viewer) as TableWidget;
         let bodyWidget: BodyWidget = (currentTable.containerWidget as BodyWidget);
+        if (this.viewer instanceof WebLayoutViewer) {
+            bodyWidget.height -= currentTable.height;
+        }
         if (this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) {
             (block.bodyWidget as HeaderFooterWidget).isEmpty = false;
             bodyWidget.height -= currentTable.height;
@@ -3987,7 +4021,7 @@ export class Layout {
         }
         //Clear Hieght for all the content 
         if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
-            let block: ParagraphWidget = this.viewer.selection.getFirstParagraphInFirstCell(currentTable);
+            let block: ParagraphWidget = this.documentHelper.selection.getFirstParagraphInFirstCell(currentTable);
             this.viewer.owner.editorModule.updateWholeListItems(block);
         }
         this.viewer.updateClientAreaForBlock(currentTable, true);
@@ -4060,12 +4094,15 @@ export class Layout {
      */
     // tslint:disable-next-line:max-line-length
     public layoutBodyWidgetCollection(blockIndex: number, bodyWidget: Widget, block: BlockWidget, shiftNextWidget: boolean, isSkipShifting?: boolean): void {
-        if (!isNullOrUndefined(this.viewer.owner)
-            && this.viewer.owner.isLayoutEnabled) {
+        if (!isNullOrUndefined(this.documentHelper.owner)
+            && this.documentHelper.owner.isLayoutEnabled) {
             if (bodyWidget instanceof BlockContainer) {
                 let curretBlock: BlockWidget = this.checkAndGetBlock(bodyWidget, blockIndex);
                 if (isNullOrUndefined(curretBlock)) {
                     return;
+                }
+                if (this.viewer instanceof WebLayoutViewer) {
+                    curretBlock.containerWidget.height -= curretBlock.height;
                 }
                 if (bodyWidget instanceof HeaderFooterWidget) {
                     bodyWidget.isEmpty = false;
@@ -4094,7 +4131,7 @@ export class Layout {
                 if (curretBlock instanceof TableWidget) {
                     this.clearTableWidget(curretBlock as TableWidget, true, true);
                     (curretBlock as TableWidget).isGridUpdated = false;
-                    currentParagraph = this.viewer.selection.getFirstParagraphInFirstCell(curretBlock as TableWidget);
+                    currentParagraph = this.documentHelper.selection.getFirstParagraphInFirstCell(curretBlock as TableWidget);
                 } else {
                     currentParagraph = curretBlock as ParagraphWidget;
                 }
@@ -4102,7 +4139,7 @@ export class Layout {
                     this.viewer.owner.editorModule.updateWholeListItems(currentParagraph);
                 }
                 this.viewer.updateClientAreaForBlock(curretBlock, true);
-                this.viewer.layout.layoutBlock(curretBlock, 0, true);
+                this.documentHelper.layout.layoutBlock(curretBlock, 0, true);
                 this.viewer.updateClientAreaForBlock(curretBlock, false);
                 if (shiftNextWidget) {
                     this.shiftNextWidgets(curretBlock);
@@ -4110,7 +4147,8 @@ export class Layout {
                     this.layoutNextItemsBlock(curretBlock, this.viewer);
                 }
             } else if (bodyWidget instanceof TableCellWidget) {
-                let table: TableWidget = this.viewer.layout.getParentTable(bodyWidget.ownerTable).getSplitWidgets()[0] as TableWidget;
+                // tslint:disable-next-line:max-line-length
+                let table: TableWidget = this.documentHelper.layout.getParentTable(bodyWidget.ownerTable).getSplitWidgets()[0] as TableWidget;
                 this.reLayoutTable(bodyWidget.ownerTable);
                 this.layoutNextItemsBlock(table, this.viewer);
             }
@@ -4232,7 +4270,7 @@ export class Layout {
         }
         if (table.tableFormat.cellSpacing > 0) {
             // tslint:disable-next-line:max-line-length
-            if (tableWidget.y + tableWidget.height + HelperMethods.convertPointToPixel(table.tableFormat.cellSpacing) > viewer.clientArea.bottom && viewer instanceof PageLayoutViewer) {
+            if (tableWidget.y + tableWidget.height + HelperMethods.convertPointToPixel(table.tableFormat.cellSpacing) > viewer.clientArea.bottom && viewer instanceof WebLayoutViewer) {
                 //update the table height when split to next page. Which is equivalent Ms Word Behaviour. 
                 //In Ms Word if the Table Split to next page the bottom spacing of the table will be half of the current spacing.
                 //And the Remaining space will be used in next page top of the table.
@@ -4240,6 +4278,9 @@ export class Layout {
             }
             //Update the current Y position of current clientactivearea.
             viewer.cutFromTop(tableWidget.y + tableWidget.height);
+        }
+        if (this.viewer instanceof WebLayoutViewer) {
+            table.containerWidget.height += table.height;
         }
         if (table.bodyWidget instanceof HeaderFooterWidget) {
             table.containerWidget.height += table.height;
@@ -4457,11 +4498,11 @@ export class Layout {
      * @private
      */
     public shiftLayoutedItems(): void {
-        if (isNullOrUndefined(this.viewer.blockToShift) || isNullOrUndefined(this.viewer.blockToShift.containerWidget)) {
-            this.viewer.blockToShift = undefined;
+        if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget)) {
+            this.documentHelper.blockToShift = undefined;
             return;
         }
-        let block: BlockWidget = this.viewer.blockToShift;
+        let block: BlockWidget = this.documentHelper.blockToShift;
         let sectionIndex: number = block.bodyWidget.index;
         this.reLayoutOrShiftWidgets(block, this.viewer);
         let updateNextBlockList: boolean = true;
@@ -4497,10 +4538,10 @@ export class Layout {
         if (this.viewer.owner.editorModule) {
             this.viewer.owner.editorModule.updateListItemsTillEnd(block, updateNextBlockList);
         }
-        this.viewer.blockToShift = undefined;
+        this.documentHelper.blockToShift = undefined;
         let viewer: LayoutViewer = this.viewer;
         // if (viewer instanceof PageLayoutViewer) {
-        viewer.removeEmptyPages();
+        this.documentHelper.removeEmptyPages();
         this.updateFieldElements();
         viewer.updateScrollBars();
         // }
@@ -4509,16 +4550,16 @@ export class Layout {
      * @private
      */
     public updateFieldElements(): void {
-        for (let i: number = 0; i < this.viewer.fields.length; i++) {
-            let fieldBegin: FieldElementBox = this.viewer.fields[i];
-            if (!isNullOrUndefined(this.viewer.selection)) {
-                let fieldCode: string = this.viewer.selection.getFieldCode(fieldBegin);
+        for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
+            let fieldBegin: FieldElementBox = this.documentHelper.fields[i];
+            if (!isNullOrUndefined(this.documentHelper.selection)) {
+                let fieldCode: string = this.documentHelper.selection.getFieldCode(fieldBegin);
                 // tslint:disable-next-line:max-line-length
                 if (!isNullOrUndefined(fieldCode) && (fieldCode.toLowerCase().match('numpages') || fieldCode.toLowerCase().match('sectionpages')) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
                     let textElement: FieldTextElementBox = fieldBegin.fieldSeparator.nextNode as FieldTextElementBox;
                     if (!isNullOrUndefined(textElement)) {
                         let prevPageNum: string = textElement.text;
-                        textElement.text = this.viewer.pages.length.toString();
+                        textElement.text = this.documentHelper.pages.length.toString();
                         let paragraph: ParagraphWidget = fieldBegin.line.paragraph;
                         if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page)
                             && prevPageNum !== textElement.text) {
@@ -4597,7 +4638,7 @@ export class Layout {
                         this.updateContainerWidget(widget, prevBodyWidget, index, true);
                     }
                 }
-                if (widget.isEndsWithPageBreak) {
+                if (widget.isEndsWithPageBreak && this.viewer instanceof PageLayoutViewer) {
                     let nextBodyWidget: BodyWidget = this.createOrGetNextBodyWidget(prevBodyWidget, this.viewer);
                     nextBodyWidget = this.moveBlocksToNextPage(widget);
                     viewer.updateClientArea(nextBodyWidget.sectionFormat, nextBodyWidget.page);
@@ -4605,7 +4646,8 @@ export class Layout {
             } else {
                 let previousBlock: BlockWidget = widget.previousRenderedWidget as BlockWidget;
                 let isPageBreak: boolean = false;
-                if (previousBlock instanceof ParagraphWidget && previousBlock.isEndsWithPageBreak) {
+                if (previousBlock instanceof ParagraphWidget && previousBlock.isEndsWithPageBreak &&
+                    this.viewer instanceof PageLayoutViewer) {
                     isPageBreak = true;
                 }
                 let isSplittedToNewPage: boolean = this.splitWidget(widget, viewer, prevBodyWidget, index + 1, isPageBreak);
@@ -4694,14 +4736,14 @@ export class Layout {
                 viewer.updateClientArea(table.bodyWidget.sectionFormat, table.bodyWidget.page);
             }
         }
-        if (table.isInHeaderFooter) {
+        if (table.isInHeaderFooter || this.viewer instanceof WebLayoutViewer) {
             table.containerWidget.height -= table.height;
         }
         this.viewer.updateClientAreaForBlock(table, true);
         this.updateVerticalPositionToTop(table, true);
         let isPageLayout: boolean = viewer instanceof PageLayoutViewer;
         let combinedTable: TableWidget = table.combineWidget(this.viewer) as TableWidget;
-        this.viewer.layout.updateChildLocationForTable(combinedTable.y, combinedTable);
+        this.documentHelper.layout.updateChildLocationForTable(combinedTable.y, combinedTable);
         this.clearTableWidget(combinedTable, true, false);
         this.shiftTableWidget(combinedTable, this.viewer);
         this.updateVerticalPositionToTop(table, false);
@@ -4718,7 +4760,7 @@ export class Layout {
                 for (let k: number = 0; k < rowWidget.childWidgets.length; k++) {
                     let cellWidget: TableCellWidget = rowWidget.childWidgets[k] as TableCellWidget;
                     //Iterate the RowWidgets child items
-                    this.viewer.layout.updateCellVerticalPosition(cellWidget, isUpdateTop, false);
+                    this.documentHelper.layout.updateCellVerticalPosition(cellWidget, isUpdateTop, false);
                 }
             }
         }
@@ -4801,7 +4843,7 @@ export class Layout {
         if (lineWidget.children.length === 0 || ((lineWidget.children.length === 1 && lineWidget.children[0] instanceof ListTextElementBox) || (lineWidget.children.length === 2 && lineWidget.children[0] instanceof ListTextElementBox && lineWidget.children[1] instanceof ListTextElementBox))) {
             let topMargin: number = 0;
             let bottomMargin: number = 0;
-            height = viewer.selection.getParagraphMarkSize(lineWidget.paragraph, topMargin, bottomMargin).height;
+            height = this.documentHelper.selection.getParagraphMarkSize(lineWidget.paragraph, topMargin, bottomMargin).height;
             height += topMargin;
             if (lineWidget.children.length > 0) {
                 let element: ListTextElementBox = lineWidget.children[0] as ListTextElementBox;
@@ -4822,23 +4864,23 @@ export class Layout {
     private createOrGetNextBodyWidget(bodyWidget: BodyWidget, viewer: LayoutViewer): BodyWidget {
         let nextBodyWidget: BodyWidget = undefined;
         let pageIndex: number = 0;
-        pageIndex = viewer.pages.indexOf(bodyWidget.page);
+        pageIndex = this.documentHelper.pages.indexOf(bodyWidget.page);
         let page: Page = undefined;
         let index: number = undefined;
         index = bodyWidget.index;
 
-        if (pageIndex === viewer.pages.length - 1
-            || viewer.pages[pageIndex + 1].sectionIndex !== index) {
+        if (pageIndex === this.documentHelper.pages.length - 1
+            || this.documentHelper.pages[pageIndex + 1].sectionIndex !== index) {
             let currentWidget: BodyWidget = new BodyWidget();
             currentWidget.sectionFormat = bodyWidget.sectionFormat;
             currentWidget.index = bodyWidget.index;
             page = viewer.createNewPage(currentWidget);
-            if (viewer.pages[pageIndex + 1].sectionIndex !== index) {
-                viewer.insertPage(pageIndex + 1, page);
+            if (this.documentHelper.pages[pageIndex + 1].sectionIndex !== index) {
+                this.documentHelper.insertPage(pageIndex + 1, page);
             }
             nextBodyWidget = page.bodyWidgets[0];
         } else {
-            page = viewer.pages[pageIndex + 1];
+            page = this.documentHelper.pages[pageIndex + 1];
             nextBodyWidget = page.bodyWidgets[0] as BodyWidget;
         }
         return nextBodyWidget;
@@ -4917,9 +4959,9 @@ export class Layout {
             if ((isNullOrUndefined(widget.containerWidget.childWidgets) || widget.containerWidget.childWidgets.length === 0)
                 && widget.containerWidget instanceof BodyWidget && widget.containerWidget !== bodyWidget && destroyAndScroll) {
                 let page: Page = widget.containerWidget.page;
-                if (this.viewer.pages[this.viewer.pages.length - 1] === page &&
+                if (this.documentHelper.pages[this.documentHelper.pages.length - 1] === page &&
                     (this.viewer as PageLayoutViewer).visiblePages.indexOf(page) !== -1) {
-                    this.viewer.scrollToBottom();
+                    this.documentHelper.scrollToBottom();
                 }
                 if (isNullOrUndefined(page.nextPage) || page.nextPage.bodyWidgets[0].index !== widget.containerWidget.index) {
                     widget.containerWidget.destroyInternal(this.viewer);
@@ -4950,8 +4992,8 @@ export class Layout {
         let nextPage: Page = undefined;
         let nextBody: BodyWidget = undefined;
         let insertPage: boolean = false;
-        if (this.viewer.pages.length > pageIndex) {
-            nextPage = this.viewer.pages[pageIndex];
+        if (this.documentHelper.pages.length > pageIndex) {
+            nextPage = this.documentHelper.pages[pageIndex];
             if (nextPage.bodyWidgets.length === 0 || !body.equals(nextPage.bodyWidgets[0])) {
                 nextPage = undefined;
                 insertPage = true;
@@ -4964,7 +5006,7 @@ export class Layout {
             nextBody = this.createSplitBody(body);
             nextPage = this.viewer.createNewPage(nextBody, pageIndex);
             if (insertPage) {
-                this.viewer.insertPage(pageIndex, nextPage);
+                this.documentHelper.insertPage(pageIndex, nextPage);
             }
         }
         //tslint:disable :no-constant-condition
@@ -5059,7 +5101,7 @@ export class Layout {
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             if (lineWidget.children[i] instanceof TextElementBox) {
                 isContainsRTL = lineWidget.children[i].characterFormat.bidi || lineWidget.children[i].characterFormat.bdo === 'RTL'
-                    || this.viewer.textHelper.isRTLText((lineWidget.children[i] as TextElementBox).text);
+                    || this.documentHelper.textHelper.isRTLText((lineWidget.children[i] as TextElementBox).text);
                 if (isContainsRTL) {
                     break;
                 }
@@ -5090,9 +5132,9 @@ export class Layout {
                 if (isParaBidi) {
                     if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
                         && element.nextElement.nextElement instanceof TextElementBox
-                        && this.viewer.textHelper.isRTLText(element.nextElement.nextElement.text)
+                        && this.documentHelper.textHelper.isRTLText(element.nextElement.nextElement.text)
                         || element.bookmarkType === 1 && element.nextElement instanceof TextElementBox
-                        && this.viewer.textHelper.isRTLText(element.nextElement.text)) {
+                        && this.documentHelper.textHelper.isRTLText(element.nextElement.text)) {
                         tempElements.splice(0, 0, element);
                     } else {
                         tempElements.splice(lastAddedElementIsRtl ? lastAddedRtlElementIndex : lastAddedRtlElementIndex + 1, 0, element);
@@ -5106,7 +5148,7 @@ export class Layout {
 
             if (element instanceof TextElementBox) {
                 text = (element as TextElementBox).text;
-                containsSpecchrs = this.viewer.textHelper.containsSpecialCharAlone(text);
+                containsSpecchrs = this.documentHelper.textHelper.containsSpecialCharAlone(text);
                 if (containsSpecchrs) {
                     if (text.length > 1 && elementCharacterFormat.bidi) {
                         text = HelperMethods.ReverseString(text);
@@ -5120,7 +5162,7 @@ export class Layout {
             if (element instanceof ListTextElementBox) {
                 isRtl = isParaBidi;
             } else { // For Text element box we need to check the character format and unicode of text to detect the RTL text. 
-                isRtl = this.viewer.textHelper.isRTLText(text) || elementCharacterFormat.bidi
+                isRtl = this.documentHelper.textHelper.isRTLText(text) || elementCharacterFormat.bidi
                     || elementCharacterFormat.bdo === 'RTL';
             }
             if (element instanceof FieldElementBox || isFieldCode) {
@@ -5142,7 +5184,7 @@ export class Layout {
                         // Else, Check for next element.
                     } else if (i + 1 < line.children.length && line.children[i + 1] instanceof TextElementBox) {
                         text = (elements[i + 1] as TextElementBox).text;
-                        isRtl = this.viewer.textHelper.isRTLText(text) || elements[i + 1].characterFormat.bidi
+                        isRtl = this.documentHelper.textHelper.isRTLText(text) || elements[i + 1].characterFormat.bidi
                             || elements[i + 1].characterFormat.bdo === 'RTL';
                     }// If the last added element is rtl then current text element box also considered as RTL for WhiteSpaces.
                 } else if (lastAddedElementIsRtl) {

@@ -6894,6 +6894,24 @@ class DiagramHtmlElement extends DiagramElement {
     }
 }
 
+var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * customize the size of the individual palette items.
+ */
+class SymbolSize extends ChildProperty {
+}
+__decorate$9([
+    Property()
+], SymbolSize.prototype, "width", void 0);
+__decorate$9([
+    Property()
+], SymbolSize.prototype, "height", void 0);
+
 var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8126,6 +8144,12 @@ __decorate$6([
     Property(0)
 ], Connector.prototype, "sourcePadding", void 0);
 __decorate$6([
+    Complex({}, SymbolSize)
+], Connector.prototype, "previewSize", void 0);
+__decorate$6([
+    Complex({}, SymbolSize)
+], Connector.prototype, "dragSize", void 0);
+__decorate$6([
     Property(0)
 ], Connector.prototype, "targetPadding", void 0);
 __decorate$6([
@@ -8135,7 +8159,7 @@ __decorate$6([
     Property(null)
 ], Connector.prototype, "wrapper", void 0);
 
-var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8488,28 +8512,28 @@ class Ruler extends Component {
         //unWire Events
     }
 }
-__decorate$9([
+__decorate$10([
     Property(5)
 ], Ruler.prototype, "interval", void 0);
-__decorate$9([
+__decorate$10([
     Property(100)
 ], Ruler.prototype, "segmentWidth", void 0);
-__decorate$9([
+__decorate$10([
     Property('Horizontal')
 ], Ruler.prototype, "orientation", void 0);
-__decorate$9([
+__decorate$10([
     Property('RightOrBottom')
 ], Ruler.prototype, "tickAlignment", void 0);
-__decorate$9([
+__decorate$10([
     Property('red')
 ], Ruler.prototype, "markerColor", void 0);
-__decorate$9([
+__decorate$10([
     Property(25)
 ], Ruler.prototype, "thickness", void 0);
-__decorate$9([
+__decorate$10([
     Property(null)
 ], Ruler.prototype, "arrangeTick", void 0);
-__decorate$9([
+__decorate$10([
     Property(400)
 ], Ruler.prototype, "length", void 0);
 
@@ -9005,7 +9029,7 @@ function avoidDrawSelector(rendererActions) {
     }
 }
 
-var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9059,58 +9083,58 @@ class UserHandle extends ChildProperty {
         return 'UserHandle';
     }
 }
-__decorate$10([
+__decorate$11([
     Property('')
 ], UserHandle.prototype, "name", void 0);
-__decorate$10([
+__decorate$11([
     Property('')
 ], UserHandle.prototype, "pathData", void 0);
-__decorate$10([
+__decorate$11([
     Property('')
 ], UserHandle.prototype, "content", void 0);
-__decorate$10([
+__decorate$11([
     Property('')
 ], UserHandle.prototype, "source", void 0);
-__decorate$10([
+__decorate$11([
     Property('#000000')
 ], UserHandle.prototype, "backgroundColor", void 0);
-__decorate$10([
-    Property('top')
+__decorate$11([
+    Property('Top')
 ], UserHandle.prototype, "side", void 0);
-__decorate$10([
+__decorate$11([
     Property('')
 ], UserHandle.prototype, "borderColor", void 0);
-__decorate$10([
+__decorate$11([
     Property(0.5)
 ], UserHandle.prototype, "borderWidth", void 0);
-__decorate$10([
+__decorate$11([
     Property(25)
 ], UserHandle.prototype, "size", void 0);
-__decorate$10([
+__decorate$11([
     Property('white')
 ], UserHandle.prototype, "pathColor", void 0);
-__decorate$10([
+__decorate$11([
     Property(10)
 ], UserHandle.prototype, "displacement", void 0);
-__decorate$10([
+__decorate$11([
     Property(true)
 ], UserHandle.prototype, "visible", void 0);
-__decorate$10([
+__decorate$11([
     Property(0)
 ], UserHandle.prototype, "offset", void 0);
-__decorate$10([
+__decorate$11([
     Complex({}, Margin)
 ], UserHandle.prototype, "margin", void 0);
-__decorate$10([
+__decorate$11([
     Property('Center')
 ], UserHandle.prototype, "horizontalAlignment", void 0);
-__decorate$10([
+__decorate$11([
     Property('Center')
 ], UserHandle.prototype, "verticalAlignment", void 0);
-__decorate$10([
+__decorate$11([
     Property(false)
 ], UserHandle.prototype, "disableNodes", void 0);
-__decorate$10([
+__decorate$11([
     Property(false)
 ], UserHandle.prototype, "disableConnectors", void 0);
 
@@ -9150,7 +9174,7 @@ let umlActivityShapes = {
     'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
 };
 
-var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9161,10 +9185,10 @@ var __decorate$11 = (undefined && undefined.__decorate) || function (decorators,
  */
 class KeyGesture extends ChildProperty {
 }
-__decorate$11([
+__decorate$12([
     Property()
 ], KeyGesture.prototype, "key", void 0);
-__decorate$11([
+__decorate$12([
     Property()
 ], KeyGesture.prototype, "keyModifiers", void 0);
 /**
@@ -9179,19 +9203,19 @@ class Command extends ChildProperty {
         return 'Command';
     }
 }
-__decorate$11([
+__decorate$12([
     Property('')
 ], Command.prototype, "name", void 0);
-__decorate$11([
+__decorate$12([
     Property()
 ], Command.prototype, "canExecute", void 0);
-__decorate$11([
+__decorate$12([
     Property()
 ], Command.prototype, "execute", void 0);
-__decorate$11([
+__decorate$12([
     Complex({}, KeyGesture)
 ], Command.prototype, "gesture", void 0);
-__decorate$11([
+__decorate$12([
     Property('')
 ], Command.prototype, "parameter", void 0);
 /**
@@ -9199,7 +9223,7 @@ __decorate$11([
  */
 class CommandManager extends ChildProperty {
 }
-__decorate$11([
+__decorate$12([
     Collection([], Command)
 ], CommandManager.prototype, "commands", void 0);
 /**
@@ -9207,13 +9231,13 @@ __decorate$11([
  */
 class ContextMenuSettings extends ChildProperty {
 }
-__decorate$11([
+__decorate$12([
     Property()
 ], ContextMenuSettings.prototype, "show", void 0);
-__decorate$11([
+__decorate$12([
     Property()
 ], ContextMenuSettings.prototype, "showCustomMenuOnly", void 0);
-__decorate$11([
+__decorate$12([
     Property()
 ], ContextMenuSettings.prototype, "items", void 0);
 
@@ -12143,6 +12167,30 @@ function setSwimLaneDefaults(child, node) {
 /**
  * @private
  */
+function getSpaceValue(intervals, isLine, i, space) {
+    space = !isLine ? ((intervals[i - 1] !== undefined) ? intervals[i - 1] + space : 0) : space;
+    return space;
+}
+/**
+ * @private
+ */
+function getInterval(intervals, isLine) {
+    let newInterval = [];
+    if (!isLine) {
+        for (let k = 0; k < intervals.length; k++) {
+            newInterval.push(intervals[k]);
+        }
+        newInterval.push(intervals[newInterval.length - 2]);
+        newInterval.push(intervals[newInterval.length - 2]);
+    }
+    else {
+        newInterval = intervals;
+    }
+    return newInterval;
+}
+/**
+ * @private
+ */
 function setUMLActivityDefaults(child, node) {
     if (node instanceof Node) {
         let shape = (isBlazor() ? child.shape.umlActivityShape :
@@ -13478,8 +13526,10 @@ function updateContent(newValues, actualObject, diagram) {
                 }
             }
         }
-        else if (actualObject.shape.type === 'Flow' && newValues.shape.shape !== undefined) {
-            actualObject.shape.shape = newValues.shape.shape;
+        else if (actualObject.shape.type === 'Flow' && ((isBlazor() && newValues.shape.flowShape !== undefined) ||
+            newValues.shape.shape !== undefined)) {
+            actualObject.shape.shape = isBlazor() ? newValues.shape.flowShape :
+                newValues.shape.shape;
             let shapes = actualObject.shape.shape;
             let flowshapedata = getFlowShape(shapes.toString());
             actualObject.wrapper.children[0].data = flowshapedata;
@@ -13492,8 +13542,10 @@ function updateContent(newValues, actualObject, diagram) {
         else if (newValues.shape.cornerRadius !== undefined) {
             actualObject.wrapper.children[0].cornerRadius = newValues.shape.cornerRadius;
         }
-        else if (newValues.shape.shape !== undefined) {
-            actualObject.shape.shape = newValues.shape.shape;
+        else if (((isBlazor() && newValues.shape.basicShape !== undefined) ||
+            newValues.shape.shape !== undefined)) {
+            actualObject.shape.shape = isBlazor() ? newValues.shape.basicShape :
+                newValues.shape.shape;
             let shapes = actualObject.shape.shape;
             let basicShapeData = getBasicShape(shapes.toString());
             actualObject.wrapper.children[0].data = basicShapeData;
@@ -14161,7 +14213,7 @@ function canMeasureDecoratorPath(objects) {
     return false;
 }
 
-var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -14172,46 +14224,46 @@ var __decorate$12 = (undefined && undefined.__decorate) || function (decorators,
  */
 class IconShape extends ChildProperty {
 }
-__decorate$12([
+__decorate$13([
     Property('None')
 ], IconShape.prototype, "shape", void 0);
-__decorate$12([
+__decorate$13([
     Property('white')
 ], IconShape.prototype, "fill", void 0);
-__decorate$12([
+__decorate$13([
     Property('Auto')
 ], IconShape.prototype, "horizontalAlignment", void 0);
-__decorate$12([
+__decorate$13([
     Property('Auto')
 ], IconShape.prototype, "verticalAlignment", void 0);
-__decorate$12([
+__decorate$13([
     Property(10)
 ], IconShape.prototype, "width", void 0);
-__decorate$12([
+__decorate$13([
     Property(10)
 ], IconShape.prototype, "height", void 0);
-__decorate$12([
+__decorate$13([
     Complex({ x: 0.5, y: 1 }, Point)
 ], IconShape.prototype, "offset", void 0);
-__decorate$12([
+__decorate$13([
     Property('#1a1a1a')
 ], IconShape.prototype, "borderColor", void 0);
-__decorate$12([
+__decorate$13([
     Property(1)
 ], IconShape.prototype, "borderWidth", void 0);
-__decorate$12([
+__decorate$13([
     Complex({}, Margin)
 ], IconShape.prototype, "margin", void 0);
-__decorate$12([
+__decorate$13([
     Property('')
 ], IconShape.prototype, "pathData", void 0);
-__decorate$12([
+__decorate$13([
     Property('')
 ], IconShape.prototype, "content", void 0);
-__decorate$12([
+__decorate$13([
     Property(0)
 ], IconShape.prototype, "cornerRadius", void 0);
-__decorate$12([
+__decorate$13([
     Complex({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
 ], IconShape.prototype, "padding", void 0);
 
@@ -14634,7 +14686,7 @@ function getStyle(stack, node) {
     return newStyle;
 }
 
-var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -14646,31 +14698,31 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  */
 class LayoutInfo extends ChildProperty {
 }
-__decorate$13([
+__decorate$14([
     Property('Horizontal')
 ], LayoutInfo.prototype, "orientation", void 0);
-__decorate$13([
+__decorate$14([
     Property('Center')
 ], LayoutInfo.prototype, "type", void 0);
-__decorate$13([
+__decorate$14([
     Property(undefined)
 ], LayoutInfo.prototype, "offset", void 0);
-__decorate$13([
+__decorate$14([
     Property(false)
 ], LayoutInfo.prototype, "enableRouting", void 0);
-__decorate$13([
+__decorate$14([
     Property([])
 ], LayoutInfo.prototype, "children", void 0);
-__decorate$13([
+__decorate$14([
     Property('')
 ], LayoutInfo.prototype, "assistants", void 0);
-__decorate$13([
+__decorate$14([
     Property('')
 ], LayoutInfo.prototype, "level", void 0);
-__decorate$13([
+__decorate$14([
     Property('')
 ], LayoutInfo.prototype, "hasSubTree", void 0);
-__decorate$13([
+__decorate$14([
     Property('')
 ], LayoutInfo.prototype, "rows", void 0);
 
@@ -15953,6 +16005,12 @@ __decorate$2([
 __decorate$2([
     ComplexFactory(getShapeType)
 ], Node.prototype, "shape", void 0);
+__decorate$2([
+    Complex({}, SymbolSize)
+], Node.prototype, "previewSize", void 0);
+__decorate$2([
+    Complex({}, SymbolSize)
+], Node.prototype, "dragSize", void 0);
 __decorate$2([
     Property(null)
 ], Node.prototype, "wrapper", void 0);
@@ -19394,7 +19452,6 @@ class DiagramRenderer {
     }
     /**   @private  */
     renderSvgGridlines(snapSettings, gridSvg, t, rulerSettings, hRuler, vRuler) {
-        //render gridlines
         let pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
         let defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         defs.setAttribute('id', this.diagramId + '_grid_pattern_defn');
@@ -19408,6 +19465,11 @@ class DiagramRenderer {
         let vSegmentwidth = 0;
         let scale = 1;
         let isRulerGrid = false;
+        let isLine = snapSettings.gridType === 'Lines';
+        let verticalLineIntervals = isLine ?
+            snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
+        let horizontalLineIntervals = isLine ?
+            snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
         if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler && vRuler) {
             hSegmentwidth = vRuler.updateSegmentWidth(t.scale);
             vSegmentwidth = hRuler.updateSegmentWidth(t.scale);
@@ -19416,11 +19478,11 @@ class DiagramRenderer {
             isRulerGrid = true;
         }
         else {
-            for (let entry of snapSettings.verticalGridlines.lineIntervals) {
-                hWidth += entry;
+            for (let i = 0; i < verticalLineIntervals.length; i = i + 1) {
+                hWidth += verticalLineIntervals[i];
             }
-            for (let entry of snapSettings.horizontalGridlines.lineIntervals) {
-                hHeight += entry;
+            for (let i = 0; i < horizontalLineIntervals.length; i = i + 1) {
+                hHeight += horizontalLineIntervals[i];
             }
             scale = this.scaleSnapInterval(snapSettings, t.scale);
         }
@@ -19431,73 +19493,109 @@ class DiagramRenderer {
             height: hHeight, patternUnits: 'userSpaceOnUse'
         };
         setAttributeSvg(pattern, attr);
-        this.horizontalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid);
-        this.verticalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid);
+        this.horizontalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, horizontalLineIntervals);
+        this.verticalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, verticalLineIntervals);
         defs.appendChild(pattern);
         gridSvg.appendChild(defs);
     }
-    horizontalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid) {
+    horizontalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, intervals) {
         let space = 0;
         let dashArray = [];
         let hLine;
         if (snapSettings.constraints & SnapConstraints.ShowHorizontalLines) {
-            let intervals = snapSettings.horizontalGridlines.lineIntervals;
-            let strokestyle = snapSettings.horizontalGridlines.lineColor;
             if (snapSettings.horizontalGridlines.lineDashArray) {
                 dashArray = this.renderer.parseDashArray(snapSettings.horizontalGridlines.lineDashArray);
             }
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler) {
-                intervals = this.updateLineIntervals(intervals, rulerSettings, vRuler, hHeight);
+                intervals = this.updateLineIntervals(intervals, rulerSettings, vRuler, hHeight, isLine);
             }
+            intervals = getInterval(intervals, isLine);
             for (let i = 0; i < intervals.length; i = i + 2) {
-                hLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                let d = space + intervals[i] / 2;
+                space = getSpaceValue(intervals, isLine, i, space);
+                let spaceY = 0;
+                hLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
+                let d = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
-                let attr = {
-                    'stroke-width': intervals[i], 'stroke': snapSettings.horizontalGridlines.lineColor,
-                    'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
-                    'dashArray': dashArray.toString(),
-                    'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
-                };
-                setAttributeSvg(hLine, attr);
-                pattern.appendChild(hLine);
-                space += intervals[i + 1] + intervals[i];
+                let attr;
+                if (isLine) {
+                    attr = {
+                        'stroke-width': intervals[i], 'stroke': snapSettings.horizontalGridlines.lineColor,
+                        'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
+                        'dashArray': dashArray.toString(),
+                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
+                    };
+                    setAttributeSvg(hLine, attr);
+                    pattern.appendChild(hLine);
+                    space += intervals[i + 1] + intervals[i];
+                }
+                else {
+                    this.renderDotGrid(i, pattern, snapSettings, spaceY, d, scale, true);
+                    space += intervals[i];
+                }
             }
         }
     }
-    verticalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid) {
+    renderDotGrid(i, pattern, snapSettings, spacey, d, scale, isHorizontal) {
+        let intervals = !isHorizontal ?
+            snapSettings.horizontalGridlines.dotIntervals : snapSettings.verticalGridlines.dotIntervals;
+        intervals = getInterval(intervals, false);
+        let r;
+        let hLine;
+        let dy;
+        let attr;
+        for (let j = 1; j < intervals.length; j = j + 2) {
+            r = j === intervals.length - 1 ? intervals[0] : intervals[j - 1];
+            hLine = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dy = spacey;
+            dy = dy * scale;
+            attr = {
+                'cx': isHorizontal ? dy : d, 'cy': isHorizontal ? d : dy, 'fill': snapSettings.horizontalGridlines.lineColor, 'r': r
+            };
+            setAttributeSvg(hLine, attr);
+            pattern.appendChild(hLine);
+            spacey += intervals[j] + intervals[j - 1];
+        }
+    }
+    verticalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, intervals) {
         let space = 0;
         let dashArray = [];
         let vLine;
         if (snapSettings.constraints & SnapConstraints.ShowVerticalLines) {
-            let intervals = snapSettings.verticalGridlines.lineIntervals;
-            let strokestyle = snapSettings.verticalGridlines.lineColor;
             if (snapSettings.verticalGridlines.lineDashArray) {
                 dashArray = this.renderer.parseDashArray(snapSettings.verticalGridlines.lineDashArray);
             }
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler) {
-                intervals = this.updateLineIntervals(intervals, rulerSettings, hRuler, hWidth);
+                intervals = this.updateLineIntervals(intervals, rulerSettings, hRuler, hWidth, isLine);
             }
+            let spaceY = 0;
+            intervals = getInterval(intervals, isLine);
             for (let i = 0; i < intervals.length; i = i + 2) {
-                vLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                let d = space + intervals[i] / 2;
+                space = getSpaceValue(intervals, isLine, i, space);
+                vLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
+                let d = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
-                let attr = {
-                    'stroke-width': intervals[i], 'stroke': snapSettings.verticalGridlines.lineColor,
-                    'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
-                    'dashArray': dashArray.toString(),
-                    'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
-                };
-                setAttributeSvg(vLine, attr);
-                pattern.appendChild(vLine);
-                space += intervals[i + 1] + intervals[i];
+                let attr;
+                if (isLine) {
+                    attr = {
+                        'stroke-width': intervals[i], 'stroke': snapSettings.verticalGridlines.lineColor,
+                        'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
+                        'dashArray': dashArray.toString(),
+                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
+                    };
+                    setAttributeSvg(vLine, attr);
+                    pattern.appendChild(vLine);
+                    space += intervals[i + 1] + intervals[i];
+                }
+                else {
+                    this.renderDotGrid(i, pattern, snapSettings, spaceY, d, scale, false);
+                    space += intervals[i];
+                }
             }
         }
     }
     /**   @private  */
     updateGrid(snapSettings, svgGrid, transform, rulerSettings, hRuler, vRuler) {
         let grid = svgGrid.getElementById(this.diagramId + '_grid_rect');
-        let i;
         let isRulerGrid = false;
         if (grid) {
             let pattern = svgGrid.getElementById(this.diagramId + '_pattern');
@@ -19507,6 +19605,11 @@ class DiagramRenderer {
             let hSegmentwidth = 0;
             let vSegmentwidth = 0;
             let scale = 1;
+            let isLine = snapSettings.gridType === 'Lines';
+            let verticalLineIntervals = isLine ?
+                snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
+            let horizontalLineIntervals = isLine ?
+                snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler && hRuler) {
                 hSegmentwidth = vRuler.updateSegmentWidth(transform.scale);
                 vSegmentwidth = hRuler.updateSegmentWidth(transform.scale);
@@ -19518,12 +19621,12 @@ class DiagramRenderer {
                 scale = this.scaleSnapInterval(snapSettings, transform.scale);
             }
             let height = 0;
-            for (i = 0; i < snapSettings.horizontalGridlines.lineIntervals.length; i++) {
-                height += snapSettings.horizontalGridlines.lineIntervals[i];
+            for (let j = 0; j < horizontalLineIntervals.length; j = j + 1) {
+                height += horizontalLineIntervals[j];
             }
             let width = 0;
-            for (i = 0; i < snapSettings.verticalGridlines.lineIntervals.length; i++) {
-                width += snapSettings.verticalGridlines.lineIntervals[i];
+            for (let j = 0; j < verticalLineIntervals.length; j = j + 1) {
+                width += verticalLineIntervals[j];
             }
             let attr = {
                 x: -transform.tx * transform.scale,
@@ -19538,23 +19641,24 @@ class DiagramRenderer {
             };
             pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
             setAttributeSvg(pattern, attr);
-            this.horizontalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, vRuler, isRulerGrid);
-            this.verticalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, hRuler, isRulerGrid);
+            this.horizontalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, horizontalLineIntervals);
+            this.verticalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, verticalLineIntervals);
             let defs = svgGrid.getElementById(this.diagramId + '_grid_pattern_defn');
             if (defs) {
                 defs.appendChild(pattern);
             }
         }
     }
-    updateLineIntervals(intervals, rulerSettings, ruler, segmentWidth) {
+    updateLineIntervals(intervals, rulerSettings, ruler, segmentWidth, isLine) {
         let newInterval = [];
         let tickInterval = segmentWidth / ruler.interval;
-        for (let i = 0; i < ruler.interval * 2; i++) {
+        let interval = isLine ? ruler.interval : ruler.interval + 1;
+        for (let i = 0; i < interval * 2; i++) {
             if (i % 2 === 0) {
-                newInterval[i] = (i === 0) ? 1.25 : 0.25;
+                newInterval[i] = isLine ? ((i === 0) ? 1.25 : 0.25) : 0;
             }
             else {
-                newInterval[i] = tickInterval - newInterval[i - 1];
+                newInterval[i] = isLine ? (tickInterval - newInterval[i - 1]) : tickInterval;
             }
         }
         return newInterval;
@@ -19985,7 +20089,7 @@ class DiagramRenderer {
     }
 }
 
-var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -19996,36 +20100,36 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Background extends ChildProperty {
 }
-__decorate$14([
+__decorate$15([
     Property('')
 ], Background.prototype, "source", void 0);
-__decorate$14([
+__decorate$15([
     Property('transparent')
 ], Background.prototype, "color", void 0);
-__decorate$14([
+__decorate$15([
     Property('None')
 ], Background.prototype, "scale", void 0);
-__decorate$14([
+__decorate$15([
     Property('None')
 ], Background.prototype, "align", void 0);
 class FitOptions extends ChildProperty {
 }
-__decorate$14([
+__decorate$15([
     Property('Page')
 ], FitOptions.prototype, "mode", void 0);
-__decorate$14([
+__decorate$15([
     Property('PageSettings')
 ], FitOptions.prototype, "region", void 0);
-__decorate$14([
+__decorate$15([
     Complex({ top: 25, bottom: 25, left: 25, right: 25 }, Margin)
 ], FitOptions.prototype, "margin", void 0);
-__decorate$14([
+__decorate$15([
     Property(false)
 ], FitOptions.prototype, "canZoomIn", void 0);
-__decorate$14([
+__decorate$15([
     Property(undefined)
 ], FitOptions.prototype, "customBounds", void 0);
-__decorate$14([
+__decorate$15([
     Property(false)
 ], FitOptions.prototype, "canFit", void 0);
 /**
@@ -20047,31 +20151,31 @@ __decorate$14([
  */
 class PageSettings extends ChildProperty {
 }
-__decorate$14([
+__decorate$15([
     Property(null)
 ], PageSettings.prototype, "width", void 0);
-__decorate$14([
+__decorate$15([
     Property(null)
 ], PageSettings.prototype, "height", void 0);
-__decorate$14([
+__decorate$15([
     Complex({}, Margin)
 ], PageSettings.prototype, "margin", void 0);
-__decorate$14([
+__decorate$15([
     Property('Landscape')
 ], PageSettings.prototype, "orientation", void 0);
-__decorate$14([
+__decorate$15([
     Property('Infinity')
 ], PageSettings.prototype, "boundaryConstraints", void 0);
-__decorate$14([
+__decorate$15([
     Complex({}, Background)
 ], PageSettings.prototype, "background", void 0);
-__decorate$14([
+__decorate$15([
     Property(false)
 ], PageSettings.prototype, "multiplePage", void 0);
-__decorate$14([
+__decorate$15([
     Property(false)
 ], PageSettings.prototype, "showPageBreaks", void 0);
-__decorate$14([
+__decorate$15([
     Complex({}, FitOptions)
 ], PageSettings.prototype, "fitOptions", void 0);
 /**
@@ -20079,40 +20183,40 @@ __decorate$14([
  */
 class ScrollSettings extends ChildProperty {
 }
-__decorate$14([
+__decorate$15([
     Property(0)
 ], ScrollSettings.prototype, "horizontalOffset", void 0);
-__decorate$14([
+__decorate$15([
     Property(0)
 ], ScrollSettings.prototype, "verticalOffset", void 0);
-__decorate$14([
+__decorate$15([
     Property(1)
 ], ScrollSettings.prototype, "currentZoom", void 0);
-__decorate$14([
+__decorate$15([
     Property(0)
 ], ScrollSettings.prototype, "viewPortWidth", void 0);
-__decorate$14([
+__decorate$15([
     Property(0)
 ], ScrollSettings.prototype, "viewPortHeight", void 0);
-__decorate$14([
+__decorate$15([
     Property(0.2)
 ], ScrollSettings.prototype, "minZoom", void 0);
-__decorate$14([
+__decorate$15([
     Property(30)
 ], ScrollSettings.prototype, "maxZoom", void 0);
-__decorate$14([
+__decorate$15([
     Property('Diagram')
 ], ScrollSettings.prototype, "scrollLimit", void 0);
-__decorate$14([
+__decorate$15([
     Property()
 ], ScrollSettings.prototype, "scrollableArea", void 0);
-__decorate$14([
+__decorate$15([
     Property(false)
 ], ScrollSettings.prototype, "canAutoScroll", void 0);
-__decorate$14([
+__decorate$15([
     Complex({ left: 15, right: 15, top: 15, bottom: 15 }, Margin)
 ], ScrollSettings.prototype, "autoScrollBorder", void 0);
-__decorate$14([
+__decorate$15([
     Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
 ], ScrollSettings.prototype, "padding", void 0);
 
@@ -20132,7 +20236,7 @@ class ServiceLocator {
     }
 }
 
-var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20143,16 +20247,19 @@ var __decorate$15 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Gridlines extends ChildProperty {
 }
-__decorate$15([
+__decorate$16([
     Property('lightgray')
 ], Gridlines.prototype, "lineColor", void 0);
-__decorate$15([
+__decorate$16([
     Property('')
 ], Gridlines.prototype, "lineDashArray", void 0);
-__decorate$15([
+__decorate$16([
     Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
 ], Gridlines.prototype, "lineIntervals", void 0);
-__decorate$15([
+__decorate$16([
+    Property([1, 19, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5])
+], Gridlines.prototype, "dotIntervals", void 0);
+__decorate$16([
     Property([20])
 ], Gridlines.prototype, "snapIntervals", void 0);
 /**
@@ -20161,23 +20268,26 @@ __decorate$15([
  */
 class SnapSettings extends ChildProperty {
 }
-__decorate$15([
+__decorate$16([
     Complex({}, Gridlines)
 ], SnapSettings.prototype, "horizontalGridlines", void 0);
-__decorate$15([
+__decorate$16([
     Complex({}, Gridlines)
 ], SnapSettings.prototype, "verticalGridlines", void 0);
-__decorate$15([
+__decorate$16([
     Property(SnapConstraints.All)
 ], SnapSettings.prototype, "constraints", void 0);
-__decorate$15([
+__decorate$16([
     Property(5)
 ], SnapSettings.prototype, "snapAngle", void 0);
-__decorate$15([
+__decorate$16([
+    Property('Lines')
+], SnapSettings.prototype, "gridType", void 0);
+__decorate$16([
     Property(5)
 ], SnapSettings.prototype, "snapObjectDistance", void 0);
 
-var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20188,25 +20298,25 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
  */
 class DiagramRuler extends ChildProperty {
 }
-__decorate$16([
+__decorate$17([
     Property(5)
 ], DiagramRuler.prototype, "interval", void 0);
-__decorate$16([
+__decorate$17([
     Property(100)
 ], DiagramRuler.prototype, "segmentWidth", void 0);
-__decorate$16([
+__decorate$17([
     Property('Horizontal')
 ], DiagramRuler.prototype, "orientation", void 0);
-__decorate$16([
+__decorate$17([
     Property('RightOrBottom')
 ], DiagramRuler.prototype, "tickAlignment", void 0);
-__decorate$16([
+__decorate$17([
     Property('red')
 ], DiagramRuler.prototype, "markerColor", void 0);
-__decorate$16([
+__decorate$17([
     Property(25)
 ], DiagramRuler.prototype, "thickness", void 0);
-__decorate$16([
+__decorate$17([
     Property(null)
 ], DiagramRuler.prototype, "arrangeTick", void 0);
 /**
@@ -20229,20 +20339,20 @@ __decorate$16([
  */
 class RulerSettings extends ChildProperty {
 }
-__decorate$16([
+__decorate$17([
     Property(false)
 ], RulerSettings.prototype, "showRulers", void 0);
-__decorate$16([
+__decorate$17([
     Property(true)
 ], RulerSettings.prototype, "dynamicGrid", void 0);
-__decorate$16([
+__decorate$17([
     Complex({ orientation: 'Horizontal' }, DiagramRuler)
 ], RulerSettings.prototype, "horizontalRuler", void 0);
-__decorate$16([
+__decorate$17([
     Complex({ orientation: 'Vertical' }, DiagramRuler)
 ], RulerSettings.prototype, "verticalRuler", void 0);
 
-var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20254,14 +20364,14 @@ var __decorate$18 = (undefined && undefined.__decorate) || function (decorators,
  */
 class DataMappingItems extends ChildProperty {
 }
-__decorate$18([
+__decorate$19([
     Property('')
 ], DataMappingItems.prototype, "property", void 0);
-__decorate$18([
+__decorate$19([
     Property('')
 ], DataMappingItems.prototype, "field", void 0);
 
-var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20298,81 +20408,81 @@ var __decorate$17 = (undefined && undefined.__decorate) || function (decorators,
  */
 class CrudAction extends ChildProperty {
 }
-__decorate$17([
+__decorate$18([
     Property('')
 ], CrudAction.prototype, "read", void 0);
-__decorate$17([
+__decorate$18([
     Property('')
 ], CrudAction.prototype, "create", void 0);
-__decorate$17([
+__decorate$18([
     Property('')
 ], CrudAction.prototype, "update", void 0);
-__decorate$17([
+__decorate$18([
     Property('')
 ], CrudAction.prototype, "destroy", void 0);
-__decorate$17([
+__decorate$18([
     Property()
 ], CrudAction.prototype, "customFields", void 0);
 class ConnectionDataSource extends ChildProperty {
 }
-__decorate$17([
+__decorate$18([
     Property('')
 ], ConnectionDataSource.prototype, "id", void 0);
-__decorate$17([
+__decorate$18([
     Property('')
 ], ConnectionDataSource.prototype, "sourceID", void 0);
-__decorate$17([
+__decorate$18([
     Property('')
 ], ConnectionDataSource.prototype, "targetID", void 0);
-__decorate$17([
+__decorate$18([
     Property(null)
 ], ConnectionDataSource.prototype, "sourcePointX", void 0);
-__decorate$17([
+__decorate$18([
     Property(null)
 ], ConnectionDataSource.prototype, "sourcePointY", void 0);
-__decorate$17([
+__decorate$18([
     Property(null)
 ], ConnectionDataSource.prototype, "targetPointX", void 0);
-__decorate$17([
+__decorate$18([
     Property(null)
 ], ConnectionDataSource.prototype, "targetPointY", void 0);
-__decorate$17([
+__decorate$18([
     Property(null)
 ], ConnectionDataSource.prototype, "dataManager", void 0);
-__decorate$17([
+__decorate$18([
     Complex({}, CrudAction)
 ], ConnectionDataSource.prototype, "crudAction", void 0);
 class DataSource extends ChildProperty {
 }
-__decorate$17([
+__decorate$18([
     Property('')
 ], DataSource.prototype, "id", void 0);
-__decorate$17([
+__decorate$18([
     Property(null)
 ], DataSource.prototype, "dataManager", void 0);
-__decorate$17([
+__decorate$18([
     Property(null)
 ], DataSource.prototype, "dataSource", void 0);
-__decorate$17([
+__decorate$18([
     Property('')
 ], DataSource.prototype, "root", void 0);
-__decorate$17([
+__decorate$18([
     Property('')
 ], DataSource.prototype, "parentId", void 0);
-__decorate$17([
+__decorate$18([
     Property()
 ], DataSource.prototype, "doBinding", void 0);
-__decorate$17([
+__decorate$18([
     Collection([], DataMappingItems)
 ], DataSource.prototype, "dataMapSettings", void 0);
-__decorate$17([
+__decorate$18([
     Complex({}, CrudAction)
 ], DataSource.prototype, "crudAction", void 0);
-__decorate$17([
+__decorate$18([
     Complex({}, ConnectionDataSource)
 ], DataSource.prototype, "connectionDataSource", void 0);
 
-var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20383,61 +20493,61 @@ var __decorate$19 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Layout extends ChildProperty {
 }
-__decorate$19([
+__decorate$20([
     Property('')
 ], Layout.prototype, "fixedNode", void 0);
-__decorate$19([
+__decorate$20([
     Property(30)
 ], Layout.prototype, "horizontalSpacing", void 0);
-__decorate$19([
+__decorate$20([
     Property(30)
 ], Layout.prototype, "verticalSpacing", void 0);
-__decorate$19([
+__decorate$20([
     Property(30)
 ], Layout.prototype, "maxIteration", void 0);
-__decorate$19([
+__decorate$20([
     Property(40)
 ], Layout.prototype, "springFactor", void 0);
-__decorate$19([
+__decorate$20([
     Property(50)
 ], Layout.prototype, "springLength", void 0);
-__decorate$19([
+__decorate$20([
     Complex({ left: 50, top: 50, right: 0, bottom: 0 }, Margin)
 ], Layout.prototype, "margin", void 0);
-__decorate$19([
+__decorate$20([
     Property('Auto')
 ], Layout.prototype, "horizontalAlignment", void 0);
-__decorate$19([
+__decorate$20([
     Property('Auto')
 ], Layout.prototype, "verticalAlignment", void 0);
-__decorate$19([
+__decorate$20([
     Property('TopToBottom')
 ], Layout.prototype, "orientation", void 0);
-__decorate$19([
+__decorate$20([
     Property('Auto')
 ], Layout.prototype, "connectionDirection", void 0);
-__decorate$19([
+__decorate$20([
     Property('Default')
 ], Layout.prototype, "connectorSegments", void 0);
-__decorate$19([
+__decorate$20([
     Property('None')
 ], Layout.prototype, "type", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], Layout.prototype, "getLayoutInfo", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], Layout.prototype, "layoutInfo", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], Layout.prototype, "getBranch", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], Layout.prototype, "bounds", void 0);
-__decorate$19([
+__decorate$20([
     Property(true)
 ], Layout.prototype, "enableAnimation", void 0);
-__decorate$19([
+__decorate$20([
     Property('')
 ], Layout.prototype, "root", void 0);
 
@@ -25879,7 +25989,7 @@ class ObjectFinder {
             }
             else if (action === 'Pan' || action === 'LayoutAnimation') {
                 for (let i = objects.length - 1; i >= 0; i--) {
-                    if (objects[i] instanceof Node) {
+                    if (objects[i] instanceof Node || objects[i] instanceof Connector) {
                         let portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
                         if ((action === 'LayoutAnimation' || action === 'Pan') || ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$'))))) {
                             return objects[i];
@@ -25939,7 +26049,7 @@ class ObjectFinder {
     }
 }
 
-var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -25960,22 +26070,22 @@ class Layer extends ChildProperty {
         this.objects = [];
     }
 }
-__decorate$20([
+__decorate$21([
     Property('')
 ], Layer.prototype, "id", void 0);
-__decorate$20([
+__decorate$21([
     Property(true)
 ], Layer.prototype, "visible", void 0);
-__decorate$20([
+__decorate$21([
     Property(false)
 ], Layer.prototype, "lock", void 0);
-__decorate$20([
+__decorate$21([
     Property()
 ], Layer.prototype, "objects", void 0);
-__decorate$20([
+__decorate$21([
     Property()
 ], Layer.prototype, "addInfo", void 0);
-__decorate$20([
+__decorate$21([
     Property(-1)
 ], Layer.prototype, "zIndex", void 0);
 
@@ -26106,22 +26216,25 @@ class CommandHandler {
             let connector = this.diagram.nameTable[args.connector.id];
             let nodeEndId = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
             let portEndId = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
-            oldChanges[nodeEndId] = args.newValue.connectorTargetValue.nodeId;
-            oldChanges[portEndId] = args.newValue.connectorTargetValue.portId;
-            newChanges[nodeEndId] = args.oldValue.connectorTargetValue.nodeId;
-            newChanges[portEndId] = args.oldValue.connectorTargetValue.portId;
+            let connectionEnd = args.connectorEnd === 'ConnectorTargetEnd';
+            let newValue = connectionEnd ? args.newValue.connectorTargetValue : args.newValue.connectorSourceValue;
+            let oldValue = connectionEnd ? args.oldValue.connectorTargetValue : args.oldValue.connectorSourceValue;
+            oldChanges[nodeEndId] = newValue.nodeId;
+            oldChanges[portEndId] = newValue.portId;
+            newChanges[nodeEndId] = oldValue.nodeId;
+            newChanges[portEndId] = oldValue.portId;
             if (args.cancel && args.connectorEnd !== 'ConnectorTargetEnd') {
-                connector.sourceID = args.oldValue.connectorTargetValue.nodeId;
+                connector.sourceID = oldValue.nodeId;
                 if (args.connector.sourcePortID) {
-                    connector.sourcePortID = args.oldValue.connectorTargetValue.portId;
+                    connector.sourcePortID = oldValue.portId;
                 }
                 this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
             }
             if (args.cancel && args.connectorEnd === 'ConnectorTargetEnd') {
                 if (args.connector.targetPortID) {
-                    connector.targetPortID = args.oldValue.connectorTargetValue.portId;
+                    connector.targetPortID = oldValue.portId;
                 }
-                connector.targetID = args.oldValue.connectorTargetValue.nodeId;
+                connector.targetID = oldValue.nodeId;
                 this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
             }
         }
@@ -31228,7 +31341,7 @@ class SpatialSearch {
     }
 }
 
-var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -31251,11 +31364,11 @@ var __decorate$21 = (undefined && undefined.__decorate) || function (decorators,
  */
 class SerializationSettings extends ChildProperty {
 }
-__decorate$21([
+__decorate$22([
     Property(false)
 ], SerializationSettings.prototype, "preventDefaults", void 0);
 
-var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$23 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -31267,10 +31380,10 @@ var __decorate$22 = (undefined && undefined.__decorate) || function (decorators,
  */
 class CustomCursorAction extends ChildProperty {
 }
-__decorate$22([
+__decorate$23([
     Property('')
 ], CustomCursorAction.prototype, "action", void 0);
-__decorate$22([
+__decorate$23([
     Property('')
 ], CustomCursorAction.prototype, "cursor", void 0);
 
@@ -31439,10 +31552,12 @@ class Diagram extends Component {
             let args = arg[obj];
             this.isServerUpdate = true;
             if (arg[isAdding]) {
-                this.add(args);
+                let add = 'add';
+                this[add].apply(this, args);
             }
             else {
-                this.remove(args);
+                let remove$$1 = 'remove';
+                this[remove$$1].apply(this, args);
             }
             this.isServerUpdate = false;
         }
@@ -31683,7 +31798,7 @@ class Diagram extends Component {
     /* tslint:enable */
     updateSnapSettings(newProp) {
         if (newProp.snapSettings.constraints !== undefined || newProp.snapSettings.horizontalGridlines ||
-            newProp.snapSettings.verticalGridlines) {
+            newProp.snapSettings.verticalGridlines || newProp.snapSettings.gridType) {
             this.diagramRenderer.updateGrid(this.snapSettings, getGridLayerSvg(this.element.id), this.scroller.transform, this.rulerSettings, this.hRuler, this.vRuler);
         }
     }
@@ -31899,16 +32014,16 @@ class Diagram extends Component {
             node = this.nodes[i];
             annotation = node.annotations[0];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
-                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this);
+                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this, false);
             }
             else if (annotation && annotation.annotationType === 'Template') {
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this);
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
         for (let i = 0; i < this.connectors.length; i++) {
             pathAnnotation = this.connectors[i].annotations[0];
             if (pathAnnotation && pathAnnotation.annotationType === 'Template') {
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this);
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
     }
@@ -36685,7 +36800,7 @@ class Diagram extends Component {
             if (this.diagramActions & DiagramAction.TextEdit) {
                 this.enableServerDataBinding(false);
                 let textArea = document.getElementById(this.element.id + '_editBox');
-                if ((isBlazor() && textArea && textArea.value) || !isBlazor()) {
+                if ((isBlazor() && textArea) || !isBlazor()) {
                     let text = textArea.value;
                     EventHandler.remove(textArea, 'input', this.eventHandler.inputChange);
                     EventHandler.remove(textArea, 'focusout', this.focusOutEdit);
@@ -38210,6 +38325,9 @@ class Diagram extends Component {
                     let clonedObject;
                     let selectedSymbol = args.dragData.helper;
                     let paletteId = selectedSymbol.getAttribute('paletteId');
+                    let nodeDragSize;
+                    let nodePreviewSize;
+                    let paletteDragSize;
                     if (paletteId) {
                         let sourceElement = document.getElementById(paletteId).ej2_instances[0];
                         let source = 'sourceElement';
@@ -38230,6 +38348,12 @@ class Diagram extends Component {
                                     && newNode.shape.activity.subProcess.processes.length) {
                                     newNode.shape.activity.subProcess.processes = [];
                                 }
+                                nodeDragSize = newNode.dragSize;
+                                nodePreviewSize = newNode.previewSize;
+                                paletteDragSize = sourceElement['symbolDragSize'];
+                                let palettePreview = sourceElement['symbolPreview'];
+                                newNode.width = nodeDragSize.width || paletteDragSize.width || nodePreviewSize.width || palettePreview.width || newNode.width;
+                                newNode.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height || palettePreview.height || newNode.height;
                                 if (newNode.shape.type === 'SwimLane') {
                                     this.diagramActions |= DiagramAction.PreventHistory;
                                     if (newNode.shape.isLane) {
@@ -38274,6 +38398,8 @@ class Diagram extends Component {
                                         group.shape = newNode.shape;
                                         group.width = newNode.shape.lanes[0].width;
                                         group.height = newNode.shape.lanes[0].height;
+                                        group.previewSize = newNode.previewSize;
+                                        group.dragSize = newNode.dragSize;
                                         newNode = this.add(group);
                                         this.diagramActions &= ~DiagramAction.PreventCollectionChangeOnDragOver;
                                     }
@@ -38337,6 +38463,11 @@ class Diagram extends Component {
                                 isHorizontal = (swimLaneObj.shape.orientation === 'Horizontal') ? true : false;
                                 child1 = this.nameTable[newObj.children[0]];
                                 child2 = this.nameTable[newObj.children[1]];
+                                nodeDragSize = newObj.dragSize;
+                                nodePreviewSize = newObj.previewSize;
+                                paletteDragSize = sourceElement['symbolDragSize'];
+                                laneObj.width = nodeDragSize.width || paletteDragSize.width || nodePreviewSize.width || laneObj.width;
+                                laneObj.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height || laneObj.height;
                                 if (isHorizontal) {
                                     header.width = laneObj.header.width;
                                     header.height = laneObj.height;
@@ -38425,7 +38556,7 @@ class Diagram extends Component {
                     arg = {
                         source: cloneBlazorObject(this.droppable[source]),
                         element: getObjectType(this.currentSymbol) === Connector ? { connector: cloneBlazorObject(this.currentSymbol) } : { node: cloneBlazorObject(this.currentSymbol) },
-                        cancel: false,
+                        cancel: false, target: {},
                         position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
                     };
                     this.getDropEventArgs(arg);
@@ -38507,8 +38638,6 @@ class Diagram extends Component {
                     this.refreshDiagramLayer();
                 }
                 delete this.droppable[source];
-                let selectedSymbols = 'selectedSymbols';
-                remove(this.droppable[selectedSymbols]);
             }
             else {
                 let arg = {
@@ -38523,11 +38652,16 @@ class Diagram extends Component {
                         element: undefined,
                         cancel: false,
                         position: undefined,
+                        target: {}
                     };
                     this.getDropEventArgs(arg);
                 }
                 this.triggerEvent(DiagramEvent.drop, arg);
                 
+            }
+            let selectedSymbols = 'selectedSymbols';
+            if (this.droppable[selectedSymbols]) {
+                remove(this.droppable[selectedSymbols]);
             }
         });
         this.droppable.out = (args) => {
@@ -41944,20 +42078,25 @@ class BpmnDiagrams {
         let elementWrapper = actualObject.wrapper.children[0];
         let actualShape = actualObject.shape.shape;
         let sizeChanged = changedProp.width !== undefined || changedProp.height !== undefined;
-        if (newShape.shape === 'Gateway' && newShape.gateway) {
+        if (((isBlazor() && newShape.bpmnShape === 'Gateway') || newShape.shape === 'Gateway') &&
+            newShape.gateway) {
             actualObject.wrapper.children[0] = this.getBPMNGatewayShape(actualObject);
         }
-        else if (newShape.shape === 'DataObject' && newShape.dataObject) {
+        else if (((isBlazor() && newShape.bpmnShape === 'DataObject') || newShape.shape === 'DataObject') &&
+            newShape.dataObject) {
             actualObject.wrapper.children[0] = this.getBPMNDataObjectShape(actualObject);
         }
-        else if (newShape.shape === 'Activity' && newShape.activity) {
+        else if (((isBlazor() && newShape.bpmnShape === 'Activity') || newShape.shape === 'Activity') &&
+            newShape.activity) {
             actualObject.wrapper.children[0] = this.getBPMNActivityShape(actualObject);
         }
-        else if (newShape.shape === 'Event' && newShape.event) {
+        else if (((isBlazor() && newShape.bpmnShape === 'Event') || newShape.shape === 'Event') &&
+            newShape.event) {
             let shapeEvent = newShape.event;
             actualObject.wrapper.children[0] = this.getBPMNEventShape(actualObject, shapeEvent);
         }
-        else if (newShape.shape === 'Message' || newShape.shape === 'DataSource') {
+        else if (((isBlazor() && newShape.bpmnShape === 'Message') || newShape.shape === 'Message') ||
+            ((isBlazor() && newShape.bpmnShape === 'DataSource') || newShape.shape === 'DataSource')) {
             actualObject.wrapper.children[0] = this.getBPMNShapes(actualObject);
             //} 
             // else if (newShape.shape === 'Group') {
@@ -50977,7 +51116,7 @@ class CrossReduction {
  * Diagram component exported items
  */
 
-var __decorate$23 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -50999,36 +51138,47 @@ let getObjectType$1 = (obj) => {
  */
 class Palette extends ChildProperty {
 }
-__decorate$23([
+__decorate$24([
     Property('')
 ], Palette.prototype, "id", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], Palette.prototype, "height", void 0);
-__decorate$23([
+__decorate$24([
     Property(true)
 ], Palette.prototype, "expanded", void 0);
-__decorate$23([
+__decorate$24([
     Property('')
 ], Palette.prototype, "iconCss", void 0);
-__decorate$23([
+__decorate$24([
     Property('')
 ], Palette.prototype, "title", void 0);
-__decorate$23([
+__decorate$24([
     CollectionFactory(getObjectType$1)
 ], Palette.prototype, "symbols", void 0);
+/**
+ * customize the drag size of the individual palette items.
+ */
+class SymbolDragSize extends ChildProperty {
+}
+__decorate$24([
+    Property()
+], SymbolDragSize.prototype, "width", void 0);
+__decorate$24([
+    Property()
+], SymbolDragSize.prototype, "height", void 0);
 /**
  * customize the preview size and position of the individual palette items.
  */
 class SymbolPreview extends ChildProperty {
 }
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPreview.prototype, "width", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPreview.prototype, "height", void 0);
-__decorate$23([
+__decorate$24([
     Complex({}, Point)
 ], SymbolPreview.prototype, "offset", void 0);
 /**
@@ -51661,9 +51811,11 @@ class SymbolPalette extends Component {
         let symbolPreviewWidth = symbol.wrapper.children[0].desiredSize.width + symbol.style.strokeWidth;
         let symbolPreviewHeight = symbol.wrapper.children[0].desiredSize.height + symbol.style.strokeWidth;
         let content = symbol.wrapper.children[0].children[0];
-        if (this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
-            symbolPreviewWidth = (this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
-            symbolPreviewHeight = (this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
+        let symbolPreview = symbol.previewSize;
+        if ((symbol && (symbolPreview.width || symbolPreview.height)) ||
+            this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
+            symbolPreviewWidth = (symbolPreview.width || this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
+            symbolPreviewHeight = (symbolPreview.height || this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
             sw = symbolPreviewWidth / content.actualSize.width;
             sh = symbolPreviewHeight / content.actualSize.height;
             sw = sh = Math.min(sw, sh);
@@ -52291,70 +52443,73 @@ class SymbolPalette extends Component {
         EventHandler.remove(document, keyDownEvent, this.keyDown);
     }
 }
-__decorate$23([
+__decorate$24([
     Property('S')
 ], SymbolPalette.prototype, "accessKey", void 0);
-__decorate$23([
+__decorate$24([
     Property('100%')
 ], SymbolPalette.prototype, "width", void 0);
-__decorate$23([
+__decorate$24([
     Property('100%')
 ], SymbolPalette.prototype, "height", void 0);
-__decorate$23([
+__decorate$24([
     Collection([], Palette)
 ], SymbolPalette.prototype, "palettes", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "getSymbolInfo", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "symbolInfo", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "filterSymbols", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "ignoreSymbolsOnSearch", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "getSymbolTemplate", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "symbolWidth", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "symbolHeight", void 0);
-__decorate$23([
+__decorate$24([
     Complex({ left: 10, right: 10, top: 10, bottom: 10 }, Margin)
 ], SymbolPalette.prototype, "symbolMargin", void 0);
-__decorate$23([
+__decorate$24([
     Property(true)
 ], SymbolPalette.prototype, "allowDrag", void 0);
-__decorate$23([
+__decorate$24([
     Complex({}, SymbolPreview)
 ], SymbolPalette.prototype, "symbolPreview", void 0);
-__decorate$23([
+__decorate$24([
+    Complex({}, SymbolDragSize)
+], SymbolPalette.prototype, "symbolDragSize", void 0);
+__decorate$24([
     Property(false)
 ], SymbolPalette.prototype, "enableSearch", void 0);
-__decorate$23([
+__decorate$24([
     Property(true)
 ], SymbolPalette.prototype, "enableAnimation", void 0);
-__decorate$23([
+__decorate$24([
     Property('Multiple')
 ], SymbolPalette.prototype, "expandMode", void 0);
-__decorate$23([
+__decorate$24([
     Event()
 ], SymbolPalette.prototype, "paletteSelectionChange", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "getNodeDefaults", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "nodeDefaults", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "getConnectorDefaults", void 0);
-__decorate$23([
+__decorate$24([
     Property()
 ], SymbolPalette.prototype, "connectorDefaults", void 0);
 
@@ -52362,7 +52517,7 @@ __decorate$23([
  * Exported symbol palette files
  */
 
-var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$25 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -53260,16 +53415,16 @@ class Overview extends Component {
         return 'Overview';
     }
 }
-__decorate$24([
+__decorate$25([
     Property('100%')
 ], Overview.prototype, "width", void 0);
-__decorate$24([
+__decorate$25([
     Property('100%')
 ], Overview.prototype, "height", void 0);
-__decorate$24([
+__decorate$25([
     Property('')
 ], Overview.prototype, "sourceID", void 0);
-__decorate$24([
+__decorate$25([
     Event()
 ], Overview.prototype, "created", void 0);
 
@@ -53281,5 +53436,5 @@ __decorate$24([
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es2015.js.map

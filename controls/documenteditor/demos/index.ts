@@ -123,6 +123,7 @@ L10n.load({
             'Orientation': 'التوجه',
             'Landscape': 'المناظر الطبيعيه',
             'Portrait': 'صوره',
+            'Table Of Contents': 'جدول المحتويات',
             'Show page numbers': 'إظهار أرقام الصفحات',
             'Right align page numbers': 'محاذاة أرقام الصفحات إلى اليمين',
             'Nothing': 'شيء',
@@ -1474,7 +1475,7 @@ let listObj: DropDownList = new DropDownList({
     select: (args: any) => {
         if (!documenteditor.isReadOnly && documenteditor.editorModule && args.isInteracted) {
             if (!isNullOrUndefined(args.e) && args.e.target.className === 'e-list-icon e-style-edit e-de-icon-clr-format') {
-                if (documenteditor.styleDialogModule && !isNullOrUndefined(documenteditor.viewer.styles.findByName(args.itemData.StyleName))) {
+                if (documenteditor.styleDialogModule && !isNullOrUndefined(documenteditor.documentHelper.styles.findByName(args.itemData.StyleName))) {
                     documenteditor.styleDialogModule.show(args.itemData.StyleName);
                 }
             } else {
@@ -1490,7 +1491,7 @@ let listObj: DropDownList = new DropDownList({
 listObj.appendTo('#style');
 
 function updateStyleNames(): void {
-    let collection: string[] = documenteditor.viewer.styles.getStyleNames('Paragraph');
+    let collection: string[] = documenteditor.documentHelper.styles.getStyleNames('Paragraph');
     let defaultStyleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6'];
     let finalList: string[] = collection.concat(defaultStyleNames).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
     listObj.dataSource = constructStyleDropItems(finalList);

@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor } from '../../src/index';
+import { Editor, DocumentHelper } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -12,23 +12,23 @@ import { EditorHistory } from '../../src/document-editor/implementation/editor-h
 
 describe('Auto convert list using space key possible cases and level pattern arabic validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -103,7 +103,7 @@ describe('Auto convert list using space key possible cases and level pattern ara
     it('Starting numerical text 1 and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
-        viewer.selection.handleHomeKey();
+        documentHelper.selection.handleHomeKey();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
@@ -117,23 +117,23 @@ describe('Auto convert list using space key possible cases and level pattern ara
 
 describe('Auto convert list using tab key possible cases with  level pattern low letter and up letter validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -145,7 +145,7 @@ describe('Auto convert list using tab key possible cases with  level pattern low
         editor.openBlank();
         editor.editorModule.insertText('a');
         editor.editorModule.insertText('.');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(36);
         editor.editorHistory.undo();
@@ -158,7 +158,7 @@ describe('Auto convert list using tab key possible cases with  level pattern low
         editor.openBlank();
         editor.editorModule.insertText('a');
         editor.editorModule.insertText('-');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -169,7 +169,7 @@ describe('Auto convert list using tab key possible cases with  level pattern low
         editor.openBlank();
         editor.editorModule.insertText('a');
         editor.editorModule.insertText(')');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -190,7 +190,7 @@ describe('Auto convert list using tab key possible cases with  level pattern low
     it('Starting numerical text 1 and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
-        viewer.selection.handleHomeKey();
+        documentHelper.selection.handleHomeKey();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
@@ -205,23 +205,23 @@ describe('Auto convert list using tab key possible cases with  level pattern low
 
 describe('Auto convert list using space and tab key possible cases with  level pattern low Roman and Up Roman validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -244,7 +244,7 @@ describe('Auto convert list using space and tab key possible cases with  level p
         editor.openBlank();
         editor.editorModule.insertText('I');
         editor.editorModule.insertText('-');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -266,7 +266,7 @@ describe('Auto convert list using space and tab key possible cases with  level p
         editor.openBlank();
         editor.editorModule.insertText('I');
         editor.editorModule.insertText(')');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -287,10 +287,10 @@ describe('Auto convert list using space and tab key possible cases with  level p
     it('Starting numerical text i and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
-        viewer.selection.handleHomeKey();
+        documentHelper.selection.handleHomeKey();
         editor.editorModule.insertText('i');
         editor.editorModule.insertText('.');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -302,23 +302,23 @@ describe('Auto convert list using space and tab key possible cases with  level p
 
 describe('Auto convert list using space and tab key with not possible cases and also text ', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -341,15 +341,15 @@ describe('Auto convert list using space and tab key with not possible cases and 
         editor.openBlank();
         editor.editorModule.insertText('I');
         editor.editorModule.insertText(',');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
-        viewer.selection.handleTabKey(false, false);
-        viewer.selection.handleTabKey(false, false);
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
     });
     it('Starting numerical text z and followed by >', () => {
         editor.openBlank();
@@ -366,7 +366,7 @@ describe('Auto convert list using space and tab key with not possible cases and 
         editor.openBlank();
         editor.editorModule.insertText('0');
         editor.editorModule.insertText(')');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -378,7 +378,7 @@ describe('Auto convert list using space and tab key with not possible cases and 
         editor.editorModule.insertText('Adventure');
         editor.editorModule.insertText('i');
         editor.editorModule.insertText('.');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -389,22 +389,22 @@ describe('Auto convert list using space and tab key with not possible cases and 
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
         editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');
-        viewer.selection.handleHomeKey();
+        documentHelper.selection.handleHomeKey();
         editor.editorModule.insertText('i');
         editor.editorModule.insertText('.');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
     });
     it('Apply list to already list contain paragraph', () => {
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
         editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');
-        viewer.selection.handleEndKey();
+        documentHelper.selection.handleEndKey();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
         editor.editorModule.insertText('I');
         editor.editorModule.insertText('.');
-        viewer.selection.handleTabKey(false, false);
+        documentHelper.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
     });
     it('Previous span is field', () => {
@@ -422,23 +422,23 @@ describe('Auto convert list using space and tab key with not possible cases and 
 
 describe('Auto convert list using space key possible cases with level pattern as Leading zero', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -509,7 +509,7 @@ describe('Auto convert list using space key possible cases with level pattern as
     it('Starting numerical text 01 and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
         editor.editorModule.insertText('Adventure');
-        viewer.selection.handleHomeKey();
+        documentHelper.selection.handleHomeKey();
         editor.editorModule.insertText('01');
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
@@ -525,23 +525,23 @@ describe('Auto convert list using space key possible cases with level pattern as
 let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
 describe('Different left indent with paragraph contains only space , tab and combination of both validation - 1', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -551,9 +551,9 @@ describe('Different left indent with paragraph contains only space , tab and com
     });
     it('Multiple tab followed by text 1 and followed by )', () => {
         editor.openBlank();
-        viewer.owner.editorModule.handleTextInput('\t');
-        viewer.owner.editorModule.handleTextInput('\t');
-        viewer.owner.editorModule.handleTextInput('\t');
+        editor.documentHelper.owner.editorModule.handleTextInput('\t');
+        editor.documentHelper.owner.editorModule.handleTextInput('\t');
+        editor.documentHelper.owner.editorModule.handleTextInput('\t');
         editor.editorModule.insertText('1');
         editor.editorModule.insertText(')');
         editor.editorModule.insertText(' ');
@@ -570,7 +570,7 @@ describe('Different left indent with paragraph contains only space , tab and com
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText(' ');
-        viewer.owner.editorModule.handleTextInput('\t');
+        editor.documentHelper.owner.editorModule.handleTextInput('\t');
         editor.editorModule.insertText('A');
         editor.editorModule.insertText('>');
         editor.editorModule.insertText(' ');
@@ -589,23 +589,23 @@ describe('Different left indent with paragraph contains only space , tab and com
 });
 describe('Different left indent with paragraph contains only space , tab and combination of both validation - 1', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -615,7 +615,7 @@ describe('Different left indent with paragraph contains only space , tab and com
     });
     it('combination of tab and space followed by text I and followed by >', () => {
         editor.openBlank();
-        viewer.owner.editorModule.handleTextInput('\t');
+        editor.documentHelper.owner.editorModule.handleTextInput('\t');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText(' ');
@@ -633,7 +633,7 @@ describe('Different left indent with paragraph contains only space , tab and com
     it('combination of text, tab and space followed by text I and followed by >', () => {
         editor.openBlank();
         editor.editorModule.insertText('sample');
-        viewer.owner.editorModule.handleTextInput('\t');
+        editor.documentHelper.owner.editorModule.handleTextInput('\t');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText(' ');
@@ -651,14 +651,14 @@ describe('Different left indent with paragraph contains only space , tab and com
     it('span is image validation', () => {
         editor.openBlank();
         editor.editor.insertImage(imageString, 100, 100);
-        viewer.selection.handleRightKey();
+        documentHelper.selection.handleRightKey();
         editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
     });
     it('span is image validation and previous span is image', () => {
         editor.openBlank();
         editor.editor.insertImage(imageString, 100, 100);
-        viewer.selection.handleRightKey();
+        documentHelper.selection.handleRightKey();
         editor.editorModule.insertText('1');
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
@@ -670,23 +670,23 @@ describe('Different left indent with paragraph contains only space , tab and com
 //Apply Bullet or Numbering public API Validation
 describe('Multi Level List apply validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -725,23 +725,23 @@ describe('Multi Level List apply validation', () => {
 });
 describe('Numbering apply validation in different scenario', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -811,23 +811,23 @@ describe('Numbering apply validation in different scenario', () => {
 
 describe('Bullet list Apply validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -869,23 +869,23 @@ describe('Bullet list Apply validation', () => {
     });
     describe('Asterisk and hyphen Apply validation', () => {
         let editor: DocumentEditor;
-        let viewer: LayoutViewer;
+        let documentHelper: DocumentHelper;
         beforeAll((): void => {
             let ele: HTMLElement = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, Selection, EditorHistory);
             editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
             editor.acceptTab = true;
-            (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-            (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-            (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-            (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
             editor.appendTo('#container');
-            viewer = editor.viewer as PageLayoutViewer;
+            documentHelper = editor.documentHelper;
         });
         afterAll((done): void => {
-            viewer.destroy();
-            viewer = undefined;
+            documentHelper.destroy();
+            documentHelper = undefined;
             editor.destroy();
             document.body.removeChild(document.getElementById('container'));
             editor = undefined;
@@ -910,23 +910,23 @@ describe('Bullet list Apply validation', () => {
 
 describe('Table relayouting validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -939,41 +939,41 @@ describe('Table relayouting validation', () => {
         for (let i: number = 0; i < 20; i++) {
             editor.editorModule.insertText('efefefefef');
         }
-        expect(editor.viewer.pages.length).toBeGreaterThan(1);
+        expect(editor.documentHelper.pages.length).toBeGreaterThan(1);
     });
     it('undo changes', () => {
         for (let i: number = 0; i < 20; i++) {
             editor.editorHistory.undo();
         }
-        expect(editor.viewer.pages.length).toBe(1);
+        expect(editor.documentHelper.pages.length).toBe(1);
     });
     it('redo changes', () => {
         for (let i: number = 0; i < 20; i++) {
             editor.editorHistory.redo();
         }
-        expect(editor.viewer.pages.length).toBeGreaterThan(1);
+        expect(editor.documentHelper.pages.length).toBeGreaterThan(1);
     });
 });
 
 describe("Press enter key", () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -992,5 +992,6 @@ describe("Press enter key", () => {
         }
         editor.selection.moveDown();
         expect(function () { editor.editor.onEnter() }).not.toThrowError();
+
     });
 });

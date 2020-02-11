@@ -28,10 +28,10 @@ describe('Insert Hyperlink Dialog validation', (): void => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(HyperlinkDialog, Editor, Selection);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableHyperlinkDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.hyperlinkDialogModule;
         dialog.show();
@@ -69,7 +69,7 @@ describe('Insert Hyperlink Dialog validation', (): void => {
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
         displayTextBox.value = 'Google';
         dialog.onKeyUpOnUrlBox({ keyCode: 13 } as any);
-        expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(5);
     });
     it('Enter Key validation', () => {
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
@@ -99,10 +99,10 @@ describe('Hyperlink Dialog API Validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableHyperlinkDialog: true });
         DocumentEditor.Inject(HyperlinkDialog, Selection, Editor, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.hyperlinkDialogModule;
         dialog.show();
@@ -155,7 +155,7 @@ describe('Hyperlink Dialog API Validation', () => {
         let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
         displayTextBox.value = '';
         dialog.onInsertHyperlink();
-        expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
+        expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
     });
     it('Insert hyperlink multiple paragraph', () => {
         getDocument(editor);
@@ -180,10 +180,10 @@ describe('Edit Hyperlink validation', () => {
         DocumentEditor.Inject(HyperlinkDialog, Editor, Selection, ContextMenu, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableHyperlinkDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.hyperlinkDialogModule;
         menu = editor.contextMenuModule;
@@ -211,18 +211,18 @@ describe('Edit Hyperlink validation', () => {
         displayTextBox.value = 'Syncfusion';
         dialog.onInsertHyperlink();
         let event: any = { keyCode: 37, ctrlKey: false, preventDefault: () => { }, shiftKey: false };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         dialog.hide();
         dialog.show();
         urlTextBox.value = 'http://js.syncfusion.com';
         dialog.onInsertHyperlink();
         dialog.hide();
         event = { keyCode: 37, ctrlKey: false, preventDefault: () => { }, shiftKey: true }
-        editor.viewer.onKeyDownInternal(event);
-        editor.viewer.onKeyDownInternal(event);
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.removeHyperlink();
-        // expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+        // expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
         // editor.selection.extendForward();
         // editor.selection.extendForward();
         // editor.selection.extendForward();
@@ -243,7 +243,7 @@ describe('Edit Hyperlink validation', () => {
 
     it('using shortcut open hyperlink dialog', () => {
         let event: any = { keyCode: 75, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.hyperlinkDialogModule.hide(); }).not.toThrowError();
     });
 });
@@ -259,10 +259,10 @@ describe('Edit Hyperlink validation without history', () => {
         DocumentEditor.Inject(HyperlinkDialog, Editor, Selection);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableHyperlinkDialog: true });
         editor.enableEditorHistory = false;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.hyperlinkDialogModule;
         dialog.show();
@@ -289,18 +289,18 @@ describe('Edit Hyperlink validation without history', () => {
         displayTextBox.value = 'Syncfusion';
         dialog.onInsertHyperlink();
         let event: any = { keyCode: 37, ctrlKey: false, preventDefault: () => { }, shiftKey: false }
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         dialog.hide();
         dialog.show();
         urlTextBox.value = 'http://js.syncfusion.com';
         dialog.onInsertHyperlink();
         dialog.hide();
         event = { keyCode: 37, ctrlKey: false, preventDefault: () => { }, shiftKey: true };
-        editor.viewer.onKeyDownInternal(event);
-        editor.viewer.onKeyDownInternal(event);
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.removeHyperlink();
-        // expect(((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+        // expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
         // editor.selection.extendForward();
         // editor.selection.extendForward();
         // editor.selection.extendForward();
@@ -1757,10 +1757,10 @@ describe('insert Hyperlink validation in multiple cases in forward', () => {
         DocumentEditor.Inject(HyperlinkDialog, Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableHyperlinkDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(adventureJson());
     });
@@ -1829,10 +1829,10 @@ describe('insert Hyperlink validation in multiple cases in backward direction', 
         DocumentEditor.Inject(HyperlinkDialog, Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableHyperlinkDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(adventureJson());
     });

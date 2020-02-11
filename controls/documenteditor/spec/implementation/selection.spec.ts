@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { Selection } from '../../src/index';
+import { Selection, DocumentHelper } from '../../src/index';
 import {
     SelectionWidgetInfo, TextPosition
 } from '../../src/index';
@@ -3399,19 +3399,19 @@ function selection_document() {
 }
 describe('Selection test script1', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3421,18 +3421,18 @@ describe('Selection test script1', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
     });
     it('Select All Testing', () => {
         editor.selection.selectAll();
-        viewer.updateScrollBars();
+        editor.viewer.updateScrollBars();
         expect('').toBe('');
     });
     it('navigate up and down on empty selection', () => {
-        viewer.updateScrollBars();
+        editor.viewer.updateScrollBars();
         for (let i: number = 0; i < 100; i++) {
             editor.selection.moveNextPosition();
         }
@@ -3464,19 +3464,19 @@ describe('Selection test script1', () => {
 });
 describe('Selection test script2', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3486,7 +3486,7 @@ describe('Selection test script2', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -3514,19 +3514,19 @@ describe('Selection test script2', () => {
 });
 describe('Selection test script3', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3536,7 +3536,7 @@ describe('Selection test script3', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -3564,18 +3564,18 @@ describe('Selection test script3', () => {
 });
 describe('Selection test scrip4', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3585,7 +3585,7 @@ describe('Selection test scrip4', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -3613,18 +3613,18 @@ describe('Selection test scrip4', () => {
 });
 describe('Selection test script5', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3634,7 +3634,7 @@ describe('Selection test script5', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -3664,18 +3664,18 @@ describe('Selection test script5', () => {
 });
 describe('Selection test script6', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3685,7 +3685,7 @@ describe('Selection test script6', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000)
@@ -3761,18 +3761,18 @@ describe('Selection test script6', () => {
 });
 describe('Selection test scrip7', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3782,7 +3782,7 @@ describe('Selection test scrip7', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000)
@@ -3808,18 +3808,18 @@ describe('Selection test scrip7', () => {
 });
 describe('Selection test script9', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3829,7 +3829,7 @@ describe('Selection test script9', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000)
@@ -3858,18 +3858,18 @@ describe('Selection test script9', () => {
 });
 describe('Selection test script10', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3879,7 +3879,7 @@ describe('Selection test script10', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -3913,19 +3913,19 @@ describe('Selection test script10', () => {
 });
 describe('Selection test script11', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3935,7 +3935,7 @@ describe('Selection test script11', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -3964,18 +3964,18 @@ describe('Selection test script11', () => {
 });
 describe('Selection test script12', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3985,7 +3985,7 @@ describe('Selection test script12', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4044,19 +4044,19 @@ describe('Selection test script12', () => {
 });
 describe('Selection test script13', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4066,7 +4066,7 @@ describe('Selection test script13', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4102,19 +4102,19 @@ describe('Selection test script13', () => {
 });
 describe('Back ward Selection validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection);
         editor = new DocumentEditor({ enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4124,7 +4124,7 @@ describe('Back ward Selection validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4199,19 +4199,19 @@ describe('Back ward Selection validation', () => {
 });
 // describe('Paste Testing', () => {
 //     let editor: DocumentEditor;
-//     let viewer: LayoutViewer;
+//     let documentHelper: DocumentHelper;
 //     beforeAll(() => {
 //         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
 //         document.body.innerHTML = '';
 //         document.body.appendChild(ele);
 //         DocumentEditor.Inject(Editor, Selection);
 //         editor = new DocumentEditor({ enableEditor: true,enableSelection: true, isReadOnly: false });
-//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
 //         editor.appendTo('#container');
-//         viewer = editor.viewer as PageLayoutViewer;
+//        documentHelper=editor.documentHelper;
 //     });
 //     beforeEach(() => {
 //         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
@@ -4220,7 +4220,7 @@ describe('Back ward Selection validation', () => {
 //         editor.destroy();
 //         document.body.removeChild(document.getElementById('container'));
 //         editor = undefined;
-//         viewer = undefined;
+//         documentHelper = undefined;
 //     });
 //     it('Paste Testing', () => {
 //         let clipboardEvent = {
@@ -4239,14 +4239,14 @@ describe('Back ward Selection validation', () => {
 //         editor.selection.selectAll();
 //         expect(editor.selection.text.length).toBe(21);
 //     });
-//     it('Paste Testing from viewer', () => {
+//     it('Paste Testing from documentHelper', () => {
 //         let clipboardEvent: any = {
 //             clipboardData: { getData: () => { return 'Syncfusion'; } }
 //         };
-//         viewer.document = editor.createEmptyDocument();
+//         documentHelper.document = editor.createEmptyDocument();
 //         editor.editorModule.insertText('Syncfusion', true);
 //         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
-//         viewer.onPaste(clipboardEvent);
+//         documentHelper.onPaste(clipboardEvent);
 //         editor.selection.selectAll();
 //         expect(editor.selection.text.length).toBe(21);
 //         let clipboardEvent1 = {
@@ -4279,7 +4279,7 @@ describe('selection Widget info validation', () => {
 });
 describe('Selection Validation for branch ', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
@@ -4287,12 +4287,12 @@ describe('Selection Validation for branch ', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
     });
     beforeEach(() => {
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
@@ -4301,7 +4301,7 @@ describe('Selection Validation for branch ', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4309,7 +4309,7 @@ describe('Selection Validation for branch ', () => {
     it('get Fields from parageph', () => {
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
-        let field: FieldElementBox[] = editor.viewer.fields;
+        let field: FieldElementBox[] = editor.documentHelper.fields;
         editor.selection.getHyperLinkFields(editor.selection.start.paragraph, field);
         expect(field.length).toBe(1);
     });
@@ -4318,7 +4318,7 @@ describe('Selection Validation for branch ', () => {
 
 describe('Selection Module Unit Test script', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
@@ -4326,12 +4326,12 @@ describe('Selection Module Unit Test script', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4341,7 +4341,7 @@ describe('Selection Module Unit Test script', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4367,19 +4367,19 @@ describe('Selection Module Unit Test script', () => {
 
 describe('update table format validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4389,7 +4389,7 @@ describe('update table format validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4408,19 +4408,19 @@ describe('update table format validation', () => {
 
 describe('Selection API validation For field ', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor)
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -4429,7 +4429,7 @@ describe('Selection API validation For field ', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4450,7 +4450,7 @@ describe('Selection API validation For field ', () => {
     //     section2.childWidgets.push(paragraph);
     //     word.sections.push(section1);
     //     word.sections.push(section2);
-    //     viewer.document = word;
+    //     documentHelper.document = word;
     //     expect(editor.selectionModule.getPreviousSelection(section2)).toBe(paragaph1);
     // });
     it('Is Exist after validation', () => {
@@ -4510,19 +4510,19 @@ describe('Selection API validation For field ', () => {
 });
 describe('Move To paragraph start validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -4531,7 +4531,7 @@ describe('Move To paragraph start validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4548,19 +4548,19 @@ describe('Move To paragraph start validation', () => {
 describe('Get next and previous rendered block validation', () => {
     let selection: Selection;
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -4570,7 +4570,7 @@ describe('Get next and previous rendered block validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4588,7 +4588,7 @@ describe('Get next and previous rendered block validation', () => {
         section2.childWidgets.push(paragraph2);
         let sections: BodyWidget[] = [];
         sections.push(section2);
-        viewer.onDocumentChanged(sections);
+        documentHelper.onDocumentChanged(sections);
         setTimeout(() => {
             expect(selection.getNextSelectionBlock(paragraph)).toBe(paragraph2);
             expect(selection.getNextSelectionBlock({} as any)).toBe(undefined);
@@ -4610,7 +4610,7 @@ describe('Get next and previous rendered block validation', () => {
         section.childWidgets.push(paragraph);
         section.childWidgets.push(paragraph1);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         expect(selection.getNextRenderedBlock(paragraph)).toBe(paragraph1);
 
     });
@@ -4627,7 +4627,7 @@ describe('Get next and previous rendered block validation', () => {
         section.childWidgets.push(paragraph);
         section.childWidgets.push(paragraph1);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         expect(selection.getNextParagraphBlock(paragraph)).toBe(paragraph1);
         expect(selection.getNextParagraphBlock(paragraph1)).toBe(undefined);
 
@@ -4660,7 +4660,7 @@ describe('Get next and previous rendered block validation', () => {
         section.childWidgets.push(paragraph1);
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         expect(selection.getNextParagraphBlock(paragraph1)).toBe(paragraph);
         expect(selection.getPreviousParagraphBlock(paragraph)).toBe(paragraph1);
 
@@ -4687,7 +4687,7 @@ describe('Get next and previous rendered block validation', () => {
         section.childWidgets.push(table);
         section.childWidgets.push(paragraph1);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         expect(selection.getNextParagraphBlock(paragraph)).toBe(paragraph1);
         expect(selection.getPreviousParagraphBlock(paragraph1)).toBe(paragraph);
 
@@ -4702,10 +4702,10 @@ describe('Insert Hyperlink Validation', () => {
         editor = new DocumentEditor({ enableSelection: true, enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -4719,7 +4719,7 @@ describe('Insert Hyperlink Validation', () => {
     it('Insert Hyperlink With new display text', () => {
         editor.openBlank();
         editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Bing', true);
-        let line: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let line: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line.children.length).toBe(5);
     });
     it('insert hyperlink with same display name', () => {
@@ -4732,7 +4732,7 @@ describe('Insert Hyperlink Validation', () => {
         editor.selection.end.offset = span.text.length;
         editor.selection.end.currentWidget = editor.selection.end.currentWidget;
         editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Google', false);
-        let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let line2: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line2.children.length).toBe(5);
     });
     it('insert hyperlink with same display name', () => {
@@ -4747,7 +4747,7 @@ describe('Insert Hyperlink Validation', () => {
         editor.selection.end.currentWidget = editor.selection.end.currentWidget;
         editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Bing', true);
         editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Google', true);
-        let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let line2: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line2.children.length).toBe(10);
     });
     it('insert hyperlink with same display name back ward selection', () => {
@@ -4767,7 +4767,7 @@ describe('Insert Hyperlink Validation', () => {
         editor.selection.end.location = editor.selection.getPhysicalPositionInline(span, 40, false);
         editor.selection.end.offset = 40;
         editor.editorModule.insertHyperlinkInternal('http://google.com', 'Google', true);
-        let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let line2: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line2.children.length).toBe(15);
     });
     it('Edit hyperlink with same display name back ward selection', () => {
@@ -4786,7 +4786,7 @@ describe('Insert Hyperlink Validation', () => {
         editor.selection.end.location = editor.selection.getPhysicalPositionInline(span, 35, false);
         editor.selection.end.offset = 35;
         editor.editorModule.insertHyperlinkInternal('http://google.com', 'Bing', true);
-        let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let line2: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line2.children.length).toBe(5);
         editor.editorModule.removeHyperlink();
         editor.editorHistory.undo();
@@ -4819,7 +4819,7 @@ describe('Insert Hyperlink Validation', () => {
     //     line.children.push(new FieldElementBox(1));
     //     section.childWidgets.push(paragraph);
     //     sections.push(section);
-    //     editor.viewer.onDocumentChanged(sections);
+    //     editor.documentHelper.onDocumentChanged(sections);
     //     editor.selection.start.location = editor.selection.getPhysicalPositionInline(resultSpan, 38, false);
     //     editor.selection.start.offset = 38;
     //     (editor.selection.start as any).currentParagraph = paragraph;
@@ -4828,14 +4828,14 @@ describe('Insert Hyperlink Validation', () => {
     //     editor.selection.end.offset = 38;
     //     (editor.selection.end as any).currentParagraph = paragraph;
     //     editor.editorModule.insertHyperlink('http://google.com', 'Bing', true);
-    //     let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+    //     let line2: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
     //     expect(line2.children.length).toBe(5);
     // });
 });
 
 describe('Get Cell and Block Validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let selection: Selection;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
@@ -4843,12 +4843,12 @@ describe('Get Cell and Block Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor)
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -4858,7 +4858,7 @@ describe('Get Cell and Block Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -4951,7 +4951,7 @@ describe('Get Cell and Block Validation', () => {
 
 describe('Get previous valid line ', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let selection: Selection;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
@@ -4959,12 +4959,12 @@ describe('Get previous valid line ', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor)
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -4974,7 +4974,7 @@ describe('Get previous valid line ', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -5069,7 +5069,7 @@ describe('Get previous valid line ', () => {
 
 describe('is exist after inline', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let selection: Selection;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
@@ -5077,12 +5077,12 @@ describe('is exist after inline', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor)
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -5092,7 +5092,7 @@ describe('is exist after inline', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -5158,10 +5158,10 @@ describe('Left Indent Validation', () => {
         document.body.appendChild(element);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
 
     });
@@ -5220,10 +5220,10 @@ describe('Apply Right indent', () => {
         document.body.appendChild(element);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
 
     });
@@ -5273,10 +5273,10 @@ describe('Apply first line indent', () => {
         document.body.appendChild(element);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
 
     });
@@ -5325,10 +5325,10 @@ describe('Apply before spacing indent', () => {
         document.body.appendChild(element);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
 
     });
@@ -5378,10 +5378,10 @@ describe('Apply after spacing indent', () => {
         document.body.appendChild(element);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
 
     });
@@ -5431,10 +5431,10 @@ describe('Apply line spacing', () => {
         document.body.appendChild(element);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
 
     });
@@ -5484,10 +5484,10 @@ describe('Apply line spacing type', () => {
         document.body.appendChild(element);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
 
     });
@@ -5535,7 +5535,7 @@ describe('Apply line spacing type', () => {
 
 describe('Get Next and previous selected cell', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let selection: Selection;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
@@ -5543,12 +5543,12 @@ describe('Get Next and previous selected cell', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor)
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+       documentHelper=editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -5558,7 +5558,7 @@ describe('Get Next and previous selected cell', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);

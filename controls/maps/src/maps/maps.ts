@@ -553,6 +553,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public markerCenterLongitude: number;
     /** @private */
+    public isTileMapSubLayer: boolean = false;
+    /** @private */
     public shouldZoomCurrentFactor: number;
     /** @private */
     public shouldZoomPreviousFactor: number;
@@ -751,12 +753,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private renderMap(): void {
 
-        if (!this.isTileMap && this.legendModule && this.legendSettings.visible) {
-
-            this.legendModule.renderLegend();
-
+        if (this.legendModule && this.legendSettings.visible) {
+            if (!this.isTileMap) {
+                this.legendModule.renderLegend();
+            } else {
+                let layerCount: number = this.layersCollection.length - 1;
+                if (!this.layersCollection[layerCount].isBaseLayer) {
+                    this.isTileMapSubLayer = true;
+                    this.legendModule.renderLegend();
+                }
+            }
         }
-
         this.createTile();
 
         if (this.zoomSettings.enable && this.zoomModule) {
@@ -793,9 +800,37 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             let element: HTMLElement = document.getElementById(this.element.id);
             let tileElement: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
             let tile: ClientRect = tileElement.getBoundingClientRect();
-            let bottom: number = svg.bottom - tile.bottom - element.offsetTop;
-            let left: number = parseFloat(tileElement.style.left) + element.offsetLeft;
-            let top: number = parseFloat(tileElement.style.top) + element.offsetTop;
+            let bottom : number; let top : number; let left : number;
+            left = parseFloat(tileElement.style.left) + element.offsetLeft;
+            let titleTextSize: Size = measureText(
+                this.titleSettings.text,
+                this.titleSettings.textStyle
+            );
+            let subTitleTextSize: Size = measureText(
+                this.titleSettings.subtitleSettings.text,
+                this.titleSettings.subtitleSettings.textStyle
+            );
+            if (this.isTileMap && this.isTileMapSubLayer && this.legendSettings.position === 'Bottom' && this.legendSettings.visible) {
+                if (this.legendSettings.mode !== 'Default') {
+                    if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
+                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize.height / 2)
+                            - (this.legendModule.legendBorderRect.height / 2);
+                    } else {
+                        top = parseFloat(tileElement.style.top) + element.offsetTop - this.mapAreaRect.y;
+                    }
+                } else {
+                    left = this.legendModule.legendBorderRect.x;
+                    if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
+                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize['height'] / 2)
+                            - this.legendModule.legendBorderRect.y;
+                    } else {
+                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize['height'] / 2);
+                    }
+                }
+            } else {
+                bottom = svg.bottom - tile.bottom - element.offsetTop;
+                top = parseFloat(tileElement.style.top) + element.offsetTop;
+            }
             top = (bottom <= 11) ? top : (top * 2);
             left = (bottom <= 11) ? left : (left * 2);
             tileElement.style.top = top + 'px';
@@ -1534,8 +1569,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * To add marker
      * @param minLatitude
-     * @param maxLatitude
      * @param minLongitude
+     * @param maxLatitude
      * @param maxLongitude
      */
     public zoomToCoordinates(minLatitude: number, minLongitude: number, maxLatitude: number, maxLongitude: number): void {
@@ -1861,9 +1896,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param type
      * @param fileName
      */
-    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
+    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, isDownload?: boolean): Promise<string> {
         let exportMap: ExportUtils = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+        if (isNullOrUndefined(isDownload) || isDownload) {
+            return new Promise((resolve: Function, reject: Function) => {
+                resolve(exportMap.export(type, fileName, true, orientation));
+            });
+        } else {
+            return new Promise((resolve: Function, reject: Function) => {
+                resolve(exportMap.export(type, fileName, isDownload, orientation));
+            });
+        }
     }
     /**
      * To find visibility of layers and markers for required modules load.

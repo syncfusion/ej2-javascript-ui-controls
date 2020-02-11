@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer, Dictionary } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, Dictionary, DocumentHelper } from '../../src/index';
 import { SfdtExport, WordExport } from '../../src/document-editor/implementation/writer/index';
 
 import { TestHelper } from '../test-helper.spec';
@@ -19,26 +19,25 @@ let saveformat: any = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pag
 
 describe('Save validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     let json: string;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, SfdtExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(saveformat));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -51,7 +50,7 @@ describe('Save validation', () => {
     });
     it('Open the saved Json', () => {
         editor.open(json);
-        expect((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.bold).toBe(true);
+        expect((documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.bold).toBe(true);
     });
 });
 
@@ -61,7 +60,6 @@ let tableBidi: any = { "sections": [{ "blocks": [{ "rows": [{ "rowFormat": { "al
 
 describe('Word export validation of RTL content with section and paragraph format', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     let json: any;
     let writer: any = undefined;
     beforeAll(() => {
@@ -69,10 +67,10 @@ describe('Word export validation of RTL content with section and paragraph forma
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport, WordExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(charParaBidi));
         writer = new XmlWriter();
@@ -82,7 +80,6 @@ describe('Word export validation of RTL content with section and paragraph forma
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -110,7 +107,6 @@ describe('Word export validation of RTL content with section and paragraph forma
 
 describe('Word export validation of RTL content with character format Bidi vaidation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     let json: any;
     let writer: any = undefined;
     beforeAll(() => {
@@ -118,10 +114,10 @@ describe('Word export validation of RTL content with character format Bidi vaida
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport, WordExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(charParaBidi));
         writer = new XmlWriter();
@@ -132,7 +128,6 @@ describe('Word export validation of RTL content with character format Bidi vaida
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -154,7 +149,6 @@ let characterBdo: any = { "sections": [{ "blocks": [{ "paragraphFormat": { "styl
 
 describe('Word export validation of RTL content with character format bdo vaidation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     let json: any;
     let writer: any = undefined;
     beforeAll(() => {
@@ -162,10 +156,10 @@ describe('Word export validation of RTL content with character format bdo vaidat
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport, WordExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(characterBdo));
         writer = new XmlWriter();
@@ -176,7 +170,6 @@ describe('Word export validation of RTL content with character format bdo vaidat
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -201,7 +194,6 @@ describe('Word export validation of RTL content with character format bdo vaidat
 
 describe('Word export validation of RTL content', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     let json: any;
     let writer: any = undefined;
     beforeAll(() => {
@@ -209,10 +201,10 @@ describe('Word export validation of RTL content', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(SfdtExport, WordExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(tableBidi));
         writer = new XmlWriter();
@@ -222,7 +214,6 @@ describe('Word export validation of RTL content', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);

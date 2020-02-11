@@ -1,9 +1,9 @@
 // tslint:disable-next-line:max-line-length
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
 import { DocumentEditorContainerModel } from './document-editor-container-model';
-import { DocumentEditor } from '../document-editor/document-editor';
+import { DocumentEditor, DocumentEditorSettings } from '../document-editor/document-editor';
 import { TextProperties } from './properties-pane/text-properties-pane';
 import { HeaderFooterProperties } from './properties-pane/header-footer-pane';
 import { ImageProperties } from './properties-pane/image-properties-pane';
@@ -11,9 +11,9 @@ import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 // tslint:disable-next-line:max-line-length
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
-import { ContainerServerActionSettingsModel } from '../document-editor/document-editor-model';
+import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 
 /**
@@ -46,6 +46,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(false)
     public enableSpellCheck: boolean;
     /**
+     * Layout Type
+     * @default Pages
+     */
+    @Property('Pages')
+    public layoutType: LayoutType;
+    /**
      * Enable local paste
      * @default false
      */
@@ -71,9 +77,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public enableCsp: boolean;
     /**
      * Gets or set a value indicating whether comment is enabled or not
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableComment: boolean;
     /**
      * Triggers when the component is created
@@ -208,6 +214,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public sectionFormat: SectionFormatProperties;
+    /**
+     * Defines the settings for DocumentEditor customization.
+     * @default {}
+     */
+    @Complex<DocumentEditorSettingsModel>({}, DocumentEditorSettings)
+    public documentEditorSettings: DocumentEditorSettingsModel;
     /**
      * Defines the settings of the DocumentEditorContainer service.
      */
@@ -384,7 +396,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Single': 'Single',
         'Double': 'Double',
         'New comment': 'New comment',
-        'Comments': 'Comments'
+        'Comments': 'Comments',
+        'Print layout': 'Print layout',
+        'Web layout': 'Web layout'
     };
 
     /**
@@ -446,6 +460,16 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.toolbarModule.enableDisableInsertComment(newModel.enableComment);
                     }
                     break;
+                case 'enableSpellCheck':
+                    if (this.documentEditor) {
+                        this.documentEditor.enableSpellCheck = newModel.enableSpellCheck;
+                    }
+                    break;
+                case 'documentEditorSettings':
+                    if (this.documentEditor) {
+                        this.customizeDocumentEditorSettings();
+                    }
+                    break;
             }
         }
     }
@@ -481,6 +505,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
+        this.customizeDocumentEditorSettings();
         this.renderComplete();
     }
 
@@ -511,6 +536,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         if (this.headers) {
             this.documentEditor.headers = this.headers;
+        }
+    }
+    private customizeDocumentEditorSettings(): void {
+        if (this.documentEditorSettings.searchHighlightColor) {
+            this.documentEditor.documentEditorSettings.searchHighlightColor = this.documentEditorSettings.searchHighlightColor;
         }
     }
     /**
@@ -580,6 +610,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             acceptTab: true,
             zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
+            layoutType: this.layoutType,
             enableComment: this.enableComment,
             pageOutline: '#E0E0E0'
         });
@@ -705,8 +736,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.restrictEditing || this.textProperties === undefined) {
             return;
         }
-        let isProtectedDocument: boolean = this.documentEditor.viewer.protectionType === 'ReadOnly';
-        let allowFormatting: boolean = isProtectedDocument && this.documentEditor.viewer.restrictFormatting;
+        let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType === 'ReadOnly';
+        let allowFormatting: boolean = isProtectedDocument && this.documentEditor.documentHelper.restrictFormatting;
         let isSelectionInProtectecRegion: boolean = this.documentEditor.editor.restrictEditing;
 
         if (isProtectedDocument) {
@@ -752,7 +783,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             }
         }
         this.previousContext = this.documentEditor.selection.contextType;
-        if (this.toolbarModule.toolbar) {
+        if (this.toolbarModule && this.toolbarModule.toolbar) {
             this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment);
         }
     }

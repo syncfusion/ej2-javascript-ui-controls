@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+
+<head>
+    <title> Nodes </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+
+    <script data-main="griddots" src="../../node_modules/requirejs/require.js"></script>
+
+    <script src="../require.config.js"></script>
+</head>
+
+<body>
+    <input type="button" id="testcasecheck" value="check testcase" checked></input>
+    <div id="diagram"></div>
+    <div id="options">
+        <div style="padding-bottom:0px">
+            <p>Options</p>
+
+            <input type="checkbox" id="DotGrid" value="canlog" checked>Dot Grid</input>
+            
+
+
+            <div style="padding-top: 13px">Dot Intervals
+                <select id="interval">
+                    <option value="Interval1">Default</option>
+                    <option value="Interval2">Interval2</option>
+                    <option value="Interval3">Interval3</option>
+                    <option value="Interval4">Interval4</option>
+                    <option value="Interval5">Interval5</option>
+                </select>
+            </div><br>
+            <div style="padding-top:0px">Dot color&nbsp;
+                <select id="dotcolor">
+                    <option value="lightgray">Default</option>
+                    <option value="black">black</option>
+                    <option value="yellow">yellow</option>
+                    <option value="red">red</option>
+                </select>
+            </div>
+        </div>
+
+
+        <style>
+            #diagram {
+                padding-top: 50px;
+                padding-left: 5px;
+                width: 850px;
+                height: 2000px;
+                float: left;
+            }
+
+            #options {
+                width: 350px;
+                height: 100%;
+                float: right;
+            }
+        </style>
+    </div>
+</body>
+
+</html>

@@ -1,12 +1,12 @@
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { LayoutViewer } from '../index';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { CheckBox, RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
 import { SelectionSectionFormat } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WSectionFormat } from './../../implementation/format/index';
-import { Tab } from '@syncfusion/ej2-navigations';
+import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Page setup dialog is used to modify formatting of selected sections.
@@ -16,7 +16,7 @@ export class PageSetupDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -62,10 +62,9 @@ export class PageSetupDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
-
     private getModuleName(): string {
         return 'PageSetupDialog';
     }
@@ -73,7 +72,7 @@ export class PageSetupDialog {
      * @private
      */
     public initPageSetupDialog(locale: L10n, isRtl?: boolean): void {
-        let id: string = this.owner.owner.containerId + '_pagesetup_dialog';
+        let id: string = this.documentHelper.owner.containerId + '_pagesetup_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-pagesetup-dlg-container' });
         let ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_MarginTabContainer' });
         this.target.appendChild(ejtabContainer);
@@ -98,29 +97,27 @@ export class PageSetupDialog {
         let layoutHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_layoutHeader', innerHTML: locale.getConstant('Layout')
         });
-        headerContainer.appendChild(marginHeader); headerContainer.appendChild(paperHeader);
+        headerContainer.appendChild(marginHeader);
+        headerContainer.appendChild(paperHeader);
         headerContainer.appendChild(layoutHeader);
-        let contentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-content' });
+
         let marginContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_marginContent' });
         let paperContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_paperContent' });
         let layoutContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_layoutContent' });
-        marginContent.appendChild(this.marginTab); paperContent.appendChild(this.paperTab);
-        layoutContent.appendChild(this.layoutTab); contentContainer.appendChild(marginContent);
-        contentContainer.appendChild(paperContent); contentContainer.appendChild(layoutContent);
-        ejtab.appendChild(headerContainer); ejtab.appendChild(contentContainer);
+        marginContent.appendChild(this.marginTab);
+        paperContent.appendChild(this.paperTab);
+        layoutContent.appendChild(this.layoutTab);
         ejtabContainer.appendChild(ejtab);
         this.initMarginProperties(this.marginTab, locale, isRtl);
         this.initPaperSizeProperties(this.paperTab, locale, isRtl);
         this.initLayoutProperties(this.layoutTab, locale, isRtl);
-        let tabObj: Tab = new Tab({ enableRtl: isRtl }, ejtab);
+        let items: TabItemModel[] = [
+            { header: { text: marginHeader }, content: marginContent },
+            { header: { text: paperHeader }, content: paperContent },
+            { header: { text: layoutHeader }, content: layoutContent }];
+        let tabObj: Tab = new Tab({ items: items, enableRtl: isRtl }, ejtab);
+        tabObj.isStringTemplate = true;
         this.target.addEventListener('keyup', this.keyUpInsertPageSettings);
-
-        // let marginTabHeader: HTMLElement = tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
-        // let marginTabHeaderItem: HTMLElement = marginTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        // marginTabHeaderItem.classList.add('e-de-page-setup-dlg-margin-tab-header');
-        // if (isRtl) {
-        //     marginTabHeaderItem.classList.add('e-de-rtl');
-        // }
     }
 
     /**
@@ -364,19 +361,19 @@ export class PageSetupDialog {
      * @private
      */
     public show(): void {
-        let localValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        localValue.setLocale(this.owner.owner.locale);
+        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initPageSetupDialog(localValue, this.owner.owner.enableRtl);
+            this.initPageSetupDialog(localValue, this.documentHelper.owner.enableRtl);
         }
-        this.owner.dialog.header = localValue.getConstant('Page Setup');
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = this.loadPageSetupDialog;
-        this.owner.dialog.close = this.closePageSetupDialog;
+        this.documentHelper.dialog.header = localValue.getConstant('Page Setup');
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = this.loadPageSetupDialog;
+        this.documentHelper.dialog.close = this.closePageSetupDialog;
 
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.buttons = [{
             click: this.applyPageSetupProperties,
             buttonModel: { content: localValue.getConstant('Ok'), cssClass: 'e-flat e-layout-ppty-okay', isPrimary: true }
         },
@@ -384,15 +381,15 @@ export class PageSetupDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: localValue.getConstant('Cancel'), cssClass: 'e-flat e-layout-ppty-cancel' }
         }];
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
      */
     public loadPageSetupDialog = (): void => {
-        this.owner.updateFocus();
-        let sectionFormat: SelectionSectionFormat = this.owner.selection.sectionFormat;
+        this.documentHelper.updateFocus();
+        let sectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
         this.topMarginBox.value = sectionFormat.topMargin;
         this.leftMarginBox.value = sectionFormat.leftMargin;
         this.bottomMarginBox.value = sectionFormat.bottomMargin;
@@ -450,13 +447,13 @@ export class PageSetupDialog {
      */
     public closePageSetupDialog = (): void => {
         this.unWireEventsAndBindings();
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
      */
     public onCancelButtonClick = (): void => {
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
         this.unWireEventsAndBindings();
     }
     /**
@@ -482,18 +479,19 @@ export class PageSetupDialog {
         sectionFormat.differentFirstPage = this.checkBox2.checked;
         sectionFormat.headerDistance = this.headerBox.value;
         sectionFormat.footerDistance = this.footerBox.value;
-        this.owner.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
-        this.owner.dialog.hide();
+        this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
+        this.documentHelper.dialog.hide();
     }
     /**
      * @private
      */
     public changeByPaperSize = (event: ChangeEventArgs): void => {
         let value: string = event.value as string;
-        let sectionFormat: SelectionSectionFormat = this.owner.selection.sectionFormat;
+        let sectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
         let width: number = sectionFormat.pageWidth;
         let height: number = sectionFormat.pageHeight;
-        if (this.owner.selection.sectionFormat.pageWidth > this.owner.selection.sectionFormat.pageHeight || this.landscape.checked) {
+        /* tslint:disable-next-line:max-line-length */
+        if (this.documentHelper.selection.sectionFormat.pageWidth > this.documentHelper.selection.sectionFormat.pageHeight || this.landscape.checked) {
             this.isPortrait = false;
         } else {
             this.isPortrait = true;
@@ -686,7 +684,7 @@ export class PageSetupDialog {
             this.landscape.destroy();
             this.landscape = undefined;
         }
-        this.owner = undefined;
+        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);

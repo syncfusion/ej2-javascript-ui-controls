@@ -981,3 +981,9 @@ export type PasteOptions =
     'KeepSourceFormatting' |
     'MergeWithExistingFormatting' |
     'KeepTextOnly';
+
+export type LayoutType =
+    // Specifies the content to be displayed in multiple pages.
+    'Pages' |
+    // Specifies the content to be displayed continuously in single page.
+    'Continuous';

@@ -4,7 +4,7 @@ import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import { DocumentEditor } from '../../document-editor';
 import { LineWidget, ElementBox, TextElementBox, FieldElementBox, Page, HeaderFooterWidget } from '../viewer/page';
-import { LayoutViewer } from '../index';
+import { LayoutViewer, DocumentHelper } from '../index';
 import { ElementInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from './text-search';
 import { TextSearch } from '../search/text-search';
@@ -61,6 +61,9 @@ export class Search {
         this.textSearch = new TextSearch(this.owner);
         this.textSearchResults = new TextSearchResults(this.owner);
         this.searchResultsInternal = new SearchResults(this);
+    }
+    get documentHelper(): DocumentHelper {
+        return this.owner.documentHelper;
     }
     /**
      * Get the module name.
@@ -122,7 +125,7 @@ export class Search {
             this.clearSearchHighlight();
         }
         this.navigate(result);
-        let endPosition: TextPosition = this.viewer.selection.start;
+        let endPosition: TextPosition = this.documentHelper.selection.start;
         let index: number = results.indexOf(result);
         if (index < 0) {
             return 0;
@@ -131,7 +134,7 @@ export class Search {
         let endTextPosition: TextPosition = result.end;
         let startPosition: TextPosition = new TextPosition(this.viewer.owner);
         startPosition.setPositionParagraph(endTextPosition.currentWidget, endPosition.offset - replaceText.length);
-        this.viewer.selection.selectRange(endPosition, startPosition);
+        this.documentHelper.selection.selectRange(endPosition, startPosition);
         let eventArgs: SearchResultsChangeEventArgs = { source: this.viewer.owner };
         this.viewer.owner.trigger('searchResultsChange', eventArgs);
         return 1;
@@ -188,7 +191,8 @@ export class Search {
             this.navigate(results.innerList[i]);
             this.owner.editorModule.insertTextInternal(replaceText, true);
             if (result.isHeader || result.isFooter) {
-                this.viewer.layout.updateHeaderFooterToParent(this.viewer.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
+                // tslint:disable-next-line:max-line-length
+                this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
             }
             results.innerList[i].destroy();
         }
@@ -265,21 +269,21 @@ export class Search {
         let startElement: ElementBox = null;
         let endElement: ElementBox = null;
         // tslint:disable-next-line:max-line-length
-        let lineWidget: ElementInfo = this.viewer.selection.getStartLineWidget(paragraph as ParagraphWidget, start, startElement, selectionStartIndex);
+        let lineWidget: ElementInfo = this.documentHelper.selection.getStartLineWidget(paragraph as ParagraphWidget, start, startElement, selectionStartIndex);
         selectionStartIndex = lineWidget.index;
         startElement = lineWidget.element;
         let startLineWidget: LineWidget = startElement ? startElement.line : paragraph.childWidgets[0] as LineWidget;
-        let endLine: ElementInfo = this.viewer.selection.getEndLineWidget(end, endElement, selectionEndIndex);
+        let endLine: ElementInfo = this.documentHelper.selection.getEndLineWidget(end, endElement, selectionEndIndex);
         selectionEndIndex = endLine.index;
         endElement = endLine.element;
         let endLineWidget: LineWidget = endElement ? endElement.line :
             end.paragraph.childWidgets[end.paragraph.childWidgets.length - 1] as LineWidget;
-        let top: number = this.viewer.selection.getTop(startLineWidget);
-        let left: number = this.viewer.selection.getLeftInternal(startLineWidget, startElement, selectionStartIndex);
+        let top: number = this.documentHelper.selection.getTop(startLineWidget);
+        let left: number = this.documentHelper.selection.getLeftInternal(startLineWidget, startElement, selectionStartIndex);
 
         if (!isNullOrUndefined(startLineWidget) && startLineWidget === endLineWidget) {
             //find result ends in current line.
-            let right: number = this.viewer.selection.getLeftInternal(endLineWidget, endElement, selectionEndIndex);
+            let right: number = this.documentHelper.selection.getLeftInternal(endLineWidget, endElement, selectionEndIndex);
             let isRtlText: boolean = false;
             if (endElement instanceof TextElementBox) {
                 isRtlText = endElement.isRightToLeft;
@@ -292,21 +296,21 @@ export class Search {
             // Handled the highlighting approach as genric for normal and rtl text.
             if (isRtlText || paragraph.bidi) {
                 // tslint:disable-next-line:max-line-length
-                let elementBox: ElementBox[] = this.viewer.selection.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
+                let elementBox: ElementBox[] = this.documentHelper.selection.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
                 if (elementBox && elementBox.length > 1) {
                     for (let i: number = 0; i < elementBox.length; i++) {
                         let element: ElementBox = elementBox[i];
                         let elementIsRTL: boolean = false;
                         let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                         if (element === startElement) {
-                            left = this.viewer.selection.getLeftInternal(startLineWidget, element, selectionStartIndex);
-                            right = this.viewer.selection.getLeftInternal(startLineWidget, element, index);
+                            left = this.documentHelper.selection.getLeftInternal(startLineWidget, element, selectionStartIndex);
+                            right = this.documentHelper.selection.getLeftInternal(startLineWidget, element, index);
                         } else if (element === endElement) {
-                            left = this.viewer.selection.getLeftInternal(startLineWidget, element, 0);
-                            right = this.viewer.selection.getLeftInternal(startLineWidget, element, selectionEndIndex);
+                            left = this.documentHelper.selection.getLeftInternal(startLineWidget, element, 0);
+                            right = this.documentHelper.selection.getLeftInternal(startLineWidget, element, selectionEndIndex);
                         } else {
-                            left = this.viewer.selection.getLeftInternal(startLineWidget, element, 0);
-                            right = this.viewer.selection.getLeftInternal(startLineWidget, element, index);
+                            left = this.documentHelper.selection.getLeftInternal(startLineWidget, element, 0);
+                            right = this.documentHelper.selection.getLeftInternal(startLineWidget, element, index);
                         }
                         if (element instanceof TextElementBox) {
                             elementIsRTL = element.isRightToLeft;
@@ -327,23 +331,23 @@ export class Search {
                 if (paragraph !== startLineWidget.paragraph) {
                     paragraph = startLineWidget.paragraph;
                 }
-                let width: number = this.viewer.selection.getWidth(startLineWidget, true) - (left - startLineWidget.paragraph.x);
+                let width: number = this.documentHelper.selection.getWidth(startLineWidget, true) - (left - startLineWidget.paragraph.x);
                 // Handled the  highlighting approach as genric for normal and rtl text.
                 if (paragraph.bidi || (startElement instanceof TextElementBox && startElement.isRightToLeft)) {
                     let right: number = 0;
                     // tslint:disable-next-line:max-line-length
-                    let elementCollection: ElementBox[] = this.viewer.selection.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
+                    let elementCollection: ElementBox[] = this.documentHelper.selection.getElementsForward(startLineWidget, startElement, endElement, paragraph.bidi);
                     if (elementCollection) {
                         let elementIsRTL: boolean = false;
                         for (let i: number = 0; i < elementCollection.length; i++) {
                             let element: ElementBox = elementCollection[i];
                             let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
-                            right = this.viewer.selection.getLeftInternal(startLineWidget, element, index);
+                            right = this.documentHelper.selection.getLeftInternal(startLineWidget, element, index);
                             elementIsRTL = false;
                             if (element === startElement) {
-                                left = this.viewer.selection.getLeftInternal(startLineWidget, element, selectionStartIndex);
+                                left = this.documentHelper.selection.getLeftInternal(startLineWidget, element, selectionStartIndex);
                             } else {
-                                left = this.viewer.selection.getLeftInternal(startLineWidget, element, 0);
+                                left = this.documentHelper.selection.getLeftInternal(startLineWidget, element, 0);
                             }
                             if (element instanceof TextElementBox) {
                                 elementIsRTL = element.isRightToLeft;
@@ -385,7 +389,7 @@ export class Search {
         top = Math.ceil(top);
         findHighLight.width = Math.floor(width);
         let height: number = Math.floor(lineWidget.height);
-        let context: CanvasRenderingContext2D = this.viewer.containerContext;
+        let context: CanvasRenderingContext2D = this.documentHelper.containerContext;
     }
     /**
      * Adds search highlight border.
@@ -415,9 +419,9 @@ export class Search {
         for (let j: number = startIndex; j < widget.childWidgets.length; j++) {
             let lineWidget: LineWidget = widget.childWidgets[j] as LineWidget;
             if (j === startIndex) {
-                top = this.viewer.selection.getTop(lineWidget);
+                top = this.documentHelper.selection.getTop(lineWidget);
             }
-            let left: number = this.viewer.selection.getLeft(lineWidget);
+            let left: number = this.documentHelper.selection.getLeft(lineWidget);
             if (endElement instanceof TextElementBox) {
                 isRtlText = endElement.isRightToLeft;
             }
@@ -427,16 +431,16 @@ export class Search {
                 // Handled the highlighting using the element box highlighting approach as genric for normal and rtl text.
                 if (isRtlText || widget.bidi) {
                     // tslint:disable-next-line:max-line-length
-                    let elementBox: ElementBox[] = this.viewer.selection.getElementsBackward(lineWidget, endElement, endElement, widget.bidi);
+                    let elementBox: ElementBox[] = this.documentHelper.selection.getElementsBackward(lineWidget, endElement, endElement, widget.bidi);
                     for (let i: number = 0; i < elementBox.length; i++) {
                         let element: ElementBox = elementBox[i];
                         let elementIsRTL: boolean = false;
-                        left = this.viewer.selection.getLeftInternal(lineWidget, element, 0);
+                        left = this.documentHelper.selection.getLeftInternal(lineWidget, element, 0);
                         if (element === endElement) {
-                            right = this.viewer.selection.getLeftInternal(lineWidget, element, endIndex);
+                            right = this.documentHelper.selection.getLeftInternal(lineWidget, element, endIndex);
                         } else {
                             let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
-                            right = this.viewer.selection.getLeftInternal(lineWidget, element, index);
+                            right = this.documentHelper.selection.getLeftInternal(lineWidget, element, index);
                         }
                         if (element instanceof TextElementBox) {
                             elementIsRTL = element.isRightToLeft;
@@ -446,13 +450,13 @@ export class Search {
                     }
                     return;
                 } else {
-                    right = this.viewer.selection.getLeftInternal(endLine, endElement, endIndex);
+                    right = this.documentHelper.selection.getLeftInternal(endLine, endElement, endIndex);
                     width = Math.abs(right - left);
                     this.createHighlightBorder(lineWidget, width, isRtlText ? right : left, top);
                     return;
                 }
             } else {
-                width = this.viewer.selection.getWidth(lineWidget, true) - (left - widget.x);
+                width = this.documentHelper.selection.getWidth(lineWidget, true) - (left - widget.x);
                 this.createHighlightBorder(lineWidget, width, left, top);
                 top += lineWidget.height;
             }
@@ -580,7 +584,7 @@ export class Search {
                 this.isHandledEvenPageFooter = true;
             }
             let listElement: string = '';
-            let page: Page = result.viewer.selection.getPage(result.start.paragraph);
+            let page: Page = result.documentHelper.selection.getPage(result.start.paragraph);
             if (isNullOrUndefined(this.isHandledEvenPageHeader) && isNullOrUndefined(this.isHandledEvenPageFooter)) {
                 this.isHandledEvenPageHeader = true;
                 this.isHandledEvenPageFooter = true;

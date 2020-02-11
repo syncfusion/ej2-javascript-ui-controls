@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { PageLayoutViewer, SfdtExport } from '../../src/index';
+import { PageLayoutViewer, SfdtExport, DocumentHelper } from '../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../test-helper.spec';
 import { TextPosition } from '../../src/index';
@@ -27,10 +27,10 @@ describe('Context Menu Testing - 1', () => {
             enableSelection: true, isReadOnly: false
         });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         menu = editor.contextMenuModule;
         imageResizer = editor.imageResizerModule;
@@ -50,7 +50,7 @@ describe('Context Menu Testing - 1', () => {
     it('Context menu validation', () => {
         let event: Event = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         expect((menu as any).contextMenu.style.display).not.toBe('none');
         let mouseEvent: Event = document.createEvent('MouseEvent');
         mouseEvent.initEvent('mousedown', true, true);
@@ -61,7 +61,7 @@ describe('Context Menu Testing - 1', () => {
         editor.editorModule.insertText('Syncfusion Software');
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
             if ((menu.contextMenuInstance.items as MenuItemModel[])[i].text === 'Cut' ||
                 (menu.contextMenuInstance.items as MenuItemModel[])[i].text === 'Copy') {
@@ -70,7 +70,7 @@ describe('Context Menu Testing - 1', () => {
             }
         }
         imageResizer.isImageResizing = true;
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         imageResizer.isImageResizing = false;
     });
     it('Context Menu Opening Texting with selection', () => {
@@ -78,7 +78,7 @@ describe('Context Menu Testing - 1', () => {
         editor.selection.selectAll();
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
             if ((menu.contextMenuInstance.items as MenuItemModel[])[i].text === 'Cut' ||
                 (menu.contextMenuInstance.items as MenuItemModel[])[i].text === 'Copy') {
@@ -98,10 +98,10 @@ describe('Context Menu Testing - 2', () => {
         DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         menu = editor.contextMenuModule;
         paraDialog = editor.paragraphDialogModule;
@@ -123,7 +123,7 @@ describe('Context Menu Testing - 2', () => {
         editor.isReadOnly = true;
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
             if ((menu.contextMenuInstance.items as MenuItemModel[])[i].text === 'Cut') {
                 let element = document.getElementById((menu.contextMenuInstance.items as MenuItemModel[])[i].id);
@@ -141,7 +141,7 @@ describe('Context Menu Testing - 2', () => {
         editor.editor.insertTable(2, 2);
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
             let text: string = (menu.contextMenuInstance.items as MenuItemModel[])[i].text;
             if (text === 'Table Properties' || text === 'Insert' || text === 'Delete') {
@@ -156,10 +156,10 @@ describe('Context Menu Testing - 2', () => {
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
         editor.isReadOnly = true;
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         editor.isReadOnly = false;
         menu.contextMenuInstance.close();
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
             let text: string = (menu.contextMenuInstance.items as MenuItemModel[])[i].text;
             if (text === 'Hyperlink') {
@@ -178,10 +178,10 @@ describe('Context Menu Testing - 3 ', () => {
         DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         menu = editor.contextMenuModule;
     });
@@ -200,7 +200,7 @@ describe('Context Menu Testing - 3 ', () => {
         editor.selection.handleShiftDownKey();
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
             let text: string = (menu.contextMenuInstance.items as MenuItemModel[])[i].text;
             if (text === 'Merge Cells') {
@@ -221,7 +221,7 @@ describe('Context Menu Testing - 3 ', () => {
         editor.contextMenu.addCustomMenu(menuItems,true, true);
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
         for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
             let text: string = (menu.contextMenuInstance.items as MenuItemModel[])[i].text;
             if (text === 'search') {
@@ -235,7 +235,7 @@ describe('Context Menu Testing - 3 ', () => {
 });
 describe('handle Context menu item validation-1 for editing', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper :DocumentHelper;
     let menu: ContextMenu;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
@@ -243,12 +243,12 @@ describe('handle Context menu item validation-1 for editing', () => {
         DocumentEditor.Inject(SfdtExport, ContextMenu, Editor, EditorHistory, Selection, TablePropertiesDialog, ImageResizer);
         editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true, enableParagraphDialog: true, enableHyperlinkDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         menu = editor.contextMenuModule;
     });
     afterAll((done) => {
@@ -264,7 +264,7 @@ describe('handle Context menu item validation-1 for editing', () => {
     it('cut,copy and paste', () => {
         editor.editorModule.insertText('Adventure Works cycles');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
-        viewer.onKeyDownInternal(event);
+        documentHelper.onKeyDownInternal(event);
         menu.handleContextMenuItem('container_contextmenu_cut');
         editor.editorHistory.undo();
         menu.handleContextMenuItem('container_contextmenu_copy');
@@ -298,7 +298,7 @@ describe('handle Context menu item validation-1 for editing', () => {
         editor.editorModule.insertText('Syncfusion software');
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
-        editor.viewer.viewerContainer.dispatchEvent(event);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
     });
     it('paragraph and hyperlink dialog open using contextmenu validation', () => {
         editor.openBlank();
@@ -315,7 +315,7 @@ describe('handle Context menu item validation-1 for editing', () => {
 });
 describe('handle Context menu item validation-2 for editing', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     let menu: ContextMenu;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
@@ -323,12 +323,12 @@ describe('handle Context menu item validation-2 for editing', () => {
         DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection, SfdtExport);
         editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         menu = editor.contextMenuModule;
     });
     afterAll((done) => {
@@ -371,10 +371,10 @@ describe('Apply table auto fit types', () => {
         DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection, SfdtExport);
         editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.contextMenuModule;
     });

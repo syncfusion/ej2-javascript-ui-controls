@@ -9,7 +9,7 @@ import { Rect } from '../primitives/rect';
 import { PointModel } from '../primitives/point-model';
 import { ConnectorModel } from '../objects/connector-model';
 import { wordBreakToString, whiteSpaceToString, textAlignToString } from '../utility/base-util';
-import { getUserHandlePosition, canShowCorner } from '../utility/diagram-util';
+import { getUserHandlePosition, canShowCorner, getInterval, getSpaceValue } from '../utility/diagram-util';
 import { getDiagramElement, getAdornerLayer, getGridLayer, getHTMLLayer, updatePath } from '../utility/dom-util';
 import { measurePath, getBackgroundLayerSvg, getBackgroundImageLayer, setAttributeSvg } from '../utility/dom-util';
 import { SnapSettingsModel } from '../../diagram/diagram/grid-lines-model';
@@ -776,7 +776,6 @@ export class DiagramRenderer {
         snapSettings: SnapSettingsModel, gridSvg: SVGElement, t: Transforms,
         rulerSettings: RulerSettingsModel, hRuler: RulerModel, vRuler: RulerModel
     ): void {
-        //render gridlines
         let pattern: SVGPatternElement = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
         let defs: SVGDefsElement = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         defs.setAttribute('id', this.diagramId + '_grid_pattern_defn');
@@ -788,6 +787,11 @@ export class DiagramRenderer {
         let hSegmentwidth: number = 0; let vSegmentwidth: number = 0;
         let scale: number = 1;
         let isRulerGrid: Boolean = false;
+        let isLine: boolean = snapSettings.gridType === 'Lines';
+        let verticalLineIntervals: number[] = isLine ?
+            snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
+        let horizontalLineIntervals: number[] = isLine ?
+            snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
         if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler && vRuler) {
             hSegmentwidth = (vRuler as Ruler).updateSegmentWidth(t.scale);
             vSegmentwidth = (hRuler as Ruler).updateSegmentWidth(t.scale);
@@ -795,12 +799,11 @@ export class DiagramRenderer {
             (snapSettings.verticalGridlines as Gridlines).scaledIntervals = [vSegmentwidth / vRuler.interval];
             isRulerGrid = true;
         } else {
-            for (let entry of snapSettings.verticalGridlines.lineIntervals) {
-                hWidth += entry;
+            for (let i: number = 0; i < verticalLineIntervals.length; i = i + 1) {
+                hWidth += verticalLineIntervals[i];
             }
-
-            for (let entry of snapSettings.horizontalGridlines.lineIntervals) {
-                hHeight += entry;
+            for (let i: number = 0; i < horizontalLineIntervals.length; i = i + 1) {
+                hHeight += horizontalLineIntervals[i];
             }
             scale = this.scaleSnapInterval(snapSettings, t.scale);
         }
@@ -811,74 +814,116 @@ export class DiagramRenderer {
             height: hHeight, patternUnits: 'userSpaceOnUse'
         };
         setAttributeSvg(pattern, attr);
-        this.horizontalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid);
-        this.verticalSvgGridlines(pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid);
+        this.horizontalSvgGridlines(
+            pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, horizontalLineIntervals);
+        this.verticalSvgGridlines(
+            pattern, hWidth, hHeight, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, verticalLineIntervals);
         defs.appendChild(pattern);
         gridSvg.appendChild(defs);
     }
 
     private horizontalSvgGridlines(
         pattern: SVGPatternElement, hWidth: number, hHeight: number, scale: number, snapSettings: SnapSettingsModel,
-        rulerSettings: RulerSettingsModel, vRuler: RulerModel, isRulerGrid: Boolean
+        rulerSettings: RulerSettingsModel, vRuler: RulerModel, isRulerGrid: Boolean, isLine: boolean, intervals: number[]
     ): void {
         let space: number = 0;
         let dashArray: number[] = [];
         let hLine: SVGElement;
         if (snapSettings.constraints & SnapConstraints.ShowHorizontalLines) {
-            let intervals: number[] = snapSettings.horizontalGridlines.lineIntervals;
-            let strokestyle: string = snapSettings.horizontalGridlines.lineColor;
             if (snapSettings.horizontalGridlines.lineDashArray) {
                 dashArray = this.renderer.parseDashArray(snapSettings.horizontalGridlines.lineDashArray);
             }
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler) {
-                intervals = this.updateLineIntervals(intervals, rulerSettings, vRuler, hHeight);
+                intervals = this.updateLineIntervals(intervals, rulerSettings, vRuler, hHeight, isLine);
             }
+            intervals = getInterval(intervals, isLine);
             for (let i: number = 0; i < intervals.length; i = i + 2) {
-                hLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                let d: number = space + intervals[i] / 2;
+                space = getSpaceValue(intervals, isLine, i, space);
+                let spaceY: number = 0;
+                hLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
+                let d: number = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
-                let attr: Object = {
-                    'stroke-width': intervals[i], 'stroke': snapSettings.horizontalGridlines.lineColor,
-                    'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
-                    'dashArray': dashArray.toString(),
-                    'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
-                };
-                setAttributeSvg(hLine, attr);
-                pattern.appendChild(hLine);
-                space += intervals[i + 1] + intervals[i];
+                let attr: Object;
+                if (isLine) {
+                    attr = {
+                        'stroke-width': intervals[i], 'stroke': snapSettings.horizontalGridlines.lineColor,
+                        'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
+                        'dashArray': dashArray.toString(),
+                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
+                    };
+                    setAttributeSvg(hLine, attr);
+                    pattern.appendChild(hLine);
+                    space += intervals[i + 1] + intervals[i];
+                } else {
+                    this.renderDotGrid(i, pattern, snapSettings, spaceY, d, scale, true);
+                    space += intervals[i];
+                }
+
             }
+        }
+    }
+    private renderDotGrid(
+        i: number, pattern: SVGPatternElement, snapSettings: SnapSettingsModel,
+        spacey: number, d: number, scale: number, isHorizontal: boolean)
+        : void {
+        let intervals: number[] = !isHorizontal ?
+            snapSettings.horizontalGridlines.dotIntervals : snapSettings.verticalGridlines.dotIntervals;
+        intervals = getInterval(intervals, false);
+        let r: number;
+        let hLine: SVGElement;
+        let doubleRadius: boolean;
+        let dy: number;
+        let attr: Object;
+        for (let j: number = 1; j < intervals.length; j = j + 2) {
+            r = j === intervals.length - 1 ? intervals[0] : intervals[j - 1];
+            hLine = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dy = spacey;
+            dy = dy * scale;
+            attr = {
+                'cx': isHorizontal ? dy : d, 'cy': isHorizontal ? d : dy, 'fill': snapSettings.horizontalGridlines.lineColor, 'r': r
+            };
+            setAttributeSvg(hLine, attr);
+            pattern.appendChild(hLine);
+            spacey += intervals[j] + intervals[j - 1];
         }
     }
 
     private verticalSvgGridlines(
         pattern: SVGPatternElement, hWidth: number, hHeight: number, scale: number, snapSettings: SnapSettingsModel,
-        rulerSettings: RulerSettingsModel, hRuler: RulerModel, isRulerGrid: Boolean
+        rulerSettings: RulerSettingsModel, hRuler: RulerModel, isRulerGrid: Boolean, isLine: boolean, intervals: number[]
     ): void {
         let space: number = 0;
         let dashArray: number[] = [];
         let vLine: SVGElement;
         if (snapSettings.constraints & SnapConstraints.ShowVerticalLines) {
-            let intervals: number[] = snapSettings.verticalGridlines.lineIntervals;
-            let strokestyle: string = snapSettings.verticalGridlines.lineColor;
             if (snapSettings.verticalGridlines.lineDashArray) {
                 dashArray = this.renderer.parseDashArray(snapSettings.verticalGridlines.lineDashArray);
             }
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && hRuler) {
-                intervals = this.updateLineIntervals(intervals, rulerSettings, hRuler, hWidth);
+                intervals = this.updateLineIntervals(intervals, rulerSettings, hRuler, hWidth, isLine);
             }
+            let spaceY: number = 0;
+            intervals = getInterval(intervals, isLine);
             for (let i: number = 0; i < intervals.length; i = i + 2) {
-                vLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                let d: number = space + intervals[i] / 2;
+                space = getSpaceValue(intervals, isLine, i, space);
+                vLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
+                let d: number = isLine ? space + intervals[i] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
-                let attr: Object = {
-                    'stroke-width': intervals[i], 'stroke': snapSettings.verticalGridlines.lineColor,
-                    'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
-                    'dashArray': dashArray.toString(),
-                    'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
-                };
-                setAttributeSvg(vLine, attr);
-                pattern.appendChild(vLine);
-                space += intervals[i + 1] + intervals[i];
+                let attr: Object;
+                if (isLine) {
+                    attr = {
+                        'stroke-width': intervals[i], 'stroke': snapSettings.verticalGridlines.lineColor,
+                        'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
+                        'dashArray': dashArray.toString(),
+                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid'
+                    };
+                    setAttributeSvg(vLine, attr);
+                    pattern.appendChild(vLine);
+                    space += intervals[i + 1] + intervals[i];
+                } else {
+                    this.renderDotGrid(i, pattern, snapSettings, spaceY, d, scale, false);
+                    space += intervals[i];
+                }
             }
         }
     }
@@ -899,6 +944,11 @@ export class DiagramRenderer {
             let hSegmentwidth: number = 0;
             let vSegmentwidth: number = 0;
             let scale: number = 1;
+            let isLine: boolean = snapSettings.gridType === 'Lines';
+            let verticalLineIntervals: number[] = isLine ?
+                snapSettings.verticalGridlines.lineIntervals : snapSettings.verticalGridlines.dotIntervals;
+            let horizontalLineIntervals: number[] = isLine ?
+                snapSettings.horizontalGridlines.lineIntervals : snapSettings.horizontalGridlines.dotIntervals;
             if (rulerSettings.showRulers && rulerSettings.dynamicGrid && vRuler && hRuler) {
                 hSegmentwidth = (vRuler as Ruler).updateSegmentWidth(transform.scale);
                 vSegmentwidth = (hRuler as Ruler).updateSegmentWidth(transform.scale);
@@ -909,13 +959,13 @@ export class DiagramRenderer {
                 scale = this.scaleSnapInterval(snapSettings, transform.scale);
             }
             let height: number = 0;
-            for (i = 0; i < snapSettings.horizontalGridlines.lineIntervals.length; i++) {
-                height += snapSettings.horizontalGridlines.lineIntervals[i];
+            for (let j: number = 0; j < horizontalLineIntervals.length; j = j + 1) {
+                height += horizontalLineIntervals[j];
             }
 
             let width: number = 0;
-            for (i = 0; i < snapSettings.verticalGridlines.lineIntervals.length; i++) {
-                width += snapSettings.verticalGridlines.lineIntervals[i];
+            for (let j: number = 0; j < verticalLineIntervals.length; j = j + 1) {
+                width += verticalLineIntervals[j];
             }
 
             let attr: Object = {
@@ -931,8 +981,10 @@ export class DiagramRenderer {
             };
             pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
             setAttributeSvg(pattern, attr);
-            this.horizontalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, vRuler, isRulerGrid);
-            this.verticalSvgGridlines(pattern, width, height, scale, snapSettings, rulerSettings, hRuler, isRulerGrid);
+            this.horizontalSvgGridlines(
+                pattern, width, height, scale, snapSettings, rulerSettings, vRuler, isRulerGrid, isLine, horizontalLineIntervals);
+            this.verticalSvgGridlines(
+                pattern, width, height, scale, snapSettings, rulerSettings, hRuler, isRulerGrid, isLine, verticalLineIntervals);
             let defs: SVGDefsElement = svgGrid.getElementById(this.diagramId + '_grid_pattern_defn') as SVGDefsElement;
             if (defs) {
                 defs.appendChild(pattern);
@@ -940,14 +992,18 @@ export class DiagramRenderer {
         }
     }
 
-    private updateLineIntervals(intervals: number[], rulerSettings: RulerSettingsModel, ruler: RulerModel, segmentWidth: number): number[] {
+    private updateLineIntervals(
+        intervals: number[],
+        rulerSettings: RulerSettingsModel, ruler: RulerModel, segmentWidth: number, isLine: boolean)
+        : number[] {
         let newInterval: number[] = [];
         let tickInterval: number = segmentWidth / ruler.interval;
-        for (let i: number = 0; i < ruler.interval * 2; i++) {
+        let interval: number = isLine ? ruler.interval : ruler.interval + 1;
+        for (let i: number = 0; i < interval * 2; i++) {
             if (i % 2 === 0) {
-                newInterval[i] = (i === 0) ? 1.25 : 0.25;
+                newInterval[i] = isLine ? ((i === 0) ? 1.25 : 0.25) : 0;
             } else {
-                newInterval[i] = tickInterval - newInterval[i - 1];
+                newInterval[i] = isLine ? (tickInterval - newInterval[i - 1]) : tickInterval;
             }
         }
         return newInterval;
@@ -1242,7 +1298,7 @@ export class DiagramRenderer {
                 (element as Container).children.length && ((element as Container).children[0] instanceof DiagramHtmlElement)) {
                 let id: string[] = canvas.id.split('_preview');
                 let layer: HTMLElement = document.getElementById(id[0] + '_html_div') ||
-                (getHTMLLayer(this.diagramId).children[0]) as HTMLElement;
+                    (getHTMLLayer(this.diagramId).children[0]) as HTMLElement;
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
                 if (canvas) {
                     canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
@@ -1352,7 +1408,7 @@ export class DiagramRenderer {
             if (svgMode) {
                 if (!window[domTable][this.diagramId + '_diagramLayer']) {
                     window[domTable][this.diagramId + '_diagramLayer'] =
-                    this.diagramSvgLayer.getElementById(this.diagramId + '_diagramLayer');
+                        this.diagramSvgLayer.getElementById(this.diagramId + '_diagramLayer');
                 }
                 let diagramLayer: SVGElement = window[domTable][this.diagramId + '_diagramLayer'] as SVGElement;
                 diagramLayer.setAttribute('transform', 'translate('
@@ -1376,7 +1432,7 @@ export class DiagramRenderer {
             //expandlayer
             if (!window[domTable][this.diagramId + '_diagramExpander']) {
                 window[domTable][this.diagramId + '_diagramExpander'] =
-                this.iconSvgLayer.getElementById(this.diagramId + '_diagramExpander');
+                    this.iconSvgLayer.getElementById(this.diagramId + '_diagramExpander');
             }
             let expandLayer: SVGElement = window[domTable][this.diagramId + '_diagramExpander'] as SVGElement;
             expandLayer.setAttribute('transform', 'translate('

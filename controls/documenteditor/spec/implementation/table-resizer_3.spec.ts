@@ -1,4 +1,4 @@
-import { LayoutViewer, PageLayoutViewer } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../src/index';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../test-helper.spec';
@@ -16,7 +16,7 @@ function getTextPosition(editor: DocumentEditor, hierarchicalIndex: string): Tex
 
 describe('Table Cell Resizing With Final Cell Selection testing', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer = undefined;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', {
             id: 'container',
@@ -25,12 +25,12 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -38,7 +38,6 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
@@ -50,13 +49,13 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
         let endPosition: TextPosition = getTextPosition(editor, '0;0;0;1;1;0;0;1');
         editor.selection.selectRange(startPosition, endPosition);
         let event: any = { offsetX: 735, offsetY: 143, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
+        editor.documentHelper.onMouseDownInternal(event);
         event = { offsetX: 779, offsetY: 143, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        editor.viewer.onMouseMoveInternal(event);
-        editor.viewer.onMouseUpInternal(event);
+        editor.documentHelper.onMouseMoveInternal(event);
+        editor.documentHelper.onMouseUpInternal(event);
         event = { offsetX: 799, offsetY: 143, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
-        let table: any = viewer.pages[0].bodyWidgets[0].childWidgets[0];
+        editor.documentHelper.onMouseDownInternal(event);
+        let table: any = documentHelper.pages[0].bodyWidgets[0].childWidgets[0];
         expect(table.childWidgets[0].childWidgets[2].columnIndex).toBe(2);
         editor.editorHistory.undo();
         editor.editorHistory.redo();
@@ -65,23 +64,23 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
         editor.editor.insertTable(3, 3);
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         table.tableFormat.cellSpacing = 10;
-        editor.viewer.layout.reLayoutTable(table);
+        editor.documentHelper.layout.reLayoutTable(table);
         let startPosition: TextPosition = getTextPosition(editor, '0;0;0;0;0;0;0;0');
         let endPosition: TextPosition = getTextPosition(editor, '0;0;0;0;1;0;0;1');
         editor.selection.selectRange(startPosition, endPosition);
         let event: any = { offsetX: 321, offsetY: 141, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
+        editor.documentHelper.onMouseDownInternal(event);
         event = { offsetX: 381, offsetY: 141, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        editor.viewer.onMouseMoveInternal(event);
-        editor.viewer.onMouseUpInternal(event);
+        editor.documentHelper.onMouseMoveInternal(event);
+        editor.documentHelper.onMouseUpInternal(event);
         event = { offsetX: 391, offsetY: 141, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
+        editor.documentHelper.onMouseDownInternal(event);
     });
 });
 
 describe('Cell Width Restricting on cell Resizing testing', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer = undefined;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', {
             id: 'container',
@@ -90,12 +89,12 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -103,7 +102,6 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
@@ -112,13 +110,13 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
     it('Resize Table Without Selection on Zero index Testing', () => {
         editor.editor.insertTable(2, 3);
         let event: any = { offsetX: 320, offsetY: 126, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
+        editor.documentHelper.onMouseDownInternal(event);
         event = { offsetX: 360, offsetY: 126, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        editor.viewer.onMouseMoveInternal(event);
-        editor.viewer.onMouseUpInternal(event);
+        editor.documentHelper.onMouseMoveInternal(event);
+        editor.documentHelper.onMouseUpInternal(event);
         event = { offsetX: 370, offsetY: 126, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
-        let compareTable: any = editor.viewer.pages[0].bodyWidgets[0].childWidgets[0];
+        editor.documentHelper.onMouseDownInternal(event);
+        let compareTable: any = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0];
         expect(compareTable.childWidgets[0].childWidgets[0].cellFormat.cellWidth).toBeGreaterThanOrEqual(116);
         expect(compareTable.childWidgets[1].childWidgets[0].cellFormat.cellWidth).toBeGreaterThanOrEqual(116);
         editor.editorHistory.undo();
@@ -127,12 +125,12 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
     it('Resize table without selection on middle index testing', () => {
         editor.editor.insertTable(3, 3);
         let event: any = { offsetX: 736, offsetY: 145, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
+        editor.documentHelper.onMouseDownInternal(event);
         event = { offsetX: 766, offsetY: 145, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        editor.viewer.onMouseMoveInternal(event);
-        editor.viewer.onMouseUpInternal(event);
+        editor.documentHelper.onMouseMoveInternal(event);
+        editor.documentHelper.onMouseUpInternal(event);
         event = { offsetX: 776, offsetY: 145, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
+        editor.documentHelper.onMouseDownInternal(event);
         editor.editorHistory.undo();
         editor.editorHistory.redo();
     });
@@ -140,7 +138,7 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
 
 describe('Cell Width Restricting on cell Resizing With Selection testing', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer = undefined;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', {
             id: 'container',
@@ -149,12 +147,12 @@ describe('Cell Width Restricting on cell Resizing With Selection testing', () =>
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -162,7 +160,6 @@ describe('Cell Width Restricting on cell Resizing With Selection testing', () =>
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
@@ -174,13 +171,13 @@ describe('Cell Width Restricting on cell Resizing With Selection testing', () =>
         let endPosition: TextPosition = getTextPosition(editor, '0;0;0;0;1;0;0;1');
         editor.selection.selectRange(startPosition, endPosition);
         let event: any = { offsetX: 320, offsetY: 126, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
+        editor.documentHelper.onMouseDownInternal(event);
         event = { offsetX: 360, offsetY: 126, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        editor.viewer.onMouseMoveInternal(event);
-        editor.viewer.onMouseUpInternal(event);
+        editor.documentHelper.onMouseMoveInternal(event);
+        editor.documentHelper.onMouseUpInternal(event);
         event = { offsetX: 370, offsetY: 126, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        editor.viewer.onMouseDownInternal(event);
-        let compareTable: any = editor.viewer.pages[0].bodyWidgets[0].childWidgets[0];
+        editor.documentHelper.onMouseDownInternal(event);
+        let compareTable: any = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0];
         expect(compareTable.childWidgets[0].childWidgets[0].cellFormat.cellWidth).toBeGreaterThanOrEqual(116);
         expect(compareTable.childWidgets[1].childWidgets[0].cellFormat.cellWidth).toBeGreaterThanOrEqual(116);
     });
@@ -190,13 +187,13 @@ describe('Cell Width Restricting on cell Resizing With Selection testing', () =>
     //     let endPosition: TextPosition = getTextPosition(editor, '0;0;0;0;1;1;0;1');
     //     editor.selection.selectRange(startPosition, endPosition);
     //     let event: any = { offsetX: 736, offsetY: 145, preventDefault: function () { }, ctrlKey: false, which: 1 };
-    //     editor.viewer.onMouseDownInternal(event);
+    //     editor.documentHelper.onMouseDownInternal(event);
     //     event = { offsetX: 766, offsetY: 145, preventDefault: function () { }, ctrlKey: false, which: 0 };
-    //     editor.viewer.onMouseMoveInternal(event);
-    //     editor.viewer.onMouseUpInternal(event);
+    //     editor.documentHelper.onMouseMoveInternal(event);
+    //     editor.documentHelper.onMouseUpInternal(event);
     //     event = { offsetX: 776, offsetY: 145, preventDefault: function () { }, ctrlKey: false, which: 1 };
-    //     editor.viewer.onMouseDownInternal(event);
-    //     let compareTable: any = editor.viewer.pages[0].bodyWidgets[0].childWidgets[0];
+    //     editor.documentHelper.onMouseDownInternal(event);
+    //     let compareTable: any = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0];
     //     expect(compareTable.childWidgets[2].childWidgets[1].cellFormat.cellWidth).toBeGreaterThanOrEqual(156);
     // });
 });
@@ -842,7 +839,7 @@ function getJson() {
 
 describe('Table Cell resizing testing at cell resizer position at 0 with selection at first column', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer = undefined;
+    let documentHelper: DocumentHelper = undefined;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', {
             id: 'container',
@@ -851,17 +848,16 @@ describe('Table Cell resizing testing at cell resizer position at 0 with selecti
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
@@ -869,36 +865,36 @@ describe('Table Cell resizing testing at cell resizer position at 0 with selecti
     });
     it('Table with leftindent > 0 and selection in first column test resizer at position 0', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.selection.handleShiftDownKey();
-        let offsetX: number = viewer.currentPage.boundingRectangle.x + 263.5;
-        let offsety: number = viewer.currentPage.boundingRectangle.y + 100;
+        let offsetX: number = documentHelper.currentPage.boundingRectangle.x + 263.5;
+        let offsety: number = documentHelper.currentPage.boundingRectangle.y + 100;
         let event: any = { offsetX: offsetX, offsetY: offsety, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         expect(editor.editorModule.tableResize.resizerPosition).toBe(0);
-        event = { offsetX: viewer.currentPage.boundingRectangle.x + 159.5, offsetY: 128, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
-        event = { offsetX: viewer.currentPage.boundingRectangle.x + 159.5, offsetY: 138, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
-        viewer.onMouseUpInternal(event);
+        event = { offsetX: documentHelper.currentPage.boundingRectangle.x + 159.5, offsetY: 128, preventDefault: function () { }, ctrlKey: false, which: 0 };
+        documentHelper.onMouseMoveInternal(event);
+        event = { offsetX: documentHelper.currentPage.boundingRectangle.x + 159.5, offsetY: 138, preventDefault: function () { }, ctrlKey: false, which: 0 };
+        documentHelper.onMouseMoveInternal(event);
+        documentHelper.onMouseUpInternal(event);
         expect(editor.editorModule.tableResize.resizerPosition).toBe(-1);
         editor.editorHistory.undo();
         editor.editorHistory.redo();
     });
     it('Table with leftindent > 0 and selection in first column test resizer at position 0', () => {
         editor.open(getJson());
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.selection.handleShiftDownKey();
-        let offsetX: number = viewer.currentPage.boundingRectangle.x + 263.5;
-        let offsety: number = viewer.currentPage.boundingRectangle.y + 100;
+        let offsetX: number = documentHelper.currentPage.boundingRectangle.x + 263.5;
+        let offsety: number = documentHelper.currentPage.boundingRectangle.y + 100;
         let event: any = { offsetX: offsetX, offsetY: offsety, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         expect(editor.editorModule.tableResize.resizerPosition).toBe(0);
-        event = { offsetX: viewer.currentPage.boundingRectangle.x + 259.5, offsetY: 134, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
-        event = { offsetX: viewer.currentPage.boundingRectangle.y + 259.5, offsetY: 132, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
-        viewer.onMouseUpInternal(event);
+        event = { offsetX: documentHelper.currentPage.boundingRectangle.x + 259.5, offsetY: 134, preventDefault: function () { }, ctrlKey: false, which: 0 };
+        documentHelper.onMouseMoveInternal(event);
+        event = { offsetX: documentHelper.currentPage.boundingRectangle.y + 259.5, offsetY: 132, preventDefault: function () { }, ctrlKey: false, which: 0 };
+        documentHelper.onMouseMoveInternal(event);
+        documentHelper.onMouseUpInternal(event);
         expect(editor.editorModule.tableResize.resizerPosition).toBe(-1);
         editor.editorHistory.undo();
         editor.editorHistory.redo();

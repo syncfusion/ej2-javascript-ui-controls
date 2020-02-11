@@ -1,4 +1,4 @@
-import { LayoutViewer, PageLayoutViewer } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../src/index';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { Page, ImageElementBox, ParagraphWidget, LineWidget } from '../../src/index';
 import { ImageResizer, SelectedImageInfo } from '../../src/document-editor/implementation/editor/image-resizer';
@@ -77,6 +77,7 @@ let jsonObj: Object = {
 describe('Image Resizer testing', () => {
     let editor: DocumentEditor;
     let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let imageResizer: ImageResizer;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:1000px;height:500px;' });
@@ -86,10 +87,10 @@ describe('Image Resizer testing', () => {
             enableEditor: true, enableSelection: true, enableImageResizer: true, isReadOnly: false,
             enableEditorHistory: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         imageResizer = editor.imageResizerModule;
     });
@@ -106,18 +107,18 @@ describe('Image Resizer testing', () => {
     });
     it('Testing image resizer with all side', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
-        viewer.updateScrollBars();
-        let offsetX = viewer.currentPage.boundingRectangle.x + 378;
-        let offsetY = viewer.currentPage.boundingRectangle.y + 96;
+        documentHelper = editor.documentHelper;
+        editor.viewer.updateScrollBars();
+        let offsetX = documentHelper.currentPage.boundingRectangle.x + 378;
+        let offsetY = documentHelper.currentPage.boundingRectangle.y + 96;
         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         event = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseMoveInternal(event);
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseMoveInternal(event);
+        documentHelper.onMouseUpInternal(event);
         event = { offsetX: 597, offsetY: 382, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
-        let resizeElememt = document.getElementById(viewer.owner.containerId + '_ResizeDivElement');
+        documentHelper.onMouseDownInternal(event);
+        let resizeElememt = document.getElementById(editor.documentHelper.owner.containerId + '_ResizeDivElement');
         let parentDiv = resizeElememt.parentElement;
         expect(parentDiv.contains(imageResizer.resizeContainerDiv)).toBe(true);
         expect(parentDiv.contains(imageResizer.bottomLeftRect)).toBe(true);
@@ -131,42 +132,42 @@ describe('Image Resizer testing', () => {
         imageResizer.isImageResizing = true;
         imageResizer.selectedResizeElement = imageResizer.bottomMiddleRect;
         event = { offsetX: 548, offsetY: 390, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 609, offsetY: 358, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.selectedResizeElement = imageResizer.topMiddleRect;
         event = { offsetX: 548, offsetY: 165, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 548, offsetY: 155, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.selectedResizeElement = imageResizer.leftMiddleRect;
         event = { offsetX: 364, offsetY: 230, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 354, offsetY: 230, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.selectedResizeElement = imageResizer.rightMiddleRect;
         event = { offsetX: 740, offsetY: 384, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 760, offsetY: 384, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.selectedResizeElement = imageResizer.topRightRect;
         event = { offsetX: 740, offsetY: 267, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 760, offsetY: 247, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.selectedResizeElement = imageResizer.topLeftRect;
         event = { offsetX: 363, offsetY: 272, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 343, offsetY: 252, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.selectedResizeElement = imageResizer.bottomLeftRect;
         event = { offsetX: 363, offsetY: 375, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         event = { offsetX: 353, offsetY: 385, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.selectedResizeElement = imageResizer.bottomRightRect;
         event = { offsetX: 739, offsetY: 497, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
+        documentHelper.onMouseMoveInternal(event);
         imageResizer.selectedResizeElement = imageResizer.leftMiddleRect;
         (imageResizer as any).leftValue = 0;
         event = { offsetX: -1, offsetY: 497, preventDefault: function () { }, ctrlKey: false, which: 0 };
@@ -174,50 +175,50 @@ describe('Image Resizer testing', () => {
         imageResizer.selectedResizeElement.id = "container_Bottom";
         imageResizer.handleImageResizingOnMouse(event);
         event = { offsetX: 749, offsetY: 507, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.resizeMarkSize = 10;
         expect(imageResizer.resizeMarkSize).toBe(10);
-        expect(viewer.pages.length).not.toBe(0);
+        expect(documentHelper.pages.length).not.toBe(0);
     });
     it('Testing with current page as null in image resizer', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
-        viewer.updateScrollBars();
+        documentHelper = editor.documentHelper;
+        editor.viewer.updateScrollBars();
         let offsetX = 461.5;
         let offsetY = 116;
         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.isImageResizing = false;
         event = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
-        let resizeDiv = document.getElementById(viewer.owner.containerId + '_ResizeDivElement');
+        documentHelper.onMouseMoveInternal(event);
+        let resizeDiv = document.getElementById(documentHelper.owner.containerId + '_ResizeDivElement');
         resizeDiv.parentElement.style.width = '900px';
-        viewer.onMouseMoveInternal(event);
-        let page = viewer.currentPage;
-        let imageelementbox = ((viewer.currentPage.bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0];
+        documentHelper.onMouseMoveInternal(event);
+        let page = documentHelper.currentPage;
+        let imageelementbox = ((documentHelper.currentPage.bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0];
         if (imageelementbox instanceof ImageElementBox) {
-            viewer.currentPage = null;
+            documentHelper.currentPage = null;
             imageResizer.positionImageResizer(imageelementbox);
-            viewer = editor.viewer as PageLayoutViewer;
+            documentHelper = editor.documentHelper;
             resizeDiv.parentElement.style.width = '500px';
             imageResizer.imageResizerDivElement.style.width = '1000px';
             imageResizer.positionImageResizer(imageelementbox);
         }
-        viewer.onMouseUpInternal(event);
-        expect(viewer.pages.length).not.toBe(0);
+        documentHelper.onMouseUpInternal(event);
+        expect(documentHelper.pages.length).not.toBe(0);
     });
     it('Validate get image point position', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
-        viewer.updateScrollBars();
-        let offsetX = viewer.currentPage.boundingRectangle.x + 378;
-        let offsetY = viewer.currentPage.boundingRectangle.y + 96;
+        documentHelper = editor.documentHelper;
+        editor.viewer.updateScrollBars();
+        let offsetX = documentHelper.currentPage.boundingRectangle.x + 378;
+        let offsetY = documentHelper.currentPage.boundingRectangle.y + 96;
         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         imageResizer.isImageResizing = false;
         event = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseMoveInternal(event);
+        documentHelper.onMouseUpInternal(event);
         let bottomright: Point = new Point(476, 325);
         let imagePointInfo: ImagePointInfo = imageResizer.getImagePoint(bottomright);
         expect(imagePointInfo.resizePosition).toBe('se-resize');
@@ -249,7 +250,7 @@ describe('Image Resizer testing', () => {
 });
 describe('Image Resizer validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let imageResizer: ImageResizer;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
@@ -259,10 +260,10 @@ describe('Image Resizer validation', () => {
             enableEditorHistory: true
         });
         DocumentEditor.Inject(Editor, Selection, ImageResizer, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         imageResizer = editor.imageResizerModule;
     });
@@ -270,7 +271,6 @@ describe('Image Resizer validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         imageResizer.destroy();
         imageResizer = undefined;
         setTimeout(function () {
@@ -288,7 +288,7 @@ describe('Image Resizer validation', () => {
     });
     it('showImageResizer method validation', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.viewer.updateScrollBars();
         let event: any = { offsetX: 739, offsetY: 497, preventDefault: function () { }, ctrlKey: false, which: 0 };
         imageResizer.selectedResizeElement = null;
@@ -308,6 +308,7 @@ describe('Image Resizer validation', () => {
 describe('Image Point', () => {
     let editor: DocumentEditor;
     let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let imageResizer: ImageResizer;
     beforeAll((): void => {
         document.body.innerHTML = '';
@@ -317,10 +318,10 @@ describe('Image Point', () => {
             enableEditor: true, enableSelection: true, enableImageResizer: true, isReadOnly: false, enableEditorHistory: true
         });
         DocumentEditor.Inject(Editor, Selection, ImageResizer, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         imageResizer = editor.imageResizerModule;
     });
@@ -337,7 +338,7 @@ describe('Image Point', () => {
     });
     it('Image resizing with touch', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let touchevent: any;
         let clientX_Y = { clientX: 297, clientY: 302, pageX: 297, pageY: 302 };
         let touches = [];
@@ -345,34 +346,34 @@ describe('Image Point', () => {
         touches.push(clientX_Y);
         changedTouches.push(clientX_Y);
         touchevent = { touches, changedTouches, preventDefault: function () { } };
-        viewer.isTouchInput = true;
-        viewer.onTouchStartInternal(touchevent);
-        let offsetX = viewer.currentPage.boundingRectangle.x + 378;
-        let offsetY = viewer.currentPage.boundingRectangle.y + 96;
+        documentHelper.isTouchInput = true;
+        documentHelper.onTouchStartInternal(touchevent);
+        let offsetX = documentHelper.currentPage.boundingRectangle.x + 378;
+        let offsetY = documentHelper.currentPage.boundingRectangle.y + 96;
         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseUpInternal(event);
         imageResizer.selectedResizeElement = imageResizer.bottomMiddleRect;
-        viewer.onTouchStartInternal(touchevent);
-        viewer.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchStartInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
         imageResizer.selectedResizeElement = imageResizer.bottomLeftRect;
-        viewer.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
         imageResizer.selectedResizeElement = imageResizer.bottomRightRect;
-        viewer.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
         imageResizer.selectedResizeElement = imageResizer.topMiddleRect;
-        viewer.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
         imageResizer.selectedResizeElement = imageResizer.topLeftRect;
-        viewer.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
         imageResizer.selectedResizeElement = imageResizer.topRightRect;
-        viewer.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
         imageResizer.selectedResizeElement = imageResizer.rightMiddleRect;
-        viewer.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
         imageResizer.selectedResizeElement = imageResizer.leftMiddleRect;
-        viewer.onTouchMoveInternal(touchevent);
-        viewer.onTouchUpInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchUpInternal(touchevent);
     });
     it('validate getImagePoint for touch events', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let touchevent: any;
         let clientX_Y = { clientX: 297, clientY: 302, pageX: 297, pageY: 302 };
         let touches = [];
@@ -380,12 +381,12 @@ describe('Image Point', () => {
         touches.push(clientX_Y);
         changedTouches.push(clientX_Y);
         touchevent = { touches, changedTouches, preventDefault: function () { } };
-        viewer.isTouchInput = true;
-        viewer.onTouchStartInternal(touchevent);
-        let offsetX = viewer.currentPage.boundingRectangle.x + 378;
-        let offsetY = viewer.currentPage.boundingRectangle.y + 96;
+        documentHelper.isTouchInput = true;
+        documentHelper.onTouchStartInternal(touchevent);
+        let offsetX = documentHelper.currentPage.boundingRectangle.x + 378;
+        let offsetY = documentHelper.currentPage.boundingRectangle.y + 96;
         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseUpInternal(event);
         let bottomright: Point = new Point(481, 330);
         let imagePointInfo: ImagePointInfo = imageResizer.getImagePointOnTouch(bottomright);
         expect(imagePointInfo.resizePosition).toBe('se-resize');
@@ -416,7 +417,7 @@ describe('Image Point', () => {
     });
     it('handle image resizing on touch method validation', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let touchevent: any;
         let clientX_Y = { clientX: 297, clientY: 302, pageX: 297, pageY: 302 };
         let touches = [];
@@ -424,12 +425,12 @@ describe('Image Point', () => {
         touches.push(clientX_Y);
         changedTouches.push(clientX_Y);
         touchevent = { touches, changedTouches, preventDefault: function () { } };
-        viewer.isTouchInput = true;
-        viewer.onTouchStartInternal(touchevent);
-        let offsetX = viewer.currentPage.boundingRectangle.x + 378;
-        let offsetY = viewer.currentPage.boundingRectangle.y + 96;
+        documentHelper.isTouchInput = true;
+        documentHelper.onTouchStartInternal(touchevent);
+        let offsetX = documentHelper.currentPage.boundingRectangle.x + 378;
+        let offsetY = documentHelper.currentPage.boundingRectangle.y + 96;
         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseUpInternal(event);
         imageResizer.selectedResizeElement = imageResizer.bottomMiddleRect;
         imageResizer.selectedResizeElement.id = "container_Bottom";
         imageResizer.handleImageResizingOnTouch(touchevent);
@@ -440,7 +441,7 @@ describe('Image Point', () => {
     });
     it('Touch move internal method validation', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         let touchevent: any;
         let clientX_Y = { clientX: 297, clientY: 302, pageX: 297, pageY: 302 };
         let touches = [];
@@ -448,13 +449,13 @@ describe('Image Point', () => {
         touches.push(clientX_Y);
         changedTouches.push(clientX_Y);
         touchevent = { touches, changedTouches, preventDefault: function () { } };
-        viewer.isTouchInput = true;
-        viewer.onTouchStartInternal(touchevent);
-        let offsetX = viewer.currentPage.boundingRectangle.x + 378;
-        let offsetY = viewer.currentPage.boundingRectangle.y + 96;
+        documentHelper.isTouchInput = true;
+        documentHelper.onTouchStartInternal(touchevent);
+        let offsetX = documentHelper.currentPage.boundingRectangle.x + 378;
+        let offsetY = documentHelper.currentPage.boundingRectangle.y + 96;
         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onTouchMoveInternal(touchevent);
-        viewer.onTouchUpInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchUpInternal(touchevent);
         imageResizer.isImageResizing = true;
         imageResizer.selectedResizeElement = imageResizer.bottomMiddleRect;
         let touchevent_1: any;
@@ -464,12 +465,13 @@ describe('Image Point', () => {
         touches.push(clientX_Y_1);
         changedTouches.push(clientX_Y_1);
         touchevent = { touches, changedTouches, preventDefault: function () { } };
-        viewer.onTouchMoveInternal(touchevent);
+        documentHelper.onTouchMoveInternal(touchevent);
     });
 });
 describe('Image resizing undo and redo operation', () => {
     let editor: DocumentEditor;
     let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let imageResizer: ImageResizer;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:850px' });
@@ -479,10 +481,10 @@ describe('Image resizing undo and redo operation', () => {
             enableEditorHistory: true
         });
         DocumentEditor.Inject(Editor, Selection, ImageResizer, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         imageResizer = editor.imageResizerModule;
     });
@@ -499,29 +501,29 @@ describe('Image resizing undo and redo operation', () => {
     });
     it('Image resizing with undo and redo testing', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
-        viewer.updateScrollBars();
-        let offsetX = viewer.currentPage.boundingRectangle.x + 378;
-        let offsetY = viewer.currentPage.boundingRectangle.y + 96;
+        documentHelper = editor.documentHelper;
+        editor.viewer.updateScrollBars();
+        let offsetX = documentHelper.currentPage.boundingRectangle.x + 378;
+        let offsetY = documentHelper.currentPage.boundingRectangle.y + 96;
         let event: any = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 1 };
-        viewer.onMouseDownInternal(event);
+        documentHelper.onMouseDownInternal(event);
         event = { offsetX: offsetX, offsetY: offsetY, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseMoveInternal(event);
+        documentHelper.onMouseUpInternal(event);
         imageResizer.isImageResizing = true;
         imageResizer.selectedResizeElement = imageResizer.bottomMiddleRect;
         event = { offsetX: 290, offsetY: 503, preventDefault: function () { }, ctrlKey: false, which: 0 };
-        viewer.onMouseMoveInternal(event);
-        viewer.onMouseUpInternal(event);
+        documentHelper.onMouseMoveInternal(event);
+        documentHelper.onMouseUpInternal(event);
         let eventArgs: any = { keyCode: 90, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(eventArgs);
+        editor.documentHelper.onKeyDownInternal(eventArgs);
         eventArgs = { keyCode: 89, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(eventArgs);
+        editor.documentHelper.onKeyDownInternal(eventArgs);
     });
 });
 describe('Image resizer destroy method validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let imageResizer: ImageResizer;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
@@ -530,10 +532,10 @@ describe('Image resizer destroy method validation', () => {
             enableEditor: true, enableSelection: true, enableImageResizer: true, isReadOnly: false
         });
         DocumentEditor.Inject(Editor, Selection, ImageResizer, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         imageResizer = editor.imageResizerModule;
     });
@@ -541,7 +543,6 @@ describe('Image resizer destroy method validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         imageResizer.destroy();
         imageResizer = undefined;
         setTimeout(function () {
@@ -550,7 +551,7 @@ describe('Image resizer destroy method validation', () => {
     });
     it('destroy method validation', () => {
         editor.open(JSON.stringify(jsonObj));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.viewer.updateScrollBars();
         imageResizer.resizeContainerDiv = undefined;
         expect(imageResizer.resizeContainerDiv).toBe(undefined);

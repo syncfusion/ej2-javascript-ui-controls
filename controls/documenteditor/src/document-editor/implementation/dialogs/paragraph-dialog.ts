@@ -8,6 +8,7 @@ import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { WParagraphFormat } from '../index';
 import { TextAlignment, LineSpacingType } from '../../base/types';
 import { RadioButton, ChangeArgs, CheckBox } from '@syncfusion/ej2-buttons';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Paragraph dialog is used to modify formatting of selected paragraphs.
@@ -16,7 +17,7 @@ export class ParagraphDialog {
     /**
      * @private
      */
-    public owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private target: HTMLElement;
     private alignment: DropDownList;
     private lineSpacing: DropDownList;
@@ -49,8 +50,11 @@ export class ParagraphDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
+    }
+    get owner(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
     /**
      * @private
@@ -64,7 +68,7 @@ export class ParagraphDialog {
      */
     public initParagraphDialog(locale: L10n): void {
         let instance: ParagraphDialog = this;
-        let ownerId: string = this.owner.owner.containerId;
+        let ownerId: string = this.documentHelper.owner.containerId;
         let id: string = ownerId + '_paragraph_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-para-dlg-container' });
         // tslint:disable-next-line:max-line-length
@@ -92,7 +96,7 @@ export class ParagraphDialog {
         let rtlInputELe: HTMLElement = createElement('input', { id: ownerId + '_rtlEle' });
         rtlDiv.appendChild(rtlInputELe);
         this.directionDiv.appendChild(rtlDiv)
-        let isRtl: boolean = this.owner.owner.enableRtl;
+        let isRtl: boolean = this.documentHelper.owner.enableRtl;
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
         }
@@ -326,7 +330,7 @@ export class ParagraphDialog {
      * @private
      */
     public changeByValue = (event: ChangeEventArgs): void => {
-        let paragraphFormat: SelectionParagraphFormat = this.owner.selection.paragraphFormat;
+        let paragraphFormat: SelectionParagraphFormat = this.documentHelper.selection.paragraphFormat;
         switch (this.special.index) {
             case 0:
                 if (paragraphFormat.firstLineIndent !== 0) {
@@ -385,7 +389,7 @@ export class ParagraphDialog {
         if (this.paragraphFormat) {
             selectionFormat = this.paragraphFormat;
         } else {
-            selectionFormat = this.owner.selection.paragraphFormat;
+            selectionFormat = this.documentHelper.selection.paragraphFormat;
         }
         let alignValue: number = this.getAlignmentValue(selectionFormat.textAlignment);
         this.alignment.index = alignValue;
@@ -404,8 +408,8 @@ export class ParagraphDialog {
         }
         this.lineSpacing.index = lineSpaceValue;
         this.atIn.value = selectionFormat.lineSpacing;
-        if (this.owner.selection.caret.style.display !== 'none') {
-            this.owner.selection.caret.style.display = 'none';
+        if (this.documentHelper.selection.caret.style.display !== 'none') {
+            this.documentHelper.selection.caret.style.display = 'none';
         }
         if (selectionFormat.bidi) {
             this.rtlButton.checked = true;
@@ -478,9 +482,9 @@ export class ParagraphDialog {
         if (isApply) {
             this.onParagraphFormat(paraFormat);
         } else {
-            this.owner.owner.styleDialogModule.updateParagraphFormat();
+            this.documentHelper.owner.styleDialogModule.updateParagraphFormat();
         }
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
     /**
      * Applies Paragraph Format 
@@ -488,22 +492,22 @@ export class ParagraphDialog {
      * @private
      */
     public onParagraphFormat(paragraphFormat: WParagraphFormat): void {
-        let selection: Selection = this.owner.selection;
+        let selection: Selection = this.documentHelper.selection;
         let isListBidi: boolean = paragraphFormat.bidi && selection.paragraphFormat.listId !== -1;
         if (!isListBidi) {
-            this.owner.layout.isBidiReLayout = true;
+            this.documentHelper.layout.isBidiReLayout = true;
         }
-        this.owner.owner.editorModule.initHistory('ParagraphFormat');
-        this.owner.owner.isShiftingEnabled = true;
-        if (this.owner.selection.isEmpty) {
-            this.owner.owner.editorModule.applyParaFormatProperty(selection.start.paragraph, undefined, paragraphFormat, false);
-            this.owner.owner.editor.layoutItemBlock(selection.start.paragraph, false);
+        this.documentHelper.owner.editorModule.initHistory('ParagraphFormat');
+        this.documentHelper.owner.isShiftingEnabled = true;
+        if (this.documentHelper.selection.isEmpty) {
+            this.documentHelper.owner.editorModule.applyParaFormatProperty(selection.start.paragraph, undefined, paragraphFormat, false);
+            this.documentHelper.owner.editor.layoutItemBlock(selection.start.paragraph, false);
         } else {
-            this.owner.owner.editorModule.updateSelectionParagraphFormatting('ParagraphFormat', paragraphFormat, false);
+            this.documentHelper.owner.editorModule.updateSelectionParagraphFormatting('ParagraphFormat', paragraphFormat, false);
         }
-        this.owner.owner.editorModule.reLayout(selection);
+        this.documentHelper.owner.editorModule.reLayout(selection);
         if (!isListBidi) {
-            this.owner.layout.isBidiReLayout = false;
+            this.documentHelper.layout.isBidiReLayout = false;
         }
     }
     /**
@@ -519,8 +523,8 @@ export class ParagraphDialog {
         this.lineSpacingIn = undefined;
         this.lineSpacingType = undefined;
         this.paragraphFormat = undefined;
-        this.owner.dialog.hide();
-        this.owner.updateFocus();
+        this.documentHelper.dialog.hide();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -532,17 +536,17 @@ export class ParagraphDialog {
         } else {
             this.isStyleDialog = false;
         }
-        let local: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        local.setLocale(this.owner.owner.locale);
+        let local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
             this.initParagraphDialog(local);
         }
         this.loadParagraphDialog();
-        this.owner.dialog.header = local.getConstant('Paragraph');
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = local.getConstant('Paragraph');
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.buttons = [{
             click: this.applyParagraphFormat,
             buttonModel: { content: local.getConstant('Ok'), cssClass: 'e-flat e-para-okay', isPrimary: true }
         },
@@ -550,10 +554,10 @@ export class ParagraphDialog {
             click: this.closeParagraphDialog,
             buttonModel: { content: local.getConstant('Cancel'), cssClass: 'e-flat e-para-cancel' }
         }];
-        this.owner.dialog.beforeOpen = this.owner.updateFocus;
-        this.owner.dialog.close = this.owner.updateFocus;
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.close = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
@@ -598,7 +602,7 @@ export class ParagraphDialog {
             this.special.destroy();
         }
         this.special = undefined;
-        this.owner = undefined;
+        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);

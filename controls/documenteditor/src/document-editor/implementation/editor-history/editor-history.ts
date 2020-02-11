@@ -15,6 +15,7 @@ import { WParagraphFormat } from '../format/paragraph-format';
 import { ParagraphWidget, TableRowWidget, TableWidget } from '../viewer/page';
 import { Point, HelperMethods } from '../editor/editor-helper';
 import { TableResizer } from '../editor/table-resizer';
+import { DocumentHelper } from '../viewer';
 
 /**
  *  `EditorHistory` Module class is used to handle history preservation
@@ -57,7 +58,7 @@ export class EditorHistory {
      * @private
      */
     public modifiedParaFormats: Dictionary<BaseHistoryInfo, ModifiedParagraphFormat[]>;
-    private viewer: LayoutViewer;
+    public documentHelper: DocumentHelper;
     //Properties
     /**
      * gets undo stack
@@ -113,11 +114,15 @@ export class EditorHistory {
      */
     constructor(node: DocumentEditor) {
         this.owner = node;
-        this.viewer = node.viewer;
+        this.documentHelper = node.documentHelper;
         this.modifiedParaFormats = new Dictionary<BaseHistoryInfo, ModifiedParagraphFormat[]>();
         this.undoLimitIn = 500;
         this.redoLimitIn = 500;
     }
+    get viewer(): LayoutViewer {
+        return this.owner.viewer;
+    }
+
     /**
      * @private
      */
@@ -256,7 +261,7 @@ export class EditorHistory {
      * @private
      */
     public updateHistory(): void {
-        if (this.viewer.owner.enableHistoryMode && !isNullOrUndefined(this.currentBaseHistoryInfo)) {
+        if (this.documentHelper.owner.enableHistoryMode && !isNullOrUndefined(this.currentBaseHistoryInfo)) {
             //Updates the current end position
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)
                 && isNullOrUndefined(this.currentBaseHistoryInfo.endPosition)) {
@@ -278,7 +283,7 @@ export class EditorHistory {
         if (!(this.isUndoing || this.isRedoing)) {
             isHandledComplexHistory = this.owner.editorModule.insertRemoveBookMarkElements();
         }
-        if (this.viewer.owner.enableHistoryMode && !isNullOrUndefined(this.currentHistoryInfo)) {
+        if (this.documentHelper.owner.enableHistoryMode && !isNullOrUndefined(this.currentHistoryInfo)) {
             this.updateHistory();
             isHandledComplexHistory = true;
         } else if (this.owner.editorModule.isHandledComplex) {
@@ -292,7 +297,7 @@ export class EditorHistory {
      * @private
      */
     public updateComplexHistory(): void {
-        let selection: Selection = this.viewer.selection;
+        let selection: Selection = this.documentHelper.selection;
         if (this.currentHistoryInfo.hasAction) {
             if (this.currentHistoryInfo.action === 'AutoFormatHyperlink') {
                 let startPosition: TextPosition = new TextPosition(selection.owner);
@@ -311,19 +316,19 @@ export class EditorHistory {
                 this.owner.editorModule.setPositionForCurrentIndex(startPosition, this.currentHistoryInfo.insertPosition);
                 let endPosition: TextPosition = new TextPosition(selection.owner);
                 this.owner.editorModule.setPositionForCurrentIndex(endPosition, this.currentHistoryInfo.endPosition);
-                this.viewer.layout.reLayoutParagraph(startPosition.paragraph, 0, 0);
+                this.documentHelper.layout.reLayoutParagraph(startPosition.paragraph, 0, 0);
                 if (endPosition.paragraph !== startPosition.paragraph) {
-                    this.viewer.layout.reLayoutParagraph(endPosition.paragraph, 0, 0);
+                    this.documentHelper.layout.reLayoutParagraph(endPosition.paragraph, 0, 0);
                 }
             }
             if (this.currentHistoryInfo.action === 'ReplaceAll') {
                 this.owner.editorModule.layoutWholeDocument();
             } else if (selection.owner.isShiftingEnabled) {
-                this.viewer.layout.shiftLayoutedItems();
+                this.documentHelper.layout.shiftLayoutedItems();
                 if (this.owner.enableHeaderAndFooter) {
                     this.owner.editorModule.updateHeaderFooterWidget();
                 }
-                this.viewer.removeEmptyPages();
+                this.documentHelper.removeEmptyPages();
             }
         }
         selection.owner.isShiftingEnabled = false;
@@ -337,11 +342,11 @@ export class EditorHistory {
             selection.end.updatePhysicalPosition(true);
         }
         selection.upDownSelectionLength = selection.end.location.x;
-        this.viewer.isScrollHandler = true;
+        this.documentHelper.isScrollHandler = true;
         this.viewer.updateScrollBars();
         selection.fireSelectionChanged(true);
-        this.viewer.isScrollHandler = false;
-        this.viewer.updateFocus();
+        this.documentHelper.isScrollHandler = false;
+        this.documentHelper.updateFocus();
         this.updateComplexHistoryInternal();
         this.owner.editorModule.fireContentChange();
     }
@@ -372,16 +377,16 @@ export class EditorHistory {
      * @private
      */
     public updateListChangesInHistory(currentAbstractList: WAbstractList, list: WList): Dictionary<number, ModifiedLevel> {
-        this.currentBaseHistoryInfo = new BaseHistoryInfo(this.viewer.owner);
+        this.currentBaseHistoryInfo = new BaseHistoryInfo(this.documentHelper.owner);
         this.currentBaseHistoryInfo.action = 'List';
         this.currentBaseHistoryInfo.updateSelection();
         let collection: Dictionary<number, ModifiedLevel> = new Dictionary<number, ModifiedLevel>();
         for (let i: number = 0; i < currentAbstractList.levels.length; i++) {
-            let levels: WListLevel = this.viewer.getAbstractListById(list.abstractListId).levels[i];
+            let levels: WListLevel = this.documentHelper.getAbstractListById(list.abstractListId).levels[i];
             let value: Object = this.currentBaseHistoryInfo.addModifiedPropertiesForList(levels);
             let modifiedLevel: ModifiedLevel = new ModifiedLevel(levels, currentAbstractList.levels[i]);
             if (!isNullOrUndefined(levels)) {
-                this.viewer.owner.editorModule.copyListLevel(levels, (currentAbstractList.levels[i] as WListLevel));
+                this.documentHelper.owner.editorModule.copyListLevel(levels, (currentAbstractList.levels[i] as WListLevel));
             }
             collection.add(i, modifiedLevel);
         }
@@ -398,11 +403,11 @@ export class EditorHistory {
             this.modifiedParaFormats = new Dictionary<BaseHistoryInfo, ModifiedParagraphFormat[]>();
         }
         let collection: ModifiedParagraphFormat[] = [];
-        for (let i: number = 0; i < this.viewer.listParagraphs.length; i++) {
-            let paragraph: ParagraphWidget = this.viewer.listParagraphs[i];
+        for (let i: number = 0; i < this.documentHelper.listParagraphs.length; i++) {
+            let paragraph: ParagraphWidget = this.documentHelper.listParagraphs[i];
             let paraFormat: WParagraphFormat = paragraph.paragraphFormat;
-            let currentList: WList = this.viewer.getListById(paraFormat.listFormat.listId);
-            let listLevel: WListLevel = this.viewer.layout.getListLevel(currentList, paraFormat.listFormat.listLevelNumber);
+            let currentList: WList = this.documentHelper.getListById(paraFormat.listFormat.listId);
+            let listLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, paraFormat.listFormat.listLevelNumber);
             // tslint:disable-next-line:max-line-length
             if (modifiedLevelsInternal.containsKey(paraFormat.listFormat.listLevelNumber)
                 && modifiedLevelsInternal.get(paraFormat.listFormat.listLevelNumber).ownerListLevel === listLevel) {
@@ -423,7 +428,7 @@ export class EditorHistory {
      * @private
      */
     public updateListChanges(modifiedCollection: Dictionary<number, ModifiedLevel>): void {
-        this.viewer.owner.isLayoutEnabled = false;
+        this.documentHelper.owner.isLayoutEnabled = false;
         this.owner.editorModule.updateListParagraphs();
         for (let i: number = 0; i < modifiedCollection.keys.length; i++) {
             let levelNumber: number = modifiedCollection.keys[0];
@@ -435,12 +440,12 @@ export class EditorHistory {
             this.owner.editorModule.copyListLevel(modifiedLevel.ownerListLevel, modifiedLevel.modifiedListLevel);
         }
         this.revertListChanges();
-        this.viewer.owner.isLayoutEnabled = true;
-        this.viewer.renderedLists.clear();
-        this.viewer.renderedLevelOverrides = [];
-        this.viewer.pages = [];
-        this.viewer.layout.layout();
-        let selection: Selection = this.viewer.selection;
+        this.documentHelper.owner.isLayoutEnabled = true;
+        this.documentHelper.renderedLists.clear();
+        this.documentHelper.renderedLevelOverrides = [];
+        this.documentHelper.pages = [];
+        this.documentHelper.layout.layout();
+        let selection: Selection = this.documentHelper.selection;
         selection.start.updatePhysicalPosition(true);
         if (selection.isEmpty) {
             selection.end.setPositionInternal(selection.start);
@@ -458,7 +463,7 @@ export class EditorHistory {
     private revertListChanges(): void {
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(this.currentBaseHistoryInfo)
-            && this.viewer.owner.editorHistory.modifiedParaFormats.containsKey(this.currentBaseHistoryInfo)) {
+            && this.documentHelper.owner.editorHistory.modifiedParaFormats.containsKey(this.currentBaseHistoryInfo)) {
             // tslint:disable-next-line:max-line-length
             let collection: ModifiedParagraphFormat[] = this.modifiedParaFormats.get(this.currentBaseHistoryInfo);
             for (let i: number = 0; i < collection.length; i++) {

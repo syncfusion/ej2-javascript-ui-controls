@@ -3,7 +3,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
-import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../../src/index';
 import { Selection } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 /**
@@ -93,25 +93,25 @@ let toc: object = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pageHei
 
 describe('TOC Hyperlink Character Style Validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(toc));
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -138,10 +138,10 @@ describe('Default Character Format API Validation', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         //setDefaultCharacterFormat API
         editor.setDefaultCharacterFormat(defaultCharacterFormat);
         editor.appendTo('#container');

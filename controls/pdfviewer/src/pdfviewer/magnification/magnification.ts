@@ -20,7 +20,7 @@ export class Magnification {
     private zoomLevel: number;
     private higherZoomLevel: number;
     private lowerZoomLevel: number;
-    private zoomPercentages: number[] = [50, 75, 100, 125, 150, 200, 400];
+    private zoomPercentages: number[] = [10, 25, 50, 75, 100, 125, 150, 200, 400];
     private isNotPredefinedZoom: boolean = false;
     private pinchStep: number = 0.02;
     private reRenderPageNumber: number = 0;
@@ -91,8 +91,8 @@ export class Magnification {
      * @returns void
      */
     public zoomTo(zoomValue: number): void {
-        if (zoomValue < 50) {
-            zoomValue = 50;
+        if (zoomValue < 10) {
+            zoomValue = 10;
         } else if (zoomValue > 400) {
             zoomValue = 400;
         }
@@ -117,8 +117,8 @@ export class Magnification {
             this.fitType = null;
         }
         this.isNotPredefinedZoom = false;
-        if (this.zoomLevel >= 6) {
-            this.zoomLevel = 6;
+        if (this.zoomLevel >= 8) {
+            this.zoomLevel = 8;
         } else {
             this.zoomLevel++;
         }
@@ -244,8 +244,8 @@ export class Magnification {
         if (temporaryZoomFactor < 4 && temporaryZoomFactor > 2) {
             temporaryZoomFactor = this.zoomFactor - this.pinchStep;
         }
-        if (temporaryZoomFactor < 0.5) {
-            temporaryZoomFactor = 0.5;
+        if (temporaryZoomFactor < 0.1) {
+            temporaryZoomFactor = 0.1;
         }
         this.isPinchZoomed = true;
         this.onZoomChanged(temporaryZoomFactor * 100);
@@ -317,6 +317,11 @@ export class Magnification {
         this.previousZoomFactor = this.zoomFactor;
         this.zoomLevel = this.getZoomLevel(zoomValue);
         this.zoomFactor = this.getZoomFactor(zoomValue);
+        if (this.zoomFactor <= 0.25) {
+            this.pdfViewerBase.isMinimumZoom = true;
+        } else {
+            this.pdfViewerBase.isMinimumZoom = false;
+        }
         if (Browser.isDevice) {
             if (this.isWebkitMobile) {
                 this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
@@ -597,7 +602,12 @@ export class Magnification {
 
     // tslint:disable-next-line
     private initiateRerender(proxy: any): void {
-        if (proxy.pageRerenderCount === proxy.pdfViewerBase.reRenderedCount && proxy.pageRerenderCount !== 0 && proxy.pdfViewerBase.reRenderedCount !== 0) {
+        let isReRender: boolean = false;
+        if (this.previousZoomFactor < 0.4  || this.pdfViewerBase.isMinimumZoom) {
+            isReRender = true;
+        }
+        // tslint:disable-next-line:max-line-length
+        if (((proxy.pageRerenderCount === proxy.pdfViewerBase.reRenderedCount) || isReRender) && proxy.pageRerenderCount !== 0 && proxy.pdfViewerBase.reRenderedCount !== 0) {
             proxy.reRenderAfterPinch(this.reRenderPageNumber);
         }
     }
@@ -605,8 +615,12 @@ export class Magnification {
     private reRenderAfterPinch(currentPageIndex: number): void {
         this.pageRerenderCount = 0;
         let lowerPageValue: number = currentPageIndex - 3;
-        lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         let higherPageValue: number = currentPageIndex + 1;
+        if (this.pdfViewerBase.isMinimumZoom) {
+            lowerPageValue = currentPageIndex - 4;
+            higherPageValue = currentPageIndex + 4;
+        }
+        lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
             let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + i);
@@ -641,8 +655,12 @@ export class Magnification {
             this.pdfViewerBase.textLayer.clearTextLayers();
         }
         let lowerPageValue: number = currentPageIndex - 3;
-        lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         let higherPageValue: number = currentPageIndex + 1; // jshint ignore:line
+        if (this.pdfViewerBase.isMinimumZoom) {
+            lowerPageValue = currentPageIndex - 4;
+            higherPageValue = currentPageIndex + 4;
+        }
+        lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
             let canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
@@ -694,8 +712,12 @@ export class Magnification {
 
     private resizeCanvas(pageNumber: number): void {
         let lowerPageValue: number = pageNumber - 3;
-        lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         let higherPageValue: number = pageNumber + 3;
+        if (this.pdfViewerBase.isMinimumZoom) {
+            lowerPageValue = pageNumber - 4;
+            higherPageValue = pageNumber + 4;
+        }
+        lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
             let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + i);

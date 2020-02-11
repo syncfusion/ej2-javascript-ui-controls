@@ -2955,6 +2955,21 @@ describe('EJ2-34298 - Ref element testing', () => {
         expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
         expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
     });
+    it('Remove Ref element before destroy - Default target with Ref element availability testing', () => {
+        dialog = new Dialog({});
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        detach(document.querySelector('.e-dlg-ref-element'));
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dialog').length === 0).toEqual(true);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('BODY');
+        detach(document.querySelector('#dialog'));
+    });
     it('Target as `document.body` with Ref element availability testing', () => {
         dialog = new Dialog({
             target: document.body
@@ -3159,5 +3174,128 @@ describe('EJ2-34298 - Ref element testing', () => {
         expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
         expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
         expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+});
+describe('EJ2-34298 - Dialog render with virtual DOM testing', () => {
+    let dialog: Dialog;
+    let parentRoot: HTMLElement;
+    let rootEle: HTMLElement;
+    beforeEach((): void => {
+        dialog = undefined;
+    });
+    afterEach((): void => {
+        destroyDialog(dialog);
+        if (rootEle) { detach(rootEle); }
+        if (parentRoot) { detach(parentRoot); }
+    });
+    it('Default target with Ref element availability testing', () => {
+        rootEle = createElement('div', { id: 'dialog' });
+        dialog = new Dialog({});
+        dialog.appendTo(rootEle);
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(false);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('BODY');
+        expect(document.querySelector('#dialog').classList.length).toEqual(0);
+    });
+    it('OnPropertyChange - Default target with Ref element availability testing', () => {
+        rootEle = createElement('div', { id: 'dialog' });
+        dialog = new Dialog({});
+        dialog.appendTo(rootEle);
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(false);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.isModal = true;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-container').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('BODY');
+        expect(document.querySelector('#dialog').classList.length).toEqual(0);
+    });
+    it('With Parent element - Default target with Ref element availability testing', () => {
+        parentRoot = createElement('div', { id: 'rootEle' });
+        rootEle = createElement('div', { id: 'dialog' });
+        parentRoot.appendChild(rootEle);
+        dialog = new Dialog({});
+        dialog.appendTo(rootEle);
+        document.body.appendChild(parentRoot);
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').classList.length).toEqual(0);
+    });
+    it('OnPropertyChange - With Parent element - Default target with Ref element availability testing', () => {
+        parentRoot = createElement('div', { id: 'rootEle' });
+        rootEle = createElement('div', { id: 'dialog' });
+        parentRoot.appendChild(rootEle);
+        dialog = new Dialog({});
+        dialog.appendTo(rootEle);
+        document.body.appendChild(parentRoot);
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.isModal = true;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dlg-container').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').classList.length).toEqual(0);
+    });
+    it('With Parent element - isModal - Default target with Ref element availability testing', () => {
+        parentRoot = createElement('div', { id: 'rootEle' });
+        rootEle = createElement('div', { id: 'dialog' });
+        parentRoot.appendChild(rootEle);
+        dialog = new Dialog({ isModal: true });
+        dialog.appendTo(rootEle);
+        document.body.appendChild(parentRoot);
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dlg-container').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').classList.length).toEqual(0);
+    });
+    it('OnPropertyChange - With Parent element - isModal - Default target with Ref element availability testing', () => {
+        parentRoot = createElement('div', { id: 'rootEle' });
+        rootEle = createElement('div', { id: 'dialog' });
+        parentRoot.appendChild(rootEle);
+        dialog = new Dialog({ isModal: true });
+        dialog.appendTo(rootEle);
+        document.body.appendChild(parentRoot);
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dlg-container').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        dialog.isModal = false;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelectorAll('.e-dlg-container').length === 1).toEqual(false);
+        expect(document.querySelectorAll('.e-dialog').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').classList.length).toEqual(0);
     });
 });

@@ -1679,7 +1679,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 currentTarget !== this.inputWrapper.container) || this.getModuleName() !== 'dropdownlist' &&
             !this.inputWrapper.container.contains(target) || this.isTabKey) {
             this.isDocumentClick = this.isPopupOpen ? true : false;
-            this.focusOutAction();
+            this.focusOutAction(e);
             this.isTabKey = false;
         }
         if (this.isRequested && !this.isPopupOpen && !this.isPreventBlur) {
@@ -1687,9 +1687,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.beforePopupOpen = false;
         }
     };
-    DropDownList.prototype.focusOutAction = function () {
+    DropDownList.prototype.focusOutAction = function (e) {
         this.isInteracted = false;
-        this.focusOut();
+        this.focusOut(e);
         this.onFocusOut();
     };
     DropDownList.prototype.onFocusOut = function () {
@@ -2401,9 +2401,16 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownList.prototype.setHiddenValue = function () {
         if (!isNullOrUndefined(this.value)) {
-            this.hiddenElement.innerHTML = '<option selected>' + this.text + '</option>';
-            var selectedElement = this.hiddenElement.querySelector('option');
-            selectedElement.setAttribute('value', this.value.toString());
+            if (this.isServerBlazor && this.hiddenElement.querySelector('option')) {
+                var selectedElement = this.hiddenElement.querySelector('option');
+                selectedElement.textContent = this.text;
+                selectedElement.setAttribute('value', this.value.toString());
+            }
+            else {
+                this.hiddenElement.innerHTML = '<option selected>' + this.text + '</option>';
+                var selectedElement = this.hiddenElement.querySelector('option');
+                selectedElement.setAttribute('value', this.value.toString());
+            }
         }
         else {
             this.hiddenElement.innerHTML = '';
@@ -3379,6 +3386,11 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.list = null;
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
+        var isChangeValue = Object.keys(newProp).indexOf('value') !== -1 && isNullOrUndefined(newProp.value);
+        var isChangeText = Object.keys(newProp).indexOf('text') !== -1 && isNullOrUndefined(newProp.text);
+        if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {
+            this.itemData = null;
+        }
     };
     DropDownList.prototype.updateDataSource = function (props) {
         if (this.inputElement.value !== '' || (!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
@@ -3725,7 +3737,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             !isNullOrUndefined(this.selectedLI) && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
-            this.clearAll();
+            this.clearAll(e);
         }
     };
     /**
@@ -3756,12 +3768,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      * Moves the focus from the component if the component is already focused.
      * @returns void.
      */
-    DropDownList.prototype.focusOut = function () {
+    DropDownList.prototype.focusOut = function (e) {
         if (!this.enabled) {
             return;
         }
         this.isTyped = true;
-        this.hidePopup();
+        this.hidePopup(e);
         this.targetElement().blur();
         removeClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
     };
@@ -4370,7 +4382,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         if (Browser.isDevice && !this.allowFiltering) {
             this.preventFocus = false;
         }
-        this.onFocus();
+        this.onFocus(e);
     };
     ComboBox.prototype.dropDownClick = function (e) {
         e.preventDefault();
@@ -4571,7 +4583,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.listData) && this.allowCustom && !isNullOrUndefined(inputValue) && inputValue !== this.value) {
             this.customValue();
         }
-        _super.prototype.hidePopup.call(this);
+        _super.prototype.hidePopup.call(this, e);
     };
     /**
      * Sets the focus to the component for interaction.
@@ -5245,6 +5257,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         _this.isValidKey = false;
         _this.selectAllEventData = [];
         _this.selectAllEventEle = [];
+        _this.isDynamicDataChange = false;
         _this.scrollFocusStatus = false;
         _this.keyDownStatus = false;
         return _this;
@@ -5516,6 +5529,20 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.updateSelectElementData(this.allowFiltering);
         var proxy = this;
         var valuecheck = [];
+        if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value !== null && this.value.length > 0) {
+            var items = [];
+            this.isDynamicDataChange = false;
+            for (var k = 0; k < this.value.length; k++) {
+                var itemsData = this.getDataByValue(this.value[k]);
+                if (itemsData) {
+                    // tslint:disable-next-line
+                    items.push(itemsData[this.fields.value]); // remove the condition for hybrid
+                }
+            }
+            if (items.length === 0) {
+                this.setProperties({ 'value': null });
+            }
+        }
         if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
             for (var i = 0; i < this.value.length; i++) {
                 var checkEle = this.findListElement(((this.allowFiltering && !isNullOrUndefined(this.mainList)) ? this.mainList : ulElement), 'li', 'data-value', proxy.value[i]);
@@ -5877,7 +5904,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         this.hidePopup();
     };
-    MultiSelect.prototype.onBlur = function (eve) {
+    MultiSelect.prototype.onBlur = function (eve, isDocClickFromCheck) {
         var target;
         if (!isNullOrUndefined(eve)) {
             target = eve.relatedTarget;
@@ -5888,7 +5915,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             }
             return;
         }
-        if (this.mode === 'CheckBox' && Browser.isIE && !isNullOrUndefined(eve)) {
+        if (this.mode === 'CheckBox' && Browser.isIE && !isNullOrUndefined(eve) && !isDocClickFromCheck) {
             this.inputFocus = false;
             this.overAllWrapper.classList.remove(FOCUS);
             return;
@@ -6703,6 +6730,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     if (isClearAll) {
                         _this.clearAllCallback(eve, isClearAll);
                     }
+                    if (_this.isSelectAll && isBlazor() && _this.isServerRendered && (_this.value && _this.value.length === 0)) {
+                        _this.updatedataValueItems(eve);
+                    }
                 }
             });
         }
@@ -7479,6 +7509,11 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.remoteCustomValue = false;
             this.addValue(value, text, e);
         }
+        if (this.isSelectAll && isBlazor() && this.isServerRendered && this.value && this.list &&
+            this.value.length === this.list.querySelectorAll('li').length) {
+            this.updatedataValueItems(e);
+            this.checkPlaceholderSize();
+        }
     };
     MultiSelect.prototype.removeListSelection = function () {
         var className = this.hideSelectedItem ?
@@ -8110,7 +8145,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 this.findGroupStart(li[index_1]);
                 index_1++;
             }
-            this.deselectHeader();
             if (length > 50) {
                 setTimeout(function () {
                     while (index_1 < length && index_1 < count_1) {
@@ -8118,13 +8152,20 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                         _this.findGroupStart(li[index_1]);
                         index_1++;
                     }
-                    _this.deselectHeader();
-                    _this.textboxValueUpdate(event);
+                    if (!(isBlazor() && _this.isServerRendered)) {
+                        _this.updatedataValueItems(event);
+                    }
                 }, 0);
             }
         }
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.updatedataValueItems(event);
+            this.checkPlaceholderSize();
+        }
+    };
+    MultiSelect.prototype.updatedataValueItems = function (event) {
+        this.deselectHeader();
         this.textboxValueUpdate(event);
-        this.checkPlaceholderSize();
     };
     MultiSelect.prototype.textboxValueUpdate = function (event) {
         if (this.mode !== 'Box' && !this.isPopupOpen()) {
@@ -8155,7 +8196,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         else {
             this.resetList(this.dataSource);
         }
-        if (this.value && this.value.length) {
+        if (this.value && this.value.length && !(isBlazor() && this.isServerRendered)) {
             this.setProperties({ 'value': this.value });
             this.refreshSelection();
         }
@@ -8212,6 +8253,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.isFirstClick = false;
         }
         if (this.getModuleName() === 'multiselect') {
+            this.isDynamicDataChange = true;
             this.filterAction = false;
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
         }
@@ -9242,7 +9284,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
                     this.parent.inputFocus = false;
                     this.parent.scrollFocusStatus = false;
                     this.parent.hidePopup();
-                    this.parent.onBlur(e);
+                    this.parent.onBlur(e, true);
                     this.parent.focused = true;
                 }
             }

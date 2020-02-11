@@ -658,7 +658,7 @@ export class RowDD {
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
          || gObj.getSelectedRecords().length === 0) {
             this.rows = [this.startedRow];
-            this.rowData = this.parent.getRowInfo((this.startedRow).querySelector('.e-rowcell')).rowData;
+            this.rowData = [this.parent.getRowInfo((this.startedRow).querySelector('.e-rowcell')).rowData];
         } else {
             this.rows = gObj.getSelectedRows();
             this.rowData = gObj.getSelectedRecords();

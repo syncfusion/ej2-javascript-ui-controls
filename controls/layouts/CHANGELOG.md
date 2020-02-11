@@ -10,6 +10,12 @@
 
 - `#261892` - Issue with removePane public method does not update the value of the paneSettings property.
 
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#262675` - Provided the support to prevent the XSS attacks using the `enableHtmlSanitizer` property.
+
 ## 17.4.46 (2020-01-30)
 
 ### Dashboard Layout

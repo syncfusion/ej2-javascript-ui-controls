@@ -8,6 +8,7 @@ import { isNullOrUndefined, L10n, createElement } from '@syncfusion/ej2-base';
 import { SelectionTableFormat, SelectionCellFormat } from '../index';
 import { TableWidget, TableRowWidget, TableCellWidget } from '../viewer/page';
 import { TextPosition } from '../selection/selection-helper';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Cell options dialog is used to modify margins of selected cells.
@@ -16,6 +17,7 @@ export class CellOptionsDialog {
     /**
      * @private
      */
+    public documentHelper: DocumentHelper;
     public owner: LayoutViewer;
     /**
      * @private
@@ -53,8 +55,8 @@ export class CellOptionsDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
     /**
      * @private
@@ -75,9 +77,10 @@ export class CellOptionsDialog {
      * @private
      */
     public initCellMarginsDialog(localValue: L10n, isRtl?: boolean): void {
+        this.owner = this.documentHelper.owner.viewer;
         let instance: LayoutViewer = this.owner;
         this.target = createElement('div', {
-            id: this.owner.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
+            id: this.documentHelper.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
         });
         let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 504px;position: relative;height: auto;' });
         let innerDivLabel: HTMLElement = createElement('Label', {
@@ -111,21 +114,21 @@ export class CellOptionsDialog {
      * @private
      */
     public show(): void {
-        let localizeValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        localizeValue.setLocale(this.owner.owner.locale);
+        let localizeValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localizeValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initCellMarginsDialog(localizeValue, this.owner.owner.enableRtl);
+            this.initCellMarginsDialog(localizeValue, this.documentHelper.owner.enableRtl);
         }
         this.loadCellMarginsDialog();
-        this.owner.dialog.header = localizeValue.getConstant('Cell Options');
-        this.owner.dialog.position = { X: 'center', Y: 'top' };
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = undefined;
-        this.owner.dialog.open = undefined;
-        this.owner.dialog.close = this.removeEvents;
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = localizeValue.getConstant('Cell Options');
+        this.documentHelper.dialog.position = { X: 'center', Y: 'top' };
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = undefined;
+        this.documentHelper.dialog.open = undefined;
+        this.documentHelper.dialog.close = this.removeEvents;
+        this.documentHelper.dialog.buttons = [{
             click: this.applyTableCellProperties,
             buttonModel: { content: localizeValue.getConstant('Ok'), cssClass: 'e-flat e-table-cell-margin-okay', isPrimary: true }
         },
@@ -133,14 +136,14 @@ export class CellOptionsDialog {
             click: this.closeCellMarginsDialog,
             buttonModel: { content: localizeValue.getConstant('Cancel'), cssClass: 'e-flat e-table-cell-margin-cancel' }
         }];
-        this.owner.dialog.show();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
      */
     public removeEvents = (): void => {
-        this.owner.dialog2.element.style.pointerEvents = '';
-        this.owner.updateFocus();
+        this.documentHelper.dialog2.element.style.pointerEvents = '';
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -162,11 +165,11 @@ export class CellOptionsDialog {
      * @private
      */
     public loadCellMarginsDialog(): void {
-        let cellFormat: SelectionCellFormat = this.owner.selection.cellFormat;
+        let cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
         this.sameAsTable = isNullOrUndefined(cellFormat.leftMargin || cellFormat.topMargin
             || cellFormat.rightMargin || cellFormat.bottomMargin);
         if (this.sameAsTable) {
-            let tableFormat: SelectionTableFormat = this.owner.selection.tableFormat;
+            let tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
             this.loadCellProperties(tableFormat, false, true);
         } else {
             this.loadCellProperties(cellFormat, true, false);
@@ -187,14 +190,14 @@ export class CellOptionsDialog {
      * @private
      */
     public applyTableCellProperties = (): void => {
-        let cellFormat: SelectionCellFormat = this.owner.selection.cellFormat;
+        let cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
         if (!isNullOrUndefined(this.bottomMarginBox.value || this.leftMarginBox.value
             || this.rightMarginBox.value || this.topMarginBox.value) &&
             (cellFormat.bottomMargin !== this.bottomMarginBox.value || cellFormat.leftMargin !== this.leftMarginBox.value
                 || cellFormat.rightMargin !== this.rightMarginBox.value || cellFormat.topMargin !== this.topMarginBox.value)) {
-            this.owner.owner.tablePropertiesDialogModule.isCellOptionsUpdated = true;
+            this.documentHelper.owner.tablePropertiesDialogModule.isCellOptionsUpdated = true;
             this.applyTableOptions(this.cellFormat);
-            this.owner.owner.tablePropertiesDialogModule.applyTableSubProperties();
+            this.documentHelper.owner.tablePropertiesDialogModule.applyTableSubProperties();
         }
         this.closeCellMarginsDialog();
     }
@@ -202,15 +205,15 @@ export class CellOptionsDialog {
      * @private
      */
     public applySubCellOptions(cellFormat: WCellFormat): void {
-        this.owner.owner.editorHistory.initComplexHistory(this.owner.selection, 'CellMarginsSelection');
-        this.owner.owner.editorModule.initHistory('CellOptions');
+        this.documentHelper.owner.editorHistory.initComplexHistory(this.documentHelper.selection, 'CellMarginsSelection');
+        this.documentHelper.owner.editorModule.initHistory('CellOptions');
         /* tslint:disable:max-line-length */
-        let startTable: TableWidget = this.owner.selection.start.paragraph.associatedCell.ownerTable;
+        let startTable: TableWidget = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable;
         startTable = startTable.combineWidget(this.owner) as TableWidget;
-        this.applyCellmarginsValue(this.owner.selection.start.paragraph.associatedCell.ownerRow.combineWidget(this.owner) as TableRowWidget, this.owner.selection.start, this.owner.selection.end, cellFormat);
-        this.owner.owner.editorModule.reLayout(this.owner.selection, false);
-        if (!isNullOrUndefined(this.owner.owner.editorHistory.currentHistoryInfo)) {
-            this.owner.owner.editorHistory.updateComplexHistory();
+        this.applyCellmarginsValue(this.documentHelper.selection.start.paragraph.associatedCell.ownerRow.combineWidget(this.owner) as TableRowWidget, this.documentHelper.selection.start, this.documentHelper.selection.end, cellFormat);
+        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, false);
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
+            this.documentHelper.owner.editorHistory.updateComplexHistory();
         }
     }
     /**
@@ -227,10 +230,10 @@ export class CellOptionsDialog {
         }
     }
     private applyCellMarginsInternal(row: TableRowWidget, cellFormat: WCellFormat): void {
-        if (!isNullOrUndefined(this.owner.owner.editorHistory.currentBaseHistoryInfo)) {
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
             let currentFormat: WCellFormat = (row.childWidgets[0] as TableCellWidget).cellFormat;
             /* tslint:disable:max-line-length */
-            cellFormat = this.owner.owner.editorHistory.currentBaseHistoryInfo.addModifiedCellOptions(currentFormat, cellFormat, row.ownerTable);
+            cellFormat = this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.addModifiedCellOptions(currentFormat, cellFormat, row.ownerTable);
         }
         if (!isNullOrUndefined(cellFormat)) {
             this.applyCellMarginsForCells(row, cellFormat);
@@ -250,7 +253,7 @@ export class CellOptionsDialog {
         for (let i: number = 0; i < cells.length; i++) {
             this.applySubCellMargins(cells[i].cellFormat, cellFormat);
         }
-        this.owner.owner.tablePropertiesDialogModule.calculateGridValue(cells[0].ownerTable);
+        this.documentHelper.owner.tablePropertiesDialogModule.calculateGridValue(cells[0].ownerTable);
     }
     /**
      * @private
@@ -276,8 +279,8 @@ export class CellOptionsDialog {
      * @private
      */
     public closeCellMarginsDialog = (): void => {
-        this.owner.dialog.hide();
-        this.owner.dialog.element.style.pointerEvents = '';
+        this.documentHelper.dialog.hide();
+        this.documentHelper.dialog.element.style.pointerEvents = '';
     }
     /**
      * @private
@@ -295,7 +298,7 @@ export class CellOptionsDialog {
         }
         this.dialog = undefined;
         this.target = undefined;
-        this.owner = undefined;
+        this.documentHelper = undefined;
         this.sameAsTableCheckBox = undefined;
     }
     /**

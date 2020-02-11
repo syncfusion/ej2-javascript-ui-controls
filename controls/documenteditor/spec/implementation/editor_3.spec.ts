@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, SfdtExport } from '../../src/index';
+import { Editor, SfdtExport, DocumentHelper } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -11,7 +11,7 @@ import { WSectionFormat } from '../../src/document-editor/implementation/format/
 import { WParagraphFormat } from '../../src/document-editor/implementation/format/paragraph-format';
 import { WCharacterFormat } from '../../src/document-editor/implementation/format/character-format';
 import { HyperlinkDialog } from '../../src/document-editor/implementation/dialogs/hyperlink-dialog';
-//editor.viewer.onDocumentChanged([createDocument()]);
+//editor.documentHelper.onDocumentChanged([createDocument()]);
 
 //#region Paragraph format
 /**
@@ -19,24 +19,22 @@ import { HyperlinkDialog } from '../../src/document-editor/implementation/dialog
  */
 describe('paragraph format validation with selection including table', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -48,10 +46,10 @@ describe('paragraph format validation with selection including table', () => {
         editor.selection.handleHomeKey();
         editor.selection.handleShiftEndKey();
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         //Bold Property
         event = { keyCode: 69, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.paragraphFormat.textAlignment).not.toBe('Center');
     });
     it('Center alignment Property validation', () => {
@@ -65,12 +63,12 @@ describe('paragraph format validation with selection including table', () => {
         editor.editorModule.insertText('Sample document');
         editor.editorModule.onEnter();
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         //center alignment Property
         event = { keyCode: 69, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Center');
     });
     it('paragraph inside table paragraph format validation', () => {
@@ -81,44 +79,42 @@ describe('paragraph format validation with selection including table', () => {
         editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 69, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.paragraphFormat.textAlignment).not.toBe('Center');
     });
 });
 describe('paragraph format validation with selection including table', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -132,21 +128,21 @@ describe('paragraph format validation with selection including table', () => {
         editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 69, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.paragraphFormat.textAlignment).not.toBe('Center');
     });
     it('paragraph nested table paragraph format validation', () => {
@@ -154,13 +150,13 @@ describe('paragraph format validation with selection including table', () => {
         editor.editor.insertTable(2, 2);
         editor.editor.insertTable(2, 2);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 69, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.paragraphFormat.textAlignment).not.toBe('Center');
     });
 
@@ -169,24 +165,22 @@ describe('paragraph format validation with selection including table', () => {
 
 describe('paragraph format validation with selection in nested table', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -202,19 +196,19 @@ describe('paragraph format validation with selection in nested table', () => {
         editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 69, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Center');
     });
 });
@@ -227,24 +221,22 @@ describe('paragraph format validation with selection in nested table', () => {
  */
 describe('character format validation font size increment and decrement', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -253,52 +245,52 @@ describe('character format validation font size increment and decrement', () => 
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         let prevFontSize = editor.selection.characterFormat.fontSize;
         //increment font size Property
         event = { keyCode: 221, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 221, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.selection.characterFormat.fontSize = 7;
         event = { keyCode: 221, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 219, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.characterFormat.fontSize).not.toBe(prevFontSize);
     });
     it('Font size  decrement validation', () => {
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         let prevFontSize = editor.selection.characterFormat.fontSize;
         //increment font size Property
         event = { keyCode: 219, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 219, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.selection.characterFormat.fontSize = 86;
         event = { keyCode: 219, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.selection.characterFormat.fontSize = 86;
         event = { keyCode: 221, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.characterFormat.fontSize).not.toBe(prevFontSize);
     });
     it('Font size  increment with font size 72 validation', () => {
         editor.openBlank();
         editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         let prevFontSize = editor.selection.characterFormat.fontSize;
         editor.selection.characterFormat.fontSize = 74;
         //increment font size Property
         event = { keyCode: 219, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.selection.characterFormat.fontSize = 74;
         event = { keyCode: 221, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.characterFormat.fontSize).not.toBe(prevFontSize);
     });
     it('font size with type number and boolean validation', () => {
@@ -312,25 +304,25 @@ describe('character format validation font size increment and decrement', () => 
 });
 describe('selection character format property applying validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -341,7 +333,7 @@ describe('selection character format property applying validation', () => {
         editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.characterFormat;
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.selection.characterFormat.bold = true;
         editor.selection.characterFormat.italic = true;
         editor.selection.characterFormat.fontSize = 24;
@@ -354,7 +346,7 @@ describe('selection character format property applying validation', () => {
         editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.characterFormat;
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.selection.characterFormat.strikethrough = 'SingleStrike';
         editor.selection.characterFormat.baselineAlignment = 'Subscript';
         editor.selection.characterFormat.highlightColor = 'Pink';
@@ -369,7 +361,7 @@ describe('selection character format property applying validation', () => {
         editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.paragraphFormat;
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.selection.paragraphFormat.leftIndent = 56;
         editor.selection.paragraphFormat.rightIndent = -56;
         editor.selection.paragraphFormat.beforeSpacing = 12;
@@ -448,10 +440,10 @@ describe('Delete and paste with history preservation', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, SfdtExport, EditorHistory);
          editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -473,9 +465,9 @@ describe('Delete and paste with history preservation', () => {
         editor.selection.copy();
         let event: any;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.paste();
         editor.selection.selectAll();
         expect(editor.selection.text).toBe('AAdventure\rAdventure\rdventure\rAdventure\r\r');
@@ -489,12 +481,12 @@ describe('Paste undo and redo validation ', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
+        editorModule = new Editor(editor.documentHelper);
 
     });
     afterAll((done): void => {
@@ -543,20 +535,20 @@ describe('Paste undo and redo validation ', () => {
 describe('Delete table at specfic row valdiation', () => {
     let editor: DocumentEditor;
     let editorModule: Editor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.acceptTab = true;
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
-        viewer = editor.viewer as PageLayoutViewer;
+        editorModule = new Editor(editor.documentHelper);
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
@@ -582,7 +574,7 @@ describe('Delete table at specfic row valdiation', () => {
     it('tab and enter in hyperlink validation', () => {
         editor.openBlank();
         let event: any = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.insertText('www.google.com');
         expect(() => { editor.editorModule.onEnter() }).not.toThrowError();
     });
@@ -733,7 +725,7 @@ function onBackSpace(editor: DocumentEditor) {
 describe('shift widget validation ', () => {
     let editor: DocumentEditor;
     let editorModule: Editor;
-    let viewer: LayoutViewer;
+    let documentHelper:DocumentHelper;
     beforeEach((): void => {
         let ele: HTMLElement = createElement('div', {
             id: 'container'
@@ -741,13 +733,13 @@ describe('shift widget validation ', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
-        viewer = editor.viewer as PageLayoutViewer;
+        editorModule = new Editor(editor.documentHelper);
+        documentHelper = editor.documentHelper;
     });
     afterEach((done): void => {
         editor.destroy();
@@ -781,7 +773,7 @@ describe('shift widget validation ', () => {
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
-        expect(viewer.pages.length).toBe(1);
+        expect(documentHelper.pages.length).toBe(1);
     });
     it('shift paragraph widgets validation', () => {
         editor.openBlank();
@@ -795,7 +787,7 @@ describe('shift widget validation ', () => {
         editor.selection.handleDownKey();
         onEnter(editor);
         onBackSpace(editor)
-        expect(viewer.pages.length).toBe(1);
+        expect(documentHelper.pages.length).toBe(1);
 
     });
     it('shift paragraph to next page validation', () => {
@@ -808,25 +800,25 @@ describe('shift widget validation ', () => {
         editor.selection.handleControlHomeKey();
         editor.selection.handleDownKey();
         onEnter(editor);
-        expect((viewer.pages[viewer.pages.length - 1].bodyWidgets[0].lastChild as Widget).index).toBe(42);
+        expect((documentHelper.pages[documentHelper.pages.length - 1].bodyWidgets[0].lastChild as Widget).index).toBe(42);
     });
 });
 describe('combine widgets validation ', () => {
     let editor: DocumentEditor;
     let editorModule: Editor;
-    let viewer: LayoutViewer;
+    let documentHelper:DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
-        viewer = editor.viewer as PageLayoutViewer;
+        editorModule = new Editor(editor.documentHelper);
+        documentHelper= editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
@@ -840,7 +832,7 @@ describe('combine widgets validation ', () => {
     });
     it('get row width selected else validation', () => {
         editor.openBlank();
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.editor.insertTable(2, 2);
         editor.selection.handleDownKey();
         editor.editorModule.insertText('Sample');
@@ -863,7 +855,7 @@ describe('combine widgets validation ', () => {
     });
     it('Combine table cell widgets validation', () => {
         editor.openBlank();
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper =editor.documentHelper;
         editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
@@ -875,11 +867,11 @@ describe('combine widgets validation ', () => {
             editor.editorModule.onEnter();
         }
         editor.editorModule.insertText('sa');
-        expect(viewer.pages.length).toBe(2);
+        expect(documentHelper.pages.length).toBe(2);
     });
     it('get row width selected else validation', () => {
         editor.openBlank();
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
@@ -892,19 +884,19 @@ describe('combine widgets validation ', () => {
 describe('Paste and replace else part validation ', () => {
     let editor: DocumentEditor;
     let editorModule: Editor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
-        viewer = editor.viewer as PageLayoutViewer;
+        editorModule = new Editor(editor.documentHelper);
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
@@ -919,7 +911,7 @@ describe('Paste and replace else part validation ', () => {
 
     it('Delete with selection containing table and paragraph', () => {
         editor.openBlank();
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
@@ -934,14 +926,14 @@ describe('Paste and replace else part validation ', () => {
     it('paste with html string as empty', () => {
         editor.openBlank();
         editor.editorModule.copiedData = '';
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         editor.editorModule.paste();
         expect(editor.editorModule.copiedData).toBe('');
     });
     it('paste with selection containing table and paragraph', () => {
         editor.openBlank();
         editor.editorModule.copiedData = '';
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper= editor.documentHelper;
         editor.editorModule.insertText('Sample');
         editor.selection.selectAll();
         editor.editor.cut();
@@ -962,20 +954,20 @@ describe('Paste and replace else part validation ', () => {
 describe('section combine validation ', () => {
     let editor: DocumentEditor;
     let editorModule: Editor;
-    let viewer: LayoutViewer;
+    let documentHelper:DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory, HyperlinkDialog); editor.enableEditorHistory = true;
         editor.enableHyperlinkDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
-        viewer = editor.viewer as PageLayoutViewer;
+        editorModule = new Editor(editor.documentHelper);
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
@@ -992,7 +984,7 @@ describe('section combine validation ', () => {
             editor.editorModule.onEnter();
         }
         editor.editorModule.insertText('sample');
-        expect((viewer.pages[viewer.pages.length - 1].bodyWidgets[0].lastChild as Widget).index).toBe(47);
+        expect((documentHelper.pages[documentHelper.pages.length - 1].bodyWidgets[0].lastChild as Widget).index).toBe(47);
     });
     it('hyperlink and delete else part validation', () => {
         editor.openBlank()
@@ -1027,19 +1019,19 @@ describe('section combine validation ', () => {
 describe('Single backspace and delete at empty line widget validation', () => {
     let editor: DocumentEditor;
     let editorModule: Editor;
-    let viewer: LayoutViewer;
+    let documentHelper:DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editorModule = new Editor(editor.viewer);
-        viewer = editor.viewer as PageLayoutViewer;
+        editorModule = new Editor(editor.documentHelper);
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
@@ -1055,14 +1047,14 @@ describe('Single backspace and delete at empty line widget validation', () => {
     it('single backpsace in empty line widget ', () => {
         editor.openBlank()
         editor.editorModule.onBackSpace();
-        expect(viewer.pages.length).toBe(1);
+        expect(documentHelper.pages.length).toBe(1);
     });
     it('single delete in empty line widget ', () => {
         editor.openBlank()
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.editorModule.delete();
-        expect(viewer.pages.length).toBe(1);
+        expect(documentHelper.pages.length).toBe(1);
     });
     it('Delete with selection containing table and paragraph ', () => {
         editor.openBlank()
@@ -1099,24 +1091,22 @@ describe('Single backspace and delete at empty line widget validation', () => {
 
 describe('paragraph format Increase indent and decrease indent validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -1132,7 +1122,7 @@ describe('paragraph format Increase indent and decrease indent validation', () =
             i++;
         }
         expect(editor.selection.paragraphFormat.leftIndent).toBe(540);
-        expect(editor.viewer.pages.length).toBeGreaterThan(1);
+        expect(editor.documentHelper.pages.length).toBeGreaterThan(1);
     });
     it('Decrease indent with multiple times', () => {
         let i: number = 0;
@@ -1141,7 +1131,7 @@ describe('paragraph format Increase indent and decrease indent validation', () =
             i++;
         }
         expect(editor.selection.paragraphFormat.leftIndent).toBe(0);
-        expect(editor.viewer.pages.length).toBe(1);
+        expect(editor.documentHelper.pages.length).toBe(1);
     });
     it('undo with multiple times', () => {
         let i: number = 0;
@@ -1170,24 +1160,22 @@ describe('paragraph format Increase indent and decrease indent validation', () =
 });
 describe('Delete table width undo and redo', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);

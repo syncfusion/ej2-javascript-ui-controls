@@ -13,10 +13,10 @@ describe('Empty selection check whether selection is in field', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -74,10 +74,10 @@ describe('Non-selection check whether selection is in field', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -128,10 +128,10 @@ describe('Insert bookmark inside header', () => {
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
 
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -145,11 +145,11 @@ describe('Insert bookmark inside header', () => {
     });
     it('insert bookmark inside header', () => {
         editor.enableHeaderAndFooter = true;
-        editor.selection.enableHeadersFootersRegion(editor.viewer.pages[0].headerWidget);
+        editor.selection.enableHeadersFootersRegion(editor.documentHelper.pages[0].headerWidget);
         editor.editor.insertText('Hello');
         editor.selection.selectAll();
         editor.editor.insertBookmark('sample');
-        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
     it('navigate bookmark in header', () => {
         editor.selection.closeHeaderFooter();
@@ -174,10 +174,10 @@ describe('Insert bookmark validaiton for splitted paragraph', () => {
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
 
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -195,15 +195,15 @@ describe('Insert bookmark validaiton for splitted paragraph', () => {
         editor.editor.insertText('ert reteterterteterterterte te treteterter t ');
         editor.selection.selectAll();
         editor.editor.insertBookmark('sample');
-        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
     it('undo after insert bookmark splitted paragraph', () => {
         editor.editorHistory.undo();
-        expect(editor.viewer.bookmarks.keys.length).toBe(0);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(0);
     });
     it('redo after insert bookmark splitted paragraph', () => {
         editor.editorHistory.redo();
-        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
     it('navigation for bookmark splitted paragraph', () => {
         editor.selection.navigateBookmark('sample');
@@ -221,10 +221,10 @@ describe('Bookmark remove validation for two paragraph', () => {
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
 
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -240,20 +240,20 @@ describe('Bookmark remove validation for two paragraph', () => {
         editor.editor.onEnter()
         editor.selection.selectAll();
         editor.editor.insertBookmark('sample');
-        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
     it('on backspace before splitted paragraph', () => {
         editor.selection.handleDownKey();
         editor.editor.onBackSpace();
         editor.editor.onBackSpace();
-        expect(editor.viewer.bookmarks.keys.length).toBe(0);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(0);
     });
     it('undo after on backspace before splitted paragraph', () => {
         editor.editorHistory.undo();
-        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
     it('redo after on backspace before splitted paragraph', () => {
         editor.editorHistory.redo();
-        expect(editor.viewer.bookmarks.keys.length).toBe(0);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(0);
     });
 });

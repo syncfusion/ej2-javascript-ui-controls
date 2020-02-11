@@ -2,7 +2,10 @@
  * RichTextEditor classes defined here.
  */
 
-/** @hidden @deprecated */
+/** 
+ * @hidden
+ * @deprecated
+ */
 export const CLASS_IMAGE_RIGHT: string = 'e-imgright';
 
 export const CLASS_IMAGE_LEFT: string = 'e-imgleft';

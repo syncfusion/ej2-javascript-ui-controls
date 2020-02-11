@@ -339,9 +339,15 @@ var HEADER_CELLS_CLASS = 'e-header-cells';
 /** @hidden */
 var HEADER_WRAP_CLASS = 'e-header-wrap';
 /** @hidden */
+var HEADER_TITLE_CLASS = 'e-header-title';
+/** @hidden */
 var HEADER_TEXT_CLASS = 'e-header-text';
 /** @hidden */
 var HEADER_ICON_CLASS = 'e-header-icon';
+/** @hidden */
+var STACKED_HEADER_ROW_CLASS = 'e-stacked-header-row';
+/** @hidden */
+var STACKED_HEADER_CELL_CLASS = 'e-stacked-header-cell';
 /** @hidden */
 var CONTENT_CELLS_CLASS = 'e-content-cells';
 /** @hidden */
@@ -363,7 +369,7 @@ var SWIMLANE_ROW_COLLAPSE = 'e-swimlane-row-collapse';
 /** @hidden */
 var SWIMLANE_ROW_TEXT = 'e-swimlane-text';
 /** @hidden */
-var SWIMLANE_ITEM_COUNT = 'e-swimlane-item-count';
+var CARD_ITEM_COUNT = 'e-item-count';
 /** @hidden */
 var CARD_WRAPPER_CLASS = 'e-card-wrapper';
 /** @hidden */
@@ -375,7 +381,7 @@ var CARD_CONTENT_CLASS = 'e-card-content';
 /** @hidden */
 var CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
 /** @hidden */
-var CARD_CONTENT_TEXT_CLASS = 'e-card-content-caption';
+var CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
 /** @hidden */
 var COLUMN_EXPAND = 'e-column-expand';
 /** @hidden */
@@ -407,9 +413,9 @@ var DROPPING = 'e-dropping';
 /** @hidden */
 var TOGGLE_VISIBLE = 'e-toggle-visible';
 /** @hidden */
-var MULTI_CLONE_CARD = 'e-multi-clone-card';
+
 /** @hidden */
-var MULTI_CLONE_CONTENT_CELL = 'e-multi-content-cell';
+var MULTI_CARD_WRAPPER = 'e-multi-card-wrapper';
 /** @hidden */
 var MULTI_ACTIVE = 'e-multi-active';
 /** @hidden */
@@ -450,10 +456,6 @@ var LIMITS_CLASS = 'e-limits';
 var MAX_COUNT_CLASS = 'e-max-count';
 /** @hidden */
 var MIN_COUNT_CLASS = 'e-min-count';
-/** @hidden */
-var TOTAL_CARD = 'e-total-card';
-/** @hidden */
-var HIDE_LIMITS = 'e-hide-limits';
 /** @hidden */
 var MAX_COLOR = 'e-max-color';
 /** @hidden */
@@ -547,7 +549,6 @@ var Action = /** @__PURE__ @class */ (function () {
     Action.prototype.columnToggle = function (target) {
         var _this = this;
         var colIndex = target.cellIndex;
-        var headerLimits = target.querySelector('.' + LIMITS_CLASS);
         var targetRow = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
         var colSelector = ".e-header-table col:nth-child(" + (colIndex + 1) + "),.e-content-table col:nth-child(" + (colIndex + 1) + ")";
         var targetIcon = target.querySelector('.' + COLUMN_EXPAND + ',.' + COLUMN_COLLAPSE);
@@ -555,9 +556,7 @@ var Action = /** @__PURE__ @class */ (function () {
         if (target.classList.contains(COLLAPSED_CLASS)) {
             removeClass(colGroup, COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
-                colGroup.forEach(function (col) {
-                    col.style.width = formatUnit(_this.parent.layoutModule.getWidth());
-                });
+                colGroup.forEach(function (col) { return col.style.width = formatUnit(_this.parent.layoutModule.getWidth()); });
             }
             classList(targetIcon, [COLUMN_EXPAND], [COLUMN_COLLAPSE]);
             for (var _i = 0, targetRow_1 = targetRow; _i < targetRow_1.length; _i++) {
@@ -565,23 +564,14 @@ var Action = /** @__PURE__ @class */ (function () {
                 var targetCol = row.querySelector("." + CONTENT_CELLS_CLASS + ":nth-child(" + (colIndex + 1) + ")");
                 removeClass([targetCol, target], COLLAPSED_CLASS);
                 remove(targetCol.querySelector('.' + COLLAPSE_HEADER_TEXT));
-                var limitEle = targetCol.querySelector('.' + LIMITS_CLASS);
-                if (limitEle) {
-                    removeClass([limitEle], HIDE_LIMITS);
-                }
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
-            if (headerLimits) {
-                removeClass([headerLimits], HIDE_LIMITS);
-            }
             this.parent.columns[colIndex].setProperties({ isExpanded: true }, true);
         }
         else {
             addClass(colGroup, COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
-                colGroup.forEach(function (col) {
-                    col.style.width = formatUnit(toggleWidth);
-                });
+                colGroup.forEach(function (col) { return col.style.width = formatUnit(toggleWidth); });
             }
             classList(targetIcon, [COLUMN_COLLAPSE], [COLUMN_EXPAND]);
             for (var _a = 0, targetRow_2 = targetRow; _a < targetRow_2.length; _a++) {
@@ -594,13 +584,6 @@ var Action = /** @__PURE__ @class */ (function () {
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], COLLAPSED_CLASS);
-                var limitEle = targetCol.querySelector('.' + LIMITS_CLASS);
-                if (limitEle) {
-                    addClass([limitEle], HIDE_LIMITS);
-                }
-            }
-            if (headerLimits) {
-                addClass([headerLimits], HIDE_LIMITS);
             }
             this.columnToggleArray.push(target.getAttribute('data-key'));
             this.parent.columns[colIndex].setProperties({ isExpanded: false }, true);
@@ -966,9 +949,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                     offsetHeight -= limitEle.offsetHeight;
                 }
                 this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
-                var cards = [].slice.call(contentCell.querySelectorAll('.' + CARD_CLASS));
-                cards.forEach(function (el) { return addClass([el], MULTI_CLONE_CARD); });
-                addClass([contentCell], MULTI_CLONE_CONTENT_CELL);
+                addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER);
                 contentCell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = 'auto';
                 contentCell.style.borderStyle = 'none';
                 this.removeElement(this.dragObj.targetClone);
@@ -1142,12 +1123,11 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             var columnKey = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY));
             columnKey.forEach(function (node) { return remove(node); });
             cloneMulti.forEach(function (node) {
-                var target = closest(node, '.' + CONTENT_CELLS_CLASS);
-                if (target) {
-                    target.style.borderStyle = '';
+                var cell = closest(node, '.' + CONTENT_CELLS_CLASS);
+                if (cell) {
+                    cell.style.borderStyle = '';
+                    removeClass([cell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER);
                 }
-                var cards = [].slice.call(target.querySelectorAll('.' + CARD_CLASS));
-                cards.forEach(function (el) { return removeClass([el], MULTI_CLONE_CARD); });
             });
             this.removeElement(this.dragObj.targetCloneMulti);
         }
@@ -1674,6 +1654,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         _this.parent = parent;
         _this.columnKeys = [];
         _this.swimlaneIndex = 0;
+        _this.swimlaneData = {};
         _this.scrollLeft = 0;
         _this.wireEvents();
         return _this;
@@ -1684,6 +1665,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         }
         this.columnData = this.getColumnCards();
         this.kanbanRows = this.getRows();
+        this.swimlaneData = this.getSwimlaneCards();
         if (this.parent.isAdaptive) {
             var parent_1 = this.parent.element.querySelector('.' + CONTENT_CLASS);
             if (parent_1) {
@@ -1709,7 +1691,6 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         this.parent.notify(contentReady, {});
     };
     LayoutRender.prototype.renderHeader = function (header) {
-        var _this = this;
         var headerWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
         header.appendChild(headerWrap);
         var headerTable = createElement('table', { className: TABLE_CLASS + ' ' + HEADER_TABLE_CLASS });
@@ -1724,9 +1705,9 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         tableHead.appendChild(tr);
         var _loop_1 = function (column) {
             if (this_1.isColumnVisible(column)) {
-                var index_1 = this_1.parent.actionModule.columnToggleArray.indexOf(column.keyField);
+                var index = this_1.parent.actionModule.columnToggleArray.indexOf(column.keyField);
                 var th_1 = createElement('th', {
-                    className: index_1 === -1 ? HEADER_CELLS_CLASS : HEADER_CELLS_CLASS + ' ' + COLLAPSED_CLASS,
+                    className: index === -1 ? HEADER_CELLS_CLASS : HEADER_CELLS_CLASS + ' ' + COLLAPSED_CLASS,
                     attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
                 });
                 var classList$$1 = [];
@@ -1739,35 +1720,40 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 addClass([th_1], classList$$1);
                 var headerWrapper = createElement('div', { className: HEADER_WRAP_CLASS });
                 th_1.appendChild(headerWrapper);
+                var noOfCard = this_1.columnData[column.keyField].length;
+                var headerTitle = createElement('div', { className: HEADER_TITLE_CLASS });
+                headerWrapper.appendChild(headerTitle);
                 if (column.template) {
+                    var templateArgs = {
+                        keyField: column.keyField, headerText: column.headerText, minCount: column.minCount, maxCount: column.maxCount,
+                        allowToggle: column.allowToggle, isExpanded: column.isExpanded, showItemCount: column.showItemCount, count: noOfCard
+                    };
                     addClass([th_1], TEMPLATE_CLASS);
-                    var templateHeader = this_1.parent.templateParser(column.template)(column);
-                    append(templateHeader, headerWrapper);
+                    var templateHeader = this_1.parent.templateParser(column.template)(templateArgs);
+                    append(templateHeader, headerTitle);
                 }
                 else {
                     var header_1 = createElement('div', { className: HEADER_TEXT_CLASS, innerHTML: column.headerText });
-                    headerWrapper.appendChild(header_1);
+                    headerTitle.appendChild(header_1);
                     if (column.showItemCount) {
-                        var cardCount = this_1.columnData[column.keyField].length;
-                        header_1.appendChild(createElement('div', {
-                            className: TOTAL_CARD,
-                            innerHTML: '- ' + cardCount.toString() + ' ' + this_1.parent.localeObj.getConstant('items')
-                        }));
+                        var itemCount = createElement('div', {
+                            className: CARD_ITEM_COUNT,
+                            innerHTML: '- ' + noOfCard.toString() + ' ' + this_1.parent.localeObj.getConstant('items')
+                        });
+                        headerTitle.appendChild(itemCount);
                     }
+                }
+                if (column.allowToggle) {
+                    var name_1 = (column.isExpanded && index === -1) ? COLUMN_EXPAND : COLUMN_COLLAPSE;
+                    var icon = createElement('div', { className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name_1 });
+                    headerWrapper.appendChild(icon);
+                    this_1.wireEvents(icon, 'columnExpandCollapse');
                 }
                 var dataObj = [{ keyField: column.keyField, textField: column.headerText }];
                 var args = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
                 this_1.parent.trigger(columnRendered, args, function (columnArgs) {
                     if (!columnArgs.cancel) {
                         tr.appendChild(th_1);
-                        if (column.allowToggle) {
-                            var name_1 = (column.isExpanded && index_1 === -1) ? COLUMN_EXPAND : COLUMN_COLLAPSE;
-                            var iconDiv = createElement('div', {
-                                className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name_1
-                            });
-                            th_1.appendChild(iconDiv);
-                            _this.wireEvents(iconDiv, 'columnExpandCollapse');
-                        }
                     }
                 });
             }
@@ -1840,31 +1826,38 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var name = CONTENT_ROW_CLASS + ' ' + SWIMLANE_ROW_CLASS;
         var className = isCollapsed ? ' ' + COLLAPSED_CLASS : '';
-        var tr = createElement('tr', {
-            className: name + className, attrs: { 'data-key': row.keyField }
-        });
+        var tr = createElement('tr', { className: name + className, attrs: { 'data-key': row.keyField } });
         var col = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         var td = createElement('td', {
             className: CONTENT_CELLS_CLASS,
             attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
         });
+        var swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER });
+        td.appendChild(swimlaneHeader);
         var iconClass = isCollapsed ? SWIMLANE_ROW_COLLAPSE : SWIMLANE_ROW_EXPAND;
         var iconDiv = createElement('div', { className: ICON_CLASS + ' ' + iconClass });
-        td.appendChild(iconDiv);
+        swimlaneHeader.appendChild(iconDiv);
+        var headerWrap = createElement('div', { className: HEADER_WRAP_CLASS });
+        swimlaneHeader.appendChild(headerWrap);
+        var cardCount = this.swimlaneData[row.keyField].length;
         if (this.parent.swimlaneSettings.template) {
+            var templateArgs = extend({}, row, { count: cardCount }, true);
             addClass([td], TEMPLATE_CLASS);
-            var swimlaneTemplate = this.parent.templateParser(this.parent.swimlaneSettings.template)(row);
-            append(swimlaneTemplate, td);
+            var swimlaneTemplate = this.parent.templateParser(this.parent.swimlaneSettings.template)(templateArgs);
+            append(swimlaneTemplate, headerWrap);
         }
         else {
-            td.appendChild(createElement('div', {
+            headerWrap.appendChild(createElement('div', {
                 className: SWIMLANE_ROW_TEXT,
                 innerHTML: row.textField,
                 attrs: { 'data-role': row.textField }
             }));
-            if (this.parent.swimlaneSettings.showItemCount) {
-                td.appendChild(createElement('div', { className: SWIMLANE_ITEM_COUNT }));
-            }
+        }
+        if (this.parent.swimlaneSettings.showItemCount) {
+            swimlaneHeader.appendChild(createElement('div', {
+                className: CARD_ITEM_COUNT,
+                innerHTML: "- " + cardCount.toString() + " " + this.parent.localeObj.getConstant('items')
+            }));
         }
         tr.appendChild(td);
         var dataObj = [{ keyField: row.keyField, textField: row.textField }];
@@ -1886,12 +1879,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             var dataCount = 0;
             var _loop_3 = function (column) {
                 if (_this.isColumnVisible(column)) {
-                    var columnData = _this.columnData[column.keyField];
-                    if (_this.parent.swimlaneSettings.keyField) {
-                        columnData = columnData.filter(function (data) {
-                            return data[_this.parent.swimlaneSettings.keyField] === rows[index].keyField;
-                        });
-                    }
+                    var columnData = _this.parent.swimlaneSettings.keyField ?
+                        _this.getColumnData(column.keyField, _this.swimlaneData[rows[index].keyField]) : _this.columnData[column.keyField];
                     dataCount += columnData.length;
                     var columnWrapper = tr.querySelector('[data-key="' + column.keyField + '"]');
                     var cardWrapper_1 = createElement('div', { className: CARD_WRAPPER_CLASS });
@@ -1913,19 +1902,19 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                             var tooltipClass = _this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT : '';
                             if (_this.parent.cardSettings.showHeader) {
                                 var cardHeader = createElement('div', { className: CARD_HEADER_CLASS });
+                                var cardCaption = createElement('div', { className: CARD_HEADER_TEXT_CLASS });
                                 var cardText_1 = createElement('div', {
-                                    className: CARD_HEADER_TEXT_CLASS + tooltipClass,
+                                    className: CARD_HEADER_TITLE_CLASS + tooltipClass,
                                     innerHTML: data[_this.parent.cardSettings.headerField] || ''
                                 });
-                                cardHeader.appendChild(cardText_1);
+                                cardHeader.appendChild(cardCaption);
+                                cardCaption.appendChild(cardText_1);
                                 cardElement.appendChild(cardHeader);
                             }
-                            var cardContent = createElement('div', { className: CARD_CONTENT_CLASS });
-                            var cardText_2 = createElement('div', {
-                                className: CARD_CONTENT_TEXT_CLASS + tooltipClass,
+                            var cardContent = createElement('div', {
+                                className: CARD_CONTENT_CLASS + tooltipClass,
                                 innerHTML: data[_this.parent.cardSettings.contentField] || ''
                             });
-                            cardContent.appendChild(cardText_2);
                             cardElement.appendChild(cardContent);
                         }
                         var args = { data: data, element: cardElement, cancel: false };
@@ -1948,10 +1937,6 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             for (var _i = 0, _a = _this.parent.columns; _i < _a.length; _i++) {
                 var column = _a[_i];
                 _loop_3(column);
-            }
-            if (swimlaneRows.length > 0 && _this.parent.swimlaneSettings.showItemCount && !_this.parent.swimlaneSettings.template) {
-                var localeText = _this.parent.localeObj.getConstant('items');
-                swimlaneRows[index].querySelector('.' + SWIMLANE_ITEM_COUNT).innerHTML = '- ' + dataCount.toString() + ' ' + localeText;
             }
             if (dataCount === 0) {
                 removeTrs.push(tr);
@@ -2012,7 +1997,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         return kanbanRows;
     };
     LayoutRender.prototype.createStackedRow = function (rows) {
-        var tr = createElement('tr', { className: HEADER_ROW_CLASS + ' e-stacked-header-row' });
+        var tr = createElement('tr', { className: HEADER_ROW_CLASS + ' ' + STACKED_HEADER_ROW_CLASS });
         var stackedHeaders = [];
         this.parent.columns.forEach(function (column) {
             var headerText = '';
@@ -2036,7 +2021,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             }
             var div = createElement('div', { className: HEADER_TEXT_CLASS, innerHTML: stackedHeaders[h] });
             var th = createElement('th', {
-                className: HEADER_CELLS_CLASS + ' e-stacked-header-cell',
+                className: HEADER_CELLS_CLASS + ' ' + STACKED_HEADER_CELL_CLASS,
                 attrs: { 'colspan': colSpan.toString() }
             });
             tr.appendChild(th).appendChild(div);
@@ -2057,8 +2042,9 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             }
             var cardWrappers = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_CELLS_CLASS));
             cardWrappers.forEach(function (cell) {
-                if (!cell.classList.contains(MULTI_CLONE_CONTENT_CELL)) {
-                    cell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = formatUnit(height);
+                var cardWrapper = cell.querySelector('.' + CARD_WRAPPER_CLASS);
+                if (!cardWrapper.classList.contains(MULTI_CARD_WRAPPER)) {
+                    cardWrapper.style.height = formatUnit(height);
                     EventHandler.add(cell, 'touchmove', _this.onAdaptiveScroll, _this);
                 }
             });
@@ -2161,27 +2147,46 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             }
         });
     };
+    LayoutRender.prototype.getColumnData = function (columnValue, dataSource) {
+        var _this = this;
+        if (dataSource === void 0) { dataSource = this.parent.kanbanData; }
+        var cardData = [];
+        var columnKeys = columnValue.split(',');
+        var _loop_5 = function (key) {
+            var keyData = dataSource.filter(function (cardObj) {
+                return cardObj[_this.parent.keyField] === key.trim();
+            });
+            cardData = cardData.concat(keyData);
+        };
+        for (var _i = 0, columnKeys_1 = columnKeys; _i < columnKeys_1.length; _i++) {
+            var key = columnKeys_1[_i];
+            _loop_5(key);
+        }
+        return cardData;
+    };
     LayoutRender.prototype.getColumnCards = function () {
         var _this = this;
         var columnData = {};
         this.columnKeys = [];
         this.parent.columns.forEach(function (column) {
-            var cardData = [];
-            var columnKeys = column.keyField.split(',');
-            var _loop_5 = function (key) {
-                _this.columnKeys.push(key.trim());
-                var keyData = _this.parent.kanbanData.filter(function (cardObj) {
-                    return cardObj[_this.parent.keyField] === key.trim();
-                });
-                cardData = cardData.concat(keyData);
-            };
-            for (var _i = 0, columnKeys_1 = columnKeys; _i < columnKeys_1.length; _i++) {
-                var key = columnKeys_1[_i];
-                _loop_5(key);
-            }
+            _this.columnKeys = _this.columnKeys.concat(column.keyField.split(',').map(function (e) { return e.trim(); }));
+            var cardData = _this.getColumnData(column.keyField);
             columnData[column.keyField] = cardData;
         });
         return columnData;
+    };
+    LayoutRender.prototype.getSwimlaneCards = function () {
+        var _this = this;
+        var swimlaneData = {};
+        if (this.parent.swimlaneSettings.keyField) {
+            this.kanbanRows.forEach(function (row) {
+                return swimlaneData[row.keyField] = _this.parent.kanbanData.filter(function (obj) {
+                    return _this.columnKeys.indexOf(obj[_this.parent.keyField]) > -1 &&
+                        obj[_this.parent.swimlaneSettings.keyField] === row.keyField;
+                });
+            });
+        }
+        return swimlaneData;
     };
     LayoutRender.prototype.wireEvents = function (element, action) {
         switch (action) {

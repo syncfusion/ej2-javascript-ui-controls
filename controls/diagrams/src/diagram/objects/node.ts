@@ -61,6 +61,8 @@ import { UserHandleModel } from '../interaction/selector-model';
 import { UserHandle } from '../interaction/selector';
 import { LayoutInfo } from '../diagram/layoutinfo';
 import { LayoutInfoModel } from '../diagram/layoutinfo-model';
+import { SymbolSizeModel } from './preview-model';
+import { SymbolSize } from './preview';
 
 
 let getShapeType: Function = (obj: Shape): Object => {
@@ -2137,6 +2139,23 @@ export class Node extends NodeBase implements IElement {
     public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel | DiagramShapeModel;
     /* tslint:enable */
 
+    /**
+     * Defines the size of the symbol preview
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<SymbolSizeModel>({}, SymbolSize)
+    public previewSize: SymbolSizeModel;
+
+    /**
+     * Defines the size of a drop symbol
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<SymbolSizeModel>({}, SymbolSize)
+    public dragSize: SymbolSizeModel;
 
     /**
      * Sets or gets the UI of a node

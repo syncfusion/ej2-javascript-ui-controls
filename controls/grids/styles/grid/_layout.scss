@@ -1375,6 +1375,13 @@
       top: $grid-rtl-searchclear;
     }
 
+    .e-checkboxlist {
+      height: 200px;
+      margin-top: 5px;
+      min-height: 160px;
+      overflow-y: auto;
+    }
+
     .e-chk-hidden {
       -moz-appearance: none; // sass-lint:disable-line no-vendor-prefixes
       height: 1px;

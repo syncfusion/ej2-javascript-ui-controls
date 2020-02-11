@@ -182,6 +182,7 @@ export class LayerPanel {
                             let jsonObject: object = JSON.parse(json);
                             let resource: object = jsonObject['resourceSets'][0]['resources'][0];
                             let imageUrl: string = <string>resource['imageUrl'];
+                            imageUrl = imageUrl.replace('http', 'https');
                             let subDomains: string[] = <string[]>resource['imageUrlSubdomains'];
                             let maxZoom: string = <string>resource['zoomMax'];
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
@@ -491,7 +492,11 @@ export class LayerPanel {
             this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
+            this.mapObject.markerModule.markerRender(
+                this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
+                : this.currentFactor),
+                null
+            );
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);

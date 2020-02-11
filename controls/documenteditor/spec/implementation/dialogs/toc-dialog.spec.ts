@@ -345,7 +345,6 @@ function updateToc(editor: DocumentEditor) {
 }
 describe('Toc test case validation - 1', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
@@ -353,19 +352,17 @@ describe('Toc test case validation - 1', () => {
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
         editor.open(tocJson());
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -392,10 +389,10 @@ describe('TOC test case validation - 2', () => {
         DocumentEditor.Inject(TableOfContentsDialog, Selection, Editor, EditorHistory);
         editor.enableEditorHistory = true;
         editor.enableTableOfContentsDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(tocJson());
         dialog = editor.tableOfContentsDialogModule
@@ -430,17 +427,17 @@ describe('TOC test case validation - 2', () => {
     //     (dialog as any).heading1.value = 1;
     //     (dialog as any).heading2.value = 2;
     //     dialog.applyTableOfContentProperties();
-    //     let childWidgets: any = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0];
+    //     let childWidgets: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0];
     //     let fieldCode: any = childWidgets.paragraph.childWidgets[0].children[5];
     //     expect(fieldCode.text).toBe(' PAGEREF_Toc512292613 \\h ');
     // });
     it('undo and redo testing', () => {
         editor.editorHistory.undo();
-        let childWidgets: any = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
+        let childWidgets: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
         let fieldCode: any = childWidgets.paragraph.childWidgets[0].children[9];
         expect(fieldCode.text.match('PAGEREF')).not.toBe(true);
         editor.editorHistory.redo();
-        let childWidget: any = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
+        let childWidget: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0];
         let fieldCodes: any = childWidget.paragraph.childWidgets[0].children[6];
         expect(fieldCode.text.match('PAGEREF')).not.toBe(true);
     });
@@ -456,10 +453,10 @@ describe('TOC test case validation - 3', () => {
         DocumentEditor.Inject(TableOfContentsDialog, Selection, Editor, EditorHistory);
         editor.enableEditorHistory = true;
         editor.enableTableOfContentsDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(tocJson());
         dialog = editor.tableOfContentsDialogModule
@@ -481,7 +478,7 @@ describe('TOC test case validation - 3', () => {
     //     (dialog as any).pageNumber.checked = false;
     //     (dialog as any).rightAlign.checked = false;
     //     dialog.applyTableOfContentProperties();
-    //     let childWidgets : any = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0];
+    //     let childWidgets : any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0];
     //     expect(childWidgets.paragraph.containerWidget.childWidgets.length).toBe(4);
     // })
     it('TOC hyperlink validation', () => {
@@ -493,7 +490,7 @@ describe('TOC test case validation - 3', () => {
         (dialog as any).rightAlign.checked = false;
         (dialog as any).heading1.value = 1;
         dialog.applyTableOfContentProperties();
-        let childWidgets: any = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0];
+        let childWidgets: any = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0];
         let fieldCode: any = childWidgets.paragraph.childWidgets[0].children[4];
         expect(fieldCode.text).toBe(' HYPERLINK \\l "_Toc512292613" ');
     })

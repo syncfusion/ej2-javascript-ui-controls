@@ -365,7 +365,7 @@ export class ColumnChooser implements IAction {
     private confirmDlgBtnClick(args: Object): void {
         this.parent.notify(events.columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
-        let uncheckedLength: number = this.ulElement.querySelectorAll('.e-uncheck').length;
+        let uncheckedLength: number = this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
                 if (this.hideColumn.length) {

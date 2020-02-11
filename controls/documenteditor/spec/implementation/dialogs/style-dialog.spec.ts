@@ -36,10 +36,10 @@ describe('Style dialog validation', () => {
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
         fontDialog = editor.fontDialogModule;
@@ -63,7 +63,7 @@ describe('Style dialog validation', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         styleDialog.show();
         expect((styleDialog as any).okButton.disabled).toBe(true);
         (styleDialog as any).styleNameElement.value = 'style 1';
@@ -104,7 +104,7 @@ describe('Style dialog validation', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         styleDialog.show();
         styleDialog.onCancelButtonClick();
     });
@@ -112,7 +112,7 @@ describe('Style dialog validation', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         styleDialog.show();
 
         //Change to Character type
@@ -157,10 +157,10 @@ describe('getStyles API', () => {
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
         fontDialog = editor.fontDialogModule;
@@ -354,10 +354,10 @@ describe('Style dialog validation create', () => {
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
         fontDialog = editor.fontDialogModule;
@@ -378,7 +378,7 @@ describe('Style dialog validation create', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         styleDialog.show();
         (styleDialog as any).styleNameElement.value = 'style 1';
         styleDialog.updateOkButton();
@@ -387,7 +387,7 @@ describe('Style dialog validation create', () => {
         ((styleDialog as any).styleNameElement as HTMLInputElement).dispatchEvent(eve);
 
         styleDialog.onOkButtonClick();
-        let style: any = editor.viewer.styles.findByName('style 1');
+        let style: any = editor.documentHelper.styles.findByName('style 1');
         expect(style.name).toBe('style 1');
         expect(style.basedOn.name).toBe('Normal');
         expect(style.next.name).toBe('style 1');
@@ -397,7 +397,7 @@ describe('Style dialog validation create', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         styleDialog.show();
         (styleDialog as any).styleNameElement.value = 'style 1';
         styleDialog.updateOkButton();
@@ -410,14 +410,14 @@ describe('Style dialog validation create', () => {
         ((styleDialog as any).styleNameElement as HTMLInputElement).dispatchEvent(eve);
 
         styleDialog.onOkButtonClick();
-        let style: any = editor.viewer.styles.findByName('style 1');
+        let style: any = editor.documentHelper.styles.findByName('style 1');
         expect(style.name).toBe('style 1');
         // expect(style.basedOn.name).toBe('Normal');
         expect(style.link.name).toBe('style 1 Char');
         expect(style.next.name).toBe('style 1');
         expect(style.type).toBe('Paragraph');
 
-        style = editor.viewer.styles.findByName('style 1 Char');
+        style = editor.documentHelper.styles.findByName('style 1 Char');
         expect(style.name).toBe('style 1 Char');
     });
 });
@@ -437,10 +437,10 @@ describe('Style dialog validation create - Next Different', () => {
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
         fontDialog = editor.fontDialogModule;
@@ -460,7 +460,7 @@ describe('Style dialog validation create - Next Different', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         styleDialog.show();
         (styleDialog as any).styleNameElement.value = 'style 2';
         styleDialog.updateOkButton();
@@ -473,7 +473,7 @@ describe('Style dialog validation create - Next Different', () => {
         (styleDialog as any).styleParagraph.keyActionHandler(upEventArgs);
 
         styleDialog.onOkButtonClick();
-        let style: any = editor.viewer.styles.findByName('style 2');
+        let style: any = editor.documentHelper.styles.findByName('style 2');
         expect(style.name).toBe('style 2');
         expect(style.basedOn.name).toBe('Normal');
         expect(style.next.name).toBe('Heading 6');
@@ -496,10 +496,10 @@ describe('Style dialog validation create', () => {
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
         fontDialog = editor.fontDialogModule;
@@ -520,7 +520,7 @@ describe('Style dialog validation create', () => {
         createDocument(editor);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         styleDialog.show();
         (styleDialog as any).styleNameElement.value = 'style 1';
         styleDialog.updateOkButton();
@@ -529,7 +529,7 @@ describe('Style dialog validation create', () => {
         ((styleDialog as any).styleNameElement as HTMLInputElement).dispatchEvent(eve);
 
         styleDialog.onOkButtonClick();
-        let style: any = editor.viewer.styles.findByName('style 1');
+        let style: any = editor.documentHelper.styles.findByName('style 1');
         expect(style.name).toBe('style 1');
         expect(style.basedOn.name).toBe('Normal');
         expect(style.next.name).toBe('style 1');
@@ -553,10 +553,10 @@ describe('Style dialog - Editing', () => {
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
         fontDialog = editor.fontDialogModule;
@@ -576,7 +576,7 @@ describe('Style dialog - Editing', () => {
         editor.open(jsonString);
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         styleDialog.show('Style1');
         // (styleDialog as any).styleNameElement.value = 'style 2';
         styleDialog.updateOkButton();
@@ -589,7 +589,7 @@ describe('Style dialog - Editing', () => {
         (styleDialog as any).styleParagraph.keyActionHandler(upEventArgs);
 
         styleDialog.onOkButtonClick();
-        let style: any = editor.viewer.styles.findByName('Style1');
+        let style: any = editor.documentHelper.styles.findByName('Style1');
         expect(style.name).toBe('Style1');
         expect(style.basedOn.name).toBe('Normal');
         expect(style.next.name).toBe('Normal');
@@ -613,10 +613,10 @@ describe('Modify Styles for Heading 1 validation', () => {
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
         fontDialog = editor.fontDialogModule;

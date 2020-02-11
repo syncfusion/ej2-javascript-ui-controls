@@ -2967,3 +2967,76 @@ describe('EJ2-22944-script error thrown while valiation in batch edit, EJ2-23545
         destroy(gridObj);
     });
 });
+
+describe('EJ2-35868-script error thrown while adding bottom rows after batch delete,', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0,5),
+                selectionSettings: { type: "Multiple" },
+                editSettings: {
+                    allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', newRowPosition:'Bottom'
+                },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string', validationRules: { required: true }  },
+                    { field: 'Verified', type: 'boolean', editType: 'booleanedit' },
+                ]
+            }, done);
+    });
+    it('delete rows', (done: Function) => {
+        gridObj.clearSelection();
+        gridObj.selectRows([0,1,2]);
+        gridObj.deleteRecord();
+        gridObj.addRecord();
+        expect(gridObj.getSelectedRowIndexes()[0]).toBe(2);
+        done();
+    });
+
+    afterAll(() => {
+        gridObj.notify('tooltip-destroy', {});
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-36298 - Delete with persist selection => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog :false },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    { field: 'ShipCity' },
+                ],
+            }, done);
+    });
+
+    it('delete record by method', (done: Function) => {
+        let actionComplete = (args?: any): void => {
+            if(args.requestType == 'batchsave'){
+                expect(firstPrimary).not.toEqual(gridObj.currentViewData[0]["OrderID"]);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        let firstPrimary: number = gridObj.currentViewData[0]["OrderID"];
+        gridObj.editModule.deleteRecord('OrderID', gridObj.currentViewData[0]);
+        gridObj.editModule.batchSave();
+    });
+
+    afterAll(() => {
+        gridObj.actionComplete = null;
+        gridObj.notify('tooltip-destroy', {});
+        destroy(gridObj);
+    });
+});

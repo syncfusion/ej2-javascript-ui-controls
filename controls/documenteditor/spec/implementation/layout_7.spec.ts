@@ -12,10 +12,10 @@ describe('RTL Table layout validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({});
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(table));
     });
@@ -28,16 +28,16 @@ describe('RTL Table layout validation', () => {
         }, 1000);
     });
     it('Table widget with bidi true validation', () => {
-        let tableWidget: TableWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[0] as TableWidget);
+        let tableWidget: TableWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget);
         expect(tableWidget.tableFormat.bidi).toBe(true);
     });
     it('Table widget with bidi true validation', () => {
-        let tableWidget: TableWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[10] as TableWidget);
+        let tableWidget: TableWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[10] as TableWidget);
         expect(tableWidget.tableFormat.bidi).toBe(true);
         expect(tableWidget.tableFormat.tableAlignment).toBe('Left');
     });
     it('Table widget with bidi true validation', () => {
-        let tableWidget: TableWidget = ((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[14] as TableWidget);
+        let tableWidget: TableWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[14] as TableWidget);
         expect(tableWidget.tableFormat.bidi).toBe(true);
         expect(tableWidget.tableFormat.tableAlignment).toBe('Right');
     });

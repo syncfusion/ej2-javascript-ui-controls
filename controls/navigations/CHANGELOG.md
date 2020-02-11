@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 17.4.47 (2020-02-05)
+## 17.4.49 (2020-02-11)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#262276` - Resolved the performance issue occurred when check or uncheck the parent node in TreeView component.
 
 ### Menu
 

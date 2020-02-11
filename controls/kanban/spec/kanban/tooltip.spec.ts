@@ -31,7 +31,7 @@ describe('Kanban tooltip module', () => {
             util.destroy(kanbanObj);
         });
         it('mouse hover open tooltip', () => {
-            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header .e-card-header-caption') as HTMLElement;
+            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header-title.e-tooltip-text') as HTMLElement;
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
             util.triggerMouseEvent(target, 'mouseover');
             let tooltipEle: HTMLElement = document.querySelector('.e-kanban-tooltip') as HTMLElement;
@@ -39,7 +39,7 @@ describe('Kanban tooltip module', () => {
             expect(tooltipEle.innerText).toEqual('1');
             util.triggerMouseEvent(target, 'mouseleave');
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
-            let content: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-content .e-card-content-caption') as HTMLElement;
+            let content: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-content') as HTMLElement;
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
             util.triggerMouseEvent(content, 'mouseover');
             let tooltipElement: HTMLElement = document.querySelector('.e-kanban-tooltip') as HTMLElement;
@@ -55,7 +55,7 @@ describe('Kanban tooltip module', () => {
         beforeAll((done: DoneFn) => {
             let model: KanbanModel = {
                 enableTooltip: true,
-                tooltipTemplate: '<div class="template" style="padding:5px;"><div>Assignee : ${Assignee}</div></div>'
+                tooltipTemplate: '<div class="template" style="padding:5px;"><div>Assignee: ${Assignee}</div></div>'
             };
             kanbanObj = util.createKanban(model, kanbanData, done);
             util.disableTooltipAnimation((kanbanObj.tooltipModule as any).tooltipObj);
@@ -65,7 +65,7 @@ describe('Kanban tooltip module', () => {
             util.destroy(kanbanObj);
         });
         it('mouse hover open tooltip', () => {
-            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header .e-card-header-caption') as HTMLElement;
+            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header-title.e-tooltip-text') as HTMLElement;
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
             util.triggerMouseEvent(target, 'mouseover');
             let tooltipEle: HTMLElement = document.querySelector('.e-kanban-tooltip') as HTMLElement;
@@ -75,9 +75,9 @@ describe('Kanban tooltip module', () => {
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
         });
         it('change tooltip template through set model', () => {
-            kanbanObj.tooltipTemplate = '<div class="template1" style="padding:5px;"><div>Assignee : ${Assignee}</div></div>';
+            kanbanObj.tooltipTemplate = '<div class="template1" style="padding:5px;"><div>Assignee: ${Assignee}</div></div>';
             kanbanObj.dataBind();
-            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header .e-card-header-caption') as HTMLElement;
+            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header-title.e-tooltip-text') as HTMLElement;
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
             util.triggerMouseEvent(target, 'mouseover');
             let tooltipEle: HTMLElement = document.querySelector('.e-kanban-tooltip') as HTMLElement;
@@ -100,7 +100,7 @@ describe('Kanban tooltip module', () => {
             util.destroy(kanbanObj);
         });
         it('hide tooltip on mouse hover', () => {
-            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header .e-card-header-caption') as HTMLElement;
+            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header-title') as HTMLElement;
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
             util.triggerMouseEvent(target, 'mouseover');
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
@@ -111,7 +111,7 @@ describe('Kanban tooltip module', () => {
             kanbanObj.enableTooltip = true;
             kanbanObj.dataBind();
             util.disableTooltipAnimation((kanbanObj.tooltipModule as any).tooltipObj);
-            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header .e-card-header-caption') as HTMLElement;
+            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header-title.e-tooltip-text') as HTMLElement;
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
             util.triggerMouseEvent(target, 'mouseover');
             let tooltipEle: HTMLElement = document.querySelector('.e-kanban-tooltip') as HTMLElement;
@@ -123,7 +123,7 @@ describe('Kanban tooltip module', () => {
             kanbanObj.enableTooltip = false;
             kanbanObj.dataBind();
             expect(kanbanObj.element.classList.contains('e-control')).toEqual(true);
-            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header .e-card-header-caption');
+            let target: HTMLElement = kanbanObj.element.querySelector('.e-card .e-card-header-title.e-tooltip-text') as HTMLElement;
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();
             util.triggerMouseEvent(target, 'mouseover');
             expect(document.querySelector('.e-kanban-tooltip')).toBeNull();

@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { FontDialog } from '../../../src/document-editor/implementation/dialogs/font-dialog';
 import { TestHelper } from '../../test-helper.spec';
@@ -26,10 +26,10 @@ describe('Font dialog validation bold,italic,underLine', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, FontDialog, ContextMenu, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableFontDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.fontDialogModule;
         menu = editor.contextMenuModule;
@@ -47,7 +47,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         dialog.showFontDialog();
         dialog.fontStyle = 'BoldItalic';
         dialog.onInsertFontFormat();
@@ -58,12 +58,12 @@ describe('Font dialog validation bold,italic,underLine', () => {
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.characterFormat.bold).toBe(true);
         event = { keyCode: 73, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         dialog.showFontDialog();
         dialog.loadFontDialog();
         dialog.fontStyle = "Regular";
@@ -76,13 +76,12 @@ describe('Font dialog validation bold,italic,underLine', () => {
         menu.handleContextMenuItem('container_contextmenu_font_dialog');
         expect(() => { editor.fontDialogModule.onCancelButtonClick(); }).not.toThrowError();
         let event: any = { keyCode: 68, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(() => { editor.fontDialogModule.onCancelButtonClick(); }).not.toThrowError();
     });
 });
 describe('Font dialog validation bold,italic,underLine', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: FontDialog;
     beforeAll((): void => {
         editor = undefined;
@@ -90,10 +89,10 @@ describe('Font dialog validation bold,italic,underLine', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, FontDialog);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableFontDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.fontDialogModule;
     });
@@ -110,9 +109,9 @@ describe('Font dialog validation bold,italic,underLine', () => {
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onApplyCharacterFormat('underline', 'Single');
         expect(editor.selection.characterFormat.bold).toBe(true);
         editor.editorModule.onApplyCharacterFormat('strikethrough', 'SingleStrike');
@@ -131,9 +130,9 @@ describe('Font dialog validation bold,italic,underLine', () => {
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 73, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onApplyCharacterFormat('underline', 'Double');
         expect(editor.selection.characterFormat.italic).toBe(true);
         editor.editorModule.toggleBaselineAlignment('Subscript');
@@ -150,7 +149,6 @@ describe('Font dialog validation bold,italic,underLine', () => {
     it('Add modified property for character format  validation', () => {
         editor.openBlank();
         editor.editorModule.insertText('Syncfusion Software');
-        let viewer: LayoutViewer = editor.viewer;
         let event: any;
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
@@ -166,7 +164,6 @@ describe('Font dialog validation bold,italic,underLine', () => {
 });
 describe('Font dialog validation bold,italic,underLine', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: FontDialog;
     beforeAll((): void => {
         editor = undefined;
@@ -175,10 +172,10 @@ describe('Font dialog validation bold,italic,underLine', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory, FontDialog);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableFontDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.fontDialogModule;
     });
@@ -196,7 +193,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.onApplyCharacterFormat('strikethrough', 'DoubleStrike');
         let prevFormat = editor.selection.characterFormat.fontSize;
         dialog.showFontDialog();
@@ -210,7 +207,6 @@ describe('Font dialog validation bold,italic,underLine', () => {
 });
 describe('Font Dialog Font family,color,stikethrough validation -1 ', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: FontDialog
     beforeAll((): void => {
         editor = undefined;
@@ -219,10 +215,10 @@ describe('Font Dialog Font family,color,stikethrough validation -1 ', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory, FontDialog);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableFontDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.fontDialogModule;
     });
@@ -239,7 +235,7 @@ describe('Font Dialog Font family,color,stikethrough validation -1 ', () => {
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         editor.editorModule.toggleBaselineAlignment('Superscript');
         let prevFormat = editor.selection.characterFormat.fontFamily;
         dialog.showFontDialog();
@@ -254,7 +250,7 @@ describe('Font Dialog Font family,color,stikethrough validation -1 ', () => {
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         let prevFormat = editor.selection.characterFormat.fontColor;
         dialog.showFontDialog();
         dialog.loadFontDialog();
@@ -266,7 +262,6 @@ describe('Font Dialog Font family,color,stikethrough validation -1 ', () => {
 });
 describe('Font Dialog Font family,color,stikethrough validation-2', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: FontDialog
     beforeAll((): void => {
         editor = undefined;
@@ -275,12 +270,12 @@ describe('Font Dialog Font family,color,stikethrough validation-2', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        dialog = new FontDialog(editor.viewer);
+        dialog = new FontDialog(editor.documentHelper);
     });
     afterAll((done) => {
         editor.destroy();
@@ -295,7 +290,7 @@ describe('Font Dialog Font family,color,stikethrough validation-2', () => {
         createDocument(editor)
         let event: any;
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         let prevFormat = editor.selection.characterFormat.bold;
         dialog.showFontDialog();
         dialog.loadFontDialog();
@@ -328,7 +323,6 @@ describe('Font Dialog Font family,color,stikethrough validation-2', () => {
 });
 describe('Font Dialog Font family,color,stikethrough validation-3', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: FontDialog
     beforeAll((): void => {
         editor = undefined;
@@ -337,12 +331,12 @@ describe('Font Dialog Font family,color,stikethrough validation-3', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        dialog = new FontDialog(editor.viewer);
+        dialog = new FontDialog(editor.documentHelper);
     });
     afterAll((done) => {
         editor.destroy();
@@ -396,7 +390,7 @@ describe('Font Dialog Font family,color,stikethrough validation-3', () => {
 });
 describe('font dialog api validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let dialog: FontDialog;
     beforeEach((): void => {
         editor = undefined;
@@ -405,10 +399,10 @@ describe('font dialog api validation', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory, FontDialog);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableFontDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.fontDialogModule;
     });
@@ -423,27 +417,27 @@ describe('font dialog api validation', () => {
         }, 2000);
     });
     it(' onInsertFontFormat api validation', () => {
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         dialog.showFontDialog();
         dialog.characterFormat = null;
         expect(() => { dialog.onInsertFontFormat(); }).not.toThrowError();
     });
     it(' destroy api validation', () => {
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         dialog.showFontDialog();
         expect(() => { dialog.destroy(); }).not.toThrowError();
     });
     it('Dialog with bold property with selection is empty', () => {
         let event: any;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
-        let dialog: FontDialog = new FontDialog(editor.viewer);
+        editor.documentHelper.onKeyDownInternal(event);
+        let dialog: FontDialog = new FontDialog(editor.documentHelper);
         dialog.showFontDialog();
         dialog.fontStyle = 'BoldItalic';
         expect(() => { dialog.onInsertFontFormat(); }).not.toThrowError();
     });
     it(' close Dialog Api validation', () => {
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
         dialog.showFontDialog();
         expect(() => { dialog.closeFontDialog() }).not.toThrowError();
     });
@@ -456,7 +450,6 @@ describe('font dialog api validation', () => {
 
 describe('Strikethrough and basline alignment validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     let dialog: FontDialog;
     beforeAll((): void => {
         editor = undefined;
@@ -465,10 +458,10 @@ describe('Strikethrough and basline alignment validation', () => {
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableFontDialog: true });
         editor.enableEditorHistory = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.fontDialogModule;
 

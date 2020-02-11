@@ -24,10 +24,10 @@ describe('Table dialog validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -41,7 +41,7 @@ describe('Table dialog validation', () => {
     it('Dialog with bold and italic property apply testing', () => {
         editor.editor.insertTable(3, 3);
         editor.tablePropertiesDialogModule.show();
-        expect((editor.viewer as LayoutViewer).dialog2.visible).toBe(true);
+        expect(editor.documentHelper.dialog2.visible).toBe(true);
     });
 });
 
@@ -58,10 +58,10 @@ describe('Show internal Dialogs validation', () => {
             enableContextMenu: true, enableTableOptionsDialog: true,
             enableBordersAndShadingDialog: true, enableTablePropertiesDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         menu = editor.contextMenuModule;
     });
@@ -76,19 +76,19 @@ describe('Show internal Dialogs validation', () => {
     it('Show Borders and shadings Dialog testing', () => {
         editor.editor.insertTable(3, 3);
         editor.tablePropertiesDialogModule.showBordersShadingsPropertiesDialog();
-        expect((editor.viewer as LayoutViewer).dialog.visible).toBe(true);
+        expect(editor.documentHelper.dialog.visible).toBe(true);
     });
     it('Show Cell Options Dialog testing', () => {
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         editor.tablePropertiesDialogModule.showCellOptionsDialog();
-        expect((editor.viewer as LayoutViewer).dialog.visible).toBe(true);
+        expect(editor.documentHelper.dialog.visible).toBe(true);
     });
     it('Show Table Options Dialog testing', () => {
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         editor.tablePropertiesDialogModule.showTableOptionsDialog();
-        expect((editor.viewer as LayoutViewer).dialog.visible).toBe(true);
+        expect(editor.documentHelper.dialog.visible).toBe(true);
     });
     it('handle context menu items', () => {
         editor.editor.insertTable(3, 3);
@@ -104,10 +104,10 @@ describe('Check Cell and Table Alignment Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -150,10 +150,10 @@ describe('Check Cell and Table Alignment Else part Validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
-        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true }); (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true }); (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -197,10 +197,10 @@ describe('Set Table Properties Dialog Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -241,10 +241,10 @@ describe('Get Table and Cell Alignment Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -295,10 +295,10 @@ describe('Get Cell Alignment Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -348,10 +348,10 @@ describe('Apply and Close Table Properties Dialog Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -395,10 +395,10 @@ describe('Apply Row Properties Dialog Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -453,10 +453,10 @@ describe('Apply Row Properties-4 Dialog Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -489,10 +489,10 @@ describe('Apply Cell properties Dialog Validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -538,10 +538,10 @@ describe('Table Check box Validation Testing', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -582,10 +582,10 @@ describe('Row Check box Validation Testing', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -626,10 +626,10 @@ describe('Cell Check box Validation Testing', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -670,10 +670,10 @@ describe('Table,Row and cell Format history preservation validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -744,10 +744,10 @@ describe('Cursor show hide testing', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -762,19 +762,17 @@ describe('Cursor show hide testing', () => {
 
 describe('load table format', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
     beforeAll((): void => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         editor.destroy();
@@ -806,7 +804,7 @@ describe('load table format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         let dialog: any = editor.tablePropertiesDialogModule;
 
@@ -841,7 +839,7 @@ describe('load table format', () => {
         table.childWidgets.push(row);
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         let dialog: any = editor.tablePropertiesDialogModule;
 
@@ -874,7 +872,7 @@ describe('load table format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         let dialog: any = editor.tablePropertiesDialogModule;
 
@@ -909,7 +907,7 @@ describe('load table format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         let dialog: any = editor.tablePropertiesDialogModule;
 
@@ -945,7 +943,7 @@ describe('load table format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         let dialog: any = editor.tablePropertiesDialogModule;
         editor.selectionModule.tableFormat.tableAlignment = undefined;
         editor.selectionModule.tableFormat.preferredWidth = undefined;
@@ -979,7 +977,7 @@ describe('load table format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         let dialog: any = editor.tablePropertiesDialogModule;
         editor.tablePropertiesDialogModule.show();
@@ -993,19 +991,17 @@ describe('load table format', () => {
 });
 describe('Load Row Format', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
     beforeAll((): void => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         editor.destroy();
@@ -1039,7 +1035,7 @@ describe('Load Row Format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         let dialog: any = editor.tablePropertiesDialogModule;
         editor.selectionModule.rowFormat.isHeader = undefined;
@@ -1056,19 +1052,17 @@ describe('Load Row Format', () => {
 });
 describe('Load Cell format', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
     beforeAll((): void => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done) => {
         editor.destroy();
@@ -1104,7 +1098,7 @@ describe('Load Cell format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         let dialog: any = editor.tablePropertiesDialogModule;
         editor.tablePropertiesDialogModule.show();
@@ -1140,7 +1134,7 @@ describe('Load Cell format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         let dialog: any = editor.tablePropertiesDialogModule;
         editor.tablePropertiesDialogModule.show();
         editor.tablePropertiesDialogModule.loadTableProperties();
@@ -1175,7 +1169,7 @@ describe('Load Cell format', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         let dialog: any = editor.tablePropertiesDialogModule;
         editor.selectionModule.cellFormat.verticalAlignment = undefined;
         editor.selectionModule.cellFormat.preferredWidth = undefined;
@@ -1188,7 +1182,6 @@ describe('Load Cell format', () => {
 });
 describe('Table dialog Property change validation', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
     let dialog: TablePropertiesDialog;
     beforeAll((): void => {
         editor = undefined;
@@ -1196,12 +1189,11 @@ describe('Table dialog Property change validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
         dialog = editor.tablePropertiesDialogModule;
     });
     afterEach((): void => {
@@ -1245,7 +1237,7 @@ describe('Table dialog Property change validation', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         let instance: any = dialog;
         dialog.show();
         dialog.loadTableProperties();
@@ -1287,7 +1279,7 @@ describe('Table dialog Property change validation', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         let instance: any = dialog;
         dialog.show();
@@ -1330,7 +1322,7 @@ describe('Table dialog Property change validation', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         let instance: any = dialog;
         dialog.show();
         dialog.loadTableProperties();
@@ -1372,7 +1364,7 @@ describe('Table dialog Property change validation', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
         let instance: any = dialog;
         dialog.show();
         dialog.loadTableProperties();
@@ -1414,7 +1406,7 @@ describe('Table dialog Property change validation', () => {
 
         section.childWidgets.push(table);
         sections.push(section);
-        editor.viewer.onDocumentChanged(sections);
+        editor.documentHelper.onDocumentChanged(sections);
 
         dialog.show();
         dialog.loadTableProperties();
@@ -1437,10 +1429,10 @@ describe('Table vertical alignment - center validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {

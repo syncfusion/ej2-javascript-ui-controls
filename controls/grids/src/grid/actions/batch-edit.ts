@@ -361,7 +361,8 @@ export class BatchEdit {
                 if (Object.keys(this.originalCell)[i] === Object.keys(this.cloneCell)[j]) {
                     this.cloneCell[Object.keys(this.cloneCell)[j]].replaceWith(this.originalCell[Object.keys(this.originalCell)[i]]);
                     if (this.originalCell[Object.keys(this.originalCell)[i]].classList.contains('e-selectionbackground')) {
-                        this.originalCell[Object.keys(this.originalCell)[i]].classList.remove('e-selectionbackground', 'e-active');
+                        this.originalCell[Object.keys(this.originalCell)[i]]
+                            .classList.remove('e-selectionbackground', 'e-cellselectionbackground', 'e-active');
                     }
                 }
             }
@@ -498,6 +499,7 @@ export class BatchEdit {
             if (beforeBatchDeleteArgs.cancel) {
                 return;
             }
+            this.removeSelectedData = gObj.getSelectedRecords();
             gObj.clearSelection();
             beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row ?
                 beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
@@ -564,7 +566,6 @@ export class BatchEdit {
                 }
             }
             this.refreshRowIdx();
-            this.removeSelectedData = gObj.getSelectedRecords();
             if (data) {
                 gObj.editModule.deleteRowUid = undefined;
                 if (gObj.getSelectedRows().length) {
@@ -692,13 +693,15 @@ export class BatchEdit {
             gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject(), args: { isFrozen: this.parent.getFrozenColumns() } });
             let changes: Object = this.getBatchChanges();
             let addedRecords: string = 'addedRecords';
+            let dRecords: string = 'deletedRecords';
+            let btmIdx: number = this.parent.getCurrentViewRecords().length + changes[addedRecords].length - changes[dRecords].length - 1;
             this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
-                gObj.selectRow(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1);
+                gObj.selectRow(btmIdx);
             if (!data) {
                 index = this.findNextEditableCell(0, true);
                 col = (gObj.getColumns()[index] as Column);
                 this.parent.editSettings.newRowPosition === 'Top' ? this.editCell(0, col.field, true) :
-                    this.editCell(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
+                    this.editCell(btmIdx, col.field, true);
             }
             if (this.parent.aggregates.length > 0 && (data || changes[addedRecords].length)) {
                 this.parent.notify(events.refreshFooterRenderer, {});

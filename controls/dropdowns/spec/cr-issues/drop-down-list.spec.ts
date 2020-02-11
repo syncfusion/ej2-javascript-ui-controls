@@ -844,6 +844,106 @@ describe('DropDownList', () => {
             expect(listObj.value ===  0.02).toBe(true);
         });
     });
+    describe('EJ2-36017: dropdown cascading', () => {
+        let element: HTMLInputElement, element1: HTMLInputElement, element2: HTMLInputElement;
+        var country = [
+            { countryName: 'United States', countryId: '1' },
+            { countryName: 'Australia', countryId: '2' }
+        ];
+        var state = [
+            { stateName: 'New York', countryId: '1', stateId: '101' },
+            { stateName: 'Virginia ', countryId: '1', stateId: '102' },
+            { stateName: 'Queensland', countryId: '2', stateId: '103' },
+            { stateName: 'Tasmania ', countryId: '2', stateId: '104' }
+        ];
+        var cities = [
+            { cityName: 'Albany', stateId: '101', cityId: 201 },
+                { cityName: 'Beacon ', stateId: '101', cityId: 202 },
+                { cityName: 'Alexandria', stateId: '102', cityId: 203 },
+                { cityName: 'Hampton ', stateId: '102', cityId: 204 },
+                { cityName: 'Aberdeen', stateId: '103', cityId: 205 },
+                { cityName: 'Colville ', stateId: '103', cityId: 206 },
+                { cityName: 'Townsville', stateId: '104', cityId: 207 },
+                { cityName: 'Brisbane ', stateId: '104', cityId: 208 }
+        ];
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let listObj: any, listObj1: any, listObj2: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'list' }); 
+            element1 = <HTMLInputElement>createElement('input', { id: 'list1' }); 
+            element2 = <HTMLInputElement>createElement('input', { id: 'list2' }); 
+            document.body.appendChild(element);
+            document.body.appendChild(element1);
+            document.body.appendChild(element2);
+            listObj = new DropDownList({
+                dataSource: country,
+                fields: { value: 'countryId', text: 'countryName' },
+                allowFiltering: true,
+                change: function () {
+                    listObj1.enabled = true;
+                    var tempQuery = new Query().where('countryId', 'equal', listObj.value);
+                    listObj1.query = tempQuery;
+                    listObj1.dataBind();
+                    listObj1.value = null;
+                    listObj2.value = null;
+                    listObj2.enabled = false;
+                }
+            });
+            listObj.appendTo('#list');
+            listObj1 = new DropDownList({
+                dataSource: state,
+                fields: { value: 'stateId', text: 'stateName' },
+                enabled: false,
+                allowFiltering: true,
+                change: function () {
+                    listObj2.enabled = true;
+                    var tempQuery1 = new Query().where('stateId', 'equal', listObj1.value);
+                    listObj2.query = tempQuery1;
+                    listObj2.value = null;
+                    listObj2.dataBind();
+                },
+            });
+            listObj1.appendTo('#list1');
+            listObj2 = new DropDownList({
+                dataSource: cities,
+                fields: { text: 'cityName' },
+                allowFiltering: true,
+                enabled: false,
+            });
+            listObj2.appendTo('#list2');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('previous value maintained', () => {
+            listObj.showPopup();
+            let item: any = (listObj as any).popupObj.element.querySelectorAll('li')[0];
+            mouseEventArgs.target = item;
+            mouseEventArgs.type = 'click';
+            listObj.onMouseClick(mouseEventArgs);
+            expect(listObj.value === '1').toBe(true);
+            listObj1.showPopup();
+            let item1: any = (listObj1 as any).popupObj.element.querySelectorAll('li')[0];
+            mouseEventArgs.target = item1;
+            mouseEventArgs.type = 'click';
+            listObj1.onMouseClick(mouseEventArgs);
+            expect(listObj1.value === '101').toBe(true);
+            listObj2.showPopup();
+            let item2: any = (listObj2 as any).popupObj.element.querySelectorAll('li')[0];
+            mouseEventArgs.target = item2;
+            mouseEventArgs.type = 'click';
+            listObj2.onMouseClick(mouseEventArgs);
+            expect(listObj2.value === 'Albany').toBe(true);
+            listObj1.showPopup();
+            let item3: any = (listObj1 as any).popupObj.element.querySelectorAll('li')[1];
+            mouseEventArgs.target = item3;
+            mouseEventArgs.type = 'click';
+            listObj1.onMouseClick(mouseEventArgs);
+            listObj2.showPopup();
+            let item4: any = (listObj2 as any).popupObj.element.querySelectorAll('li');
+            expect(item4.length === 2).toBe(true);
+        });
+    });
 
     describe('EJ2-26287: popup collision not working', () => {
         let element: HTMLInputElement;

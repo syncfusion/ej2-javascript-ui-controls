@@ -5538,7 +5538,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     inputFocusHandler() {
         this.preventBlur = false;
         let focusArguments = {
-            model: this
+            model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (!this.preventFocus) {
             this.preventFocus = true;
@@ -5574,7 +5574,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                         if (!this.preventBlur && document.activeElement !== this.inputElement) {
                             this.preventFocus = false;
                             let blurArguments = {
-                                model: this
+                                model: (isBlazor() && this.isServerRendered) ? null : this
                             };
                             this.trigger('blur', blurArguments);
                         }
@@ -5619,7 +5619,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             if (!this.preventBlur && document.activeElement !== this.inputElement) {
                 this.preventFocus = false;
                 let blurArguments = {
-                    model: this
+                    model: (isBlazor() && this.isServerRendered) ? null : this
                 };
                 this.trigger('blur', blurArguments);
             }
@@ -8398,10 +8398,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                     document.body.appendChild(this.mobileRangePopupWrap);
                 }
                 this.openEventArgs = {
-                    popup: this.popupObj || null,
+                    popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || null,
                     cancel: false,
                     date: this.inputElement.value,
-                    model: this,
+                    model: (isBlazor() && this.isServerRendered) ? null : this,
                     event: event ? event : null,
                     appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
@@ -8459,9 +8459,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             if (this.isPopupOpen()) {
                 this.closeEventArgs = {
                     cancel: false,
-                    popup: this.popupObj,
+                    popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj,
                     date: this.inputElement.value,
-                    model: this,
+                    model: (isBlazor() && this.isServerRendered) ? null : this,
                     event: event ? event : null
                 };
                 let eventArgs = this.closeEventArgs;
@@ -9771,7 +9771,7 @@ let TimePicker = class TimePicker extends Component {
     closePopup(delay, e) {
         if (this.isPopupOpen() && this.popupWrapper) {
             let args = {
-                popup: this.popupObj,
+                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj,
                 event: e || null,
                 cancel: false,
                 name: 'open'
@@ -10576,8 +10576,8 @@ let TimePicker = class TimePicker extends Component {
     }
     documentClickHandler(event) {
         let target = event.target;
-        if ((isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(target) || (this.popupObj.element
-            && this.popupObj.element.contains(target))) && event.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(target) ||
+            (this.popupObj.element && this.popupObj.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }
         if (!(closest(target, '#' + this.popupObj.element.id)) && target !== this.inputElement
@@ -10642,7 +10642,7 @@ let TimePicker = class TimePicker extends Component {
         this.closePopup(0, e);
         removeClass([this.inputWrapper.container], [FOCUS]);
         let blurArguments = {
-            model: this
+            model: (isBlazor() && this.isServerRendered) ? null : this
         };
         this.trigger('blur', blurArguments);
         if (this.getText() !== this.inputElement.value) {
@@ -10665,7 +10665,7 @@ let TimePicker = class TimePicker extends Component {
         if (document.activeElement === this.inputElement) {
             this.inputElement.blur();
             let blurArguments = {
-                model: this
+                model: (isBlazor() && this.isServerRendered) ? null : this
             };
             this.trigger('blur', blurArguments);
         }
@@ -10678,7 +10678,7 @@ let TimePicker = class TimePicker extends Component {
     }
     inputFocusHandler() {
         let focusArguments = {
-            model: this
+            model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (!this.readonly && !Browser.isDevice) {
             this.selectInputText();
@@ -10725,7 +10725,7 @@ let TimePicker = class TimePicker extends Component {
                 document.body.appendChild(this.mobileTimePopupWrap);
             }
             this.openPopupEventArgs = {
-                popup: this.popupObj || null,
+                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || null,
                 cancel: false,
                 event: event || null,
                 name: 'open',
@@ -11157,7 +11157,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
         removeClass([this.inputWrapper.container], INPUTFOCUS$2);
         let blurArguments = {
-            model: this
+            model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (this.isTimePopupOpen()) {
             this.hide(e);
@@ -11557,7 +11557,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     openPopup(e) {
         this.preventArgs = {
             cancel: false,
-            popup: this.popupObject,
+            popup: (isBlazor() && this.isServerRendered) ? null : this.popupObject,
             event: e || null
         };
         let eventArgs = this.preventArgs;
@@ -11581,10 +11581,11 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         });
     }
     documentClickHandler(event) {
-        if (event.type !== 'touchstart') {
+        let target = event.target;
+        if ((!isNullOrUndefined(this.popupObject) && (this.inputWrapper.container.contains(target) ||
+            (this.popupObject.element && this.popupObject.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }
-        let target = event.target;
         if (!(closest(target, '#' + (this.popupObject && this.popupObject.element.id))) && target !== this.inputElement
             && target !== this.timeIcon && target !== this.inputWrapper.container) {
             if (this.isTimePopupOpen()) {
@@ -11596,7 +11597,6 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
             if (!Browser.isDevice) {
                 this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
                     && target === this.popupObject.element);
-                event.preventDefault();
             }
         }
     }
@@ -11959,7 +11959,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         if (this.popupObj || this.dateTimeWrapper) {
             this.preventArgs = {
                 cancel: false,
-                popup: this.popupObj || this.popupObject,
+                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || this.popupObject,
                 event: e || null
             };
             let eventArgs = this.preventArgs;

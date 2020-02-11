@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TextPosition } from '../../src/index';
+import { TextPosition, DocumentHelper } from '../../src/index';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { createElement } from '@syncfusion/ej2-base';
@@ -1585,25 +1585,25 @@ let json: object = {
 };
 describe('Keyboard shortcut internal API Testing', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -1611,69 +1611,69 @@ describe('Keyboard shortcut internal API Testing', () => {
     });
     it('right key navigation Testing ', () => {
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(3);
     });
     it('left key navigation Testing ', () => {
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
     });
     it('down key navigation Testing ', () => {
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(currentPara === editor.selection.start.currentWidget.paragraph).toBe(false);
     });
     it('Up key navigation Testing', () => {
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset === 4).toBe(true);
         expect(currentPara === editor.selection.start.currentWidget.paragraph).toBe(false);
     });
     it('end key navigation Testing', () => {
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(22);
     });
     it('home key navigation Testing', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
     });
 });
 
 describe('control shift combination testing', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -1681,65 +1681,65 @@ describe('control shift combination testing', () => {
     });
     it('shift control right selection testing', () => {
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(16);
     });
     it('shift control left selection testing', () => {
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(10);
     });
     it('shift control down selection testing', () => {
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(82);
     });
     it('shift control up selection testing', () => {
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(0);
     });
     it(' shift control end selection testing', () => {
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset === editor.documentEnd.offset + 1).toBe(true);
     });
     it('shift control home selection testing', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
     });
 });
 
 describe('control key combination testing', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -1747,61 +1747,61 @@ describe('control key combination testing', () => {
     });
     it('control right navigation Testing', () => {
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(10);
     });
     it('control left navigation testing', () => {
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
     });
     it('control down navigation testing', () => {
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(currentPara === editor.selection.start.currentWidget.paragraph).toBe(false);
     });
     it('control up navigation testing', () => {
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(currentPara === editor.selection.start.currentWidget.paragraph).toBe(false);
     });
     it('control end navigation testing', () => {
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset === editor.documentEnd.offset).toBe(true);
     });
     it('control home navigation testing', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset === editor.documentStart.offset).toBe(true);
     });
 });
 
 describe('shift key combination testing', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -1809,28 +1809,28 @@ describe('shift key combination testing', () => {
     });
     it('Shift right selection Testing ', () => {
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(3);
     });
     it('Shift left selection Testing', () => {
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(0);
     });
     it('shift down selection testing', () => {
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(1);
         expect(currentPara === editor.selection.end.currentWidget.paragraph).toBe(false);
@@ -1838,43 +1838,43 @@ describe('shift key combination testing', () => {
     it('shift up selection testing', () => {
         let currentPara: ParagraphWidget = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
         expect(editor.selection.end.offset).toBe(0);
         expect(currentPara === editor.selection.end.currentWidget.paragraph).toBe(true);
     });
     it('shift end navigation testing', () => {
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset).toBe(23);
     });
     it('shift home navigation testing', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset).toBe(0);
     });
 });
 describe('whole document selection testing', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(json));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -1882,7 +1882,7 @@ describe('whole document selection testing', () => {
     });
     it('control A testing', () => {
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
         expect(editor.selection.end.offset === editor.documentEnd.offset + 1).toBe(true);
     });
 });
@@ -1890,28 +1890,28 @@ describe('whole document selection testing', () => {
 
 describe('Keyboard shortcut validation in Field', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -1946,26 +1946,26 @@ describe('Keyboard shortcut validation in Field', () => {
 
 describe('Keyboard shortcut validation in Field home and end key', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();

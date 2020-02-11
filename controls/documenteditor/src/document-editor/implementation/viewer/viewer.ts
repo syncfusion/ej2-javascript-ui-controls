@@ -9,14 +9,14 @@ import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
-    CommentElementBox, CommentCharacterElementBox
+    CommentElementBox, CommentCharacterElementBox, Padding
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
     BodyWidget, LineWidget, TableWidget, TableRowWidget, TableCellWidget,
     ElementBox, BlockWidget, HeaderFooters, BookmarkElementBox
 } from './page';
-import { HelperMethods, Point, TextPositionInfo, ImagePointInfo } from '../editor/editor-helper';
+import { HelperMethods, Point, TextPositionInfo, ImagePointInfo, PageInfo, CanvasInfo } from '../editor/editor-helper';
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection, CommentReviewPane, } from '../index';
@@ -33,12 +33,16 @@ import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 /** 
  * @private
  */
-export abstract class LayoutViewer {
+export class DocumentHelper {
+    /**
+     * @private
+     */
+    public scrollbarWidth: number = 0;
     /**
      * @private
      */
     public owner: DocumentEditor;
-    private visibleBoundsIn: Rect;
+    public viewer: LayoutViewer;
     /**
      * @private
      */
@@ -59,18 +63,6 @@ export abstract class LayoutViewer {
      * @private
      */
     public pages: Page[];
-    /**
-     * @private
-     */
-    public clientActiveArea: Rect;
-    /**
-     * @private
-     */
-    public clientArea: Rect;
-    /**
-     * @private
-     */
-    public textWrap: boolean = true;
     /**
      * @private
      */
@@ -101,7 +93,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public tableLefts: number[] = [];
-    private tapCount: number = 0;
+    /**
+     * @private
+     */
+    public tapCount: number = 0;
     private timer: number = -1;
     private isTimerStarted: boolean = false;
     /**
@@ -138,14 +133,6 @@ export abstract class LayoutViewer {
      * @private
      */
     public render: Renderer;
-    /**
-     * @private
-     */
-    public containerTop: number = 0;
-    /**
-     * @private
-     */
-    public containerLeft: number = 0;
     private containerCanvasIn: HTMLCanvasElement;
     private selectionCanvasIn: HTMLCanvasElement;
     /**
@@ -335,11 +322,11 @@ export abstract class LayoutViewer {
     /**
      * @private
      */
-    protected zoomX: number;
+    public zoomX: number;
     /**
      * @private
      */
-    protected zoomY: number;
+    public zoomY: number;
     private zoomFactorInternal: number = 1;
 
     /**
@@ -371,6 +358,7 @@ export abstract class LayoutViewer {
      */
     public scrollTimer: number;
 
+    public resizeTimer: number;
     /**
      * @private
      * @default false
@@ -423,12 +411,26 @@ export abstract class LayoutViewer {
      * @private
      */
     public isIosDevice: boolean = false;
+    /**
+     * @private
+     */
+    public visibleBoundsIn: Rect;
 
     /**
      * @private
      */
     public currentSelectedCommentInternal: CommentElementBox;
-
+    /**
+     * @private
+     */
+    public resizerTimer: number;
+    /**
+     * Gets visible bounds.
+     * @private
+     */
+    get visibleBounds(): Rect {
+        return this.visibleBoundsIn;
+    }
     //Document Protection Properties Ends
 
     //#region Properties
@@ -486,14 +488,6 @@ export abstract class LayoutViewer {
         }
         return this.pages[this.pages.length - 1];
     }
-    /**
-     * Gets visible bounds.
-     * @private
-     */
-    get visibleBounds(): Rect {
-        return this.visibleBoundsIn;
-    }
-
     /**
      * Gets or sets zoom factor.
      * @private
@@ -556,19 +550,6 @@ export abstract class LayoutViewer {
         }
         return this.dialogInternal2;
     }
-
-    /**
-     * Gets or sets page fit type.
-     * @private
-     */
-    get pageFitType(): PageFitType {
-        return this.pageFitTypeIn;
-    }
-    set pageFitType(value: PageFitType) {
-        this.pageFitTypeIn = value;
-        this.onPageFitTypeChanged(this.pageFitTypeIn);
-    }
-
     /**
      * @private
      */
@@ -589,9 +570,9 @@ export abstract class LayoutViewer {
     constructor(owner: DocumentEditor) {
         this.owner = owner;
         this.pages = [];
-        this.render = new Renderer(this);
         this.lists = [];
         this.abstractLists = [];
+        this.render = new Renderer(this);
         this.characterFormat = new WCharacterFormat(this);
         this.paragraphFormat = new WParagraphFormat(this);
         this.renderedLists = new Dictionary<WAbstractList, Dictionary<number, number>>();
@@ -803,7 +784,7 @@ export abstract class LayoutViewer {
         if (isNullOrUndefined(element)) {
             return;
         }
-        let viewer: LayoutViewer = this;
+        //let viewer: LayoutViewer = this;
         this.optionsPaneContainer = createElement('div', {
             className: 'e-documenteditor-optionspane'
         }) as HTMLDivElement;
@@ -843,7 +824,15 @@ export abstract class LayoutViewer {
         this.owner.commentReviewPane = new CommentReviewPane(this.owner);
         createSpinner({ target: this.owner.element, cssClass: 'e-spin-overlay' });
     }
-
+    private measureScrollbarWidth(element: HTMLElement): void {
+        let parentDiv: HTMLElement = document.createElement('div');
+        parentDiv.setAttribute('style', 'visibility:hidden;overflow:scroll');
+        element.appendChild(parentDiv);
+        let childDiv: HTMLElement = document.createElement('div');
+        parentDiv.appendChild(childDiv);
+        this.scrollbarWidth = (parentDiv.getBoundingClientRect().width - childDiv.getBoundingClientRect().width);
+        parentDiv.parentNode.removeChild(parentDiv);
+    }
     /**
      * @private
      */
@@ -994,7 +983,7 @@ export abstract class LayoutViewer {
             this.isComposingIME = false;
             this.lastComposedText = '';
             // tslint:disable-next-line:max-line-length
-            this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.containerLeft + 'px;top:' + this.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
+            this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
             this.editableDiv.innerHTML = '';
             if (this.owner.editorHistory) {
                 this.owner.editorHistory.updateComplexHistory();
@@ -1056,8 +1045,11 @@ export abstract class LayoutViewer {
         }
 
     }
+    /**
+     * @private
+     */
     // tslint:enable:no-any 
-    private onKeyPressInternal = (event: KeyboardEvent): void => {
+    public onKeyPressInternal = (event: KeyboardEvent): void => {
         let key: number = event.which || event.keyCode;
         this.triggerElementsOnLoading = false;
         let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
@@ -1119,6 +1111,7 @@ export abstract class LayoutViewer {
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 10,
                 animationSettings: { effect: 'None' }
             });
+            this.dialogInternal.isStringTemplate = true;
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;
             this.dialogInternal.appendTo(this.dialogTarget1);
@@ -1139,6 +1132,7 @@ export abstract class LayoutViewer {
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex
             });
+            this.dialogInternal2.isStringTemplate = true;
             this.dialogInternal2.appendTo(this.dialogTarget2);
         }
     }
@@ -1235,23 +1229,22 @@ export abstract class LayoutViewer {
         this.clearContent();
         this.isScrollHandler = true;
         if (!Browser.isDevice && !this.isComposingIME) {
-            this.iframe.style.top = this.containerTop + 'px';
-            this.iframe.style.left = this.containerLeft + 'px';
+            this.iframe.style.top = this.owner.viewer.containerTop + 'px';
+            this.iframe.style.left = this.owner.viewer.containerLeft + 'px';
         }
-        this.updateScrollBars();
-        let vtHeight: number = this.containerTop + this.visibleBounds.height;
+        this.owner.viewer.updateScrollBars();
+        let vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height;
         if (vtHeight > this.pageContainer.offsetHeight) {
-            this.viewerContainer.scrollTop = this.containerTop - (vtHeight - this.pageContainer.offsetHeight);
+            this.viewerContainer.scrollTop = this.owner.viewer.containerTop - (vtHeight - this.pageContainer.offsetHeight);
         }
-        let viewer: LayoutViewer = this;
-        if (viewer instanceof PageLayoutViewer && !isNullOrUndefined(this.owner)) {
+        if (this.owner.viewer instanceof PageLayoutViewer && !isNullOrUndefined(this.owner)) {
             this.owner.fireViewChange();
         }
         this.isScrollHandler = false;
         this.scrollTimer = setTimeout(() => {
-            if (!this.isScrollHandler && !isNullOrUndefined(this.owner) && this.owner.enableSpellCheck) {
+            if (!this.isScrollHandler && !isNullOrUndefined(this.owner) && this.owner.isSpellCheck) {
                 this.isScrollToSpellCheck = true;
-                this.updateScrollBars();
+                this.owner.viewer.updateScrollBars();
             }
         }, 200);
     }
@@ -1260,23 +1253,24 @@ export abstract class LayoutViewer {
      * @private
      */
     public onWindowResize = (): void => {
-        let viewer: LayoutViewer = this;
-        let resizeTimer: number;
-
+        if (this.resizeTimer) {
+            clearTimeout(this.resizeTimer);
+        }
         /* tslint:disable:align */
-        resizeTimer = setTimeout((): void => {
-            if (!isNullOrUndefined(viewer.owner) && !isNullOrUndefined(viewer.owner.element)) {
-                viewer.updateViewerSizeInternal(viewer.owner.element);
-                viewer.updateScrollBars();
+        this.resizeTimer = setTimeout((): void => {
+            if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.element)) {
+                this.updateViewerSize();
+                this.clearContent();
+                this.owner.viewer.updateScrollBars();
                 if (!isNullOrUndefined(this.selection)) {
                     this.selection.updateCaretPosition();
                 }
-                viewer.updateTouchMarkPosition();
-                if (viewer.owner.contextMenuModule && viewer.owner.contextMenuModule.contextMenuInstance) {
-                    viewer.owner.contextMenuModule.contextMenuInstance.close();
+                this.updateTouchMarkPosition();
+                if (this.owner.contextMenuModule && this.owner.contextMenuModule.contextMenuInstance) {
+                    this.owner.contextMenuModule.contextMenuInstance.close();
                 }
-                if (resizeTimer) {
-                    clearTimeout(resizeTimer);
+                if (this.resizeTimer) {
+                    clearTimeout(this.resizeTimer);
                 }
             }
         }, 200);
@@ -1317,11 +1311,11 @@ export abstract class LayoutViewer {
     public updateTouchMarkPosition(): void {
         if (this.touchStart.style.display !== 'none' && !isNullOrUndefined(this.selection)) {
             if (!this.selection.isEmpty) {
+                this.viewer = this.owner.viewer;
                 let y: number = this.selection.getCaretBottom(this.selection.start, false);
                 let page: Page = this.selection.getPage(this.selection.start.paragraph);
-                let viewer: LayoutViewer = this;
                 // tslint:disable-next-line:max-line-length
-                let pageTop: number = (page.boundingRectangle.y - (viewer as PageLayoutViewer).pageGap * (this.pages.indexOf(page) + 1)) * this.zoomFactor + (viewer as PageLayoutViewer).pageGap * (this.pages.indexOf(page) + 1);
+                let pageTop: number = (page.boundingRectangle.y - (this.owner.viewer.pageGap * (this.pages.indexOf(page) + 1)) * this.zoomFactor + (this.owner.viewer as PageLayoutViewer).pageGap * (this.pages.indexOf(page) + 1));
                 // tslint:disable-next-line:max-line-length
                 this.touchStart.style.left = page.boundingRectangle.x + (Math.round(this.selection.start.location.x) * this.zoomFactor - 14) + 'px';
                 this.touchStart.style.top = pageTop + ((y) * this.zoomFactor) + 'px';
@@ -1359,7 +1353,7 @@ export abstract class LayoutViewer {
                 this.selection.hideCaret();
             }
             let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-            let touchPoint: Point = this.findFocusedPage(cursorPoint, true);
+            let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
             this.mouseDownOffset.x = touchPoint.x;
             this.mouseDownOffset.y = touchPoint.y;
             // tslint:disable-next-line:max-line-length
@@ -1418,7 +1412,7 @@ export abstract class LayoutViewer {
                 return;
             }
             let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-            let touchPoint: Point = this.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
+            let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
             if (this.isMouseDown) {
                 if (!isNullOrUndefined(this.currentPage)) {
                     let xPosition: number = touchPoint.x;
@@ -1481,7 +1475,7 @@ export abstract class LayoutViewer {
      */
     public onMouseEnterInternal = (): void => {
         if (!this.isMouseEntered) {
-            this.updateScrollBars();
+            this.owner.viewer.updateScrollBars();
         }
         this.isMouseEntered = true;
         if (this.scrollMoveTimer) {
@@ -1500,7 +1494,7 @@ export abstract class LayoutViewer {
         if (!isNullOrUndefined(this.selection)) {
             this.isTouchInput = false;
             let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-            if (this.selection.checkAndEnableHeaderFooter(cursorPoint, this.findFocusedPage(cursorPoint, true))) {
+            if (this.selection.checkAndEnableHeaderFooter(cursorPoint, this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                 return;
             }
             // tslint:disable-next-line:max-line-length
@@ -1520,7 +1514,7 @@ export abstract class LayoutViewer {
         event.preventDefault();
         this.isListTextSelected = false;
         let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-        let touchPoint: Point = this.findFocusedPage(cursorPoint, true);
+        let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
         if (!isNullOrUndefined(this.selection)) {
             let tapCount: number = 1;
             if (!Browser.isIE) {
@@ -1678,7 +1672,7 @@ export abstract class LayoutViewer {
                 if (this.isMouseDown) {
                     point = this.getTouchOffsetValue(event as TouchEvent);
                 }
-                point = this.findFocusedPage(point, true);
+                point = this.owner.viewer.findFocusedPage(point, true);
                 if (this.owner.enableImageResizerMode) {
                     let resizeObj: ImagePointInfo = this.owner.imageResizerModule.getImagePointOnTouch(point);
                     this.owner.imageResizerModule.selectedResizeElement = resizeObj.selectedElement;
@@ -1722,7 +1716,7 @@ export abstract class LayoutViewer {
             return;
         }
         let point: Point = this.getTouchOffsetValue(event);
-        let pointRelToPage: Point = this.findFocusedPage(point, true);
+        let pointRelToPage: Point = this.owner.viewer.findFocusedPage(point, true);
         let selStart: TextPosition = this.selection.start;
         let selEnd: TextPosition = this.selection.end;
         let updateSel: boolean = false;
@@ -1773,7 +1767,7 @@ export abstract class LayoutViewer {
             }
             if (this.isMouseDown) {
                 cursorPoint = this.getTouchOffsetValue(event);
-                let touchPoint: Point = this.findFocusedPage(cursorPoint, true);
+                let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
                 if (this.touchDownOnSelectionMark > 0 /*|| !this.useTouchSelectionMark*/) {
                     event.preventDefault();
                     let touchY: number = touchPoint.y;
@@ -1833,7 +1827,7 @@ export abstract class LayoutViewer {
     public onTouchUpInternal = (event: TouchEvent): void => {
         if (!isNullOrUndefined(this.selection)) {
             let point: Point = this.getTouchOffsetValue(event);
-            let touchPoint: Point = this.findFocusedPage(point, true);
+            let touchPoint: Point = this.owner.viewer.findFocusedPage(point, true);
             if (event.changedTouches.length === 1) {
                 this.updateSelectionOnTouch(point, touchPoint);
                 if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.selection.start)
@@ -1921,8 +1915,9 @@ export abstract class LayoutViewer {
     /**
      * Fired on pinch zoom in.
      * @param {TouchEvent} event
+     * @private
      */
-    private onPinchInInternal(event: TouchEvent): void {
+    public onPinchInInternal(event: TouchEvent): void {
         this.preZoomFactor = this.zoomFactor;
         let updatedZoomFactor: number = this.zoomFactor - 0.01;
         if (updatedZoomFactor < 5 && updatedZoomFactor > 2) {
@@ -1971,11 +1966,10 @@ export abstract class LayoutViewer {
         this.pages.splice(index, 1);
         // }        
         //this.removeRenderedPages();
-        let viewer: LayoutViewer = this;
-        if (!isNullOrUndefined((viewer as PageLayoutViewer).visiblePages)) {
-            if (((viewer as PageLayoutViewer).visiblePages).indexOf(page) > -1) {
-                let pageIndex: number = ((viewer as PageLayoutViewer).visiblePages).indexOf(page);
-                ((viewer as PageLayoutViewer).visiblePages).splice(pageIndex, 1);
+        if (!isNullOrUndefined((this.owner.viewer as PageLayoutViewer).visiblePages)) {
+            if (((this.owner.viewer as PageLayoutViewer).visiblePages).indexOf(page) > -1) {
+                let pageIndex: number = ((this.owner.viewer as PageLayoutViewer).visiblePages).indexOf(page);
+                ((this.owner.viewer as PageLayoutViewer).visiblePages).splice(pageIndex, 1);
             }
         }
         //(viewer as PageLayoutViewer).visiblePages.remove(page);
@@ -2012,10 +2006,33 @@ export abstract class LayoutViewer {
      * @private
      */
     public updateViewerSize(): void {
-        let viewer: LayoutViewer = this;
         let element: HTMLElement = this.owner.getDocumentEditorElement();
-        viewer.updateViewerSizeInternal(element);
-        viewer.updateScrollBars();
+        this.updateViewerSizeInternal(element);
+        this.owner.viewer.updateScrollBars();
+        if (this.owner.viewer instanceof WebLayoutViewer && (!isNullOrUndefined(this.owner)) && (!isNullOrUndefined(element))) {
+            if (this.resizerTimer) {
+                clearTimeout(this.resizerTimer);
+            }
+            /* tslint:disable:align */
+            this.resizerTimer = setTimeout((): void => {
+                let currentVisibleWidth: number;
+                if (!isNullOrUndefined(this.visibleBounds)) {
+                    currentVisibleWidth = this.visibleBounds.width;
+                } else {
+                    currentVisibleWidth = 0;
+                }
+                if (isNullOrUndefined(this.owner.viewer.preVisibleWidth)) {
+                    this.owner.viewer.preVisibleWidth = 0;
+                }
+                if ((!isNullOrUndefined(this.visibleBounds) && (currentVisibleWidth !== this.owner.viewer.preVisibleWidth))) {
+                    this.owner.editorModule.layoutWholeDocument();
+                    this.owner.viewer.preVisibleWidth = currentVisibleWidth;
+                }
+                if (this.resizerTimer) {
+                    clearTimeout(this.resizerTimer);
+                }
+            }, 50);
+        }
         if (!isNullOrUndefined(this.selection)) {
             this.selection.updateCaretPosition();
         }
@@ -2050,139 +2067,7 @@ export abstract class LayoutViewer {
             this.containerCanvas.height = height;
             this.selectionCanvas.width = width;
             this.selectionCanvas.height = height;
-        }
-    }
-    /**
-     * Updates client area for block.
-     * @private
-     */
-    public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[]): void {
-        let leftIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).leftIndent);
-        let rightIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).rightIndent);
-        let bidi: boolean = block.bidi;
-        let width: number = 0;
-        if (beforeLayout) {
-            if (block instanceof TableWidget && tableCollection) {
-                let tableWidget: TableWidget = tableCollection[0];
-                this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
-                this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
-                //Updates the location of last item.
-                tableWidget = tableCollection[tableCollection.length - 1] as TableWidget;
-                tableWidget.x = this.clientActiveArea.x;
-                tableWidget.y = this.clientActiveArea.y;
-            } else {
-                // tslint:disable-next-line:max-line-length
-                if (block instanceof TableWidget && !isNullOrUndefined((block as TableWidget).tableFormat)) {
-                    if (!block.isGridUpdated) {
-                        block.buildTableColumns();
-                        block.isGridUpdated = true;
-                    }
-                    let tableAlignment: TableAlignment = this.tableAlignmentForBidi(block, bidi);
-                    if (tableAlignment !== 'Left') {
-                        let tableWidth: number = 0;
-                        // If the grid is calculated, we can direclty get the width from the grid.
-                        // Otherwise, calculate the width.
-                        tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.getTotalWidth(0));
-                        tableWidth = tableWidth === 0 ? block.tableHolder.tableWidth === 0 ?
-                            block.getTableClientWidth(block.getOwnerWidth(false)) : block.tableHolder.tableWidth : tableWidth;
-                        // Fore resizing table, the tableholder table width taken for updated width. 
-                        // Since, the columns will be cleared if we performed resizing.
-                        if (this.owner.editor && this.owner.editor.tableResize.currentResizingTable === block
-                            && this.owner.editor.tableResize.resizerPosition === 0) {
-                            tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.tableWidth);
-                        }
-                        if (tableAlignment === 'Center') {
-                            leftIndent = (this.clientArea.width - tableWidth) / 2;
-                        } else {
-                            leftIndent = this.clientArea.width - tableWidth;
-                        }
-                        if (bidi) {
-                            leftIndent = leftIndent - HelperMethods.convertPointToPixel(block.leftIndent);
-                            rightIndent = leftIndent;
-                        }
-                        this.tableLefts.push(leftIndent);
-                    }
-                }
-
-                width = this.clientArea.width - (leftIndent + HelperMethods.convertPointToPixel(block.rightIndent));
-                this.clientActiveArea.x = this.clientArea.x = this.clientArea.x + (bidi ? rightIndent : leftIndent);
-                this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
-            }
-        } else {
-            // Clears table left for table with right or center alignment.
-            if (block instanceof TableWidget && !isNullOrUndefined((block as TableWidget).tableFormat)) {
-                let tableAlignment: TableAlignment = this.tableAlignmentForBidi(block, bidi);
-                if (!block.isGridUpdated) {
-                    block.buildTableColumns();
-                    block.isGridUpdated = true;
-                }
-                if (tableAlignment !== 'Left' && this.tableLefts.length > 0) {
-                    leftIndent = this.tableLefts.pop();
-                    if (bidi) {
-                        rightIndent = leftIndent;
-                    }
-                }
-            }
-            width = this.clientArea.width + leftIndent + HelperMethods.convertPointToPixel(block.rightIndent);
-            this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
-            this.clientActiveArea.x = this.clientArea.x = this.clientArea.x - (bidi ? rightIndent : leftIndent);
-        }
-        this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-        // tslint:disable-next-line:max-line-length
-        this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
-    }
-
-    private tableAlignmentForBidi(block: TableWidget, bidi: boolean): TableAlignment {
-        let tableAlignment: TableAlignment = block.tableFormat.tableAlignment;
-        if (bidi) {
-            if (tableAlignment === 'Left') {
-                tableAlignment = 'Right';
-            } else if (tableAlignment === 'Right') {
-                tableAlignment = 'Left';
-            }
-        }
-        return tableAlignment;
-    }
-    /**
-     * Updates client active area left.
-     * @private
-     */
-    public cutFromLeft(x: number): void {
-        if (x < this.clientActiveArea.x) {
-            x = this.clientActiveArea.x;
-        }
-        if (x > this.clientActiveArea.right && this.textWrap) {
-            x = this.clientActiveArea.right;
-        }
-        this.clientActiveArea.width = this.clientActiveArea.right > x ? this.clientActiveArea.right - x : 0;
-        this.clientActiveArea.x = x;
-    }
-    /**
-     * Updates client active area top.
-     * @private
-     */
-    public cutFromTop(y: number): void {
-        if (y < this.clientActiveArea.y) {
-            y = this.clientActiveArea.y;
-        }
-        if (y > this.clientActiveArea.bottom) {
-            y = this.clientActiveArea.bottom;
-        }
-        this.clientActiveArea.height = this.clientActiveArea.bottom - y;
-        this.clientActiveArea.x = this.clientArea.x;
-        this.clientActiveArea.width = this.clientArea.width;
-        this.clientActiveArea.y = y;
-    }
-    /**
-     * Updates client width.
-     * @private
-     */
-    public updateClientWidth(width: number): void {
-        this.clientActiveArea.x -= width;
-        if (this.clientActiveArea.width + width > 0) {
-            this.clientActiveArea.width += width;
-        } else {
-            this.clientActiveArea.width = 0;
+            this.measureScrollbarWidth(element);
         }
     }
     /**
@@ -2204,138 +2089,6 @@ export abstract class LayoutViewer {
             page.boundingRectangle = new Rect(page.boundingRectangle.x, top, page.boundingRectangle.width, page.boundingRectangle.height);
             top = page.boundingRectangle.bottom + 20;
         }
-    }
-    /**
-     * Updates client area.
-     * @private
-     */
-    public updateClientArea(sectionFormat: WSectionFormat, page: Page): void {
-        let top: number = 0;
-        let headerDistance: number = 48;
-        let footerDistance: number = 48;
-        let pageHeight: number = HelperMethods.convertPointToPixel(sectionFormat.pageHeight);
-        let bottomMargin: number = HelperMethods.convertPointToPixel(sectionFormat.bottomMargin);
-        if (!isNullOrUndefined(sectionFormat)) {
-            top = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
-            headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
-            footerDistance = HelperMethods.convertPointToPixel(sectionFormat.footerDistance);
-        }
-        let isEmptyWidget: boolean = false;
-        if (!isNullOrUndefined(page.headerWidget)) {
-            isEmptyWidget = page.headerWidget.isEmpty;
-            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
-            }
-        }
-        let bottom: number = 0.667 + bottomMargin;
-        if (!isNullOrUndefined(page.footerWidget)) {
-            isEmptyWidget = page.footerWidget.isEmpty;
-            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
-            }
-        }
-        let width: number = 0; let height: number = 0;
-        if (!isNullOrUndefined(sectionFormat)) {
-            width = HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
-            height = pageHeight - top - bottom;
-        }
-        if (width < 0) {
-            width = 0;
-        }
-        this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), top, width, pageHeight - top - bottom);
-        this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-    }
-    /**
-     * Updates client area left or top position.
-     * @private
-     */
-    public updateClientAreaTopOrLeft(tableWidget: TableWidget, beforeLayout: boolean): void {
-        if (beforeLayout) {
-            this.clientActiveArea.y = this.clientActiveArea.y + tableWidget.topBorderWidth;
-            this.clientActiveArea.x = this.clientActiveArea.x + tableWidget.leftBorderWidth;
-        }
-    }
-    /**
-     * Updates client area for table.
-     * @private
-     */
-    public updateClientAreaForTable(tableWidget: TableWidget): void {
-        this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
-        this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
-    }
-    /**
-     * Updates client area for row.
-     * @private
-     */
-    public updateClientAreaForRow(row: TableRowWidget, beforeLayout: boolean): void {
-        // tslint:disable-next-line:max-line-length
-        let tableWidget: TableWidget = row.ownerTable as TableWidget;
-        if (beforeLayout) {
-            //tslint:disable:no-empty
-        } else {
-            this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
-            this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
-            this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-            // tslint:disable-next-line:max-line-length
-            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
-        }
-    }
-    /**
-     * Updates client area for cell.
-     * @private
-     */
-    public updateClientAreaForCell(cell: TableCellWidget, beforeLayout: boolean): void {
-        // tslint:disable-next-line:max-line-length
-        let rowWidget: TableRowWidget = (cell as TableCellWidget).ownerRow as TableRowWidget;
-        let cellWidget: TableCellWidget = cell as TableCellWidget;
-        if (beforeLayout) {
-            this.clientActiveArea.x = this.clientArea.x = cellWidget.x;
-            this.clientActiveArea.y = cellWidget.y;
-            this.clientActiveArea.width = this.clientArea.width = cellWidget.width > 0 ? cellWidget.width : 0;
-            if (this instanceof PageLayoutViewer) {
-                this.clientActiveArea.height = Number.POSITIVE_INFINITY;
-            }
-            this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-            // tslint:disable-next-line:max-line-length
-            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
-        } else {
-            this.clientActiveArea.x = this.clientArea.x = cellWidget.x + cellWidget.width + cellWidget.margin.right;
-            if (rowWidget.x + rowWidget.width - this.clientArea.x < 0) {
-                this.clientActiveArea.width = this.clientArea.width = 0;
-            } else {
-                this.clientActiveArea.width = this.clientArea.width = rowWidget.x + rowWidget.width - this.clientArea.x;
-            }
-            // tslint:disable-next-line:max-line-length
-            this.clientActiveArea.y = cellWidget.y - cellWidget.margin.top - HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.cellSpacing);
-            if (!cell.ownerTable.isInsideTable) {
-                this.clientActiveArea.height = this.clientArea.bottom - rowWidget.y > 0 ? this.clientArea.bottom - rowWidget.y : 0;
-            }
-            this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-            // tslint:disable-next-line:max-line-length
-            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
-        }
-    }
-    /**
-     * Updates the client area based on widget.
-     * @private
-     */
-    public updateClientAreaByWidget(widget: ParagraphWidget): void {
-        this.clientArea.x = widget.x;
-        this.clientArea.y = widget.y;
-        this.clientActiveArea.x = widget.x;
-        this.clientActiveArea.y = widget.y;
-    }
-    //Widget
-    /**
-     * Updates client area location.    
-     * @param widget 
-     * @param area 
-     * @private
-     */
-    public updateClientAreaLocation(widget: Widget, area: Rect): void {
-        widget.x = area.x;
-        widget.y = area.y;
-        widget.width = area.width;
     }
 
     /**
@@ -2399,24 +2152,21 @@ export abstract class LayoutViewer {
         this.currentPage = endPage;
         let x: number = 0;
         let y: number = 0;
-        let viewer: LayoutViewer = this;
         let horizontalWidth: number = 0;
-        let isPageLayout: boolean = viewer instanceof PageLayoutViewer;
-        if (isPageLayout) {
-            let pageLayout: PageLayoutViewer = viewer as PageLayoutViewer;
-            if (isNullOrUndefined(endPage)) {
-                return;
-            }
-            let pageWidth: number = endPage.boundingRectangle.width;
-            x = (this.visibleBounds.width - pageWidth * this.zoomFactor) / 2;
-            if (x < 30) {
-                x = 30;
-            }
-            // tslint:disable-next-line:max-line-length
-            y = endPage.boundingRectangle.y * this.zoomFactor + (this.pages.indexOf(endPage) + 1) * (viewer as PageLayoutViewer).pageGap * (1 - this.zoomFactor);
+        let isPageLayout: boolean = this.owner.viewer instanceof PageLayoutViewer;
+        let pageLayout: PageLayoutViewer = this.owner.viewer as PageLayoutViewer;
+        if (isNullOrUndefined(endPage)) {
+            return;
         }
-        let scrollTop: number = this.containerTop;
-        let scrollLeft: number = this.containerLeft;
+        let pageWidth: number = endPage.boundingRectangle.width;
+        x = (this.visibleBounds.width - pageWidth * this.zoomFactor) / 2;
+        if (x < 30) {
+            x = 30;
+        }
+        // tslint:disable-next-line:max-line-length
+        y = endPage.boundingRectangle.y * this.zoomFactor + (this.pages.indexOf(endPage) + 1) * (this.owner.viewer as PageLayoutViewer).pageGap * (1 - this.zoomFactor);
+        let scrollTop: number = this.owner.viewer.containerTop;
+        let scrollLeft: number = this.owner.viewer.containerLeft;
         let pageHeight: number = this.visibleBounds.height;
         let caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selection.end, true);
         let topMargin: number = caretInfo.topMargin;
@@ -2435,9 +2185,9 @@ export abstract class LayoutViewer {
 
         let scrollBarWidth: number = this.viewerContainer.offsetWidth - this.viewerContainer.clientWidth;
         if (scrollLeft > x) {
-            this.viewerContainer.scrollLeft = x - (viewer.pageContainer.offsetWidth / 100) * 20;
+            this.viewerContainer.scrollLeft = x - (this.pageContainer.offsetWidth / 100) * 20;
         } else if (scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
-            this.viewerContainer.scrollLeft = scrollLeft + (viewer.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            this.viewerContainer.scrollLeft = scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
         }
     }
     /**
@@ -2576,12 +2326,11 @@ export abstract class LayoutViewer {
      */
     public removeEmptyPages(): void {
         let scrollToLastPage: boolean = false;
-        let viewer: LayoutViewer = this;
         for (let j: number = 0; j < this.pages.length; j++) {
             let page: Page = this.pages[j];
             if (page.bodyWidgets.length === 0 || page.bodyWidgets[0].childWidgets.length === 0) {
                 // tslint:disable-next-line:max-line-length
-                if (j === this.pages.length - 1 && viewer instanceof PageLayoutViewer && viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
+                if (j === this.pages.length - 1 && this.owner.viewer instanceof PageLayoutViewer && this.owner.viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
                     scrollToLastPage = true;
                 }
                 this.removePage(this.pages[j]);
@@ -2633,12 +2382,12 @@ export abstract class LayoutViewer {
                     page.currentPageNum = page.index + 1;
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
-                    return this.getFieldText(fieldPattern, page.viewer.pages.length);
+                    return this.getFieldText(fieldPattern, page.documentHelper.pages.length);
                 case 'sectionpages':
                     let currentSectionIndex: number = page.sectionIndex;
                     let currentPageCount: number = 0;
-                    for (let i: number = 0; i < page.viewer.pages.length; i++) {
-                        if (page.viewer.pages[i].sectionIndex === currentSectionIndex) {
+                    for (let i: number = 0; i < page.documentHelper.pages.length; i++) {
+                        if (page.documentHelper.pages[i].sectionIndex === currentSectionIndex) {
                             currentPageCount++;
                         } else if (currentPageCount !== 0) {
                             break;
@@ -2777,96 +2526,14 @@ export abstract class LayoutViewer {
         window.removeEventListener('touchend', this.onImageResizer);
     }
     /**
+     * updateCursor
      * @private
      */
-    public abstract createNewPage(section: BodyWidget, index?: number): Page;
-    /**
-     * @private
-     */
-    public abstract renderVisiblePages(): void;
-    /**
-     * @private
-     */
-    public abstract updateScrollBars(): void;
-    /**
-     * private
-     */
-    public abstract scrollToPage(pageIndex: number): void;
-    protected abstract updateCursor(event: MouseEvent): void;
-    /**
-     * @private
-     */
-    public abstract findFocusedPage(point: Point, updateCurrentPage: boolean): Point;
-    /**
-     * @private
-     */
-    public abstract onPageFitTypeChanged(pageFitType: PageFitType): void;
-}
-/** 
- * @private
- */
-export class PageLayoutViewer extends LayoutViewer {
-    private pageLeft: number = 30;
-    /**
-     * @private
-     */
-    get pageGap(): number {
-        return this.owner.pageGap;
-    }
-    /**
-     * @private
-     */
-    public visiblePages: Page[] = [];
-    /**
-     * Initialize the constructor of PageLayoutViewer
-     */
-    constructor(owner: DocumentEditor) {
-        super(owner);
-        if (isNullOrUndefined(owner) || isNullOrUndefined(owner.element)) {
-            return;
-        }
-    }
-    /**
-     * Creates new page.
-     * @private
-     */
-    public createNewPage(section: BodyWidget, index?: number): Page {
-        let viewer: PageLayoutViewer = this;
-        let yPos: number = this.pageGap;
-        if (this.pages.length > 0) {
-            yPos = this.pages[this.pages.length - 1].boundingRectangle.bottom + this.pageGap;
-        }
-        let page: Page = new Page();
-        page.viewer = this;
-        // tslint:disable-next-line:max-line-length
-        let pageWidth: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageWidth) : 816;
-        // tslint:disable-next-line:max-line-length
-        let pageHeight: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageHeight) : 1056;
-        let xPos: number = (this.visibleBounds.width - pageWidth * this.zoomFactor) / 2;
-        if (xPos < this.pageLeft) {
-            xPos = this.pageLeft;
-        }
-        page.boundingRectangle = new Rect(xPos, yPos, pageWidth, pageHeight);
-        if (isNullOrUndefined(index)) {
-            this.pages.push(page);
-        } else {
-            this.pages.splice(index, 0, page);
-        }
-        this.updateClientArea(section.sectionFormat, page);
-        page.bodyWidgets.push(section);
-        page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
-        this.layout.layoutHeaderFooter(section, viewer, page);
-        this.updateClientArea(section.sectionFormat, page);
-        return page;
-    }
-    /**
-     * Updates cursor.
-     */
-    protected updateCursor(event: MouseEvent): void {
+    public updateCursor(event: MouseEvent): void {
         let hyperlinkField: FieldElementBox = undefined;
         let div: HTMLDivElement = this.viewerContainer as HTMLDivElement;
         let point: Point = new Point(event.offsetX, event.offsetY);
-        let touchPoint: Point = this.findFocusedPage(point, true);
+        let touchPoint: Point = this.owner.viewer.findFocusedPage(point, true);
         let widget: LineWidget = this.getLineWidget(touchPoint);
         let widgetInfo: TextPositionInfo;
         let left: number;
@@ -2894,11 +2561,14 @@ export class PageLayoutViewer extends LayoutViewer {
             div.style.cursor = 'pointer';
             return;
         } else if (touchPoint.x >= lineLeft &&
+            // tslint:disable-next-line:max-line-length
             event.offsetX < (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth)) &&
+            // tslint:disable-next-line:max-line-length
             event.offsetY < (this.visibleBounds.height - (this.visibleBounds.height - this.viewerContainer.clientHeight))) {
             if (this.selection.isEmpty) {
                 div.style.cursor = 'text';
             } else {
+                // tslint:disable-next-line:max-line-length
                 div.style.cursor = this.selection.checkCursorIsInSelection(widget, touchPoint) ? 'default' : 'text';
             }
         } else {
@@ -2917,113 +2587,459 @@ export class PageLayoutViewer extends LayoutViewer {
             div.style.cursor = 'col-resize';
         }
     }
+}
+export abstract class LayoutViewer {
+    public owner: DocumentEditor;
+    constructor(owner: DocumentEditor) {
+        this.owner = owner;
+    }
+    get documentHelper(): DocumentHelper {
+        return this.owner.documentHelper;
+    }
+    /**
+     * @private
+     */
+    public visiblePages: Page[] = [];
+    /** 
+     * @private
+     */
+    public padding: Padding = new Padding(10, 10, 10, 10);
+    /**
+     * @private
+     */
+    public clientActiveArea: Rect;
+    /**
+     * @private
+     */
+    public clientArea: Rect;
+    /**
+     * @private
+     */
+    public textWrap: boolean = true;
+    /**
+     * @private
+     */
+    public preVisibleWidth: number;
+    /**
+     * @private
+     */
+    private pageFitTypeIn: PageFitType = 'None';
+    /**
+     * @private
+     */
+    public containerTop: number = 0;
+    /**
+     * @private
+     */
+    public containerLeft: number = 0;
+    /**
+     * Gets or sets page fit type.
+     * @private
+     */
+    get pageFitType(): PageFitType {
+        return this.pageFitTypeIn;
+    }
+    set pageFitType(value: PageFitType) {
+        this.pageFitTypeIn = value;
+        this.onPageFitTypeChanged(this.pageFitTypeIn);
+    }
+    public updateClientArea(sectionFormat: WSectionFormat, page: Page): void {
+        let width: number = 0; let height: number = 0;
+        if (this instanceof WebLayoutViewer) {
+            let top: number = 0;
+            // tslint:disable-next-line:max-line-length
+            width = (this.documentHelper.visibleBounds.width - (this.padding.right * 4) - (this.padding.left * 2)) / this.documentHelper.zoomFactor;
+            if (width < 0) {
+                width = 0;
+            }
+            height = Number.POSITIVE_INFINITY;
+            // tslint:disable-next-line:max-line-length
+            this.clientArea = new Rect(this.padding.left / this.documentHelper.zoomFactor, top, width, height);
+            this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+        } else {
+            let top: number = 0;
+            let headerDistance: number = 48;
+            let footerDistance: number = 48;
+            let pageHeight: number = HelperMethods.convertPointToPixel(sectionFormat.pageHeight);
+            let bottomMargin: number = HelperMethods.convertPointToPixel(sectionFormat.bottomMargin);
+            if (!isNullOrUndefined(sectionFormat)) {
+                top = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+                headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
+                footerDistance = HelperMethods.convertPointToPixel(sectionFormat.footerDistance);
+            }
+            let isEmptyWidget: boolean = false;
+            if (!isNullOrUndefined(page.headerWidget)) {
+                isEmptyWidget = page.headerWidget.isEmpty;
+                if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                    top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+                }
+            }
+            let bottom: number = 0.667 + bottomMargin;
+            if (!isNullOrUndefined(page.footerWidget)) {
+                isEmptyWidget = page.footerWidget.isEmpty;
+                if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                    bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+                }
+            }
+            if (!isNullOrUndefined(sectionFormat)) {
+                width = HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
+                height = pageHeight - top - bottom;
+            }
+            if (width < 0) {
+                width = 0;
+            }
+            this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), top, width, pageHeight - top - bottom);
+            this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+        }
+    }
+    /**
+     * Updates client area left or top position.
+     * @private
+     */
+    public updateClientAreaTopOrLeft(tableWidget: TableWidget, beforeLayout: boolean): void {
+        if (beforeLayout) {
+            this.clientActiveArea.y = this.clientActiveArea.y + tableWidget.topBorderWidth;
+            this.clientActiveArea.x = this.clientActiveArea.x + tableWidget.leftBorderWidth;
+        }
+    }
+    /**
+     * Updates client area for table.
+     * @private
+     */
+    public updateClientAreaForTable(tableWidget: TableWidget): void {
+        this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
+        this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
+    }
+    /**
+     * Updates client area for row.
+     * @private
+     */
+    public updateClientAreaForRow(row: TableRowWidget, beforeLayout: boolean): void {
+        // tslint:disable-next-line:max-line-length
+        let tableWidget: TableWidget = row.ownerTable as TableWidget;
+        if (beforeLayout) {
+            //tslint:disable:no-empty
+        } else {
+            this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
+            this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
+            this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+            // tslint:disable-next-line:max-line-length
+            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
+        }
+    }
+    /**
+     * Updates client area for cell.
+     * @private
+     */
+    public updateClientAreaForCell(cell: TableCellWidget, beforeLayout: boolean): void {
+        // tslint:disable-next-line:max-line-length
+        let rowWidget: TableRowWidget = (cell as TableCellWidget).ownerRow as TableRowWidget;
+        let cellWidget: TableCellWidget = cell as TableCellWidget;
+        if (beforeLayout) {
+            this.clientActiveArea.x = this.clientArea.x = cellWidget.x;
+            this.clientActiveArea.y = cellWidget.y;
+            this.clientActiveArea.width = this.clientArea.width = cellWidget.width > 0 ? cellWidget.width : 0;
+            if (this instanceof PageLayoutViewer) {
+                this.clientActiveArea.height = Number.POSITIVE_INFINITY;
+            }
+            this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+            // tslint:disable-next-line:max-line-length
+            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
+        } else {
+            this.clientActiveArea.x = this.clientArea.x = cellWidget.x + cellWidget.width + cellWidget.margin.right;
+            if (rowWidget.x + rowWidget.width - this.clientArea.x < 0) {
+                this.clientActiveArea.width = this.clientArea.width = 0;
+            } else {
+                this.clientActiveArea.width = this.clientArea.width = rowWidget.x + rowWidget.width - this.clientArea.x;
+            }
+            // tslint:disable-next-line:max-line-length
+            this.clientActiveArea.y = cellWidget.y - cellWidget.margin.top - HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.cellSpacing);
+            if (!cell.ownerTable.isInsideTable) {
+                this.clientActiveArea.height = this.clientArea.bottom - rowWidget.y > 0 ? this.clientArea.bottom - rowWidget.y : 0;
+            }
+            this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+            // tslint:disable-next-line:max-line-length
+            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
+        }
+    }
+    /**
+     * Updates the client area based on widget.
+     * @private
+     */
+    public updateClientAreaByWidget(widget: ParagraphWidget): void {
+        this.clientArea.x = widget.x;
+        this.clientArea.y = widget.y;
+        this.clientActiveArea.x = widget.x;
+        this.clientActiveArea.y = widget.y;
+    }
+    //Widget
+    /**
+     * Updates client area location.    
+     * @param widget 
+     * @param area 
+     * @private
+     */
+    public updateClientAreaLocation(widget: Widget, area: Rect): void {
+        widget.x = area.x;
+        widget.y = area.y;
+        widget.width = area.width;
+    }
+    /**
+     * @private
+     */
+    public isBlockInHeader(block: Widget): boolean {
+        while (!(block.containerWidget instanceof HeaderFooterWidget)) {
+            if (!block.containerWidget) {
+                return false;
+            }
+            block = block.containerWidget as BlockWidget;
+        }
+        return (block.containerWidget as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1;
+    }
+    /**
+     * Updates client area for block.
+     * @private
+     */
+    public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[]): void {
+        let leftIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).leftIndent);
+        let rightIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).rightIndent);
+        let bidi: boolean = block.bidi;
+        let width: number = 0;
+        if (beforeLayout) {
+            if (block instanceof TableWidget && tableCollection) {
+                let tableWidget: TableWidget = tableCollection[0];
+                this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
+                this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
+                //Updates the location of last item.
+                tableWidget = tableCollection[tableCollection.length - 1] as TableWidget;
+                tableWidget.x = this.clientActiveArea.x;
+                tableWidget.y = this.clientActiveArea.y;
+            } else {
+                // tslint:disable-next-line:max-line-length
+                if (block instanceof TableWidget && !isNullOrUndefined((block as TableWidget).tableFormat)) {
+                    if (!block.isGridUpdated) {
+                        block.buildTableColumns();
+                        block.isGridUpdated = true;
+                    }
+                    let tableAlignment: TableAlignment = this.tableAlignmentForBidi(block, bidi);
+                    if (tableAlignment !== 'Left') {
+                        let tableWidth: number = 0;
+                        // If the grid is calculated, we can direclty get the width from the grid.
+                        // Otherwise, calculate the width.
+                        tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.getTotalWidth(0));
+                        tableWidth = tableWidth === 0 ? block.tableHolder.tableWidth === 0 ?
+                            // tslint:disable-next-line:max-line-length
+                            block.getTableClientWidth(block.getOwnerWidth(false)) : block.tableHolder.tableWidth : tableWidth;
+                        // Fore resizing table, the tableholder table width taken for updated width. 
+                        // Since, the columns will be cleared if we performed resizing.
+                        if (this.owner.editor && this.owner.editor.tableResize.currentResizingTable === block
+                            && this.owner.editor.tableResize.resizerPosition === 0) {
+                            tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.tableWidth);
+                        }
+                        if (tableAlignment === 'Center') {
+                            leftIndent = (this.clientArea.width - tableWidth) / 2;
+                        } else {
+                            leftIndent = this.clientArea.width - tableWidth;
+                        }
+                        if (bidi) {
+                            leftIndent = leftIndent - HelperMethods.convertPointToPixel(block.leftIndent);
+                            rightIndent = leftIndent;
+                        }
+                        this.documentHelper.tableLefts.push(leftIndent);
+                    }
+                }
+
+                width = this.clientArea.width - (leftIndent + HelperMethods.convertPointToPixel(block.rightIndent));
+                this.clientActiveArea.x = this.clientArea.x = this.clientArea.x + (bidi ? rightIndent : leftIndent);
+                this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
+            }
+        } else {
+            // Clears table left for table with right or center alignment.
+            if (block instanceof TableWidget && !isNullOrUndefined((block as TableWidget).tableFormat)) {
+                let tableAlignment: TableAlignment = this.tableAlignmentForBidi(block, bidi);
+                if (!block.isGridUpdated) {
+                    block.buildTableColumns();
+                    block.isGridUpdated = true;
+                }
+                if (tableAlignment !== 'Left' && this.documentHelper.tableLefts.length > 0) {
+                    leftIndent = this.documentHelper.tableLefts.pop();
+                    if (bidi) {
+                        rightIndent = leftIndent;
+                    }
+                }
+            }
+            width = this.clientArea.width + leftIndent + HelperMethods.convertPointToPixel(block.rightIndent);
+            this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
+            this.clientActiveArea.x = this.clientArea.x = this.clientArea.x - (bidi ? rightIndent : leftIndent);
+        }
+        this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+        // tslint:disable-next-line:max-line-length
+        this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
+    }
+
+    private tableAlignmentForBidi(block: TableWidget, bidi: boolean): TableAlignment {
+        let tableAlignment: TableAlignment = block.tableFormat.tableAlignment;
+        if (bidi) {
+            if (tableAlignment === 'Left') {
+                tableAlignment = 'Right';
+            } else if (tableAlignment === 'Right') {
+                tableAlignment = 'Left';
+            }
+        }
+        return tableAlignment;
+    }
+    /**
+     * Updates client active area left.
+     * @private
+     */
+    public cutFromLeft(x: number): void {
+        if (x < this.clientActiveArea.x) {
+            x = this.clientActiveArea.x;
+        }
+        if (x > this.clientActiveArea.right && this.textWrap) {
+            x = this.clientActiveArea.right;
+        }
+        this.clientActiveArea.width = this.clientActiveArea.right > x ? this.clientActiveArea.right - x : 0;
+        this.clientActiveArea.x = x;
+    }
+    /**
+     * Updates client active area top.
+     * @private
+     */
+    public cutFromTop(y: number): void {
+        if (y < this.clientActiveArea.y) {
+            y = this.clientActiveArea.y;
+        }
+        if (y > this.clientActiveArea.bottom) {
+            y = this.clientActiveArea.bottom;
+        }
+        this.clientActiveArea.height = this.clientActiveArea.bottom - y;
+        this.clientActiveArea.x = this.clientArea.x;
+        this.clientActiveArea.width = this.clientArea.width;
+        this.clientActiveArea.y = y;
+    }
+    /**
+     * Updates client width.
+     * @private
+     */
+    public updateClientWidth(width: number): void {
+        this.clientActiveArea.x -= width;
+        if (this.clientActiveArea.width + width > 0) {
+            this.clientActiveArea.width += width;
+        } else {
+            this.clientActiveArea.width = 0;
+        }
+    }
     /**
      * Finds focused page.
      * @private
      */
     public findFocusedPage(currentPoint: Point, updateCurrentPage: boolean): Point {
         let point: Point = new Point(currentPoint.x, currentPoint.y);
-        point.x += this.viewerContainer.scrollLeft;
-        point.y += this.viewerContainer.scrollTop;
-        for (let i: number = 0; i < this.pages.length; i++) {
-            let page: Page = this.pages[i];
-            let pageTop: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.zoomFactor + this.pageGap * (i + 1);
-            let pageHeight: number = (page.boundingRectangle.height * this.zoomFactor) + this.pageGap;
+        point.x += this.documentHelper.viewerContainer.scrollLeft;
+        point.y += this.documentHelper.viewerContainer.scrollTop;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            let page: Page = this.documentHelper.pages[i];
+            // tslint:disable-next-line:max-line-length
+            let pageTop: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.documentHelper.zoomFactor + this.pageGap * (i + 1);
+            let pageHeight: number = (page.boundingRectangle.height * this.documentHelper.zoomFactor) + this.pageGap;
             let pageLeft: number = page.boundingRectangle.x;
-            let pageRight: number = ((page.boundingRectangle.right - pageLeft) * this.zoomFactor) + pageLeft;
+            let pageRight: number = ((page.boundingRectangle.right - pageLeft) * this.documentHelper.zoomFactor) + pageLeft;
             if (pageTop <= point.y && pageTop + pageHeight >= point.y) {
                 if (updateCurrentPage) {
-                    this.currentPage = page;
+                    this.documentHelper.currentPage = page;
                 }
-                point.y = (point.y - (pageTop)) / this.zoomFactor;
+                point.y = (point.y - (pageTop)) / this.documentHelper.zoomFactor;
                 if (point.x > pageRight) {
                     point.x = page.boundingRectangle.right;
                 } else if (point.x < pageLeft) {
                     point.x = 0;
                 } else {
-                    point.x = (point.x - pageLeft) / this.zoomFactor;
+                    point.x = (point.x - pageLeft) / this.documentHelper.zoomFactor;
                 }
                 return point;
             }
         }
         return point;
     }
-
-    /**
-     * Fired when page fit type changed.
-     * @private
-     */
-    public onPageFitTypeChanged(pageFitType: PageFitType): void {
-        let width: number = this.visibleBounds.width;
-        let height: number = this.visibleBounds.height;
-        let section: BodyWidget = this.visiblePages[0].bodyWidgets[0] as BodyWidget;
-        let pageWidth: number = HelperMethods.convertPointToPixel(section.sectionFormat.pageWidth);
-        let pageHeight: number = HelperMethods.convertPointToPixel(section.sectionFormat.pageHeight);
-        switch (pageFitType) {
-            case 'FitOnePage':
-                if (height > 0 && pageHeight > 0) {
-                    let zoomFactor: number = (this.visibleBounds.height - 2 * this.pageGap - (this.pageGap - 2)) / pageHeight;
-                    if (zoomFactor === this.zoomFactor) {
-                        if (!isNullOrUndefined(this.owner.selection) && !isNullOrUndefined(this.owner.selection.start) &&
-                            !isNullOrUndefined(this.owner.selection.end)) {
-                            this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
-                        }
-                    } else {
-                        this.zoomFactor = zoomFactor;
-                    }
-                }
-                break;
-            case 'FitPageWidth':
-                if (width > 0 && pageWidth > 0) {
-                    this.zoomFactor = (this.visibleBounds.width - 80) / pageWidth;
-                }
-                break;
-            default:
-                this.zoomFactor = 100 / 100;
-                break;
+    public getPageHeightAndWidth(height: number, width: number, viewerWidth: number, viewerHeight: number): PageInfo {
+        height = 0;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            height = height + this.documentHelper.pages[i].boundingRectangle.height;
         }
+        width = 0;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            if (width < this.documentHelper.pages[i].boundingRectangle.width) {
+                width = this.documentHelper.pages[i].boundingRectangle.width;
+            }
+        }
+        //this.documentHelper.visibleBoundsIn = new Rect(0, 0, width, height);
+        viewerWidth = this.documentHelper.visibleBounds.width;
+        viewerHeight = this.documentHelper.visibleBounds.height;
+        return {
+            'height': height,
+            'width': width,
+            'viewerWidth': viewerWidth,
+            'viewerHeight': viewerHeight
+        };
     }
     /**
+     * Renders visible pages.
      * @private
      */
+    public renderVisiblePages(): void {
+        if (isNullOrUndefined(this.visiblePages) || this.visiblePages.length < 1) {
+            return;
+        }
+        this.documentHelper.clearContent();
+        for (let i: number = 0; i < this.visiblePages.length; i++) {
+            let page: Page = this.visiblePages[i];
+            let width: number = page.boundingRectangle.width * this.documentHelper.zoomFactor;
+            let height: number = page.boundingRectangle.height * this.documentHelper.zoomFactor;
+            let x: number = page.boundingRectangle.x;
+            let y: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.documentHelper.zoomFactor + this.pageGap * (i + 1);
+            this.owner.viewer.renderPage(page, x, y, width, height);
+        }
+    }
+    // tslint:disable:max-func-body-length
     public handleZoom(): void {
-        let prevScaleFactor: number = this.preZoomFactor;
+        let prevScaleFactor: number = this.documentHelper.preZoomFactor;
         let page: Page = null;
         let verticalHeight: number = 0;
         let scrollToPosition: boolean = false;
-        if (this.selection && isNullOrUndefined(this.zoomX && isNullOrUndefined(this.zoomY))) {
+        if (this.documentHelper.selection && isNullOrUndefined(this.documentHelper.zoomX && isNullOrUndefined(this.documentHelper.zoomY))) {
             let x: number = 0;
             let y: number = 0;
-            let endPage: Page = this.selection.getPage(this.selection.end.currentWidget.paragraph);
-            x = (this.visibleBounds.width - endPage.boundingRectangle.width * prevScaleFactor) / 2;
+            let endPage: Page = this.documentHelper.selection.getPage(this.documentHelper.selection.end.currentWidget.paragraph);
+            x = (this.documentHelper.visibleBounds.width - endPage.boundingRectangle.width * prevScaleFactor) / 2;
             if (x < 30) {
                 x = 30;
             }
             // tslint:disable-next-line:max-line-length
-            y = endPage.boundingRectangle.y * prevScaleFactor + (this.pages.indexOf(endPage) + 1) * (this as PageLayoutViewer).pageGap * (1 - prevScaleFactor);
-            let caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selection.end, true);
+            y = endPage.boundingRectangle.y * prevScaleFactor + (this.documentHelper.pages.indexOf(endPage) + 1) * this.pageGap * (1 - prevScaleFactor);
+            let caretInfo: CaretHeightInfo = this.documentHelper.selection.updateCaretSize(this.owner.selection.end, true);
             let topMargin: number = caretInfo.topMargin;
             let caretHeight: number = caretInfo.height;
-            x += (this.selection.end.location.x) * prevScaleFactor;
-            y += (this.selection.end.location.y + topMargin) * prevScaleFactor;
-            if (x >= this.containerLeft && x <= this.visibleBounds.width &&
-                y >= this.containerTop && y <= this.containerTop + this.visibleBounds.height) {
+            x += (this.documentHelper.selection.end.location.x) * prevScaleFactor;
+            y += (this.documentHelper.selection.end.location.y + topMargin) * prevScaleFactor;
+            if (x >= this.containerLeft && x <= this.documentHelper.visibleBounds.width &&
+                y >= this.containerTop && y <= this.containerTop + this.documentHelper.visibleBounds.height) {
                 scrollToPosition = true;
             }
         }
-        for (let i: number = 0; i < this.pages.length; i++) {
-            verticalHeight = verticalHeight + this.pages[i].boundingRectangle.height;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            verticalHeight = verticalHeight + this.documentHelper.pages[i].boundingRectangle.height;
         }
         let horizontalWidth: number = 0;
-        for (let i: number = 0; i < this.pages.length; i++) {
-            if (horizontalWidth < this.pages[i].boundingRectangle.width) {
-                horizontalWidth = this.pages[i].boundingRectangle.width;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            if (horizontalWidth < this.documentHelper.pages[i].boundingRectangle.width) {
+                horizontalWidth = this.documentHelper.pages[i].boundingRectangle.width;
             }
         }
         // tslint:disable-next-line:max-line-length
-        let height: number = (verticalHeight * this.zoomFactor + (this.pages.length + 1) * this.pageGap * (1 - this.zoomFactor)) - this.visibleBounds.height;
-        let horWidth: number = horizontalWidth * this.zoomFactor - this.visibleBounds.width;
-        if (this.visibleBounds.width - horizontalWidth * this.zoomFactor < 60) {
+        let height: number = (verticalHeight * this.documentHelper.zoomFactor + (this.documentHelper.pages.length + 1) * this.pageGap * (1 - this.documentHelper.zoomFactor)) - this.documentHelper.visibleBounds.height;
+        let horWidth: number = horizontalWidth * this.documentHelper.zoomFactor - this.documentHelper.visibleBounds.width;
+        if (this.documentHelper.visibleBounds.width - horizontalWidth * this.documentHelper.zoomFactor < 60) {
             horWidth += 60;
         }
         //Update Vertical Scroll bar
@@ -3033,29 +3049,29 @@ export class PageLayoutViewer extends LayoutViewer {
                 page = this.visiblePages[0];
                 // tslint:disable-next-line:max-line-length
                 let prevPageTop: number = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * prevScaleFactor + (page.index + 1) * this.pageGap;
-                let zoomY: number = this.zoomY;
+                let zoomY: number = this.documentHelper.zoomY;
                 if (isNullOrUndefined) {
-                    zoomY = this.visibleBounds.height / 2;
+                    zoomY = this.documentHelper.visibleBounds.height / 2;
                 }
                 let prevY: number = value + zoomY;
                 while (prevY > prevPageTop + (page.boundingRectangle.height * prevScaleFactor)) {
                     let pageIndex: number = page.index + 1;
-                    if (pageIndex === this.pages.length) {
+                    if (pageIndex === this.documentHelper.pages.length) {
                         break;
                     }
-                    page = this.pages[pageIndex];
+                    page = this.documentHelper.pages[pageIndex];
                     // tslint:disable-next-line:max-line-length
                     prevPageTop = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * prevScaleFactor + (page.index + 1) * this.pageGap;
                 }
                 // tslint:disable-next-line:max-line-length
-                let currentY: number = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * this.zoomFactor + (page.index + 1) * this.pageGap
-                    + ((prevY - prevPageTop) < 0 ? prevY - prevPageTop : (prevY - prevPageTop) * (this.zoomFactor / prevScaleFactor));
+                let currentY: number = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * this.documentHelper.zoomFactor + (page.index + 1) * this.pageGap
+                    + ((prevY - prevPageTop) < 0 ? prevY - prevPageTop : (prevY - prevPageTop) * (this.documentHelper.zoomFactor / prevScaleFactor));
                 value = currentY - zoomY;
-                zoomY = this.visibleBounds.height / 2;
+                zoomY = this.documentHelper.visibleBounds.height / 2;
             }
-            this.viewerContainer.scrollTop = value;
+            this.documentHelper.viewerContainer.scrollTop = value;
         } else {
-            this.viewerContainer.scrollTop = 0;
+            this.documentHelper.viewerContainer.scrollTop = 0;
         }
         // update Horizontal Scroll Bar
         if (horWidth > 0) {
@@ -3064,25 +3080,211 @@ export class PageLayoutViewer extends LayoutViewer {
                 if (page === null) {
                     page = this.visiblePages[0];
                 }
-                let zoomX: number = this.zoomX;
+                let zoomX: number = this.documentHelper.zoomX;
                 if (isNullOrUndefined(zoomX)) {
-                    zoomX = this.visibleBounds.width / 2;
+                    zoomX = this.documentHelper.visibleBounds.width / 2;
                 }
                 let prevValue: number = (page.boundingRectangle.width * prevScaleFactor) / page.boundingRectangle.width;
                 let prevX: number = value + zoomX;
                 // tslint:disable-next-line:max-line-length
                 let currentX: number = page.boundingRectangle.x
-                    + ((prevX - page.boundingRectangle.x) < 0 ? prevX - page.boundingRectangle.x : (prevX - page.boundingRectangle.x) * (this.zoomFactor / prevValue));
+                    + ((prevX - page.boundingRectangle.x) < 0 ? prevX - page.boundingRectangle.x : (prevX - page.boundingRectangle.x) * (this.documentHelper.zoomFactor / prevValue));
                 value = currentX - zoomX;
-                zoomX = this.visibleBounds.width / 2;
+                zoomX = this.documentHelper.visibleBounds.width / 2;
             }
-            this.viewerContainer.scrollLeft = value;
+            this.documentHelper.viewerContainer.scrollLeft = value;
         } else {
-            this.viewerContainer.scrollLeft = 0;
+            this.documentHelper.viewerContainer.scrollLeft = 0;
         }
         this.updateScrollBars();
         if (scrollToPosition) {
-            this.scrollToPosition(this.selection.start, this.selection.end);
+            this.documentHelper.scrollToPosition(this.documentHelper.selection.start, this.documentHelper.selection.end);
+        }
+        if (this instanceof WebLayoutViewer) {
+            this.owner.editorModule.layoutWholeDocument();
+        }
+    }
+    // tslint:disable-next-line:max-line-length
+    public updateCanvasWidthAndHeight(viewerWidth: number, viewerHeight: number, containerHeight: number, containerWidth: number, width: number, height: number): CanvasInfo {
+        if (this instanceof PageLayoutViewer) {
+            if (this.documentHelper.visibleBounds.width !== this.documentHelper.viewerContainer.clientWidth) {
+                viewerWidth -= (this.documentHelper.visibleBounds.width - this.documentHelper.viewerContainer.clientWidth);
+            } else if (containerHeight > viewerHeight) {
+                viewerWidth -= this.documentHelper.viewerContainer.offsetWidth - this.documentHelper.viewerContainer.clientWidth;
+            }
+        } else {
+            if (containerHeight > viewerHeight) {
+                viewerWidth -= this.documentHelper.scrollbarWidth;
+                containerWidth -= this.documentHelper.scrollbarWidth;
+            }
+        }
+        if (containerWidth > viewerWidth) {
+            viewerHeight -= (this.documentHelper.visibleBounds.height - this.documentHelper.viewerContainer.clientHeight);
+        }
+        width = containerWidth > viewerWidth ? containerWidth : viewerWidth;
+        height = containerHeight > viewerHeight ? containerHeight : viewerHeight;
+        if (parseInt(this.documentHelper.pageContainer.style.width.replace('px', ''), 10) !== width ||
+            parseInt(this.documentHelper.pageContainer.style.height.replace('px', ''), 10) !== width) {
+            this.documentHelper.pageContainer.style.width = width.toString() + 'px';
+            this.documentHelper.pageContainer.style.height = height.toString() + 'px';
+        }
+        // if (!isNullOrUndefined(this.selection) && !this.selection.isEmpty) {
+        //     this.selectionContext.clearRect(0, 0, this.selectionCanvas.width, this.selectionCanvas.height);
+        let displayPixelRatio: number = Math.max(1, window.devicePixelRatio || 1);
+        if (this.documentHelper.containerCanvas.width !== Math.floor(viewerWidth * displayPixelRatio)
+            || this.documentHelper.containerCanvas.height !== Math.floor(viewerHeight * displayPixelRatio)) {
+            this.documentHelper.containerCanvas.width = viewerWidth * displayPixelRatio;
+            this.documentHelper.containerCanvas.height = viewerHeight * displayPixelRatio;
+            this.documentHelper.containerCanvas.style.width = viewerWidth + 'px';
+            this.documentHelper.containerCanvas.style.height = viewerHeight + 'px';
+            this.documentHelper.containerContext.scale(displayPixelRatio, displayPixelRatio);
+            this.documentHelper.selectionCanvas.width = viewerWidth * displayPixelRatio;
+            this.documentHelper.selectionCanvas.height = viewerHeight * displayPixelRatio;
+            this.documentHelper.selectionCanvas.style.width = viewerWidth + 'px';
+            this.documentHelper.selectionCanvas.style.height = viewerHeight + 'px';
+            this.documentHelper.selectionContext.scale(displayPixelRatio, displayPixelRatio);
+        }
+        return {
+            'height': height,
+            'width': width,
+            'viewerWidth': viewerWidth,
+            'viewerHeight': viewerHeight,
+            'containerHeight': containerHeight,
+            'containerWidth': containerWidth
+        };
+    }
+    // tslint:disable-next-line:max-line-length
+    public updateScrollBarPosition(containerWidth: number, containerHeight: number, viewerWidth: number, viewerHeight: number, width: number, height: number): void {
+        this.owner.viewer.containerTop = this.documentHelper.viewerContainer.scrollTop;
+        this.documentHelper.containerCanvas.style.position = 'absolute';
+        this.documentHelper.containerCanvas.style.top = this.owner.viewer.containerTop.toString() + 'px';
+        this.documentHelper.selectionCanvas.style.position = 'absolute';
+        this.documentHelper.selectionCanvas.style.top = this.owner.viewer.containerTop.toString() + 'px';
+        this.owner.viewer.containerLeft = this.documentHelper.viewerContainer.scrollLeft;
+        this.documentHelper.containerCanvas.style.left = this.owner.viewer.containerLeft + 'px';
+        this.documentHelper.selectionCanvas.style.left = this.owner.viewer.containerLeft + 'px';
+    }
+    /**
+     * @private
+     */
+    abstract get pageGap(): number;
+    /**
+     * @private
+     */
+    public abstract createNewPage(section: BodyWidget, index?: number): Page;
+    /**
+     * @private
+     */
+    public abstract renderPage(page: Page, x: number, y: number, width: number, height: number): void;
+    /**
+     * @private
+     */
+    public abstract updateScrollBars(): void;
+    /**
+     * private
+     */
+    public abstract scrollToPage(pageIndex: number): void;
+    /**
+     * @private
+     */
+    public abstract onPageFitTypeChanged(pageFitType: PageFitType): void;
+
+    public destroy(): void {
+        this.clientArea = undefined;
+        this.clientActiveArea = undefined;
+
+    }
+}
+/** 
+ * @private
+ */
+export class PageLayoutViewer extends LayoutViewer {
+    private pageLeft: number = 30;
+    /**
+     * @private
+     */
+    get pageGap(): number {
+        return this.owner.pageGap;
+    }
+    /**
+     * Initialize the constructor of PageLayoutViewer
+     */
+    constructor(owner: DocumentEditor) {
+        super(owner);
+        // if (isNullOrUndefined(owner) || isNullOrUndefined(owner.element)) {
+        //     return;
+        // }
+        this.owner = owner;
+    }
+    get documentHelper(): DocumentHelper {
+        return this.owner.documentHelper;
+    }
+    /**
+     * Creates new page.
+     * @private
+     */
+    public createNewPage(section: BodyWidget, index?: number): Page {
+        let viewer: PageLayoutViewer = this;
+        let yPos: number = this.pageGap;
+        if (this.documentHelper.pages.length > 0) {
+            yPos = this.documentHelper.pages[this.documentHelper.pages.length - 1].boundingRectangle.bottom + this.pageGap;
+        }
+        let page: Page = new Page(this.documentHelper);
+        //page.viewer = this;
+        // tslint:disable-next-line:max-line-length
+        let pageWidth: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageWidth) : 816;
+        // tslint:disable-next-line:max-line-length
+        let pageHeight: number = !isNullOrUndefined(section.sectionFormat) ? HelperMethods.convertPointToPixel(section.sectionFormat.pageHeight) : 1056;
+        let xPos: number = (this.documentHelper.visibleBounds.width - pageWidth * this.documentHelper.zoomFactor) / 2;
+        if (xPos < this.pageLeft) {
+            xPos = this.pageLeft;
+        }
+        page.boundingRectangle = new Rect(xPos, yPos, pageWidth, pageHeight);
+        if (isNullOrUndefined(index)) {
+            this.documentHelper.pages.push(page);
+        } else {
+            this.documentHelper.pages.splice(index, 0, page);
+        }
+        this.updateClientArea(section.sectionFormat, page);
+        page.bodyWidgets.push(section);
+        page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
+        this.documentHelper.layout.layoutHeaderFooter(section, viewer, page);
+        this.updateClientArea(section.sectionFormat, page);
+        return page;
+    }
+    /**
+     * Fired when page fit type changed.
+     * @private
+     */
+    public onPageFitTypeChanged(pageFitType: PageFitType): void {
+        let width: number = this.documentHelper.visibleBounds.width;
+        let height: number = this.documentHelper.visibleBounds.height;
+        let section: BodyWidget = this.visiblePages[0].bodyWidgets[0] as BodyWidget;
+        let pageWidth: number = HelperMethods.convertPointToPixel(section.sectionFormat.pageWidth);
+        let pageHeight: number = HelperMethods.convertPointToPixel(section.sectionFormat.pageHeight);
+        switch (pageFitType) {
+            case 'FitOnePage':
+                if (height > 0 && pageHeight > 0) {
+                    // tslint:disable-next-line:max-line-length
+                    let zoomFactor: number = (this.documentHelper.visibleBounds.height - 2 * this.pageGap - (this.pageGap - 2)) / pageHeight;
+                    if (zoomFactor === this.documentHelper.zoomFactor) {
+                        if (!isNullOrUndefined(this.owner.selection) && !isNullOrUndefined(this.owner.selection.start) &&
+                            !isNullOrUndefined(this.owner.selection.end)) {
+                            this.documentHelper.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
+                        }
+                    } else {
+                        this.documentHelper.zoomFactor = zoomFactor;
+                    }
+                }
+                break;
+            case 'FitPageWidth':
+                if (width > 0 && pageWidth > 0) {
+                    this.documentHelper.zoomFactor = (this.documentHelper.visibleBounds.width - 80) / pageWidth;
+                }
+                break;
+            default:
+                this.documentHelper.zoomFactor = 100 / 100;
+                break;
         }
     }
     /**
@@ -3103,7 +3305,7 @@ export class PageLayoutViewer extends LayoutViewer {
         // tslint:disable-next-line:max-line-length
         if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'FirstPageHeader' : 'FirstPageFooter';
-        } else if (section.sectionFormat.differentOddAndEvenPages && this.pages.length % 2 === 0) {
+        } else if (section.sectionFormat.differentOddAndEvenPages && this.documentHelper.pages.length % 2 === 0) {
             type = isHeader ? 'EvenHeader' : 'EvenFooter';
         }
         return type;
@@ -3115,17 +3317,17 @@ export class PageLayoutViewer extends LayoutViewer {
      * @private
      */
     public getCurrentHeaderFooter(type: HeaderFooterType, sectionIndex: number): HeaderFooterWidget {
-        if (this.headersFooters[sectionIndex]) {
+        if (this.documentHelper.headersFooters[sectionIndex]) {
             let index: number = this.getHeaderFooter(type);
-            let headerFooter: HeaderFooterWidget = this.headersFooters[sectionIndex][index];
+            let headerFooter: HeaderFooterWidget = this.documentHelper.headersFooters[sectionIndex][index];
             if (!headerFooter) {
-                if (this.headersFooters[0][index]) {
-                    headerFooter = this.headersFooters[0][index];
+                if (this.documentHelper.headersFooters[0][index]) {
+                    headerFooter = this.documentHelper.headersFooters[0][index];
                 } else {
                     headerFooter = this.createHeaderFooterWidget(type);
                     headerFooter.isEmpty = true;
                 }
-                this.headersFooters[sectionIndex][index] = headerFooter;
+                this.documentHelper.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;
         } else if (sectionIndex > 0) {
@@ -3197,13 +3399,13 @@ export class PageLayoutViewer extends LayoutViewer {
      */
     public scrollToPage(pageIndex: number): void {
         let top: number = 0;
-        for (let i: number = 0; i < this.pages.length; i++) {
-            top = this.pages[i].boundingRectangle.y - (this.pageGap / 2);
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            top = this.documentHelper.pages[i].boundingRectangle.y - (this.pageGap / 2);
             if (i === pageIndex) {
                 break;
             }
         }
-        this.viewerContainer.scrollTop = top;
+        this.documentHelper.viewerContainer.scrollTop = top;
         this.updateScrollBars();
     }
     /**
@@ -3211,101 +3413,49 @@ export class PageLayoutViewer extends LayoutViewer {
      * @private
      */
     public updateScrollBars(): void {
-        let height: number = 0;
-        for (let i: number = 0; i < this.pages.length; i++) {
-            height = height + this.pages[i].boundingRectangle.height;
-        }
-        let width: number = 0;
-        for (let i: number = 0; i < this.pages.length; i++) {
-            if (width < this.pages[i].boundingRectangle.width) {
-                width = this.pages[i].boundingRectangle.width;
-            }
-        }
-        let containerWidth: number = (width * this.zoomFactor) + (this.pageLeft * 2);
-        let containerHeight: number = (height * this.zoomFactor) + (this.pages.length + 1) * this.pageGap;
-        let viewerWidth: number = this.visibleBounds.width;
-        let viewerHeight: number = this.visibleBounds.height;
-        if (this.visibleBounds.width !== this.viewerContainer.clientWidth) {
-            viewerWidth -= (this.visibleBounds.width - this.viewerContainer.clientWidth);
-        } else if (containerHeight > viewerHeight) {
-            viewerWidth -= this.viewerContainer.offsetWidth - this.viewerContainer.clientWidth;
-        }
-        if (containerWidth > viewerWidth) {
-            viewerHeight -= (this.visibleBounds.height - this.viewerContainer.clientHeight);
-        }
-
-        width = containerWidth > viewerWidth ? containerWidth : viewerWidth;
-        height = containerHeight > viewerHeight ? containerHeight : viewerHeight;
-
-
-        if (parseInt(this.pageContainer.style.width.replace('px', ''), 10) !== width ||
-            parseInt(this.pageContainer.style.height.replace('px', ''), 10) !== width) {
-            this.pageContainer.style.width = width.toString() + 'px';
-            this.pageContainer.style.height = height.toString() + 'px';
-        }
-        // if (!isNullOrUndefined(this.selection) && !this.selection.isEmpty) {
-        //     this.selectionContext.clearRect(0, 0, this.selectionCanvas.width, this.selectionCanvas.height);
-        // }
-        let displayPixelRatio: number = Math.max(1, window.devicePixelRatio || 1);
-        if (this.containerCanvas.width !== Math.floor(viewerWidth * displayPixelRatio)
-            || this.containerCanvas.height !== Math.floor(viewerHeight * displayPixelRatio)) {
-            this.containerCanvas.width = viewerWidth * displayPixelRatio;
-            this.containerCanvas.height = viewerHeight * displayPixelRatio;
-            this.containerCanvas.style.width = viewerWidth + 'px';
-            this.containerCanvas.style.height = viewerHeight + 'px';
-            this.containerContext.scale(displayPixelRatio, displayPixelRatio);
-            this.selectionCanvas.width = viewerWidth * displayPixelRatio;
-            this.selectionCanvas.height = viewerHeight * displayPixelRatio;
-            this.selectionCanvas.style.width = viewerWidth + 'px';
-            this.selectionCanvas.style.height = viewerHeight + 'px';
-            this.selectionContext.scale(displayPixelRatio, displayPixelRatio);
-        }
-        this.containerContext.globalAlpha = 1;
-        this.selectionContext.globalAlpha = 0.4;
-        for (let i: number = 0; i < this.pages.length; i++) {
-            let left: number = (width - this.pages[i].boundingRectangle.width * this.zoomFactor) / 2;
+        let updatePositionObj: PageInfo;
+        updatePositionObj = this.getPageHeightAndWidth(0, 0, 0, 0);
+        // tslint:disable-next-line:max-line-length
+        let containerWidth: number = (updatePositionObj.width * this.documentHelper.zoomFactor) + (this.pageLeft * 2);
+        // tslint:disable-next-line:max-line-length
+        let containerHeight: number = (updatePositionObj.height * this.documentHelper.zoomFactor) + (this.documentHelper.pages.length + 1) * this.pageGap;
+        let updateObj: CanvasInfo;
+        // tslint:disable-next-line:max-line-length
+        updateObj = this.updateCanvasWidthAndHeight(updatePositionObj.viewerWidth, updatePositionObj.viewerHeight, containerHeight, containerWidth, updatePositionObj.width, updatePositionObj.height);
+        containerHeight = updateObj.containerHeight;
+        containerWidth = updateObj.containerWidth;
+        this.documentHelper.containerContext.globalAlpha = 1;
+        this.documentHelper.selectionContext.globalAlpha = 0.4;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            // tslint:disable-next-line:max-line-length
+            let left: number = (updateObj.width - this.documentHelper.pages[i].boundingRectangle.width * this.documentHelper.zoomFactor) / 2;
             if (left > this.pageLeft) {
                 // tslint:disable-next-line:max-line-length
-                this.pages[i].boundingRectangle = new Rect(left, this.pages[i].boundingRectangle.y, this.pages[i].boundingRectangle.width, this.pages[i].boundingRectangle.height);
+                this.documentHelper.pages[i].boundingRectangle = new Rect(left, this.documentHelper.pages[i].boundingRectangle.y, this.documentHelper.pages[i].boundingRectangle.width, this.documentHelper.pages[i].boundingRectangle.height);
             } else {
                 // tslint:disable-next-line:max-line-length
-                this.pages[i].boundingRectangle = new Rect(this.pageLeft, this.pages[i].boundingRectangle.y, this.pages[i].boundingRectangle.width, this.pages[i].boundingRectangle.height);
+                this.documentHelper.pages[i].boundingRectangle = new Rect(this.pageLeft, this.documentHelper.pages[i].boundingRectangle.y, this.documentHelper.pages[i].boundingRectangle.width, this.documentHelper.pages[i].boundingRectangle.height);
             }
         }
-        this.updateScrollBarPosition(containerWidth, containerHeight, viewerWidth, viewerHeight, width, height);
-        this.isScrollToSpellCheck = false;
-    }
-    // tslint:disable-next-line:max-line-length
-    public updateScrollBarPosition(containerWidth: number, containerHeight: number, viewerWidth: number, viewerHeight: number, width: number, height: number): void {
-        let left: number = 0;
-        let viewerHeight1: number = parseFloat(this.viewerContainer.style.height);
-        let containerHeight1: number = parseFloat(this.pageContainer.style.height);
-
-        this.containerTop = this.viewerContainer.scrollTop;
-        this.containerCanvas.style.position = 'absolute';
-        this.containerCanvas.style.top = this.containerTop.toString() + 'px';
-        this.selectionCanvas.style.position = 'absolute';
-        this.selectionCanvas.style.top = this.containerTop.toString() + 'px';
-        this.containerLeft = this.viewerContainer.scrollLeft;
-        this.containerCanvas.style.left = this.containerLeft + 'px';
-        this.selectionCanvas.style.left = this.containerLeft + 'px';
+        // tslint:disable-next-line:max-line-length
+        this.updateScrollBarPosition(containerWidth, containerHeight, updateObj.viewerWidth, updateObj.viewerHeight, updateObj.width, updateObj.height);
         this.updateVisiblePages();
+        this.documentHelper.isScrollToSpellCheck = false;
+
     }
     /**
      * Updates visible pages.
      * @private
      */
     public updateVisiblePages(): void {
-        let left: number = 0;
-        let width: number = 0;
         // Clears the container first.
         this.visiblePages = [];
-        let height: number = this.visibleBounds.height;
-        let vertical: number = this.viewerContainer.scrollTop;
-        for (let i: number = 0; i < this.pages.length; i++) {
-            let page: Page = this.pages[i];
-            let y: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.zoomFactor + this.pageGap * (i + 1);
-            let pageH: number = page.boundingRectangle.height * this.zoomFactor;
+        let height: number = this.documentHelper.visibleBounds.height;
+        let vertical: number = this.documentHelper.viewerContainer.scrollTop;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            let page: Page = this.documentHelper.pages[i];
+            let y: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.documentHelper.zoomFactor + this.pageGap * (i + 1);
+            let pageH: number = page.boundingRectangle.height * this.documentHelper.zoomFactor;
             let left: number = page.boundingRectangle.x;
             let isTopFit: boolean = y >= vertical && y <= vertical + height;
             let isBottomFit: boolean = y + pageH >= vertical && y + pageH <= vertical + height;
@@ -3320,17 +3470,17 @@ export class PageLayoutViewer extends LayoutViewer {
      * Adds visible pages.
      */
     private addVisiblePage(page: Page, x: number, y: number): void {
-        let width: number = page.boundingRectangle.width * this.zoomFactor;
-        let height: number = page.boundingRectangle.height * this.zoomFactor;
+        let width: number = page.boundingRectangle.width * this.documentHelper.zoomFactor;
+        let height: number = page.boundingRectangle.height * this.documentHelper.zoomFactor;
         // tslint:disable-next-line:max-line-length
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.currentPage !== undefined && this.owner.imageResizerModule.currentPage === page && this.owner.imageResizerModule.isImageResizerVisible) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
         // tslint:disable-next-line:max-line-length
-        if (this.owner.enableSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.triggerElementsOnLoading || this.isScrollHandler) && this.cachedPages.indexOf(page.index) < 0) {
+        if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.triggerElementsOnLoading || this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
             page.allowNextPageRendering = false;
-            this.cachedPages.push(page.index);
+            this.documentHelper.cachedPages.push(page.index);
             let content: string = this.owner.spellChecker.getPageContent(page);
             if (content.trim().length > 0) {
                 // tslint:disable-next-line:max-line-length
@@ -3340,10 +3490,10 @@ export class PageLayoutViewer extends LayoutViewer {
                     let jsonObject: any = JSON.parse(data);
                     this.owner.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
                     page.allowNextPageRendering = true;
-                    this.triggerSpellCheck = true;
+                    this.documentHelper.triggerSpellCheck = true;
                     this.renderPage(page, x, y, width, height);
-                    this.triggerSpellCheck = false;
-                    this.triggerElementsOnLoading = false;
+                    this.documentHelper.triggerSpellCheck = false;
+                    this.documentHelper.triggerElementsOnLoading = false;
                 });
             } else {
                 this.renderPage(page, x, y, width, height);
@@ -3354,26 +3504,153 @@ export class PageLayoutViewer extends LayoutViewer {
     }
     /**
      * Render specified page widgets.
-     */
-    private renderPage(page: Page, x: number, y: number, width: number, height: number): void {
-        this.render.renderWidgets(page, x - this.containerLeft, y - this.containerTop, width, height);
-    }
-    /**
-     * Renders visible pages.
      * @private
      */
-    public renderVisiblePages(): void {
-        if (isNullOrUndefined(this.visiblePages) || this.visiblePages.length < 1) {
-            return;
+    public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
+        // tslint:disable-next-line:max-line-length
+        this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
+    }
+
+}
+
+
+export class WebLayoutViewer extends LayoutViewer {
+
+    constructor(owner: DocumentEditor) {
+        super(owner);
+        /* if (isNullOrUndefined(owner) || isNullOrUndefined(owner.element)) {
+             return;
+         }*/
+        this.owner = owner;
+    }
+    get documentHelper(): DocumentHelper {
+        return this.owner.documentHelper;
+    }
+    public pages: Page[];
+    /**
+     * @private
+     */
+    public visiblePages: Page[] = [];
+    /**
+     * @private
+     */
+    get pageGap(): number {
+        return 0;
+    }
+    /**
+     * Creates new page.
+     * @private
+     */
+    public createNewPage(section: BodyWidget, index?: number): Page {
+        let page: Page;
+        let yPos: number = 0;
+        let x: number = 10;
+        if (this.documentHelper.pages.length > 0) {
+            yPos = this.documentHelper.pages[this.documentHelper.pages.length - 1].boundingRectangle.bottom;
         }
-        this.clearContent();
-        for (let i: number = 0; i < this.visiblePages.length; i++) {
-            let page: Page = this.visiblePages[i];
-            let width: number = page.boundingRectangle.width * this.zoomFactor;
-            let height: number = page.boundingRectangle.height * this.zoomFactor;
-            let x: number = page.boundingRectangle.x;
-            let y: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.zoomFactor + this.pageGap * (i + 1);
-            this.renderPage(page, x, y, width, height);
+        page = new Page(this.documentHelper);
+        if (this.documentHelper.pages.length === 0) {
+            // tslint:disable-next-line:max-line-length
+            page.boundingRectangle = new Rect(x, yPos, this.documentHelper.visibleBounds.width, this.documentHelper.visibleBounds.height);
+        } else {
+            // tslint:disable-next-line:max-line-length
+            page.boundingRectangle = new Rect(x, yPos - 20, this.documentHelper.visibleBounds.width, this.documentHelper.visibleBounds.height);
+        }
+        this.documentHelper.pages.push(page);
+        this.updateClientArea(undefined, page);
+        page.bodyWidgets.push(section);
+        page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
+        return page;
+    }
+    public onPageFitTypeChanged(pageFitType: PageFitType): void {
+        this.documentHelper.zoomFactor = 1;
+    }
+    public scrollToPage(pageIndex: number): void {
+        this.updateScrollBars();
+    }
+    public getContentHeight(): number {
+        let height: number = 0;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            let page: Page = this.documentHelper.pages[i];
+            if (i === 0) {
+                height += this.padding.top;
+                page.boundingRectangle.y = this.padding.top;
+            } else {
+                page.boundingRectangle.y = this.documentHelper.pages[i - 1].boundingRectangle.bottom;
+            }
+            page.boundingRectangle.height = page.bodyWidgets[0].height;
+            height += page.bodyWidgets[0].height;
+            if (i === this.documentHelper.pages.length - 1) {
+                height += this.padding.bottom;
+            }
+        }
+        return height;
+    }
+    public getContentWidth(): number {
+        let width: number = this.documentHelper.visibleBounds.width;
+        let currentWidth: number = width;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            let page: Page = this.documentHelper.pages[i];
+            for (let j: number = 0; j < (page.bodyWidgets[0] as BodyWidget).childWidgets.length; j++) {
+                if ((page.bodyWidgets[0] as BodyWidget).childWidgets[j] instanceof TableWidget) {
+                    let tableWidget: TableWidget = page.bodyWidgets[0].childWidgets[j] as TableWidget;
+                    // tslint:disable-next-line:max-line-length
+                    let tableWidth: number = HelperMethods.convertPointToPixel((tableWidget as TableWidget).getTableWidth()) *
+                        this.documentHelper.zoomFactor + this.padding.left * 4 + this.padding.right * 4
+                        + page.boundingRectangle.x;
+                    if (currentWidth < tableWidth) {
+                        width = tableWidth;
+                        currentWidth = tableWidth;
+                    }
+                }
+            }
+            page.boundingRectangle.width = width;
+        }
+        return width;
+    }
+    public updateScrollBars(): void {
+        let updatePositionObj: PageInfo;
+        updatePositionObj = this.getPageHeightAndWidth(0, 0, 0, 0);
+        let containerWidth: number = this.getContentWidth();
+        /* tslint:disable-next-line:max-line-length */
+        let containerHeight: number = this.getContentHeight() * this.documentHelper.zoomFactor + this.padding.top + this.padding.bottom;
+        let updateObj: CanvasInfo;
+        // tslint:disable-next-line:max-line-length
+        updateObj = this.updateCanvasWidthAndHeight(updatePositionObj.viewerWidth, updatePositionObj.viewerHeight, containerHeight, containerWidth, updatePositionObj.width, updatePositionObj.height);
+        // tslint:disable-next-line:max-line-length
+        this.documentHelper.containerContext.globalAlpha = 1;
+        this.documentHelper.selectionContext.globalAlpha = 0.4;
+        // tslint:disable-next-line:max-line-length
+        this.updateScrollBarPosition(containerWidth, containerHeight, updateObj.viewerWidth, updateObj.viewerHeight, updateObj.width, updateObj.height);
+        this.updateVisiblePages();
+        this.documentHelper.isScrollToSpellCheck = false;
+    }
+    public updateVisiblePages(): void {
+        this.visiblePages = [];
+        let page: Page;
+        let y: number;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            page = this.documentHelper.pages[i];
+            y = (page.boundingRectangle.y) * this.documentHelper.zoomFactor;
+            this.addVisiblePage(page, 10, y);
         }
     }
+    public addVisiblePage(page: Page, x: number, y: number): void {
+        let width: number = this.getContentWidth();
+        // tslint:disable-next-line:max-line-length
+        let height: number = this.getContentHeight() * this.documentHelper.zoomFactor + this.padding.top + this.padding.bottom;
+        if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.currentPage !== undefined && this.owner.imageResizerModule.currentPage === page && this.owner.imageResizerModule.isImageResizerVisible) {
+            this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
+        }
+        this.visiblePages.push(page);
+        this.renderPage(page, x, y, width, height);
+    }
+    /**
+     * @private
+     */
+    public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
+        // tslint:disable-next-line:max-line-length
+        this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
+    }
+
 }

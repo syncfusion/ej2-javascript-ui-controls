@@ -1,15 +1,14 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { LayoutViewer, PageLayoutViewer } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../src/index';
 import { Editor } from '../../src/index';
 import { Selection } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/index';
 import { TestHelper } from '../test-helper.spec';
 
 describe('Selection Paragraph format line  spacing apply validation', () => {
-    console.log('Selection Paragraph format line  spacing apply validation');
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
@@ -17,18 +16,18 @@ describe('Selection Paragraph format line  spacing apply validation', () => {
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -41,23 +40,22 @@ describe('Selection Paragraph format line  spacing apply validation', () => {
         expect(editor.selection.paragraphFormat.lineSpacingType).toBe('Multiple');
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(2);
     });
-    it('undo after Linespacing Double apply validation',()=>{
+    it('undo after Linespacing Double apply validation', () => {
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(15);
         expect(editor.selection.paragraphFormat.lineSpacingType).toBe('AtLeast');
     });
-    it('redo after Linespacing Double apply validation',()=>{
+    it('redo after Linespacing Double apply validation', () => {
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.lineSpacingType).toBe('Multiple');
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(2);
     });
-}); 
+});
 
 
 describe('Selection Paragraph format line  spacing type apply validation', () => {
-    console.log('Selection Paragraph format line  spacing apply validation');
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.innerHTML = '';
@@ -65,18 +63,18 @@ describe('Selection Paragraph format line  spacing type apply validation', () =>
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -88,12 +86,12 @@ describe('Selection Paragraph format line  spacing type apply validation', () =>
         expect(editor.selection.paragraphFormat.lineSpacingType).toBe('AtLeast');
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(12);
     });
-    it('undo after LinespacingType atleast apply validation',()=>{
+    it('undo after LinespacingType atleast apply validation', () => {
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(2);
         expect(editor.selection.paragraphFormat.lineSpacingType).toBe('Multiple');
     });
-    it('redo after LinespacingType atleast apply validation',()=>{
+    it('redo after LinespacingType atleast apply validation', () => {
         editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.lineSpacingType).toBe('AtLeast');
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(12);

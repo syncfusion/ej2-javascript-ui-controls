@@ -192,8 +192,8 @@ export class RowDD {
                         draggedRecord.level = this.ganttData[recordIndex1].level;
                         if (draggedRecord.hasChildRecords) {
                             let level: number = 1;
-                            this.updateChildRecordLevel(draggedRecord, level);
                             this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
+                            this.updateChildRecordLevel(draggedRecord, level);
                         }
                         if (droppedRecord.parentItem) {
                             let rec: IGanttData[] = this.parent.getParentTask(droppedRecord.parentItem).childRecords;

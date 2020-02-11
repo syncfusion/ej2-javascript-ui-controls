@@ -263,9 +263,15 @@ const HEADER_CELLS_CLASS = 'e-header-cells';
 /** @hidden */
 const HEADER_WRAP_CLASS = 'e-header-wrap';
 /** @hidden */
+const HEADER_TITLE_CLASS = 'e-header-title';
+/** @hidden */
 const HEADER_TEXT_CLASS = 'e-header-text';
 /** @hidden */
 const HEADER_ICON_CLASS = 'e-header-icon';
+/** @hidden */
+const STACKED_HEADER_ROW_CLASS = 'e-stacked-header-row';
+/** @hidden */
+const STACKED_HEADER_CELL_CLASS = 'e-stacked-header-cell';
 /** @hidden */
 const CONTENT_CELLS_CLASS = 'e-content-cells';
 /** @hidden */
@@ -287,7 +293,7 @@ const SWIMLANE_ROW_COLLAPSE = 'e-swimlane-row-collapse';
 /** @hidden */
 const SWIMLANE_ROW_TEXT = 'e-swimlane-text';
 /** @hidden */
-const SWIMLANE_ITEM_COUNT = 'e-swimlane-item-count';
+const CARD_ITEM_COUNT = 'e-item-count';
 /** @hidden */
 const CARD_WRAPPER_CLASS = 'e-card-wrapper';
 /** @hidden */
@@ -299,7 +305,7 @@ const CARD_CONTENT_CLASS = 'e-card-content';
 /** @hidden */
 const CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
 /** @hidden */
-const CARD_CONTENT_TEXT_CLASS = 'e-card-content-caption';
+const CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
 /** @hidden */
 const COLUMN_EXPAND = 'e-column-expand';
 /** @hidden */
@@ -331,9 +337,9 @@ const DROPPING = 'e-dropping';
 /** @hidden */
 const TOGGLE_VISIBLE = 'e-toggle-visible';
 /** @hidden */
-const MULTI_CLONE_CARD = 'e-multi-clone-card';
+
 /** @hidden */
-const MULTI_CLONE_CONTENT_CELL = 'e-multi-content-cell';
+const MULTI_CARD_WRAPPER = 'e-multi-card-wrapper';
 /** @hidden */
 const MULTI_ACTIVE = 'e-multi-active';
 /** @hidden */
@@ -374,10 +380,6 @@ const LIMITS_CLASS = 'e-limits';
 const MAX_COUNT_CLASS = 'e-max-count';
 /** @hidden */
 const MIN_COUNT_CLASS = 'e-min-count';
-/** @hidden */
-const TOTAL_CARD = 'e-total-card';
-/** @hidden */
-const HIDE_LIMITS = 'e-hide-limits';
 /** @hidden */
 const MAX_COLOR = 'e-max-color';
 /** @hidden */
@@ -467,7 +469,6 @@ class Action {
     }
     columnToggle(target) {
         let colIndex = target.cellIndex;
-        let headerLimits = target.querySelector('.' + LIMITS_CLASS);
         let targetRow = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
         let colSelector = `.e-header-table col:nth-child(${colIndex + 1}),.e-content-table col:nth-child(${colIndex + 1})`;
         let targetIcon = target.querySelector('.' + COLUMN_EXPAND + ',.' + COLUMN_COLLAPSE);
@@ -475,32 +476,21 @@ class Action {
         if (target.classList.contains(COLLAPSED_CLASS)) {
             removeClass(colGroup, COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
-                colGroup.forEach((col) => {
-                    col.style.width = formatUnit(this.parent.layoutModule.getWidth());
-                });
+                colGroup.forEach((col) => col.style.width = formatUnit(this.parent.layoutModule.getWidth()));
             }
             classList(targetIcon, [COLUMN_EXPAND], [COLUMN_COLLAPSE]);
             for (let row of targetRow) {
                 let targetCol = row.querySelector(`.${CONTENT_CELLS_CLASS}:nth-child(${colIndex + 1})`);
                 removeClass([targetCol, target], COLLAPSED_CLASS);
                 remove(targetCol.querySelector('.' + COLLAPSE_HEADER_TEXT));
-                let limitEle = targetCol.querySelector('.' + LIMITS_CLASS);
-                if (limitEle) {
-                    removeClass([limitEle], HIDE_LIMITS);
-                }
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
-            if (headerLimits) {
-                removeClass([headerLimits], HIDE_LIMITS);
-            }
             this.parent.columns[colIndex].setProperties({ isExpanded: true }, true);
         }
         else {
             addClass(colGroup, COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
-                colGroup.forEach((col) => {
-                    col.style.width = formatUnit(toggleWidth);
-                });
+                colGroup.forEach((col) => col.style.width = formatUnit(toggleWidth));
             }
             classList(targetIcon, [COLUMN_COLLAPSE], [COLUMN_EXPAND]);
             for (let row of targetRow) {
@@ -512,13 +502,6 @@ class Action {
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], COLLAPSED_CLASS);
-                let limitEle = targetCol.querySelector('.' + LIMITS_CLASS);
-                if (limitEle) {
-                    addClass([limitEle], HIDE_LIMITS);
-                }
-            }
-            if (headerLimits) {
-                addClass([headerLimits], HIDE_LIMITS);
             }
             this.columnToggleArray.push(target.getAttribute('data-key'));
             this.parent.columns[colIndex].setProperties({ isExpanded: false }, true);
@@ -873,9 +856,7 @@ class DragAndDrop {
                     offsetHeight -= limitEle.offsetHeight;
                 }
                 this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
-                let cards = [].slice.call(contentCell.querySelectorAll('.' + CARD_CLASS));
-                cards.forEach((el) => addClass([el], MULTI_CLONE_CARD));
-                addClass([contentCell], MULTI_CLONE_CONTENT_CELL);
+                addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER);
                 contentCell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = 'auto';
                 contentCell.style.borderStyle = 'none';
                 this.removeElement(this.dragObj.targetClone);
@@ -1046,12 +1027,11 @@ class DragAndDrop {
             let columnKey = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY));
             columnKey.forEach((node) => remove(node));
             cloneMulti.forEach((node) => {
-                let target = closest(node, '.' + CONTENT_CELLS_CLASS);
-                if (target) {
-                    target.style.borderStyle = '';
+                let cell = closest(node, '.' + CONTENT_CELLS_CLASS);
+                if (cell) {
+                    cell.style.borderStyle = '';
+                    removeClass([cell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER);
                 }
-                let cards = [].slice.call(target.querySelectorAll('.' + CARD_CLASS));
-                cards.forEach((el) => removeClass([el], MULTI_CLONE_CARD));
             });
             this.removeElement(this.dragObj.targetCloneMulti);
         }
@@ -1558,6 +1538,7 @@ class LayoutRender extends MobileLayout {
         this.parent = parent;
         this.columnKeys = [];
         this.swimlaneIndex = 0;
+        this.swimlaneData = {};
         this.scrollLeft = 0;
         this.wireEvents();
     }
@@ -1567,6 +1548,7 @@ class LayoutRender extends MobileLayout {
         }
         this.columnData = this.getColumnCards();
         this.kanbanRows = this.getRows();
+        this.swimlaneData = this.getSwimlaneCards();
         if (this.parent.isAdaptive) {
             let parent = this.parent.element.querySelector('.' + CONTENT_CLASS);
             if (parent) {
@@ -1621,35 +1603,40 @@ class LayoutRender extends MobileLayout {
                 addClass([th], classList$$1);
                 let headerWrapper = createElement('div', { className: HEADER_WRAP_CLASS });
                 th.appendChild(headerWrapper);
+                let noOfCard = this.columnData[column.keyField].length;
+                let headerTitle = createElement('div', { className: HEADER_TITLE_CLASS });
+                headerWrapper.appendChild(headerTitle);
                 if (column.template) {
+                    let templateArgs = {
+                        keyField: column.keyField, headerText: column.headerText, minCount: column.minCount, maxCount: column.maxCount,
+                        allowToggle: column.allowToggle, isExpanded: column.isExpanded, showItemCount: column.showItemCount, count: noOfCard
+                    };
                     addClass([th], TEMPLATE_CLASS);
-                    let templateHeader = this.parent.templateParser(column.template)(column);
-                    append(templateHeader, headerWrapper);
+                    let templateHeader = this.parent.templateParser(column.template)(templateArgs);
+                    append(templateHeader, headerTitle);
                 }
                 else {
                     let header = createElement('div', { className: HEADER_TEXT_CLASS, innerHTML: column.headerText });
-                    headerWrapper.appendChild(header);
+                    headerTitle.appendChild(header);
                     if (column.showItemCount) {
-                        let cardCount = this.columnData[column.keyField].length;
-                        header.appendChild(createElement('div', {
-                            className: TOTAL_CARD,
-                            innerHTML: '- ' + cardCount.toString() + ' ' + this.parent.localeObj.getConstant('items')
-                        }));
+                        let itemCount = createElement('div', {
+                            className: CARD_ITEM_COUNT,
+                            innerHTML: '- ' + noOfCard.toString() + ' ' + this.parent.localeObj.getConstant('items')
+                        });
+                        headerTitle.appendChild(itemCount);
                     }
+                }
+                if (column.allowToggle) {
+                    let name = (column.isExpanded && index === -1) ? COLUMN_EXPAND : COLUMN_COLLAPSE;
+                    let icon = createElement('div', { className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name });
+                    headerWrapper.appendChild(icon);
+                    this.wireEvents(icon, 'columnExpandCollapse');
                 }
                 let dataObj = [{ keyField: column.keyField, textField: column.headerText }];
                 let args = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
                 this.parent.trigger(columnRendered, args, (columnArgs) => {
                     if (!columnArgs.cancel) {
                         tr.appendChild(th);
-                        if (column.allowToggle) {
-                            let name = (column.isExpanded && index === -1) ? COLUMN_EXPAND : COLUMN_COLLAPSE;
-                            let iconDiv = createElement('div', {
-                                className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name
-                            });
-                            th.appendChild(iconDiv);
-                            this.wireEvents(iconDiv, 'columnExpandCollapse');
-                        }
                     }
                 });
             }
@@ -1710,31 +1697,38 @@ class LayoutRender extends MobileLayout {
     renderSwimlaneRow(tBody, row, isCollapsed) {
         let name = CONTENT_ROW_CLASS + ' ' + SWIMLANE_ROW_CLASS;
         let className = isCollapsed ? ' ' + COLLAPSED_CLASS : '';
-        let tr = createElement('tr', {
-            className: name + className, attrs: { 'data-key': row.keyField }
-        });
+        let tr = createElement('tr', { className: name + className, attrs: { 'data-key': row.keyField } });
         let col = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         let td = createElement('td', {
             className: CONTENT_CELLS_CLASS,
             attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
         });
+        let swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER });
+        td.appendChild(swimlaneHeader);
         let iconClass = isCollapsed ? SWIMLANE_ROW_COLLAPSE : SWIMLANE_ROW_EXPAND;
         let iconDiv = createElement('div', { className: ICON_CLASS + ' ' + iconClass });
-        td.appendChild(iconDiv);
+        swimlaneHeader.appendChild(iconDiv);
+        let headerWrap = createElement('div', { className: HEADER_WRAP_CLASS });
+        swimlaneHeader.appendChild(headerWrap);
+        let cardCount = this.swimlaneData[row.keyField].length;
         if (this.parent.swimlaneSettings.template) {
+            let templateArgs = extend({}, row, { count: cardCount }, true);
             addClass([td], TEMPLATE_CLASS);
-            let swimlaneTemplate = this.parent.templateParser(this.parent.swimlaneSettings.template)(row);
-            append(swimlaneTemplate, td);
+            let swimlaneTemplate = this.parent.templateParser(this.parent.swimlaneSettings.template)(templateArgs);
+            append(swimlaneTemplate, headerWrap);
         }
         else {
-            td.appendChild(createElement('div', {
+            headerWrap.appendChild(createElement('div', {
                 className: SWIMLANE_ROW_TEXT,
                 innerHTML: row.textField,
                 attrs: { 'data-role': row.textField }
             }));
-            if (this.parent.swimlaneSettings.showItemCount) {
-                td.appendChild(createElement('div', { className: SWIMLANE_ITEM_COUNT }));
-            }
+        }
+        if (this.parent.swimlaneSettings.showItemCount) {
+            swimlaneHeader.appendChild(createElement('div', {
+                className: CARD_ITEM_COUNT,
+                innerHTML: `- ${cardCount.toString()} ${this.parent.localeObj.getConstant('items')}`
+            }));
         }
         tr.appendChild(td);
         let dataObj = [{ keyField: row.keyField, textField: row.textField }];
@@ -1755,10 +1749,8 @@ class LayoutRender extends MobileLayout {
             let dataCount = 0;
             for (let column of this.parent.columns) {
                 if (this.isColumnVisible(column)) {
-                    let columnData = this.columnData[column.keyField];
-                    if (this.parent.swimlaneSettings.keyField) {
-                        columnData = columnData.filter((data) => data[this.parent.swimlaneSettings.keyField] === rows[index].keyField);
-                    }
+                    let columnData = this.parent.swimlaneSettings.keyField ?
+                        this.getColumnData(column.keyField, this.swimlaneData[rows[index].keyField]) : this.columnData[column.keyField];
                     dataCount += columnData.length;
                     let columnWrapper = tr.querySelector('[data-key="' + column.keyField + '"]');
                     let cardWrapper = createElement('div', { className: CARD_WRAPPER_CLASS });
@@ -1780,19 +1772,19 @@ class LayoutRender extends MobileLayout {
                             let tooltipClass = this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT : '';
                             if (this.parent.cardSettings.showHeader) {
                                 let cardHeader = createElement('div', { className: CARD_HEADER_CLASS });
+                                let cardCaption = createElement('div', { className: CARD_HEADER_TEXT_CLASS });
                                 let cardText = createElement('div', {
-                                    className: CARD_HEADER_TEXT_CLASS + tooltipClass,
+                                    className: CARD_HEADER_TITLE_CLASS + tooltipClass,
                                     innerHTML: data[this.parent.cardSettings.headerField] || ''
                                 });
-                                cardHeader.appendChild(cardText);
+                                cardHeader.appendChild(cardCaption);
+                                cardCaption.appendChild(cardText);
                                 cardElement.appendChild(cardHeader);
                             }
-                            let cardContent = createElement('div', { className: CARD_CONTENT_CLASS });
-                            let cardText = createElement('div', {
-                                className: CARD_CONTENT_TEXT_CLASS + tooltipClass,
+                            let cardContent = createElement('div', {
+                                className: CARD_CONTENT_CLASS + tooltipClass,
                                 innerHTML: data[this.parent.cardSettings.contentField] || ''
                             });
-                            cardContent.appendChild(cardText);
                             cardElement.appendChild(cardContent);
                         }
                         let args = { data: data, element: cardElement, cancel: false };
@@ -1807,10 +1799,6 @@ class LayoutRender extends MobileLayout {
                         });
                     }
                 }
-            }
-            if (swimlaneRows.length > 0 && this.parent.swimlaneSettings.showItemCount && !this.parent.swimlaneSettings.template) {
-                let localeText = this.parent.localeObj.getConstant('items');
-                swimlaneRows[index].querySelector('.' + SWIMLANE_ITEM_COUNT).innerHTML = '- ' + dataCount.toString() + ' ' + localeText;
             }
             if (dataCount === 0) {
                 removeTrs.push(tr);
@@ -1867,7 +1855,7 @@ class LayoutRender extends MobileLayout {
         return kanbanRows;
     }
     createStackedRow(rows) {
-        let tr = createElement('tr', { className: HEADER_ROW_CLASS + ' e-stacked-header-row' });
+        let tr = createElement('tr', { className: HEADER_ROW_CLASS + ' ' + STACKED_HEADER_ROW_CLASS });
         let stackedHeaders = [];
         this.parent.columns.forEach((column) => {
             let headerText = '';
@@ -1890,7 +1878,7 @@ class LayoutRender extends MobileLayout {
             }
             let div = createElement('div', { className: HEADER_TEXT_CLASS, innerHTML: stackedHeaders[h] });
             let th = createElement('th', {
-                className: HEADER_CELLS_CLASS + ' e-stacked-header-cell',
+                className: HEADER_CELLS_CLASS + ' ' + STACKED_HEADER_CELL_CLASS,
                 attrs: { 'colspan': colSpan.toString() }
             });
             tr.appendChild(th).appendChild(div);
@@ -1910,8 +1898,9 @@ class LayoutRender extends MobileLayout {
             }
             let cardWrappers = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_CELLS_CLASS));
             cardWrappers.forEach((cell) => {
-                if (!cell.classList.contains(MULTI_CLONE_CONTENT_CELL)) {
-                    cell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = formatUnit(height);
+                let cardWrapper = cell.querySelector('.' + CARD_WRAPPER_CLASS);
+                if (!cardWrapper.classList.contains(MULTI_CARD_WRAPPER)) {
+                    cardWrapper.style.height = formatUnit(height);
                     EventHandler.add(cell, 'touchmove', this.onAdaptiveScroll, this);
                 }
             });
@@ -2010,20 +1999,32 @@ class LayoutRender extends MobileLayout {
             }
         });
     }
+    getColumnData(columnValue, dataSource = this.parent.kanbanData) {
+        let cardData = [];
+        let columnKeys = columnValue.split(',');
+        for (let key of columnKeys) {
+            let keyData = dataSource.filter((cardObj) => cardObj[this.parent.keyField] === key.trim());
+            cardData = cardData.concat(keyData);
+        }
+        return cardData;
+    }
     getColumnCards() {
         let columnData = {};
         this.columnKeys = [];
         this.parent.columns.forEach((column) => {
-            let cardData = [];
-            let columnKeys = column.keyField.split(',');
-            for (let key of columnKeys) {
-                this.columnKeys.push(key.trim());
-                let keyData = this.parent.kanbanData.filter((cardObj) => cardObj[this.parent.keyField] === key.trim());
-                cardData = cardData.concat(keyData);
-            }
+            this.columnKeys = this.columnKeys.concat(column.keyField.split(',').map((e) => e.trim()));
+            let cardData = this.getColumnData(column.keyField);
             columnData[column.keyField] = cardData;
         });
         return columnData;
+    }
+    getSwimlaneCards() {
+        let swimlaneData = {};
+        if (this.parent.swimlaneSettings.keyField) {
+            this.kanbanRows.forEach((row) => swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj) => this.columnKeys.indexOf(obj[this.parent.keyField]) > -1 &&
+                obj[this.parent.swimlaneSettings.keyField] === row.keyField));
+        }
+        return swimlaneData;
     }
     wireEvents(element, action) {
         switch (action) {

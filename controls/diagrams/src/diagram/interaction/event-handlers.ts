@@ -2077,7 +2077,7 @@ class ObjectFinder {
                 }
             } else if (action === 'Pan' || action === 'LayoutAnimation') {
                 for (let i: number = objects.length - 1; i >= 0; i--) {
-                    if (objects[i] instanceof Node) {
+                    if (objects[i] instanceof Node || objects[i] instanceof Connector) {
                         let portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
                         if ((action === 'LayoutAnimation' || action === 'Pan') || ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$'))))) {
                             return objects[i] as IElement;

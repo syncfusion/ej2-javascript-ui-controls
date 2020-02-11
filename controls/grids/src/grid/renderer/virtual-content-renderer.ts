@@ -348,20 +348,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let rows: Element[] = this.parent.getRows();
         let rowHeight: number = this.parent.getRowHeight();
         let scrollEleHeight: number = this.parent.getContent().firstElementChild.getBoundingClientRect().height;
-        let transform: { width: number, height: number } = getTransformValues(this.getTable().parentElement);
+        setTimeout(
+            () => {
+                this.resetTblTransform();
+            },
+            50);
         if (isNullOrUndefined(row)) {
-            let firstRowTop: number = rows[0].getBoundingClientRect().top;
-            let lastRowTop: number = rows[rows.length - 1].getBoundingClientRect().top;
-            if (this.parent.pageSettings.currentPage !== 1) {
-                if (firstRowTop > rowHeight) { // adjusted the table transform to avoid the white space in top
-                    let value: number = (transform.height + this.parent.getRowHeight()) - firstRowTop;
-                    this.virtualEle.adjustTable(cOffset, value);
-                }
-                if (lastRowTop < scrollEleHeight) { // adjusted the table transform to avoid the white space in bottom
-                    let value: number = (scrollEleHeight - lastRowTop) + transform.height;
-                    this.virtualEle.adjustTable(cOffset, value);
-                }
-            }
             for (let i: number = 0; i < rows.length; i++) {
                 if (this.isViewPortFirstRow(rows[i], rowHeight)) {
                     firstRow = rows[i];
@@ -381,6 +373,17 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent.focusModule.onClick({ target }, true);
         this.parent.selectRow(parseInt(target.parentElement.getAttribute('aria-rowindex'), 10));
         this.activeKey = this.parent.allowSelection ? this.activeKey : undefined;
+    }
+
+    private resetTblTransform(): void {
+        let xAxis: boolean = this.currentInfo.sentinelInfo.axis === 'X';
+        let top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
+        let height: number = this.content.getBoundingClientRect().height;
+        let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);
+        let y: number = this.getTranslateY(
+            this.parent.getContent().firstElementChild.scrollTop, height,
+            xAxis && top === this.parent.getContent().firstElementChild.scrollTop ? this.prevInfo : undefined, true);
+        this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
     }
 
     protected onDataReady(e?: NotifyArgs): void {
@@ -437,7 +440,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         return page;
     }
 
-    private getTranslateY(sTop: number, cHeight: number, info?: VirtualInfo, isOnenter?: boolean): number {
+    protected getTranslateY(sTop: number, cHeight: number, info?: VirtualInfo, isOnenter?: boolean): number {
         if (info === undefined) {
             info = { page: this.getPageFromTop(sTop + cHeight, {}) };
             info.blockIndexes = this.vgenerator.getBlockIndexes(info.page);

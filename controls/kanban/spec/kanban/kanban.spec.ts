@@ -276,7 +276,6 @@ describe('Kanban base module', () => {
                 expect(card.children[0].classList.contains('e-card-header')).toEqual(true);
                 expect(card.children[1].classList.contains('e-card-content')).toEqual(true);
                 expect(card.children[0].firstElementChild.classList.contains('e-card-header-caption')).toEqual(true);
-                expect(card.children[1].firstElementChild.classList.contains('e-card-content-caption')).toEqual(true);
             });
         });
 
@@ -292,7 +291,6 @@ describe('Kanban base module', () => {
                 expect(card.children[0].classList.contains('e-card-header')).toEqual(true);
                 expect(card.children[1].classList.contains('e-card-content')).toEqual(true);
                 expect(card.children[0].firstElementChild.classList.contains('e-card-header-caption')).toEqual(true);
-                expect(card.children[1].firstElementChild.classList.contains('e-card-content-caption')).toEqual(true);
             });
         });
 
@@ -308,7 +306,6 @@ describe('Kanban base module', () => {
                 expect(card.children[0].classList.contains('e-card-header')).toEqual(true);
                 expect(card.children[1].classList.contains('e-card-content')).toEqual(true);
                 expect(card.children[0].firstElementChild.classList.contains('e-card-header-caption')).toEqual(true);
-                expect(card.children[1].firstElementChild.classList.contains('e-card-content-caption')).toEqual(true);
             });
         });
 
@@ -324,7 +321,6 @@ describe('Kanban base module', () => {
                 expect(card.children[0].classList.contains('e-card-header')).toEqual(true);
                 expect(card.children[1].classList.contains('e-card-content')).toEqual(true);
                 expect(card.children[0].firstElementChild.classList.contains('e-card-header-caption')).toEqual(true);
-                expect(card.children[1].firstElementChild.classList.contains('e-card-content-caption')).toEqual(true);
             });
         });
     });
@@ -514,13 +510,13 @@ describe('Kanban base module', () => {
                 expect(child.classList.contains('e-content-cells')).toBe(true);
                 expect(child.getAttribute('data-role')).toBe('kanban-column');
                 expect(child.getAttribute('colspan')).toEqual(kanbanObj.columns.length.toString());
-                expect(child.childElementCount).toEqual(3);
-                expect(child.children[0].classList.contains('e-icons')).toEqual(true);
-                expect(child.children[0].classList.contains('e-swimlane-row-expand')).toEqual(true);
-                expect(child.children[1].classList.contains('e-swimlane-text')).toEqual(true);
-                expect(child.children[1].getAttribute('data-role')).toEqual(rows[i]);
-                expect(child.children[1].innerHTML).toEqual(rows[i]);
-                expect(child.children[2].classList.contains('e-swimlane-item-count')).toEqual(true);
+                expect(child.children[0].childElementCount).toEqual(3);
+                expect(child.children[0].children[0].classList.contains('e-icons')).toEqual(true);
+                expect(child.children[0].children[0].classList.contains('e-swimlane-row-expand')).toEqual(true);
+                expect(child.children[0].children[1].children[0].classList.contains('e-swimlane-text')).toEqual(true);
+                expect(child.children[0].children[1].children[0].getAttribute('data-role')).toEqual(rows[i]);
+                expect(child.children[0].children[1].children[0].innerHTML).toEqual(rows[i]);
+                expect(child.children[0].children[2].classList.contains('e-item-count')).toEqual(true);
             }
         });
 
@@ -554,7 +550,6 @@ describe('Kanban base module', () => {
                 expect(card.children[0].classList.contains('e-card-header')).toEqual(true);
                 expect(card.children[1].classList.contains('e-card-content')).toEqual(true);
                 expect(card.children[0].firstElementChild.classList.contains('e-card-header-caption')).toEqual(true);
-                expect(card.children[1].firstElementChild.classList.contains('e-card-content-caption')).toEqual(true);
             });
         });
 
@@ -571,7 +566,6 @@ describe('Kanban base module', () => {
                 expect(card.children[0].classList.contains('e-card-header')).toEqual(true);
                 expect(card.children[1].classList.contains('e-card-content')).toEqual(true);
                 expect(card.children[0].firstElementChild.classList.contains('e-card-header-caption')).toEqual(true);
-                expect(card.children[1].firstElementChild.classList.contains('e-card-content-caption')).toEqual(true);
             });
         });
 
@@ -588,7 +582,6 @@ describe('Kanban base module', () => {
                 expect(card.children[0].classList.contains('e-card-header')).toEqual(true);
                 expect(card.children[1].classList.contains('e-card-content')).toEqual(true);
                 expect(card.children[0].firstElementChild.classList.contains('e-card-header-caption')).toEqual(true);
-                expect(card.children[1].firstElementChild.classList.contains('e-card-content-caption')).toEqual(true);
             });
         });
 
@@ -605,7 +598,6 @@ describe('Kanban base module', () => {
                 expect(card.children[0].classList.contains('e-card-header')).toEqual(true);
                 expect(card.children[1].classList.contains('e-card-content')).toEqual(true);
                 expect(card.children[0].firstElementChild.classList.contains('e-card-header-caption')).toEqual(true);
-                expect(card.children[1].firstElementChild.classList.contains('e-card-content-caption')).toEqual(true);
             });
         });
 
@@ -624,13 +616,13 @@ describe('Kanban base module', () => {
         });
 
         it('showItemCount property testing', () => {
-            expect(kanbanObj.element.querySelectorAll('.e-total-card').length).toEqual(0);
+            expect(kanbanObj.element.querySelectorAll('.e-header-cells .e-item-count').length).toEqual(0);
             kanbanObj.columns[0].showItemCount = true;
             kanbanObj.dataBind();
-            expect(kanbanObj.element.querySelectorAll('.e-total-card').length).toEqual(1);
+            expect(kanbanObj.element.querySelectorAll('.e-header-cells .e-item-count').length).toEqual(1);
             kanbanObj.columns[1].showItemCount = true;
             kanbanObj.dataBind();
-            expect(kanbanObj.element.querySelectorAll('.e-total-card').length).toEqual(2);
+            expect(kanbanObj.element.querySelectorAll('.e-header-cells .e-item-count').length).toEqual(2);
         });
 
         it('swimlane descending order rendering', () => {
@@ -856,16 +848,17 @@ describe('Kanban base module', () => {
             let headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             for (let i: number = 0; i < headerCells.length; i++) {
                 let header: Element = headerCells[i];
+                let key: string = kanbanObj.columns[i].keyField;
                 expect(header.classList.contains('e-template')).toBe(true);
                 expect(header.getAttribute('data-role')).toBe('kanban-column');
-                expect(header.getAttribute('data-key')).toBe(kanbanObj.columns[i].keyField);
-                expect(header.firstElementChild.children[0].classList.contains('header-template-wrap')).toBe(true);
-                expect(header.firstElementChild.children[0].childElementCount).toBe(2);
-                expect(header.firstElementChild.children[0].children[0].classList.contains('header-icon')).toBe(true);
-                expect(header.firstElementChild.children[0].children[0].classList.contains('e-icons')).toBe(true);
-                expect(header.firstElementChild.children[0].children[0].classList.contains(kanbanObj.columns[i].keyField)).toBe(true);
-                expect(header.firstElementChild.children[0].children[1].classList.contains('header-text')).toBe(true);
-                expect(header.firstElementChild.children[0].children[1].innerHTML).toBe(kanbanObj.columns[i].headerText);
+                expect(header.getAttribute('data-key')).toBe(key);
+                expect(header.firstElementChild.children[0].children[0].classList.contains('header-template-wrap')).toBe(true);
+                expect(header.firstElementChild.children[0].children[0].childElementCount).toBe(2);
+                expect(header.firstElementChild.children[0].children[0].children[0].classList.contains('header-icon')).toBe(true);
+                expect(header.firstElementChild.children[0].children[0].children[0].classList.contains('e-icons')).toBe(true);
+                expect(header.firstElementChild.children[0].children[0].children[0].classList.contains(key)).toBe(true);
+                expect(header.firstElementChild.children[0].children[0].children[1].classList.contains('header-text')).toBe(true);
+                expect(header.firstElementChild.children[0].children[0].children[1].innerHTML).toBe(kanbanObj.columns[i].headerText);
             }
         });
         it('Layout rendering with template class in card', () => {

@@ -95,7 +95,8 @@ export class AjaxHandler {
                     try {
                         data = JSON.parse(data);
                     } catch (error) {
-                        if (data !== 'Document cache is cleared') {
+                        // tslint:disable-next-line:max-line-length
+                        if (data === 'Document stream does not exist in the cache' || data === 'Document Reference pointer does not exist in the cache') {
                             isSkip = true;
                         }
                     }

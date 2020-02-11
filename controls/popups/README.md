@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-popups/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-popups)
-
 # ej2-popups
 
 The popup components such as dialog and tooltip are used to display information in a popup to users. The dialog component provides modal/non-modal (modeless), built-in buttons, positioning, animation, draggable, and template features and helps to create alert, prompt, and confirmation dialogs easily. The tooltip component is used to display a popup that contains some information or message when you hover, click, focus, or touch an element. The information displayed in the tooltip can include simple text, images, hyperlinks, or custom templates.

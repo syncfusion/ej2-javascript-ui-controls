@@ -3,74 +3,70 @@ import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../spec/test-helper.spec';
 
 // tslint:disable-next-line:max-line-length
-import { LayoutViewer, StyleDialog, StylesDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, TableOfContentsDialog, CellOptionsDialog, ListDialog, PageSetupDialog, BookmarkDialog } from '../../src/index';
+import { LayoutViewer, StyleDialog, StylesDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, TableOfContentsDialog, CellOptionsDialog, ListDialog, PageSetupDialog, BookmarkDialog, DocumentHelper } from '../../src/index';
 import { Editor, EditorHistory } from '../../src/index';
 import { Selection, PageLayoutViewer } from '../../src/index';
 /**
  * RTL Spec
  */
 describe('Table Dialog testing', () => {
-  let editor: DocumentEditor = undefined;
-  let viewer: LayoutViewer;
-  let tablePropertiesDialog: TablePropertiesDialog;
-  let borderAndShadingDialog: BordersAndShadingDialog;
-  beforeAll((done) => {
-      let ele: HTMLElement = createElement('div', { id: 'container' });
-      document.body.appendChild(ele);
-      // tslint:disable-next-line:max-line-length
-      DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, BordersAndShadingDialog, EditorHistory, TableOptionsDialog, CellOptionsDialog);
-      editor = new DocumentEditor({enableRtl: true, enableSelection: true, enableEditor: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true, enableEditorHistory: true, enableTableOptionsDialog: true });
-      (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-      (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-      (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-      (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-      editor.appendTo('#container');
-      tablePropertiesDialog = editor.tablePropertiesDialogModule;
-      borderAndShadingDialog = editor.bordersAndShadingDialogModule;
-      setTimeout(function () {
-          done();
-      }, 100);
-  });
-  afterAll((done) => {
-      document.body.removeChild(document.getElementById('container'));
-      editor.destroy();
-      tablePropertiesDialog.destroy();
-      borderAndShadingDialog.destroy();
-      editor = undefined;
-      viewer = undefined;
-      setTimeout(function () {
-          done();
-      }, 1000);
-  });
-  it('Show tableProperties, tableOptions, borders and shading dialog in rtl view', () => {
-      editor.open(getJson());
-      editor.showTablePropertiesDialog();
-      editor.showTableOptionsDialog();
-      editor.showBordersAndShadingDialog();
-  });
+    let editor: DocumentEditor = undefined;
+    let tablePropertiesDialog: TablePropertiesDialog;
+    let borderAndShadingDialog: BordersAndShadingDialog;
+    beforeAll((done) => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        // tslint:disable-next-line:max-line-length
+        DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, BordersAndShadingDialog, EditorHistory, TableOptionsDialog, CellOptionsDialog);
+        editor = new DocumentEditor({ enableRtl: true, enableSelection: true, enableEditor: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true, enableEditorHistory: true, enableTableOptionsDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        tablePropertiesDialog = editor.tablePropertiesDialogModule;
+        borderAndShadingDialog = editor.bordersAndShadingDialogModule;
+        setTimeout(function () {
+            done();
+        }, 100);
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        tablePropertiesDialog.destroy();
+        borderAndShadingDialog.destroy();
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Show tableProperties, tableOptions, borders and shading dialog in rtl view', () => {
+        editor.open(getJson());
+        editor.showTablePropertiesDialog();
+        editor.showTableOptionsDialog();
+        editor.showBordersAndShadingDialog();
+    });
 });
 
 
 describe('List Dialog testing', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, ListDialog);
         // tslint:disable-next-line:max-line-length
         editor = new DocumentEditor({ enableRtl: true, enableSelection: true, enableEditor: true, isReadOnly: false, enableListDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         setTimeout(function () {
             done();
         }, 1000);
@@ -95,12 +91,13 @@ describe('Style dialog validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, StyleDialog, StylesDialog, FontDialog, EditorHistory);
         // tslint:disable-next-line:max-line-length
-        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true, enableRtl: true, enableFontDialog: true, enableParagraphDialog: true
+        editor = new DocumentEditor({
+            enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true, enableRtl: true, enableFontDialog: true, enableParagraphDialog: true
         });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
         stylesDialog = editor.stylesDialogModule;
@@ -132,13 +129,13 @@ describe('TableOfContents dialog validation', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(TableOfContentsDialog, Selection, Editor, EditorHistory);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableRtl: true});
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableRtl: true });
         editor.enableEditorHistory = true;
         editor.enableTableOfContentsDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         tableOfContents = editor.tableOfContentsDialogModule;
     });
@@ -172,10 +169,10 @@ describe('PageSetup Dialog Test Case Validation', () => {
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableRtl: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule;
         dialog.show();
@@ -197,7 +194,7 @@ describe('PageSetup Dialog Test Case Validation', () => {
 
 describe('BookMark add validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     beforeAll((): void => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
@@ -205,12 +202,12 @@ describe('BookMark add validation', () => {
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, EditorHistory);
         // tslint:disable-next-line:max-line-length
         editor = new DocumentEditor({ enableEditorHistory: true, enableRtl: true, enableEditor: true, enableSelection: true, enableBookmarkDialog: true, isReadOnly: false, enableContextMenu: true, enableFontDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
 
     });
     afterAll((done) => {

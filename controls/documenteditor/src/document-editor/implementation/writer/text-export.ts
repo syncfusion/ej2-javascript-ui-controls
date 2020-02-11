@@ -1,7 +1,7 @@
-import { LayoutViewer } from '../index';
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { HeaderFooters } from '../viewer/page';
+import { DocumentHelper } from '../viewer';
 /** 
  * Exports the document to Text format.
  */
@@ -23,8 +23,8 @@ export class TextExport {
     /**
      * @private
      */
-    public save(viewer: LayoutViewer, fileName: string): void {
-        this.serialize(viewer);
+    public save(documentHelper: DocumentHelper, fileName: string): void {
+        this.serialize(documentHelper);
         let writer: StreamWriter = new StreamWriter();
         this.writeInternal(writer);
         writer.save(fileName + '.txt');
@@ -32,8 +32,8 @@ export class TextExport {
     /**
      * @private
      */
-    public saveAsBlob(viewer: LayoutViewer): Promise<Blob> {
-        this.serialize(viewer);
+    public saveAsBlob(documentHelper: DocumentHelper): Promise<Blob> {
+        this.serialize(documentHelper);
         let streamWriter: StreamWriter = new StreamWriter();
         this.writeInternal(streamWriter);
         let blob: Blob = streamWriter.buffer;
@@ -43,8 +43,8 @@ export class TextExport {
             resolve(blob);
         });
     }
-    private serialize(viewer: LayoutViewer): void {
-        let document: any = viewer.owner.sfdtExportModule.write();
+    private serialize(documentHelper: DocumentHelper): void {
+        let document: any = documentHelper.owner.sfdtExportModule.write();
         this.setDocument(document);
     }
     /**

@@ -12,7 +12,6 @@ import { ParagraphWidget } from '../../../src/index';
 
 describe('Style Load Testing', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer;
     let event: any;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
@@ -21,10 +20,10 @@ describe('Style Load Testing', () => {
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
 
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     afterAll((done) => {
@@ -48,7 +47,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Heading 2
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
@@ -59,7 +58,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Heading 3
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
@@ -70,7 +69,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Heading 4
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
@@ -81,7 +80,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Heading 5
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
@@ -92,7 +91,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Heading 6
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
@@ -103,7 +102,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Style 1
         expect(editor.selection.characterFormat.fontFamily).toBe("Algerian");
@@ -113,7 +112,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Normal + Style 1
         expect(editor.selection.characterFormat.fontFamily).toBe("Algerian");
@@ -123,7 +122,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Nomral
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -142,7 +141,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Line 2
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
@@ -153,7 +152,7 @@ describe('Style Load Testing', () => {
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         //Line 3
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
@@ -163,7 +162,7 @@ describe('Style Load Testing', () => {
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('NewList');
 

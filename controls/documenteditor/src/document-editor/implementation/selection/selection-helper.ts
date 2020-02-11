@@ -2,7 +2,7 @@ import { DocumentEditor } from '../../document-editor';
 import {
     Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, ElementBox, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
-    FieldElementBox, BlockWidget, BlockContainer, BookmarkElementBox
+    FieldElementBox, BlockWidget, BlockContainer, BookmarkElementBox, DocumentHelper
 } from '../index';
 import { ElementInfo, IndexInfo, HelperMethods } from '../index';
 import { Point } from '../index';
@@ -30,7 +30,7 @@ export class TextPosition {
      * @private
      */
     public location: Point = new Point(0, 0);
-    private viewer: LayoutViewer;
+    private documentHelper: DocumentHelper;
     /**
      * @private
      */
@@ -77,10 +77,15 @@ export class TextPosition {
     get hierarchicalPosition(): string {
         return this.getHierarchicalIndexInternal();
     }
+
     constructor(owner: DocumentEditor) {
         this.owner = owner;
-        this.viewer = this.owner.viewer;
+        this.documentHelper = this.owner.documentHelper;
     }
+    get viewer(): LayoutViewer {
+        return this.owner.viewer;
+    }
+
     /**
      * Return clone of current text position
      * @private
@@ -177,7 +182,7 @@ export class TextPosition {
             position.index = position.index.substring(index).replace(';', '');
         }
         index = parseInt(newValue, 10);
-        page = this.viewer.pages[index];
+        page = this.documentHelper.pages[index];
         return page;
     }
     /**
@@ -1595,7 +1600,7 @@ export class TextPosition {
         } else {
             firstElement = selection.getFirstElementInternal(currentLine);
         }
-        this.viewer.moveCaretPosition = 1;
+        this.documentHelper.moveCaretPosition = 1;
         let startOffset: number = selection.getStartOffset(this.currentWidget.paragraph);
         if (isNullOrUndefined(firstElement) && this.offset > startOffset) {
             let index: number = 0;
@@ -1763,7 +1768,7 @@ export class TextPosition {
         let currentLine: LineWidget = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
         let firstElement: ElementBox = selection.getFirstElementInternal(currentLine);
         let isParaBidi: boolean = this.currentWidget.paragraph.paragraphFormat.bidi;
-        this.viewer.moveCaretPosition = 2;
+        this.documentHelper.moveCaretPosition = 2;
         if (isNullOrUndefined(firstElement) && this.offset === selection.getStartLineOffset(this.currentWidget)) {
             this.offset = selection.getParagraphLength(this.paragraph) + 1;
             this.updatePhysicalPosition(true);
@@ -2011,7 +2016,7 @@ export class TextPosition {
         this.location = undefined;
         this.currentWidget = undefined;
         this.owner = undefined;
-        this.viewer = undefined;
+        this.documentHelper = undefined;
     }
 }
 /** 

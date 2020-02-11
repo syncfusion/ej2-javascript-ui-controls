@@ -2,7 +2,7 @@
 import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, getValue, setValue, extend, getUniqueID } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, getValue, setValue, extend, getUniqueID, isBlazor } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -1189,7 +1189,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private closePopup(delay?: number, e?: MouseEvent | KeyboardEvent | Event): void {
         if (this.isPopupOpen() && this.popupWrapper) {
             let args: PopupEventArgs = {
-                popup: this.popupObj,
+                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj,
                 event: e || null,
                 cancel: false,
                 name: 'open'
@@ -1957,8 +1957,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private documentClickHandler(event: MouseEvent): void {
         let target: HTMLElement = <HTMLElement>event.target;
-        if ((isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(target) || (this.popupObj.element
-            && this.popupObj.element.contains(target))) && event.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(target) ||
+            (this.popupObj.element && this.popupObj.element.contains(target)))) && event.type !== 'touchstart') {
                 event.preventDefault();
             }
         if (!(closest(target, '#' + this.popupObj.element.id)) && target !== this.inputElement
@@ -2021,7 +2021,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.closePopup(0, e);
         removeClass([this.inputWrapper.container], [FOCUS]);
         let blurArguments: BlurEventArgs = {
-            model: this
+            model: (isBlazor() && this.isServerRendered) ? null : this
         };
         this.trigger('blur', blurArguments);
         if (this.getText() !== this.inputElement.value) {
@@ -2044,7 +2044,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (document.activeElement === this.inputElement) {
             this.inputElement.blur();
             let blurArguments: BlurEventArgs = {
-                model: this
+                model: (isBlazor() && this.isServerRendered) ? null : this
             };
             this.trigger('blur', blurArguments);
         }
@@ -2057,7 +2057,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private inputFocusHandler(): void {
         let focusArguments: FocusEventArgs = {
-            model: this
+            model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (!this.readonly && !Browser.isDevice) { this.selectInputText(); }
         this.trigger('focus', focusArguments);
@@ -2104,7 +2104,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 document.body.appendChild(this.mobileTimePopupWrap);
             }
             this.openPopupEventArgs = {
-                popup: this.popupObj || null,
+                popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || null,
                 cancel: false,
                 event: event || null,
                 name: 'open',

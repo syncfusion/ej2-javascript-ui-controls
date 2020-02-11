@@ -1,12 +1,12 @@
 import { SelectionCharacterFormat } from '../index';
 import { Selection } from '../index';
-import { LayoutViewer } from '../index';
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { DropDownList, ComboBox } from '@syncfusion/ej2-dropdowns';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { WCharacterFormat } from '../format/character-format';
 import { Underline, Strikethrough, BaselineAlignment } from '../../base/types';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Font dialog is used to modify formatting of selected text.
@@ -14,7 +14,7 @@ import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 /* tslint:disable:no-any */
 export class FontDialog {
     private fontStyleInternal: string = undefined;
-    private owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private target: HTMLElement;
     private fontNameList: ComboBox = undefined;
     private fontStyleText: DropDownList = undefined;
@@ -72,8 +72,8 @@ export class FontDialog {
     /**
      * @private
      */
-    constructor(layoutViewer: LayoutViewer) {
-        this.owner = layoutViewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
     /**
      * @private
@@ -100,7 +100,7 @@ export class FontDialog {
         let superScriptElement: HTMLInputElement;
         let subScriptElement: HTMLInputElement;
         let doubleStrikeThroughElement: HTMLInputElement;
-        let id: string = this.owner.owner.containerId;
+        let id: string = this.documentHelper.owner.containerId;
         this.target = createElement('div', { id: id + '_insertFontDialog', className: 'e-de-font-dlg' });
         let fontDiv: HTMLElement = this.getFontDiv(locale, isRtl);
         this.target.appendChild(fontDiv);
@@ -143,7 +143,7 @@ export class FontDialog {
         fontEffectsDiv.appendChild(fontEffectSubDiv2);
         this.target.appendChild(fontEffectsDiv);
         this.colorPicker = new ColorPicker({
-            change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.owner.owner.locale
+            change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale
         });
         this.colorPicker.appendTo(fontColorElement);
         this.strikethroughBox = new CheckBox({
@@ -181,7 +181,7 @@ export class FontDialog {
     private getFontSizeDiv(locale: L10n, isRtl?: boolean): HTMLElement {
         let fontSize: HTMLSelectElement;
         let sizeDiv: HTMLElement;
-        let id: string = this.owner.owner.containerId;
+        let id: string = this.documentHelper.owner.containerId;
         sizeDiv = createElement('div', { id: id + '_fontSizeAndUnderlineDiv', className: 'e-de-font-dlg-padding e-de-font-dlg-display' });
         let sizeSubDiv1: HTMLElement = createElement('div', { id: id + '_fontSizeAndUnderlineSubDiv1' });
         let sizeLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: locale.getConstant('Size') });
@@ -216,7 +216,7 @@ export class FontDialog {
         return sizeDiv;
     }
     private getFontDiv(locale: L10n, isRtl?: boolean): HTMLElement {
-        let id: string = this.owner.owner.containerId;
+        let id: string = this.documentHelper.owner.containerId;
         let fontDiv: HTMLElement = createElement('div', { id: id + '_fontDiv', className: 'e-de-font-dlg-display' });
         let fontSubDiv1: HTMLElement = createElement('div', { id: id + '_fontSubDiv1' });
         let fontNameLabel: HTMLElement = createElement('label', {
@@ -264,18 +264,18 @@ export class FontDialog {
         if (characterFormat) {
             this.characterFormat = characterFormat;
         }
-        let locale: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        locale.setLocale(this.owner.owner.locale);
+        let locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        locale.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initFontDialog(locale, this.owner.owner.enableRtl);
+            this.initFontDialog(locale, this.documentHelper.owner.enableRtl);
         }
-        this.owner.dialog.header = locale.getConstant('Font');
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.beforeOpen = this.loadFontDialog;
-        this.owner.dialog.close = this.closeFontDialog;
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.header = locale.getConstant('Font');
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.beforeOpen = this.loadFontDialog;
+        this.documentHelper.dialog.close = this.closeFontDialog;
+        this.documentHelper.dialog.buttons = [{
             click: this.onInsertFontFormat,
             buttonModel: { content: locale.getConstant('Ok'), cssClass: 'e-flat e-font-okay', isPrimary: true }
         },
@@ -283,19 +283,19 @@ export class FontDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: locale.getConstant('Cancel'), cssClass: 'e-flat e-font-cancel' }
         }];
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
      */
     public loadFontDialog = (): void => {
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
         let characterFormat: WCharacterFormat | SelectionCharacterFormat;
         if (this.characterFormat) {
             characterFormat = this.characterFormat;
         } else {
-            characterFormat = this.owner.owner.selection.characterFormat;
+            characterFormat = this.documentHelper.owner.selection.characterFormat;
         }
         this.fontNameList.value = characterFormat.fontFamily;
         this.fontNameList.dataBind();
@@ -348,8 +348,8 @@ export class FontDialog {
             this.superscript.checked = false;
             this.subscript.checked = false;
         }
-        if (this.owner.selection.caret.style.display !== 'none') {
-            this.owner.selection.caret.style.display = 'none';
+        if (this.documentHelper.selection.caret.style.display !== 'none') {
+            this.documentHelper.selection.caret.style.display = 'none';
         }
     }
     /**
@@ -357,13 +357,13 @@ export class FontDialog {
      */
     public closeFontDialog = (): void => {
         this.unWireEventsAndBindings();
-        this.owner.updateFocus();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
      */
     public onCancelButtonClick = (): void => {
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
         this.unWireEventsAndBindings();
     }
     /**
@@ -401,11 +401,11 @@ export class FontDialog {
             format.fontFamily = this.fontFamily;
         }
         if (!this.characterFormat) {
-            this.onCharacterFormat(this.owner.selection, format);
+            this.onCharacterFormat(this.documentHelper.selection, format);
         } else {
-            this.owner.owner.styleDialogModule.updateCharacterFormat();
+            this.documentHelper.owner.styleDialogModule.updateCharacterFormat();
         }
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
     }
     /**
      * Applies character format 
@@ -414,19 +414,19 @@ export class FontDialog {
      * @private
      */
     public onCharacterFormat(selection: Selection, format: WCharacterFormat): void {
-        this.owner.owner.editorModule.initHistory('CharacterFormat');
+        this.documentHelper.owner.editorModule.initHistory('CharacterFormat');
         if (selection.isEmpty) {
             if (selection.start.offset === selection.getParagraphLength(selection.start.paragraph)) {
                 // tslint:disable-next-line:max-line-length
-                this.owner.owner.editorModule.applyCharFormatValueInternal(selection, selection.start.paragraph.characterFormat, undefined, format);
-                this.owner.owner.editorModule.reLayout(selection);
+                this.documentHelper.owner.editorModule.applyCharFormatValueInternal(selection, selection.start.paragraph.characterFormat, undefined, format);
+                this.documentHelper.owner.editorModule.reLayout(selection);
             }
-            this.owner.updateFocus();
+            this.documentHelper.updateFocus();
             return;
         } else {
             //Iterate and update formating.
-            this.owner.owner.editorModule.setOffsetValue(this.owner.selection);
-            this.owner.owner.editorModule.updateSelectionCharacterFormatting('CharacterFormat', format, false);
+            this.documentHelper.owner.editorModule.setOffsetValue(this.documentHelper.selection);
+            this.documentHelper.owner.editorModule.updateSelectionCharacterFormatting('CharacterFormat', format, false);
         }
     }
     /**
@@ -526,7 +526,7 @@ export class FontDialog {
      * @private
      */
     public destroy(): void {
-        this.owner = undefined;
+        this.documentHelper = undefined;
         if (this.characterFormat) {
             this.characterFormat.destroy();
             this.characterFormat = undefined;

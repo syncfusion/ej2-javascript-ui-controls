@@ -497,11 +497,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.annotationsModule.renderAnnotationElements();
         }
         this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
+        removeElement('gauge-measuretext');
     }
 
     private renderBorder(): void {
         let width: number = this.border.width;
-        if (width > 0) {
+        if (width > 0 || (this.background || this.themeStyle.backgroundColor)) {
             let rect: RectOption = new RectOption(
                 this.element.id + '_LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1,
                 new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width), null, null);

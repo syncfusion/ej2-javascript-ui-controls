@@ -2,7 +2,7 @@
 import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';
 import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';
 import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend, isBlazor } from '@syncfusion/ej2-base';
 import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -1415,7 +1415,7 @@ export class DateRangePicker extends CalendarBase {
     private inputFocusHandler(): void {
         this.preventBlur = false;
         let focusArguments: FocusEventArgs = {
-            model: this
+            model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (!this.preventFocus) {
             this.preventFocus = true;
@@ -1452,7 +1452,7 @@ export class DateRangePicker extends CalendarBase {
                         if (!this.preventBlur && document.activeElement !== this.inputElement) {
                             this.preventFocus = false;
                             let blurArguments: BlurEventArgs = {
-                                model: this
+                                model: (isBlazor() && this.isServerRendered) ? null : this
                             };
                             this.trigger('blur', blurArguments);
                         }
@@ -1494,7 +1494,7 @@ export class DateRangePicker extends CalendarBase {
             if (!this.preventBlur && document.activeElement !== this.inputElement) {
                 this.preventFocus = false;
                 let blurArguments: BlurEventArgs = {
-                    model: this
+                    model: (isBlazor() && this.isServerRendered) ? null : this
                 };
                 this.trigger('blur', blurArguments);
             }
@@ -4152,10 +4152,10 @@ export class DateRangePicker extends CalendarBase {
                     document.body.appendChild(this.mobileRangePopupWrap);
                 }
                 this.openEventArgs = {
-                    popup: this.popupObj || null,
+                    popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj || null,
                     cancel: false,
                     date: this.inputElement.value,
-                    model: this,
+                    model: (isBlazor() && this.isServerRendered) ? null : this,
                     event: event ? event : null,
                     appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
@@ -4215,9 +4215,9 @@ export class DateRangePicker extends CalendarBase {
             if (this.isPopupOpen()) {
                 this.closeEventArgs = {
                     cancel: false,
-                    popup: this.popupObj,
+                    popup: (isBlazor() && this.isServerRendered) ? null : this.popupObj,
                     date: this.inputElement.value,
-                    model: this,
+                    model: (isBlazor() && this.isServerRendered) ? null : this,
                     event: event ? event : null
                 };
                 let eventArgs: RangePopupEventArgs = this.closeEventArgs;

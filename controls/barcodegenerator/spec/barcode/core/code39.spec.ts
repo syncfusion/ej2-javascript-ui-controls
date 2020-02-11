@@ -36,7 +36,7 @@ describe('Barcode Control -width', () => {
 
             let barcode = document.getElementById('barcode1')
             let children: HTMLElement = barcode.children[0] as HTMLElement
-            expect(children.getAttribute('width') === '200').toBe(true);
+            expect(children.getAttribute('width') === '200'&& barcode.children[0].getAttribute("id") ==="barcode1content").toBe(true);
             done();
         });
     });

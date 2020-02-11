@@ -182,4 +182,30 @@ describe('EJ2-6660-Header template', () => {
         });
     });
 
+    describe('Value accessor for header content', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: false,
+                    allowGrouping: true,
+                    columns: [
+                        { field: 'ShipCity', headerText: 'shipcity',headerValueAccessor:(field: string, column: object ): string=> { return "HeaderName"; }},
+                        { field: 'EmployeeID' },
+                        { field: 'CustomerID', headerText: 'Customer ID' },
+                    ]
+                }, done);
+        });
+        it('header text testing', () => {
+            let innerTxt=gridObj.getHeaderContent().querySelectorAll('th')[0].innerText;
+            expect(innerTxt).toBe('HeaderName');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

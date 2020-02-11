@@ -1,4 +1,4 @@
-import { PageLayoutViewer, } from '../../src/index';
+import { PageLayoutViewer, DocumentHelper, } from '../../src/index';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { Page, Rect } from '../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
@@ -353,25 +353,25 @@ let json: any = {
  */
 describe('Print testing', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
+    let documentHelper: DocumentHelper;
     let print: Print;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enablePrint: true });
         DocumentEditor.Inject(Print);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        viewer = editor.viewer as PageLayoutViewer;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper=editor.documentHelper;
         print = new Print();
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         setTimeout(() => {
             done();
         }, 1000);
@@ -383,7 +383,7 @@ describe('Print testing', () => {
         };
         win.ready = true;
         let browserUserAgent: string = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
-        print.printWindow(viewer as PageLayoutViewer, browserUserAgent, win);
+        print.printWindow(documentHelper, browserUserAgent, win);
         spyOn(win, 'print');
         win.ready = true;
         setTimeout(() => {
@@ -397,7 +397,7 @@ describe('Print testing', () => {
             close: () => { }, print: () => { }, focus: () => { }
         };
         win.ready = true;
-        print.print(viewer as PageLayoutViewer, win);
+        print.print(documentHelper, win);
         spyOn(win, 'print');
         win.ready = false;
         setTimeout(() => {
@@ -407,9 +407,9 @@ describe('Print testing', () => {
     });
     it('Get Print document Width validation', () => {
         let pages: Page[] = [];
-        let page1: Page = new Page();
+        let page1: Page = new Page(editor.documentHelper);
         page1.boundingRectangle = new Rect(96, 96, 816, 1056);
-        let page2: Page = new Page();
+        let page2: Page = new Page(editor.documentHelper);
         page1.boundingRectangle = new Rect(96, 96, 816, 1056);
         pages.push(page1);
         pages.push(page2);
@@ -418,9 +418,9 @@ describe('Print testing', () => {
     });
     it('Generate Print Content validation', () => {
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper=editor.documentHelper;
         let element: HTMLDivElement = document.createElement('div');
-        print.generatePrintContent(viewer, element);
+        print.generatePrintContent(documentHelper, element);
         expect(element.childNodes.length).not.toBe(0);
     });
     it('Print API testing', () => {
@@ -428,43 +428,42 @@ describe('Print testing', () => {
             document: { write: () => { }, close: () => { } },
             close: () => { }, print: () => { }, focus: () => { }
         };
-        expect(() => { editor.printModule.print(editor.viewer as PageLayoutViewer, win) }).not.toThrowError();
+        expect(() => { editor.printModule.print(editor.documentHelper, win) }).not.toThrowError();
     });
 });
 
 describe('Print testing 2', () => {
     let editor: DocumentEditor;
-    let viewer: PageLayoutViewer;
     let print: Print;
+    let documentHelper:DocumentHelper;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enablePrint: true });
         DocumentEditor.Inject(Print);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        viewer = editor.viewer as PageLayoutViewer;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentHelper=editor.documentHelper;
         print = new Print();
     });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        viewer = undefined;
         setTimeout(() => {
             done();
         }, 1000);
     });
     it('Test print canvas alpha after enabling HF', () => {
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper=editor.documentHelper;
         editor.open(JSON.stringify(json));        
-        let page: Page = viewer.pages[0];
-        viewer.owner.enableHeaderAndFooter = true;
+        let page: Page =  documentHelper.pages[0];
+        editor.documentHelper.owner.enableHeaderAndFooter = true;
         let element: HTMLDivElement = document.createElement('div');
-        print.generatePrintContent(viewer, element);
-        expect((viewer.render as any).pageContext.globalAlpha).toBe(1);
+        print.generatePrintContent(documentHelper, element);
+        expect((documentHelper.render as any).pageContext.globalAlpha).toBe(1);
     });
 });

@@ -289,9 +289,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * Gets or sets the additional attribute to `HtmlAttributes` property in MultiSelect,
      * which helps to add attribute like title, name etc, input should be key value pair.
      * 
-     * {% codeBlock src="multiselect/html-attributes-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="multiselect/html-attributes-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='multiselect/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})
@@ -395,6 +393,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     public text: string;
     /**
      * Selects the list item which maps the data `value` field in the component.
+     * {% codeBlock src='multiselect/value/index.md' %}{% endcodeBlock %}
      * @default null
      * @isGenericType true
      */
@@ -631,6 +630,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private selectAllEventEle: HTMLLIElement[] = [];
     private filterParent: HTMLElement;
     private removeIndex: number;
+    private isDynamicDataChange: boolean = false;
     private enableRTL(state: boolean): void {
         if (state) {
             this.overAllWrapper.classList.add(RTL_CLASS);
@@ -898,6 +898,20 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.updateSelectElementData(this.allowFiltering);
         let proxy: MultiSelect = this;
         let valuecheck: string[] = [];
+        if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value !== null && this.value.length > 0) {
+            let items: { [key: string]: Object }[] = [];
+            this.isDynamicDataChange = false;
+            for (let k: number = 0; k < this.value.length; k++) {
+            let itemsData: string | number | boolean | {[key: string]: Object} = this.getDataByValue(this.value[k]);
+                if (itemsData) {
+                    // tslint:disable-next-line
+                    items.push((itemsData as any)[this.fields.value]);   // remove the condition for hybrid
+                }
+            }
+            if (items.length === 0) {
+                this.setProperties({ 'value': null });
+            }
+        }
         if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
             for (let i: number = 0; i < this.value.length; i++) {
                 let checkEle: Element = this.findListElement(
@@ -1259,7 +1273,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private scrollFocusStatus: boolean = false;
     private keyDownStatus: boolean = false;
-    private onBlur(eve?: MouseEvent): void {
+    private onBlur(eve?: MouseEvent, isDocClickFromCheck?: boolean): void {
         let target: HTMLElement;
         if (!isNullOrUndefined(eve)) {
             target = <HTMLElement>eve.relatedTarget;
@@ -1268,7 +1282,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.mode !== 'CheckBox') { this.inputElement.focus(); }
             return;
         }
-        if (this.mode === 'CheckBox' && Browser.isIE && !isNullOrUndefined(eve)) {
+        if (this.mode === 'CheckBox' && Browser.isIE && !isNullOrUndefined(eve) && !isDocClickFromCheck) {
             this.inputFocus = false;
             this.overAllWrapper.classList.remove(FOCUS);
             return;
@@ -2055,6 +2069,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.selectAllEventEle = [];
                     }
                     if (isClearAll) { this.clearAllCallback(eve as MouseEvent, isClearAll); }
+                    if (this.isSelectAll && isBlazor() && this.isServerRendered && (this.value && this.value.length === 0)) {
+                        this.updatedataValueItems(eve);
+                    }
                 }
             });
         }
@@ -2803,6 +2820,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.remoteCustomValue = false;
             this.addValue(value, text, e);
         }
+        if (this.isSelectAll && isBlazor() && this.isServerRendered && this.value && this.list &&
+            this.value.length === this.list.querySelectorAll('li').length) {
+            this.updatedataValueItems(e);
+            this.checkPlaceholderSize();
+        }
     }
     protected removeListSelection(): void {
         let className: string = this.hideSelectedItem ?
@@ -3417,7 +3439,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.findGroupStart(li[index]);
                 index++;
             }
-            this.deselectHeader();
             if (length > 50) {
                 setTimeout(
                     (): void => {
@@ -3426,15 +3447,23 @@ export class MultiSelect extends DropDownBase implements IInput {
                             this.findGroupStart(li[index]);
                             index++;
                         }
-                        this.deselectHeader();
-                        this.textboxValueUpdate(event);
+                        if (!(isBlazor() && this.isServerRendered)) {
+                            this.updatedataValueItems(event);
+                        }
                     },
                     0
                 );
             }
         }
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.updatedataValueItems(event);
+            this.checkPlaceholderSize();
+        }
+    }
+
+    private updatedataValueItems(event?: MouseEvent | KeyboardEventArgs): void {
+        this.deselectHeader();
         this.textboxValueUpdate(event);
-        this.checkPlaceholderSize();
     }
     private textboxValueUpdate(event?: MouseEvent | KeyboardEventArgs): void {
         if (this.mode !== 'Box' && !this.isPopupOpen()) {
@@ -3462,7 +3491,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             this.resetList(this.dataSource);
         }
-        if (this.value && this.value.length) {
+        if (this.value && this.value.length && !(isBlazor() && this.isServerRendered)) {
             this.setProperties({ 'value': this.value });
             this.refreshSelection();
         }
@@ -3517,6 +3546,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.isFirstClick = false;
         }
         if (this.getModuleName() === 'multiselect') {
+            this.isDynamicDataChange = true;
             this.filterAction = false;
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
         }
@@ -3536,8 +3566,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     break;
                 case 'showClearButton': this.updateClearButton(newProp.showClearButton);
                     break;
-                case 'text':
-                    this.updateVal(this.value, this.value, 'text');
+                case 'text': this.updateVal(this.value, this.value, 'text');
                     break;
                 case 'value':
                     this.updateVal(this.value, oldProp.value, 'value');

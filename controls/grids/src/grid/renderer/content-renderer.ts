@@ -248,6 +248,7 @@ export class ContentRender implements IRenderer {
             if (this.getTable().querySelector('.e-emptyrow')) {
                 remove(this.getTable().querySelector('.e-emptyrow'));
             }
+            this.rafCallback(arg)();
             if (frzCols) {
                 cont.style.overflowY = 'hidden';
                 (fCont as HTMLElement).style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
@@ -262,7 +263,6 @@ export class ContentRender implements IRenderer {
                     this.parent.selectRow(args[rowIndex]);
                 }
             }
-            this.rafCallback(arg)();
             return;
         }
         if (this.parent.enableVirtualization && this.parent.getFrozenColumns()) {

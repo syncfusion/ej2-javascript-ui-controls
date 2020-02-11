@@ -685,10 +685,8 @@ describe('Drag module', () => {
         });
 
         it('All multiple key columns cards are displayed none when drag the multiple column key testing', () => {
-            let cards: Element = kanbanObj.element.querySelector('.e-target-multi-clone').previousElementSibling;
-            for (let i: number = 0; i < cards.childElementCount; i++) {
-                expect(cards.children[i].classList.contains('e-multi-clone-card')).toBe(true);
-            }
+            let wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
+            expect(wrapper.classList.contains('e-multi-card-wrapper')).toBe(true);
         });
 
         it('Column key testing on multiple key testing', () => {
@@ -769,10 +767,8 @@ describe('Drag module', () => {
         });
 
         it('All multiple key columns cards are displayed none when drag the multiple column key testing', () => {
-            let cards: Element = kanbanObj.element.querySelector('.e-target-multi-clone').previousElementSibling;
-            for (let i: number = 0; i < cards.childElementCount; i++) {
-                expect(cards.children[i].classList.contains('e-multi-clone-card')).toBe(true);
-            }
+            let wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
+            expect(wrapper.classList.contains('e-multi-card-wrapper')).toBe(true);
         });
 
         it('Column key testing on multiple key testing', () => {
@@ -876,10 +872,8 @@ describe('Drag module', () => {
         });
 
         it('All multiple key columns cards are displayed none when drag the multiple column key testing', () => {
-            let cards: Element = kanbanObj.element.querySelector('.e-target-multi-clone').previousElementSibling;
-            for (let i: number = 0; i < cards.childElementCount; i++) {
-                expect(cards.children[i].classList.contains('e-multi-clone-card')).toBe(true);
-            }
+            let wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
+            expect(wrapper.classList.contains('e-multi-card-wrapper')).toBe(true);
         });
 
         it('Column key testing on multiple key testing', () => {
@@ -963,10 +957,8 @@ describe('Drag module', () => {
         });
 
         it('All multiple key columns cards are displayed none when drag the multiple column key testing', () => {
-            let cards: Element = kanbanObj.element.querySelector('.e-target-multi-clone').previousElementSibling;
-            for (let i: number = 0; i < cards.childElementCount; i++) {
-                expect(cards.children[i].classList.contains('e-multi-clone-card')).toBe(true);
-            }
+            let wrapper: Element = kanbanObj.element.querySelector('.e-content-cells .e-card-wrapper');
+            expect(wrapper.classList.contains('e-multi-card-wrapper')).toBe(true);
         });
 
         it('Column key testing on multiple key testing', () => {
@@ -1046,10 +1038,8 @@ describe('Drag module', () => {
 
         it('Dropped multi clone testing with columns', () => {
             util.triggerMouseEvent(droppedElement, 'mousemove', 100, 750);
-            let cards: Element = droppedElement.closest('.e-card-wrapper');
-            for (let i: number = 0; i < cards.childElementCount; i++) {
-                expect(cards.children[i].classList.contains('e-multi-clone-card')).not.toBe(true);
-            }
+            let wrapper: Element = droppedElement.closest('.e-card-wrapper');
+            expect(wrapper.classList.contains('e-multi-card-wrapper')).not.toBe(true);
             util.triggerMouseEvent(droppedElement, 'mouseup', 100, 750);
         });
     });
@@ -1077,7 +1067,7 @@ describe('Drag module', () => {
         });
 
         it('Single column collapse testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="Close"]');
@@ -1087,7 +1077,7 @@ describe('Drag module', () => {
         });
 
         it('Single column expand testing', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[3].children[0].lastElementChild;
             (<HTMLElement>element).click();
             expect(element.classList.contains('e-column-expand')).toBe(true);
             let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="Close"]');
@@ -1097,7 +1087,7 @@ describe('Drag module', () => {
         });
 
         it('Maintain single collapsed state testing - drag the card', () => {
-            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].lastElementChild;
+            let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(headerCell.classList.contains('e-column-collapse')).toBe(true);
             let contentCell: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells')[1];
             expect(contentCell.classList.contains('e-collapsed')).toBe(true);
@@ -1121,7 +1111,7 @@ describe('Drag module', () => {
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-card.duplicate').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
-            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].lastElementChild;
+            let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(element.classList.contains('e-column-collapse')).toBe(true);
             let ele: NodeList = util.getElement(kanbanObj, '.e-content-row:not(.e-swimlane-row) .e-content-cells[data-key="InProgress"]');
             for (let i: number = 0; i < ele.length; i++) {

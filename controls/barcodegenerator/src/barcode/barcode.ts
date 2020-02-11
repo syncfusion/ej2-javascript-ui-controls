@@ -194,14 +194,17 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     }
 
     private initialize(): void {
-        //Initialize the height of the  barcode generator
+        //Initialize the height of the barcode generator
         this.element.style.height = this.getElementSize(this.height);
-        //Initialize the width of the  barcode generator
+        //Initialize the width of the barcode generator
         this.element.style.width = this.getElementSize(this.width);
         let svgMode: string = this.mode;
         this.barcodeCanvas = this.barcodeRenderer.renderRootElement(
-            { id: this.element.id, height: svgMode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
-             width: svgMode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5 },
+            {
+                id: this.element.id + 'content',
+                height: svgMode === 'SVG' ? this.element.offsetHeight : this.element.offsetHeight * 1.5,
+                width: svgMode === 'SVG' ? this.element.offsetWidth : this.element.offsetWidth * 1.5
+            },
             this.backgroundColor, this.element.offsetWidth, this.element.offsetHeight) as HTMLElement;
         this.element.appendChild(this.barcodeCanvas);
     }

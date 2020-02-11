@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { FontDialog } from '../../../src/document-editor/implementation/dialogs/font-dialog';
 import { TestHelper } from '../../test-helper.spec';
@@ -16,19 +16,17 @@ import { LineInfo } from '../../../src/document-editor/implementation/editor/edi
 
 describe('Restrict editing dialog validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
     beforeAll((): void => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, BookmarkDialog, ContextMenu, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, enableBookmarkDialog: true, isReadOnly: false, enableContextMenu: true, enableFontDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
 
     });
     afterAll((done) => {
@@ -40,26 +38,26 @@ describe('Restrict editing dialog validation', () => {
         }, 2000);
     });
     it('Restrict editing pane open', () => {
-        viewer.restrictEditingPane.showHideRestrictPane(true);
-        viewer.restrictEditingPane.showHideRestrictPane(false);
+        editor.documentHelper.restrictEditingPane.showHideRestrictPane(true);
+        editor.documentHelper.restrictEditingPane.showHideRestrictPane(false);
     });
     it('open enforce dialog', () => {
-        viewer.restrictEditingPane.enforceProtectionDialog.show();
-        viewer.restrictEditingPane.enforceProtectionDialog.hideDialog();
+        editor.documentHelper.restrictEditingPane.enforceProtectionDialog.show();
+        editor.documentHelper.restrictEditingPane.enforceProtectionDialog.hideDialog();
     });
     it('open add user dialog', () => {
-        (viewer.restrictEditingPane as any).addUserDialog.show();
-        (viewer.restrictEditingPane as any).addUserDialog.hideDialog();
+        (editor.documentHelper.restrictEditingPane as any).addUserDialog.show();
+        (editor.documentHelper.restrictEditingPane as any).addUserDialog.hideDialog();
 
     });
     it('open unprotect document dialog', () => {
-        viewer.restrictEditingPane.unProtectDialog.show();
-        viewer.restrictEditingPane.unProtectDialog.hideDialog();
+        editor.documentHelper.restrictEditingPane.unProtectDialog.show();
+        editor.documentHelper.restrictEditingPane.unProtectDialog.hideDialog();
 
     });
     it('stop protection pane', () => {
-        viewer.restrictEditingPane.showStopProtectionPane(true);
-        (viewer.restrictEditingPane as any).closePane();
+        editor.documentHelper.restrictEditingPane.showStopProtectionPane(true);
+        (editor.documentHelper.restrictEditingPane as any).closePane();
     });
 
 });

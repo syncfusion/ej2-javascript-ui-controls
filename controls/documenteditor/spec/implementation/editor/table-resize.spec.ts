@@ -10,7 +10,6 @@ import { EditorHistory } from '../../../src/document-editor/implementation/edito
  */
 describe('Table Resize at simple case in table middle validation', () => {
     let editor: DocumentEditor = undefined;
-    let viewer: LayoutViewer = undefined;
     beforeAll((): void => {
         document.body.innerHTML = '';
         let ele: HTMLElement = createElement('div', {
@@ -20,10 +19,10 @@ describe('Table Resize at simple case in table middle validation', () => {
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableEditorHistory: true });
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
     });
     beforeEach((done) => {
@@ -41,7 +40,6 @@ describe('Table Resize at simple case in table middle validation', () => {
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(function () {
             done();
@@ -49,31 +47,31 @@ describe('Table Resize at simple case in table middle validation', () => {
     });
     it('Table resize at resizePosition 0', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.leftIndent).toBe(0);
-        editor.viewer.isRowOrCellResizing = true;
+        editor.documentHelper.isRowOrCellResizing = true;
         editor.editorModule.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
         editor.editorModule.tableResize.resizeNode = 0;
         editor.editorModule.tableResize.resizerPosition = 0;
         editor.editorModule.tableResize.resizeTableCellColumn(10);
-        editor.viewer.isRowOrCellResizing = false;
+        editor.documentHelper.isRowOrCellResizing = false;
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.leftIndent).not.toBe(0);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(true);
     });
     it('Table resize at resizePosition 1', () => {
-        editor.viewer.isRowOrCellResizing = true;
+        editor.documentHelper.isRowOrCellResizing = true;
         editor.editorModule.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
         editor.editorModule.tableResize.resizeNode = 0;
         editor.editorModule.tableResize.resizerPosition = 1;
         editor.editorModule.tableResize.resizeTableCellColumn(10);
-        editor.viewer.isRowOrCellResizing = false;
+        editor.documentHelper.isRowOrCellResizing = false;
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(false);
     });
     it('Table resize at resizePosition 2', () => {
-        editor.viewer.isRowOrCellResizing = true;
+        editor.documentHelper.isRowOrCellResizing = true;
         editor.editorModule.tableResize.currentResizingTable = editor.selection.start.paragraph.associatedCell.ownerTable;
         editor.editorModule.tableResize.resizeNode = 0;
         editor.editorModule.tableResize.resizerPosition = 2;
         editor.editorModule.tableResize.resizeTableCellColumn(10);
-        editor.viewer.isRowOrCellResizing = false;
+        editor.documentHelper.isRowOrCellResizing = false;
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(false);
     });
 });

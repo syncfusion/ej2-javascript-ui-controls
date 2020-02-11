@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TextPosition } from '../../src/index';
+import { TextPosition, DocumentHelper } from '../../src/index';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { createElement } from '@syncfusion/ej2-base';
@@ -12,25 +12,25 @@ import { WCharacterFormat } from '../../src/document-editor/implementation/forma
 let rtl_test_doc: object = { "sections": [{ "blocks": [{ "characterFormat": { "fontFamily": "Segoe UI", "fontColor": "#222222FF" }, "paragraphFormat": { "afterSpacing": 0.0, "styleName": "lf-text-block", "bidi": true }, "inlines": [{ "text": "Designing an app that looks good on such a wide variety of devices can be a big challenge. Fortunately, the Universal Windows Platform (UWP) provides a set of built-in features and universal building blocks that help you create a UX that works well with a variety of devices, screens, and input methods. ", "characterFormat": { "fontFamily": "Segoe UI", "fontColor": "#222222FF" } }, { "text": "This articles", "characterFormat": { "fontFamily": "Segoe UI", "fontColor": "#222222FF" } }, { "text": " describes the UI features and benefits of UWP apps and provides some high-level design guidance for creating your first UWP app.", "characterFormat": { "fontFamily": "Segoe UI", "fontColor": "#222222FF" } }] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "تصميم التطبيق الذي يبدو جيدا على مثل مجموعة واسعة من الأجهزة يمكن أن يكون تحديا كبيرا. لحسن الحظ، توفر منصة ويندوز العالمية (أوب) مجموعة من الميزات المضمنة وكتل البناء الشاملة التي تساعدك على إنشاء أوكس الذي يعمل بشكل جيد مع مجموعة متنوعة من الأجهزة والشاشات وطرق الإدخال. تصف هذه المقالة ميزات واجهة المستخدم وفوائد تطبيقات ووب وتوفر بعض إرشادات التصميم عالية المستوى لإنشاء أول تطبيق ووب الخاص بك", "characterFormat": { "bidi": true } }, { "text": "." }] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "Bidi true and " }, { "text": "Bdo" }, { "text": " None: sample " }, { "text": "sample" }, { "text": " " }, { "text": "sample" }, { "text": " " }, { "text": "sample" }, { "text": " " }, { "text": "sample" }, { "text": " " }, { "text": "sample" }, { "text": " " }, { "text": "sample" }, { "text": " " }, { "text": "سشةحمث سشةحمث سشةحمث سشةحمث ", "characterFormat": { "bidi": true } }, { "text": "דשצפךק דשצפךק דשצפךק דשצפלק", "characterFormat": { "bidi": true } }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "تصميم التطبيق الذي يبدو جيدا على مثل مجموعة واسعة من الأجهزة يمكن أن يكون تحديا كبيرا. لحسن الحظ، توفر منصة ويندوز العالمية (أوب) مجموعة من الميزات المضمنة وكتل البناء الشاملة التي تساعدك على إنشاء أوكس الذي يعمل بشكل جيد مع مجموعة متنوعة من الأجهزة والشاشات وطرق الإدخال. تصف هذه المقالة ميزات واجهة المستخدم وفوائد تطبيقات ووب وتوفر بعض إرشادات التصميم عالية المستوى لإنشاء أول تطبيق ووب الخاص بك", "characterFormat": { "bidi": true } }, { "text": "." }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": false } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Paragraph", "name": "lf-text-block", "basedOn": "Normal", "next": "Normal", "characterFormat": { "fontSize": 12.0, "fontFamily": "Times New Roman" }, "paragraphFormat": { "beforeSpacing": 5.0, "afterSpacing": 5.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple" } }] };
 describe('Rtl Keyboard selection for Shift left key', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(rtl_test_doc));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -75,25 +75,25 @@ describe('Rtl Keyboard selection for Shift left key', () => {
 });
 describe('Rtl Keyboard selection for Shift Right key', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(rtl_test_doc));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -135,25 +135,25 @@ describe('Rtl Keyboard selection for Shift Right key', () => {
 
 describe('Rtl Keyboard selection for Shift Home and End key', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(rtl_test_doc));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -196,7 +196,7 @@ describe('Rtl Keyboard selection for Shift Home and End key', () => {
     });
     it('Bidi for paragraph is false containing rtl text only- shift end', () => {
         editor.selection.handleShiftEndKey();
-       //TODO
+        //TODO
         // expect(editor.selection.start.offset).toBe(6);
     });
     it('Bidi for paragraph is false containing rtl text only at middle of paragraph', () => {
@@ -209,25 +209,25 @@ describe('Rtl Keyboard selection for Shift Home and End key', () => {
 
 describe('Rtl Keyboard selection for Home and End key', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(rtl_test_doc));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -270,25 +270,25 @@ describe('Rtl Keyboard selection for Home and End key', () => {
 });
 describe('Rtl Keyboard selection for Left and Right key', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(rtl_test_doc));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -334,25 +334,25 @@ describe('Rtl Keyboard selection for Left and Right key', () => {
 
 describe('Rtl Keyboard selection for control shift left and right key', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(rtl_test_doc));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -380,25 +380,25 @@ describe('Rtl Keyboard selection for control shift left and right key', () => {
 
 describe('Rtl Keyboard selection for Shift up and down key', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(rtl_test_doc));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();
@@ -439,25 +439,25 @@ let rtlLtr: any = { "sections": [{ "blocks": [{ "paragraphFormat": { "styleName"
 
 describe('Rtl and ltr text combinations validation', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(rtlLtr));
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
         editor.destroy();
         editor = undefined;
-        viewer = undefined;
+        documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
             done();

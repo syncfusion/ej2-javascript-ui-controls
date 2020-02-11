@@ -12,10 +12,10 @@ describe('Section pages field feature validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(fieldJson));
     });
@@ -28,7 +28,7 @@ describe('Section pages field feature validation', () => {
         }, 1000);
     });
     it('Header section page validation', () => {
-        let fieldElement:FieldTextElementBox=((editor.viewer.pages[0].headerWidget.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as FieldTextElementBox;
+        let fieldElement:FieldTextElementBox=((editor.documentHelper.pages[0].headerWidget.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[3] as FieldTextElementBox;
         expect(fieldElement.text).toBe('1');
     });
 });
@@ -43,10 +43,10 @@ describe('Tab width validation when paragraph contains hanging indent', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.open(JSON.stringify(tab));
     });

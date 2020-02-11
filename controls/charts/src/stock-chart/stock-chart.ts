@@ -8,7 +8,7 @@ import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej
 import { Axis } from '../chart/index';
 import { Periods } from '../common/model/base';
 import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs  } from '../chart/model/chart-interface';
-import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../chart/model/chart-interface';
+import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
 import { PeriodsModel } from '../common/model/base-model';
 import { ChartTheme } from '../chart/index';
 import { CrosshairSettings, CrosshairSettingsModel, TooltipSettings, TooltipSettingsModel } from '../chart/index';
@@ -325,6 +325,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     @Event()
     public pointMove: EmitType<IPointEventArgs>;
+
+    /**
+     * Triggers after the zoom selection is completed.
+     * @event
+     */
+    @Event()
+    public onZooming: EmitType<IZoomingEventArgs>;
 
 
     /**

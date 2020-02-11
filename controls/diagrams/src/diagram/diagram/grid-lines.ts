@@ -1,6 +1,6 @@
 import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
 import { GridlinesModel } from './grid-lines-model';
-import { SnapConstraints } from '../enum/enum';
+import { SnapConstraints, GridType } from '../enum/enum';
 
 
 /**
@@ -25,6 +25,12 @@ export class Gridlines extends ChildProperty<Gridlines> {
      */
     @Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
     public lineIntervals: number[];
+    /**
+     * A pattern of gaps that defines a set of horizontal/vertical grid dots
+     * @default [1, 19, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5]
+     */
+    @Property([1, 19, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5, 0.5, 19.5])
+    public dotIntervals: number[];
     /**
      * Specifies a set of intervals to snap the objects
      * ```html
@@ -103,6 +109,16 @@ export class SnapSettings extends ChildProperty<SnapSettings> {
      */
     @Property(5)
     public snapAngle: number;
+
+    /**
+     * Defines the diagram Grid pattern.
+     * * Lines - Render the line for the grid
+     * * Dots - Render the dot for the grid
+     * @default 'Lines'
+     */
+    @Property('Lines')
+    public gridType: GridType;
+
     /**
      * Sets the minimum distance between the selected object and the nearest object
      * @default 5

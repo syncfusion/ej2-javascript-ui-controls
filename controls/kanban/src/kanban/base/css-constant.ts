@@ -24,9 +24,15 @@ export const HEADER_CELLS_CLASS: string = 'e-header-cells';
 /** @hidden */
 export const HEADER_WRAP_CLASS: string = 'e-header-wrap';
 /** @hidden */
+export const HEADER_TITLE_CLASS: string = 'e-header-title';
+/** @hidden */
 export const HEADER_TEXT_CLASS: string = 'e-header-text';
 /** @hidden */
 export const HEADER_ICON_CLASS: string = 'e-header-icon';
+/** @hidden */
+export const STACKED_HEADER_ROW_CLASS: string = 'e-stacked-header-row';
+/** @hidden */
+export const STACKED_HEADER_CELL_CLASS: string = 'e-stacked-header-cell';
 /** @hidden */
 export const CONTENT_CELLS_CLASS: string = 'e-content-cells';
 /** @hidden */
@@ -48,7 +54,7 @@ export const SWIMLANE_ROW_COLLAPSE: string = 'e-swimlane-row-collapse';
 /** @hidden */
 export const SWIMLANE_ROW_TEXT: string = 'e-swimlane-text';
 /** @hidden */
-export const SWIMLANE_ITEM_COUNT: string = 'e-swimlane-item-count';
+export const CARD_ITEM_COUNT: string = 'e-item-count';
 /** @hidden */
 export const CARD_WRAPPER_CLASS: string = 'e-card-wrapper';
 /** @hidden */
@@ -60,7 +66,7 @@ export const CARD_CONTENT_CLASS: string = 'e-card-content';
 /** @hidden */
 export const CARD_HEADER_TEXT_CLASS: string = 'e-card-header-caption';
 /** @hidden */
-export const CARD_CONTENT_TEXT_CLASS: string = 'e-card-content-caption';
+export const CARD_HEADER_TITLE_CLASS: string = 'e-card-header-title';
 /** @hidden */
 export const COLUMN_EXPAND: string = 'e-column-expand';
 /** @hidden */
@@ -92,9 +98,9 @@ export const DROPPING: string = 'e-dropping';
 /** @hidden */
 export const TOGGLE_VISIBLE: string = 'e-toggle-visible';
 /** @hidden */
-export const MULTI_CLONE_CARD: string = 'e-multi-clone-card';
-/** @hidden */
 export const MULTI_CLONE_CONTENT_CELL: string = 'e-multi-content-cell';
+/** @hidden */
+export const MULTI_CARD_WRAPPER: string = 'e-multi-card-wrapper';
 /** @hidden */
 export const MULTI_ACTIVE: string = 'e-multi-active';
 /** @hidden */
@@ -135,10 +141,6 @@ export const LIMITS_CLASS: string = 'e-limits';
 export const MAX_COUNT_CLASS: string = 'e-max-count';
 /** @hidden */
 export const MIN_COUNT_CLASS: string = 'e-min-count';
-/** @hidden */
-export const TOTAL_CARD: string = 'e-total-card';
-/** @hidden */
-export const HIDE_LIMITS: string = 'e-hide-limits';
 /** @hidden */
 export const MAX_COLOR: string = 'e-max-color';
 /** @hidden */

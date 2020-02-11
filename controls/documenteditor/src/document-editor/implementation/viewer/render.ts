@@ -11,7 +11,7 @@ import {
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader } from '../../index';
 import { Layout } from './layout';
-import { LayoutViewer, PageLayoutViewer } from './viewer';
+import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 // tslint:disable-next-line:max-line-length
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from '../index';
@@ -25,7 +25,7 @@ export class Renderer {
     public isPrinting: boolean = false;
     private pageLeft: number = 0;
     private pageTop: number = 0;
-    private viewer: LayoutViewer;
+    private documentHelper: DocumentHelper;
     private pageIndex: number = -1;
     private pageCanvasIn: HTMLCanvasElement;
     private isFieldCode: boolean = false;
@@ -43,20 +43,20 @@ export class Renderer {
             }
             return this.pageCanvasIn;
         }
-        return isNullOrUndefined(this.viewer) ? undefined : this.viewer.containerCanvas;
+        return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.containerCanvas;
     }
     /**
      * Gets the spell checker
      * @private
      */
     get spellChecker(): SpellChecker {
-        return this.viewer.owner.spellChecker;
+        return this.documentHelper.owner.spellChecker;
     }
     /**
      * Gets selection canvas.
      */
     private get selectionCanvas(): HTMLCanvasElement {
-        return isNullOrUndefined(this.viewer) ? undefined : this.viewer.selectionCanvas;
+        return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.selectionCanvas;
     }
     /**
      * Gets page context.
@@ -71,8 +71,11 @@ export class Renderer {
         return this.selectionCanvas.getContext('2d');
     }
 
-    constructor(viewer: LayoutViewer) {
-        this.viewer = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
+    }
+    get viewer(): LayoutViewer {
+        return this.documentHelper.owner.viewer;
     }
     /**
      * Renders widgets.
@@ -87,12 +90,21 @@ export class Renderer {
         if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page)) {
             return;
         }
-        this.pageContext.fillStyle = HelperMethods.getColor(this.viewer.backgroundColor);
+        this.pageContext.fillStyle = HelperMethods.getColor(this.documentHelper.backgroundColor);
         this.pageContext.beginPath();
-        this.pageContext.fillRect(left, top, width, height);
+        if (this.viewer instanceof WebLayoutViewer) {
+            height = height > this.documentHelper.visibleBounds.height ? height : this.documentHelper.visibleBounds.height;
+            // tslint:disable-next-line:max-line-length
+            this.pageContext.fillRect(left - this.viewer.padding.left, top - this.viewer.padding.top, width + this.viewer.padding.left, height + this.viewer.padding.top);
+        } else {
+            this.pageContext.fillRect(left, top, width, height);
+        }
         this.pageContext.closePath();
-        this.pageContext.strokeStyle = this.viewer.owner.pageOutline;
-        this.pageContext.strokeRect(left, top, width, height);
+        if (this.viewer instanceof PageLayoutViewer) {
+            this.pageContext.strokeStyle = this.documentHelper.owner.pageOutline;
+            this.pageContext.strokeRect(left, top, width, height);
+        }
+
         this.pageLeft = left;
         this.pageTop = top;
         this.pageIndex = page.index;
@@ -113,7 +125,7 @@ export class Renderer {
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             this.render(page, page.bodyWidgets[i]);
         }
-        if (this.viewer.owner.enableHeaderAndFooter && !this.isPrinting) {
+        if (this.documentHelper.owner.enableHeaderAndFooter && !this.isPrinting) {
             this.renderHeaderSeparator(page, this.pageLeft, this.pageTop, page.headerWidget);
         }
         this.pageLeft = 0;
@@ -149,7 +161,7 @@ export class Renderer {
      */
     private renderHFWidgets(page: Page, widget: HeaderFooterWidget, width: number, isHeader: boolean): void {
         if (!this.isPrinting) {
-            this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 1 : 0.65;
+            this.pageContext.globalAlpha = this.documentHelper.owner.enableHeaderAndFooter ? 1 : 0.65;
         }
         let cliped: boolean = false;
         let height: number = 0;
@@ -186,7 +198,7 @@ export class Renderer {
             this.pageContext.restore();
         }
         if (!this.isPrinting) {
-            this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 0.65 : 1;
+            this.pageContext.globalAlpha = this.documentHelper.owner.enableHeaderAndFooter ? 0.65 : 1;
         }
     }
     private renderHeaderSeparator(page: Page, left: number, top: number, widget: HeaderFooterWidget): void {
@@ -230,7 +242,7 @@ export class Renderer {
             (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'First Page Header' : 'First Page Footer';
         } else if (page.bodyWidgets[0].sectionFormat.differentOddAndEvenPages) {
-            if ((this.viewer.pages.indexOf(page) + 1) % 2 === 0) {
+            if ((this.documentHelper.pages.indexOf(page) + 1) % 2 === 0) {
                 type = isHeader ? 'Even Page Header' : 'Even Page Footer';
             } else {
                 type = isHeader ? 'Odd Page Header' : 'Odd Page Footer';
@@ -282,7 +294,7 @@ export class Renderer {
             let widget: Widget = bodyWidget.childWidgets[i] as ParagraphWidget;
             if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget && page.repeatHeaderRowTableWidget) {
                 // tslint:disable-next-line:max-line-length
-                this.renderHeader(page, widget as TableWidget, this.viewer.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
+                this.renderHeader(page, widget as TableWidget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
             }
             this.renderWidget(page, widget);
         }
@@ -323,7 +335,7 @@ export class Renderer {
             headerWidget.containerWidget = row.containerWidget;
             // tslint:disable-next-line:max-line-length
             page.viewer.updateClientAreaLocation(headerWidget, new Rect(page.viewer.clientArea.x, top, headerWidget.width, headerWidget.height));
-            page.viewer.layout.updateChildLocationForRow(top, headerWidget);
+            page.documentHelper.layout.updateChildLocationForRow(top, headerWidget);
             let cell: TableCellWidget = undefined;
             //Renders table cell outline rectangle - Border and background color.
             for (let j: number = 0; j < headerWidget.childWidgets.length; j++) {
@@ -334,7 +346,7 @@ export class Renderer {
         }
         if (widget.y !== top) {
             //this.Location.Y = top;
-            page.viewer.layout.updateChildLocationForTable(top, widget);
+            page.documentHelper.layout.updateChildLocationForTable(top, widget);
         }
     }
 
@@ -385,16 +397,16 @@ export class Renderer {
      */
     private renderTableCellWidget(page: Page, cellWidget: TableCellWidget): void {
         if (!this.isPrinting) {
-            if (this.getScaledValue(cellWidget.y, 2) + cellWidget.height * this.viewer.zoomFactor < 0 ||
-                this.getScaledValue(cellWidget.y, 2) > this.viewer.visibleBounds.height) {
+            if (this.getScaledValue(cellWidget.y, 2) + cellWidget.height * this.documentHelper.zoomFactor < 0 ||
+                this.getScaledValue(cellWidget.y, 2) > this.documentHelper.visibleBounds.height) {
                 return;
             }
         }
         let widgetHeight: number = 0;
-        if (!this.isPrinting && page.viewer.owner.selection && page.viewer.owner.selection.selectedWidgets.length > 0) {
-            page.viewer.owner.selection.addSelectionHighlightTable(this.selectionContext, cellWidget);
+        if (!this.isPrinting && page.documentHelper.owner.selection && page.documentHelper.owner.selection.selectedWidgets.length > 0) {
+            page.documentHelper.owner.selection.addSelectionHighlightTable(this.selectionContext, cellWidget);
         }
-        this.renderTableCellOutline(page.viewer, cellWidget);
+        this.renderTableCellOutline(page.documentHelper, cellWidget);
         for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
             let widget: Widget = cellWidget.childWidgets[i] as Widget;
             let width: number = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
@@ -412,29 +424,29 @@ export class Renderer {
      */
     private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
         // tslint:disable-next-line:max-line-length
-        if (!this.isPrinting && page.viewer.owner.selection && !this.viewer.isScrollToSpellCheck && page.viewer.owner.selection.selectedWidgets.length > 0) {
-            page.viewer.owner.selection.addSelectionHighlight(this.selectionContext, lineWidget, top);
+        if (!this.isPrinting && page.documentHelper.owner.selection && !this.documentHelper.isScrollToSpellCheck && page.documentHelper.owner.selection.selectedWidgets.length > 0) {
+            page.documentHelper.owner.selection.addSelectionHighlight(this.selectionContext, lineWidget, top);
         }
 
         let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
         if (lineWidget.isFirstLine() && !paraFormat.bidi) {
             left += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
-        if (this.viewer.owner.searchModule) {
+        if (this.documentHelper.owner.searchModule) {
             // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(page.viewer.owner.searchModule.searchHighlighters) && page.viewer.owner.searchModule.searchHighlighters.containsKey(lineWidget)) {
-                let widgetInfo: SearchWidgetInfo[] = page.viewer.owner.searchModule.searchHighlighters.get(lineWidget);
+            if (!isNullOrUndefined(page.documentHelper.owner.searchModule.searchHighlighters) && page.documentHelper.owner.searchModule.searchHighlighters.containsKey(lineWidget)) {
+                let widgetInfo: SearchWidgetInfo[] = page.documentHelper.owner.searchModule.searchHighlighters.get(lineWidget);
                 for (let i: number = 0; i < widgetInfo.length; i++) {
-                    this.pageContext.fillStyle = '#ffe97f';
+                    this.pageContext.fillStyle = this.viewer.owner.documentEditorSettings.searchHighlightColor;
                     // tslint:disable-next-line:max-line-length
                     this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
                 }
             }
         }
         // EditRegion highlight 
-        if (page.viewer.selection && !isNullOrUndefined(page.viewer.selection.editRegionHighlighters)
-            && page.viewer.selection.editRegionHighlighters.containsKey(lineWidget)) {
-            let widgetInfo: SelectionWidgetInfo[] = page.viewer.selection.editRegionHighlighters.get(lineWidget);
+        if (page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.editRegionHighlighters)
+            && page.documentHelper.selection.editRegionHighlighters.containsKey(lineWidget)) {
+            let widgetInfo: SelectionWidgetInfo[] = page.documentHelper.selection.editRegionHighlighters.get(lineWidget);
             for (let i: number = 0; i < widgetInfo.length; i++) {
                 this.pageContext.fillStyle = widgetInfo[i].color !== '' ? widgetInfo[i].color : '#add8e6';
                 // tslint:disable-next-line:max-line-length
@@ -445,8 +457,8 @@ export class Renderer {
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
             if (elementBox instanceof CommentCharacterElementBox &&
-                elementBox.commentType === 0 && this.viewer.owner.selectionModule) {
-                if (this.viewer.owner.enableComment && !isCommentMark) {
+                elementBox.commentType === 0 && this.documentHelper.owner.selectionModule) {
+                if (this.documentHelper.owner.enableComment && !isCommentMark) {
                     isCommentMark = true;
                     elementBox.renderCommentMark();
                     let pageGap: number = 0;
@@ -460,7 +472,12 @@ export class Renderer {
                     let pageWidth: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageWidth);
                     // tslint:disable-next-line:max-line-length
                     let leftPosition: string = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
-                    let topPosition: string = this.getScaledValue(top + (page.boundingRectangle.y - (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
+                    if (this.viewer instanceof WebLayoutViewer) {
+                        // tslint:disable-next-line:max-line-length
+                        leftPosition = (this.documentHelper.visibleBounds.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
+                    }
+                    let topPosition: string = this.getScaledValue(top + (page.boundingRectangle.y -
+                        (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
                     style = style + 'left:' + leftPosition + 'top:' + topPosition;
                     elementBox.commentMark.setAttribute('style', style);
                 } else {
@@ -481,8 +498,8 @@ export class Renderer {
             }
             let underlineY: number = this.getUnderlineYPosition(lineWidget);
             if (!this.isPrinting) {
-                if (this.getScaledValue(top + elementBox.margin.top, 2) + elementBox.height * this.viewer.zoomFactor < 0 ||
-                    this.getScaledValue(top + elementBox.margin.top, 2) > this.viewer.visibleBounds.height) {
+                if (this.getScaledValue(top + elementBox.margin.top, 2) + elementBox.height * this.documentHelper.zoomFactor < 0 ||
+                    this.getScaledValue(top + elementBox.margin.top, 2) > this.documentHelper.visibleBounds.height) {
                     left += elementBox.width + elementBox.margin.left;
                     if (elementBox instanceof TextElementBox) {
                         elementBox.canTrigger = true;
@@ -563,7 +580,7 @@ export class Renderer {
         bold = format.bold ? 'bold' : breakCharacterFormat.bold ? 'bold' : '';
         italic = format.italic ? 'italic' : breakCharacterFormat.italic ? 'italic' : '';
         fontSize = fontSize === 0 ? 0.5 : fontSize / (baselineAlignment === 'Normal' ? 1 : 1.5);
-        fontSize = this.isPrinting ? fontSize : fontSize * this.viewer.zoomFactor;
+        fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
         let strikethrough: Strikethrough = format.strikethrough === 'None' ? breakCharacterFormat.strikethrough : format.strikethrough;
         let highlightColor: HighlightColor = format.highlightColor === 'NoColor' ? breakCharacterFormat.highlightColor :
             format.highlightColor;
@@ -637,7 +654,7 @@ export class Renderer {
         bold = format.bold ? 'bold' : '';
         italic = format.italic ? 'italic' : '';
         fontSize = format.fontSize === 0 ? 0.5 : format.fontSize / (format.baselineAlignment === 'Normal' ? 1 : 1.5);
-        fontSize = this.isPrinting ? fontSize : fontSize * this.viewer.zoomFactor;
+        fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
         this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + format.fontFamily;
         if (format.baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
@@ -657,12 +674,12 @@ export class Renderer {
                 text = tabElement.tabText;
             }
         }
-        let isRTL: boolean = format.bidi || this.viewer.textHelper.isRTLText(elementBox.text);
-        text = this.viewer.textHelper.setText(text, isRTL, format.bdo, true);
+        let isRTL: boolean = format.bidi || this.documentHelper.textHelper.isRTLText(elementBox.text);
+        text = this.documentHelper.textHelper.setText(text, isRTL, format.bdo, true);
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
         // tslint:disable-next-line:max-line-length
-        if ((this.viewer.owner.enableSpellCheck && !this.spellChecker.removeUnderline) && (this.viewer.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.viewer.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))) {
+        if ((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))) {
             elementBox.canTrigger = true;
             this.leftPosition = this.pageLeft;
             this.topPosition = this.pageTop;
@@ -674,12 +691,12 @@ export class Renderer {
                     // tslint:disable-next-line:max-line-length
                     if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
                         // tslint:disable-next-line:max-line-length
-                        let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
+                        let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
                         // tslint:disable-next-line:max-line-length
                         this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
-            } else if (elementBox.ischangeDetected || this.viewer.triggerElementsOnLoading) {
+            } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
                 elementBox.ischangeDetected = false;
                 this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
             }
@@ -823,8 +840,8 @@ export class Renderer {
             let whiteSpaceData: SpaceCharacterInfo = this.spellChecker.getWhiteSpaceCharacterInfo(elementBox.text, elementBox.characterFormat);
             // tslint:disable-next-line:max-line-length
             let x: number = left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left;
-            let x1: number = x * this.viewer.zoomFactor + this.leftPosition;
-            let y1: number = y * this.viewer.zoomFactor + this.topPosition;
+            let x1: number = x * this.documentHelper.zoomFactor + this.leftPosition;
+            let y1: number = y * this.documentHelper.zoomFactor + this.topPosition;
             // tslint:disable-next-line:max-line-length
             let x2: number = x1 + this.getScaledValue(elementBox.width - (specialCharacter.beginningWidth + specialCharacter.endWidth) - whiteSpaceData.width);
             let startingPoint: Point = new Point(x1, y1);
@@ -848,7 +865,7 @@ export class Renderer {
     // tslint:disable-next-line:max-line-length
     public drawWavy(from: Point, to: Point, frequency: number, amplitude: number, step: number, color: string, height: number, backColor: string, negative?: number): void {
         this.pageContext.save();
-        this.pageContext.fillStyle = (!isNullOrUndefined(backColor) ? backColor : this.viewer.backgroundColor);
+        this.pageContext.fillStyle = (!isNullOrUndefined(backColor) ? backColor : this.documentHelper.backgroundColor);
         this.pageContext.fillRect(from.x, from.y - amplitude, (to.x - from.x), amplitude * 3);
         this.pageContext.restore();
         this.pageContext.lineWidth = 1;
@@ -886,7 +903,7 @@ export class Renderer {
         let textWidth: number = 0;
         let tabString: string = this.getTabLeaderString(elementBox.tabLeader);
         let tabText: string = tabString;
-        textWidth = this.viewer.textHelper.getWidth(tabText, elementBox.characterFormat);
+        textWidth = this.documentHelper.textHelper.getWidth(tabText, elementBox.characterFormat);
         let count: number = Math.floor(elementBox.width / textWidth);
         for (let i: number = 0; i <= count; i++) {
             tabText += tabString;
@@ -1035,9 +1052,9 @@ export class Renderer {
      * @param {TableWidget} tableWidget 
      */
     private renderTableOutline(tableWidget: TableWidget): void {
-        let layout: Layout = new Layout(this.viewer);
+        let layout: Layout = new Layout(this.documentHelper);
         let table: TableWidget = tableWidget;
-        tableWidget.width = this.viewer.layout.getTableWidth(table);
+        tableWidget.width = this.documentHelper.layout.getTableWidth(table);
         let border: WBorder = !table.isBidiTable ? layout.getTableLeftBorder(table.tableFormat.borders)
             : layout.getTableRightBorder(table.tableFormat.borders);
 
@@ -1078,8 +1095,8 @@ export class Renderer {
      * @param {TableCellWidget} cellWidget 
      */
     // tslint:disable: max-func-body-length
-    private renderTableCellOutline(viewer: LayoutViewer, cellWidget: TableCellWidget): void {
-        let layout: Layout = viewer.layout;
+    private renderTableCellOutline(documentHelper: DocumentHelper, cellWidget: TableCellWidget): void {
+        let layout: Layout = documentHelper.layout;
         let borders: WBorders = undefined;
         let tableCell: TableCellWidget = cellWidget;
         let cellTopMargin: number = 0;
@@ -1253,14 +1270,14 @@ export class Renderer {
         if (isNullOrUndefined(type)) {
             type = 0;
         }
-        let x: number = value * this.viewer.zoomFactor;
+        let x: number = value * this.documentHelper.zoomFactor;
         return x + (type === 1 ? this.pageLeft : (type === 2 ? this.pageTop : 0));
     }
     /**
      * Destroys the internal objects which is maintained.
      */
     public destroy(): void {
-        this.viewer = undefined;
+        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.pageCanvasIn)) {
             this.pageCanvasIn.innerHTML = '';
         }

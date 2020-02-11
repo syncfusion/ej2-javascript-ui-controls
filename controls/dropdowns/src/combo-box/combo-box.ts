@@ -53,9 +53,8 @@ export class ComboBox extends DropDownList {
      * Allows additional HTML attributes such as title, name, etc., and
      * accepts n number of attributes in a key-value pair format.
      * 
-     * {% codeBlock src="combobox/html-attributes-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src='combobox/htmlAttributes/index.md' %}{% endcodeBlock %}
      * 
-     * {% codeBlock src="combobox/html-attributes-api/index.html" %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})
@@ -77,9 +76,7 @@ export class ComboBox extends DropDownList {
      * Accepts the external `Query`
      * that execute along with [`data processing`](../../combo-box/data-binding).
      * 
-     * {% codeBlock src="combobox/query-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="combobox/query-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='combobox/query/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)
@@ -709,7 +706,7 @@ export class ComboBox extends DropDownList {
         if (Browser.isDevice && !this.allowFiltering) {
             this.preventFocus = false;
         }
-        this.onFocus();
+        this.onFocus(e);
     }
     protected dropDownClick(e: MouseEvent): void {
         e.preventDefault();
@@ -908,7 +905,7 @@ export class ComboBox extends DropDownList {
         if (isNullOrUndefined(this.listData) && this.allowCustom && !isNullOrUndefined(inputValue) && inputValue !== this.value) {
             this.customValue();
         }
-        super.hidePopup();
+        super.hidePopup(e);
     }
     /**
      * Sets the focus to the component for interaction.

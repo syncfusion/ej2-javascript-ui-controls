@@ -3249,6 +3249,16 @@ describe('Tool constraints TestCases', () => {
             diagram.selectedItems.connectors[0].wrapper.width === 42) && (diagram.selectedItems.connectors[0].wrapper.height === 50)).toBe(true);
         done();
     });
+    
+    it('ZoomPan and select connector', (done: Function) => {
+        diagram.clearSelection();
+        diagram.tool = DiagramTools.ZoomPan | DiagramTools.SingleSelect;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 150, 150, true);
+        expect(diagram.selectedItems.connectors.length === 1).toBe(true);
+        done();
+    });
+
     afterAll((): void => {
         diagram.destroy();
         ele.remove();

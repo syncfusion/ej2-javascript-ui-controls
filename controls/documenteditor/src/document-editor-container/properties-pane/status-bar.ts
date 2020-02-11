@@ -2,6 +2,7 @@ import { DocumentEditor, ViewChangeEventArgs } from '../../document-editor/index
 import { createElement, KeyboardEventArgs, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditorContainer } from '../document-editor-container';
+import { Button } from '@syncfusion/ej2-buttons';
 /**
  * Represents document editor status bar.
  * @private
@@ -18,6 +19,8 @@ export class StatusBar {
     private spellCheckButton: DropDownButton;
     private currentLanguage: number;
     private allowSuggestion: boolean;
+    private pageButton: HTMLButtonElement;
+    private webButton: HTMLButtonElement;
 
     get documentEditor(): DocumentEditor {
         return this.container ? this.container.documentEditor : undefined;
@@ -72,6 +75,18 @@ export class StatusBar {
             let spellCheckBtn: HTMLButtonElement = this.addSpellCheckElement();
             this.spellCheckButton.appendTo(spellCheckBtn);
         }
+        // tslint:disable-next-line:max-line-length   
+        this.pageButton = this.createButtonTemplate((this.documentEditor.layoutType === 'Pages') ? 'e-de-statusbar-pageweb e-btn-pageweb-toggle' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', this.localObj.getConstant('Print layout'), this.statusBarDiv, this.pageButton);
+        // tslint:disable-next-line:max-line-length   
+        this.webButton = this.createButtonTemplate((this.documentEditor.layoutType === 'Continuous') ? 'e-de-statusbar-pageweb e-btn-pageweb-toggle' : 'e-de-statusbar-pageweb', 'e-de-weblayout e icons', this.localObj.getConstant('Web layout'), this.statusBarDiv, this.webButton);
+        this.pageButton.addEventListener('click', (): void => {
+            this.documentEditor.layoutType = 'Pages';
+            this.addRemoveClass(this.pageButton, this.webButton);
+        });
+        this.webButton.addEventListener('click', (): void => {
+            this.documentEditor.layoutType = 'Continuous';
+            this.addRemoveClass(this.webButton, this.pageButton);
+        });
         let zoomBtn: HTMLButtonElement = createElement('button', {
             // tslint:disable-next-line:max-line-length
             className: (this.container.enableSpellCheck) ? 'e-de-statusbar-zoom-spell' : 'e-de-statusbar-zoom', attrs: { type: 'button' }
@@ -114,7 +129,9 @@ export class StatusBar {
             },
         ];
         // tslint:disable-next-line:max-line-length
-        this.zoom = new DropDownButton({ content: '100%', items: items, enableRtl: this.container.enableRtl, select: this.onZoom }, zoomBtn);
+        this.zoom = new DropDownButton({ content: '100%', items: items, enableRtl: this.container.enableRtl, select: this.onZoom });
+        this.zoom.isStringTemplate = true;
+        this.zoom.appendTo(zoomBtn);
     }
     private addSpellCheckElement(): HTMLButtonElement {
         let spellCheckBtn: HTMLButtonElement = createElement('button', {
@@ -142,11 +159,13 @@ export class StatusBar {
                     this.allowSuggestion = this.documentEditor.spellChecker.allowSpellCheckAndSuggestion;
                 }
                 let span: HTMLElement = args.element.children[0] as HTMLElement;
-                if (args.item.text === 'Spell Check' && this.documentEditor.enableSpellCheck) {
+                if (args.item.text === 'Spell Check' && this.documentEditor.enableSpellCheck &&
+                    this.documentEditor.spellChecker.enableSpellCheck) {
                     span.style.marginRight = '10px';
                     span.setAttribute('class', 'e-de-selected-spellcheck-item');
                     // tslint:disable-next-line:max-line-length
-                } else if (args.item.text === 'Underline errors' && this.documentEditor.enableSpellCheck && !this.documentEditor.spellChecker.removeUnderline) {
+                } else if (args.item.text === 'Underline errors' && this.documentEditor.enableSpellCheck &&
+                    this.documentEditor.spellChecker.enableSpellCheck && !this.documentEditor.spellChecker.removeUnderline) {
                     span.style.marginRight = '10px';
                     span.setAttribute('class', 'e-de-selected-underline-item');
                 } else {
@@ -172,26 +191,24 @@ export class StatusBar {
     private setSpellCheckValue = (text: string, element: HTMLElement): void => {
         this.spellCheckButton.content = 'Spelling';
         if (text.match(this.localObj.getConstant('Spell Check'))) {
-            this.documentEditor.enableSpellCheck = (this.documentEditor.enableSpellCheck) ? false : true;
+            this.documentEditor.spellChecker.enableSpellCheck = (this.documentEditor.spellChecker.enableSpellCheck) ? false : true;
             setTimeout(() => {
-                if (this.documentEditor.enableSpellCheck) {
-                    this.documentEditor.spellChecker.languageID = this.currentLanguage;
-                    this.documentEditor.spellChecker.allowSpellCheckAndSuggestion = this.allowSuggestion;
-                    this.documentEditor.viewer.triggerElementsOnLoading = true;
-                    this.documentEditor.viewer.triggerSpellCheck = true;
+                if (this.documentEditor.enableSpellCheck && this.documentEditor.spellChecker.enableSpellCheck) {
+                    this.documentEditor.documentHelper.triggerElementsOnLoading = true;
+                    this.documentEditor.documentHelper.triggerSpellCheck = true;
                 }
-                this.documentEditor.editor.reLayout(this.documentEditor.viewer.selection);
+                this.documentEditor.editor.reLayout(this.documentEditor.documentHelper.selection);
                 /* tslint:disable */
             }, 50);
             /* tslint:enable */
-            this.documentEditor.viewer.triggerSpellCheck = false;
-            this.documentEditor.viewer.triggerElementsOnLoading = false;
+            this.documentEditor.documentHelper.triggerSpellCheck = false;
+            this.documentEditor.documentHelper.triggerElementsOnLoading = false;
             // tslint:disable-next-line:max-line-length
         } else if (text.match(this.localObj.getConstant('Underline errors'))) {
-            if (this.documentEditor.enableSpellCheck) {
+            if (this.documentEditor.enableSpellCheck && this.documentEditor.spellChecker.enableSpellCheck) {
                 // tslint:disable-next-line:max-line-length
                 this.documentEditor.spellChecker.removeUnderline = (this.documentEditor.spellChecker.removeUnderline) ? false : true;
-                this.documentEditor.editor.reLayout(this.documentEditor.viewer.selection);
+                this.documentEditor.editor.reLayout(this.documentEditor.documentHelper.selection);
             }
         }
     }
@@ -270,6 +287,29 @@ export class StatusBar {
     /**
      * @private
      */
+    public toggleWebLayout(): void {
+        this.addRemoveClass(this.pageButton, this.webButton);
+    }
+    private addRemoveClass = (addToElement: HTMLElement, removeFromElement: HTMLElement): void => {
+        addToElement.classList.add('e-btn-pageweb-toggle');
+        if (removeFromElement.classList.contains('e-btn-pageweb-toggle')) {
+            removeFromElement.classList.remove('e-btn-pageweb-toggle');
+        }
+    }
+    // tslint:disable-next-line:max-line-length
+    private createButtonTemplate(className: string, iconcss: string, toolTipText: string, div: HTMLElement, appendDiv: HTMLButtonElement): HTMLButtonElement {
+        appendDiv = createElement('Button', { className: className, attrs: { type: 'button' } }) as HTMLButtonElement;
+        div.appendChild(appendDiv);
+        let btn: Button = new Button({
+            cssClass: className, iconCss: iconcss, enableRtl: this.container.enableRtl
+        });
+        btn.appendTo(appendDiv);
+        appendDiv.setAttribute('title', toolTipText);
+        return appendDiv;
+    }
+    /**
+     * @private
+     */
     public destroy(): void {
         this.container = undefined;
         if (this.zoom) {
@@ -279,6 +319,12 @@ export class StatusBar {
         if (this.spellCheckButton) {
             this.spellCheckButton.destroy();
             this.spellCheckButton = undefined;
+        }
+        if (this.pageButton) {
+            this.pageButton = undefined;
+        }
+        if (this.webButton) {
+            this.webButton = undefined;
         }
     }
 }

@@ -14,7 +14,7 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from '../../../src/diagram/primitives/matrix';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
 
 function getOutput(label: DiagramElement) {
@@ -84,7 +84,7 @@ describe('Diagram Control', () => {
             let ele: HTMLElement;
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement; let left: number; let top: number;
-            
+
             beforeAll((): void => {
                 const isDef = (o: any) => o !== undefined && o !== null;
                 if (!isDef(window.performance)) {
@@ -177,6 +177,13 @@ describe('Diagram Control', () => {
             it('Rotate', (done: Function) => {
                 rotate(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+
+                console.log("label.offsetX " + label.offsetX);
+                console.log("label.offsetY " + label.offsetY);
+                console.log("label.width " + label.width);
+                console.log("label.height " + label.height);
+                console.log("label.rotateAngle " + label.rotateAngle);
+                
                 expect(label.offsetX == 350 && label.offsetY == 300 && label.width == 100 && label.height == 100 && label.rotateAngle == 20).toBe(true);
                 done();
             });
@@ -309,7 +316,7 @@ describe('Diagram Control', () => {
             it('Drag', (done: Function) => {
                 drag(diagram);
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-               
+
                 expect(label.offsetX == 270 && label.offsetY == 120 && label.width == 100 && label.height == undefined && label.rotateAngle == 0).toBe(true);
                 done();
             });
@@ -323,7 +330,7 @@ describe('Diagram Control', () => {
             it('Resize South', (done: Function) => {
                 resize(diagram, 'resizeSouth');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                
+
                 expect(label.offsetX == 270 && label.offsetY == 140 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 43.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
@@ -692,7 +699,7 @@ describe('Diagram Control', () => {
             it('Resize West', (done: Function) => {
                 resize(diagram, 'resizeWest');
                 let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-                expect(label.offsetX == 390 && label.offsetY == 190 && label.width == 63.65625 && label.height ==43.199999999999996&& label.rotateAngle == 0).toBe(true);
+                expect(label.offsetX == 390 && label.offsetY == 190 && label.width == 63.65625 && label.height == 43.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
@@ -1250,8 +1257,8 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, centerX + diagram.element.offsetLeft + 100, centerY + diagram.element.offsetTop + 100);
                 mouseEvents.mouseUpEvent(diagramCanvas, centerX + diagram.element.offsetLeft + 100, centerY + diagram.element.offsetTop + 100);
                 let label = (diagram.selectedItems.wrapper).children[0];
-                    expect(label.offsetX == 206.25 && label.offsetY == 165 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
-                    done();
+                expect(label.offsetX == 206.25 && label.offsetY == 165 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
+                done();
             });
         });
     });
@@ -1262,11 +1269,11 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'NodesAnnotationInteraction' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1312,11 +1319,11 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'NodesAnnotationInteraction' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1363,11 +1370,11 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'NodesAnnotationInteraction2' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -1409,7 +1416,7 @@ describe('Diagram Control', () => {
             diagram.redo()
             done();
         });
-         })
+    })
     describe('Annotation interaction mouse leave ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1417,11 +1424,11 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'NodesAnnotationInteraction2' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -1446,7 +1453,7 @@ describe('Diagram Control', () => {
         it('mouseleave event on Rotation', (done: Function) => {
             let node: NodeModel = (diagram.nodes[0] as NodeModel);
             let annotation: DiagramElement = node.wrapper.children[1];
-            mouseEvents.clickEvent(diagramCanvas,annotation.offsetX + left, annotation.offsetY + top)
+            mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top)
             mouseEvents.mouseDownEvent(diagramCanvas, annotation.bounds.topCenter.x + left, annotation.bounds.topCenter.y + top - 25);
             mouseEvents.mouseMoveEvent(diagramCanvas, 800, 100);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
@@ -1454,7 +1461,7 @@ describe('Diagram Control', () => {
             diagram.redo()
             done();
         });
-      })
+    })
 
     describe('Annotation with template interaction', () => {
         let diagram: Diagram;
@@ -1463,11 +1470,11 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'templateAnnotationInteraction' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -1556,7 +1563,7 @@ describe('Diagram Control', () => {
             expect(label.offsetX == 350 && label.offsetY == 310 && label.width == 100.00000000000006 && label.height == 100 && label.rotateAngle == 20).toBe(true);
             done();
         });
-        it('memory leak', () => {     
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -1565,6 +1572,6 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
-    
+
     });
 });

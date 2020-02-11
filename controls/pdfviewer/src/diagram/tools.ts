@@ -143,8 +143,10 @@ export class ToolBase {
         this.mouseUp(args);
     }
 
+    // tslint:disable-next-line
     protected updateSize(
-        shape: SelectorModel | PdfAnnotationBaseModel, startPoint: PointModel,
+        // tslint:disable-next-line
+        shape: any, startPoint: PointModel,
         endPoint: PointModel, corner: string, initialBounds: Rect, angle?: number, isMouseUp?: boolean): Rect {
         shape = shape;
         let zoom: number = this.commandHandler.viewerBase.getZoomFactor();
@@ -159,10 +161,26 @@ export class ToolBase {
         let diff: PointModel;
         let width: number = (shape instanceof TextElement) ? shape.actualSize.width : shape.wrapper.bounds.width;
         let height: number = (shape instanceof TextElement) ? shape.actualSize.height : shape.wrapper.bounds.height;
-        let annotationMaxHeight: number = this.commandHandler.annotationSettings.maxHeight;
-        let annotationMaxWidth: number  = this.commandHandler.annotationSettings.maxWidth;
-        let annotationMinHeight: number = this.commandHandler.annotationSettings.minHeight;
-        let annotationMinWidth: number = this.commandHandler.annotationSettings.minWidth;
+        // tslint:disable-next-line
+        let obj: any = shape;
+        if (!shape.annotName) {
+            if (shape as SelectorModel) {
+                // tslint:disable-next-line
+                obj = (shape as any).annotations[0];
+            }
+        }
+        // tslint:disable-next-line
+        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(obj);
+        let annotationMaxHeight: number = 0;
+        let annotationMaxWidth: number  = 0;
+        let annotationMinHeight: number = 0;
+        let annotationMinWidth: number = 0;
+        if (annotationSettings.minWidth ||  annotationSettings.maxWidth || annotationSettings.minHeight || annotationSettings.maxHeight) {
+            annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
+            annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
+            annotationMinHeight = annotationSettings.minHeight ? annotationSettings.minHeight : 0;
+            annotationMinWidth = annotationSettings.minWidth ? annotationSettings.minWidth : 0;
+        }
         let isAnnotationSet: boolean = false;
         if (annotationMinHeight || annotationMinWidth || annotationMaxHeight || annotationMaxWidth) {
             isAnnotationSet = true;
@@ -179,14 +197,14 @@ export class ToolBase {
             } else {
                 if (newHeight < annotationMinHeight  || newHeight > annotationMaxHeight) {
                     if (newHeight < annotationMinHeight) {
-                        dify = height - annotationMinHeight;
+                        dify = annotationMinHeight - height;
                     } else {
                         dify = annotationMaxHeight - height;
                     }
                 }
                 if (newWidth < annotationMinWidth || newWidth > annotationMaxWidth) {
                     if (newWidth < annotationMinWidth) {
-                        difx = width - annotationMinWidth;
+                        difx = annotationMinWidth - width;
                     } else {
                         difx = annotationMaxWidth - width;
                     }
@@ -542,9 +560,11 @@ export class MoveTool extends ToolBase {
                 let selectedItem: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
                 // tslint:disable-next-line
                 let cobject: any = cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel;
-                diffX = requiredX - cobject.wrapper.offsetX;
-                diffY = requiredY - cobject.wrapper.offsetY;
-                cobject.bounds = this.commandHandler.selectedItems.annotations[0].wrapper.bounds;
+                if (cobject.wrapper) {
+                    diffX = requiredX - cobject.wrapper.offsetX;
+                    diffY = requiredY - cobject.wrapper.offsetY;
+                    cobject.bounds = this.commandHandler.selectedItems.annotations[0].wrapper.bounds;
+                }
                 cobject.wrapper = undefined;
                 cobject.id = 'diagram_helper';
                 if (cobject.shapeAnnotationType === 'Stamp') {
@@ -717,18 +737,27 @@ export class ConnectTool extends ToolBase {
         if (this.commandHandler) {
             let node: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
             if (node) {
+                // tslint:disable-next-line
+                let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(node);
+                let annotationMaxHeight: number = 0;
+                let annotationMaxWidth: number  = 0;
+                let annotationMinHeight: number = 0;
+                let annotationMinWidth: number = 0;
+                // tslint:disable-next-line:max-line-length
+                if (annotationSettings.minWidth ||  annotationSettings.maxWidth || annotationSettings.minHeight || annotationSettings.maxHeight) {
+                    annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
+                    annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
+                    annotationMinHeight = annotationSettings.minHeight ? annotationSettings.minHeight : 0;
+                    annotationMinWidth = annotationSettings.minWidth ? annotationSettings.minWidth : 0;
+                }
                 if (node.vertexPoints.length > 3) {
                     // tslint:disable-next-line
                     let sizeObject: any = this.commandHandler.viewerBase.checkAnnotationWidth(node.vertexPoints);
                     let width: number = sizeObject.width;
                     let height: number = sizeObject.height;
-                    let annotationMinHeight: number = this.commandHandler.annotationSettings.minHeight;
-                    let annotationMaxHeight: number = this.commandHandler.annotationSettings.maxHeight;
-                    let annotationMinWidth: number = this.commandHandler.annotationSettings.minWidth;
-                    let annotationMaxWidth: number = this.commandHandler.annotationSettings.maxWidth;
                     if (annotationMinHeight || annotationMinWidth || annotationMaxHeight || annotationMaxWidth) {
                         // tslint:disable-next-line:max-line-length
-                        if ((height > annotationMinHeight && height < annotationMaxHeight) && (width > annotationMinWidth && width < annotationMaxWidth)) {
+                        if ((height > annotationMinHeight && height < annotationMaxHeight) || (width > annotationMinWidth && width < annotationMaxWidth)) {
                             // tslint:disable-next-line:max-line-length
                             this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
                         }
@@ -737,8 +766,33 @@ export class ConnectTool extends ToolBase {
                         this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
                     }
                 } else {
-                    // tslint:disable-next-line:max-line-length
-                    this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
+                    if (annotationMinHeight || annotationMinWidth || annotationMaxHeight || annotationMaxWidth) {
+                        if (node.shapeAnnotationType === 'Line' || 'Distance' || 'LineWidthArrowHead') {
+                            let x: number = 0;
+                            let y: number = 0;
+                            if (node.vertexPoints[0].x > node.vertexPoints[1].x) {
+                                x = node.vertexPoints[0].x - node.vertexPoints[1].x;
+                            } else {
+                                x = node.vertexPoints[1].x - node.vertexPoints[0].x;
+                            }
+                            if (node.vertexPoints[0].y > node.vertexPoints[1].y) {
+                                y = node.vertexPoints[0].y - node.vertexPoints[1].y;
+                            } else {
+                                y = node.vertexPoints[1].y - node.vertexPoints[0].y;
+                            }
+                            let diff: number = (x > y) ? x : y;
+                            if (diff < (annotationMaxHeight || annotationMaxWidth) && diff > (annotationMinHeight || annotationMinWidth)) {
+                                // tslint:disable-next-line:max-line-length
+                                this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
+                            }
+                        } else {
+                            // tslint:disable-next-line:max-line-length
+                            this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
+                        }
+                    } else {
+                        // tslint:disable-next-line:max-line-length
+                        this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
+                    }
                 }
                 let currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
                 this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
@@ -899,7 +953,13 @@ export class ResizeTool extends ToolBase {
             let deltaValues: Rect = this.updateSize(this.prevSource, this.currentPosition, this.initialPosition, this.corner, this.initialBounds, null, true);
             this.blocked = this.scaleObjects(
                 deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.initialPosition, this.prevSource);
-
+            if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations &&
+                // tslint:disable-next-line:max-line-length
+                this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'Stamp') {
+                if (this.commandHandler.stampSettings.minHeight || this.commandHandler.stampSettings.minWidth) {
+                    this.commandHandler.select([this.prevSource.id], this.prevSource.annotationSelectorSettings);
+                }
+            }
             this.commandHandler.renderSelector(this.prevPageId, this.prevSource.annotationSelectorSettings);
             if (this.commandHandler.annotation && args.source.wrapper) {
                 // tslint:disable-next-line
@@ -946,10 +1006,24 @@ export class ResizeTool extends ToolBase {
         let size: any = this.getPoints(x, y);
         let width: number = annotationElement.width + size.x;
         let height: number = annotationElement.height + size.y;
-        let annotationMinHeight: number = this.commandHandler.annotationSettings.minHeight;
-        let annotationMaxHeight: number = this.commandHandler.annotationSettings.maxHeight;
-        let annotationMinWidth: number = this.commandHandler.annotationSettings.minWidth;
-        let annotationMaxWidth: number = this.commandHandler.annotationSettings.maxWidth;
+        // tslint:disable-next-line
+        let obj: any = object;
+        if (object && (object as SelectorModel | Selector).annotations) {
+            // tslint:disable-next-line
+            obj = (object as any).annotations[0];
+        }
+        // tslint:disable-next-line
+        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(obj);
+        let annotationMaxHeight: number = 0;
+        let annotationMaxWidth: number  = 0;
+        let annotationMinHeight: number = 0;
+        let annotationMinWidth: number = 0;
+        if (annotationSettings.minWidth ||  annotationSettings.maxWidth || annotationSettings.minHeight || annotationSettings.maxHeight) {
+            annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
+            annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
+            annotationMinHeight = annotationSettings.minHeight ? annotationSettings.minHeight : 0;
+            annotationMinWidth = annotationSettings.minWidth ? annotationSettings.minWidth : 0;
+        }
         if (annotationMinHeight || annotationMinWidth || annotationMaxHeight || annotationMaxWidth) {
             // tslint:disable-next-line:max-line-length
             if ((height >= annotationMinHeight && height <= annotationMaxHeight) && (width >= annotationMinWidth && width <= annotationMaxWidth)) {
@@ -958,14 +1032,14 @@ export class ResizeTool extends ToolBase {
             } else {
                 if (height < annotationMinHeight || height > annotationMaxHeight) {
                     if (height < annotationMinHeight) {
-                        y = annotationElement.height - annotationMinHeight;
+                        y = annotationMinHeight - annotationElement.height;
                     } else {
                         y = annotationMaxHeight - annotationElement.height;
                     }
                 }
                 if (width < annotationMinWidth || width > annotationMaxWidth) {
                     if (width < annotationMinWidth) {
-                        x = annotationElement.width - annotationMinWidth;
+                        x = annotationMinWidth - annotationElement.width;
                     } else {
                         x = annotationMaxWidth - annotationElement.width;
                     }
@@ -1094,8 +1168,14 @@ export class ResizeTool extends ToolBase {
             // tslint:disable-next-line:max-line-length
             if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Perimeter' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Radius'
                 || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
-                let annotationMaxHeight: number = this.commandHandler.annotationSettings.maxHeight;
-                let annotationMaxWidth: number  = this.commandHandler.annotationSettings.maxWidth;
+                // tslint:disable-next-line
+                let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(source);
+                let annotationMaxHeight: number = 0;
+                let annotationMaxWidth: number = 0;
+                if (annotationSettings.maxHeight || annotationSettings.maxWidth) {
+                    annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
+                    annotationMaxWidth  = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
+                }
                 if (!annotationMaxHeight || !annotationMaxWidth) {
                     if (!(deltaHeight === 1 && deltaWidth === 1)) {
                         deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
@@ -1184,29 +1264,21 @@ export class NodeDrawingTool extends ToolBase {
         obj.bounds.y = (rect.y / zoom) + rect.height / zoom;
         obj.bounds.width = rect.width / zoom;
         obj.bounds.height = rect.height / zoom;
-        let annotationMinHeight: number = this.commandHandler.annotationSettings.minHeight;
-        let annotationMaxHeight: number = this.commandHandler.annotationSettings.maxHeight;
-        let annotationMinWidth: number = this.commandHandler.annotationSettings.minWidth;
-        let annotationMaxWidth: number = this.commandHandler.annotationSettings.maxWidth;
-        let isAnnotationSet: boolean = false;
-        if (annotationMinHeight || annotationMinWidth || annotationMaxHeight || annotationMaxWidth) {
-            isAnnotationSet = true;
-        }
-        if (isAnnotationSet) {
+        // tslint:disable-next-line
+        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(obj);
+        let annotationMaxHeight: number = 0;
+        let annotationMaxWidth: number  = 0;
+        if (annotationSettings.maxWidth || annotationSettings.maxHeight) {
+            annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
+            annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
             if (obj.bounds.width > annotationMaxWidth) {
                 obj.bounds.width = annotationMaxWidth;
             }
-            if (obj.bounds.width < annotationMinWidth) {
-                obj.bounds.width = annotationMinWidth;
-            }
-            if (obj.bounds.height > annotationMaxHeight ) {
+            if (obj.bounds.height > annotationMaxHeight) {
                 obj.bounds.height = annotationMaxHeight;
             }
-            if (obj.bounds.height < annotationMinHeight ) {
-                obj.bounds.height = annotationMinHeight;
-            }
             // tslint:disable-next-line:max-line-length
-            if ((obj.bounds.height >= annotationMinHeight && obj.bounds.height <= annotationMaxHeight) && (obj.bounds.width >= annotationMinWidth && obj.bounds.width <= annotationMaxWidth)) {
+            if (obj.bounds.height <= annotationMaxHeight && obj.bounds.width <= annotationMaxWidth) {
                 this.commandHandler.nodePropertyChange(obj, { bounds: obj.bounds });
             }
         } else {
@@ -1225,10 +1297,15 @@ export class NodeDrawingTool extends ToolBase {
         obj.offsetX = newPoint1.x;
         obj.offsetY = newPoint1.y;
         obj.width = node.bounds.width / 2;
-        let annotationMaxWidth: number = this.commandHandler.annotationSettings.maxWidth;
-        if (node.bounds.width > annotationMaxWidth) {
-            node.bounds.width = annotationMaxWidth;
-            obj.width = node.bounds.width / 2;
+        // tslint:disable-next-line
+        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(node);
+        let annotationMaxWidth: number = 0;
+        if (annotationSettings.maxWidth) {
+            annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
+            if (node.bounds.width > annotationMaxWidth) {
+                node.bounds.width = annotationMaxWidth;
+                obj.width = node.bounds.width / 2;
+            }
         }
         this.commandHandler.renderDrawing(undefined, node.pageIndex);
     }
@@ -1486,7 +1563,7 @@ export class LineTool extends ToolBase {
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: 'Distance', pageIndex: this.pdfViewerBase.activeElements.activePageID,
                 author: this.commandHandler.drawingObject.author, subject: this.commandHandler.drawingObject.subject,
-                enableShapeLabel: this.commandHandler.enableShapeLabel
+                enableShapeLabel: this.commandHandler.enableShapeLabel, leaderHeight: measureModule.leaderLength
             };
             this.pdfViewerBase.updateFreeTextProperties(annotationNode);
             // tslint:disable-next-line

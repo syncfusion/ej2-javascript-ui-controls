@@ -399,6 +399,42 @@ export interface PdfAnnotationBaseModel {
     signatureName?: string;
 
     /**
+     * specifies the minHeight of the annotation.
+     * @default 0
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     * @default 0
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     * @default 0
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     * @default 0
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     * @default 'false'
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the default settings of the annotation.
+     * @default ''
+     */
+    annotationSettings?: object;
+
+    /**
      * Represents the text style of annotation
      * @default ''
      */
@@ -409,6 +445,11 @@ export interface PdfAnnotationBaseModel {
      * @default ''
      */
     labelBounds?: PdfBoundsModel;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
 
 }
 

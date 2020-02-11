@@ -155,13 +155,7 @@ export class AnnotationBase {
         }
 
         let annotationRendered: Function = () => {
-            let elementRect: ClientRect = annotationElement.getBoundingClientRect();
-            annotationElement.style.left = this.setAlignmentValue(
-                this.annotation.horizontalAlignment, elementRect.width, location.x
-            ) + 'px';
-            annotationElement.style.top = this.setAlignmentValue(
-                this.annotation.verticalAlignment, elementRect.height, location.y
-            ) + 'px';
+            annotationElement.style.transform = 'translate(-50%, -50%)';
         };
         annotationRendered.bind(location, this);
 

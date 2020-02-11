@@ -130,7 +130,7 @@ import { removeSwimLane, removeLane, removePhase, removeLaneChildNode } from './
 import { RowDefinition } from './core/containers/grid';
 import { CustomCursorAction } from './diagram/custom-cursor';
 import { CustomCursorActionModel } from './diagram/custom-cursor-model';
-
+import { SymbolSizeModel } from './../diagram/objects/preview-model';
 import { LineRouting } from './interaction/line-routing';
 /**
  * Represents the Diagram control
@@ -1491,9 +1491,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
             this.isServerUpdate = true;
             if (arg[isAdding]) {
-                this.add(args);
+                let add: string = 'add';
+                this[add].apply(this, args);
             } else {
-                this.remove(args);
+                let remove: string = 'remove';
+                this[remove].apply(this, args);
             }
             this.isServerUpdate = false;
 
@@ -1721,7 +1723,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /* tslint:enable */
     private updateSnapSettings(newProp: DiagramModel): void {
         if (newProp.snapSettings.constraints !== undefined || newProp.snapSettings.horizontalGridlines ||
-            newProp.snapSettings.verticalGridlines) {
+            newProp.snapSettings.verticalGridlines || newProp.snapSettings.gridType) {
             this.diagramRenderer.updateGrid(
                 this.snapSettings, getGridLayerSvg(this.element.id), this.scroller.transform,
                 this.rulerSettings, this.hRuler, this.vRuler
@@ -1957,15 +1959,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             node = this.nodes[i];
             annotation = node.annotations[0];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
-                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this);
+                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this, false);
             } else if (annotation && annotation.annotationType === 'Template') {
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this);
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
         for (let i: number = 0; i < this.connectors.length; i++) {
             pathAnnotation = this.connectors[i].annotations[0];
             if (pathAnnotation && pathAnnotation.annotationType === 'Template') {
-                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this);
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this, false);
             }
         }
     }
@@ -3347,7 +3349,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @blazorArgsType obj|DiagramNode
      */
     public addChildToGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
-        this.addChild(group, child) ;
+        this.addChild(group, child);
     }
     /**
      * Will return the history stack values 
@@ -6924,7 +6926,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.diagramActions & DiagramAction.TextEdit) {
             this.enableServerDataBinding(false);
             let textArea: HTMLTextAreaElement = (document.getElementById(this.element.id + '_editBox') as HTMLTextAreaElement);
-            if ((isBlazor() && textArea && textArea.value) || !isBlazor()) {
+            if ((isBlazor() && textArea) || !isBlazor()) {
                 let text: string = textArea.value;
                 EventHandler.remove(textArea, 'input', this.eventHandler.inputChange);
                 EventHandler.remove(textArea, 'focusout', this.focusOutEdit);
@@ -8402,6 +8404,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     let position: PointModel = this.eventHandler.getMousePosition(args.event);
                     let clonedObject: Object; let selectedSymbol: HTMLElement = args.dragData.helper;
                     let paletteId: string = selectedSymbol.getAttribute('paletteId');
+                    let nodeDragSize: SymbolSizeModel; let nodePreviewSize: SymbolSizeModel; let paletteDragSize: SymbolSizeModel;
+
                     if (paletteId) {
                         let sourceElement: Object = (document.getElementById(paletteId) as EJ2Instance).ej2_instances[0];
                         let source: string = 'sourceElement';
@@ -8422,6 +8426,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     && (newNode.shape as BpmnShape).activity.subProcess.processes.length) {
                                     (newNode.shape as BpmnShape).activity.subProcess.processes = [];
                                 }
+                                nodeDragSize = newNode.dragSize;
+                                nodePreviewSize = newNode.previewSize;
+                                paletteDragSize = sourceElement['symbolDragSize'];
+                                let palettePreview: SymbolSizeModel = sourceElement['symbolPreview'];
+                                newNode.width = nodeDragSize.width || paletteDragSize.width || nodePreviewSize.width || palettePreview.width || newNode.width;
+                                newNode.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height || palettePreview.height ||  newNode.height;
                                 if (newNode.shape.type === 'SwimLane') {
                                     this.diagramActions |= DiagramAction.PreventHistory;
                                     if ((newNode.shape as SwimLane).isLane) {
@@ -8464,6 +8474,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                         group.shape = newNode.shape;
                                         group.width = (newNode.shape as SwimLane).lanes[0].width;
                                         group.height = (newNode.shape as SwimLane).lanes[0].height;
+                                        (group as Node).previewSize = (newNode as Node).previewSize;
+                                        (group as Node).dragSize = (newNode as Node).dragSize;
                                         newNode = this.add(group) as Node;
                                         this.diagramActions &= ~DiagramAction.PreventCollectionChangeOnDragOver;
                                     }
@@ -8523,6 +8535,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 isHorizontal = ((swimLaneObj.shape as SwimLane).orientation === 'Horizontal') ? true : false;
                                 child1 = this.nameTable[newObj.children[0]];
                                 child2 = this.nameTable[newObj.children[1]];
+                                nodeDragSize = newObj.dragSize;
+                                nodePreviewSize = newObj.previewSize;
+                                paletteDragSize = sourceElement['symbolDragSize'];
+                                laneObj.width = nodeDragSize.width || paletteDragSize.width || nodePreviewSize.width || laneObj.width;
+                                laneObj.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height ||  laneObj.height;
                                 if (isHorizontal) {
                                     header.width = laneObj.header.width;
                                     header.height = laneObj.height;
@@ -8604,7 +8621,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     arg = {
                         source: cloneBlazorObject(this.droppable[source]),
                         element: getObjectType(this.currentSymbol) === Connector ? { connector: cloneBlazorObject(this.currentSymbol) as ConnectorModel } : { node: cloneBlazorObject(this.currentSymbol) as NodeModel },
-                        cancel: false,
+                        cancel: false, target: {},
                         position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
                     } as IBlazorDropEventArgs;
                     this.getDropEventArgs(arg); arg = await this.triggerEvent(DiagramEvent.drop, arg) as IDropEventArgs | IBlazorDropEventArgs || arg;
@@ -8675,7 +8692,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.endGroupAction();
                 if (this.mode !== 'SVG') { this.refreshDiagramLayer(); }
                 delete this.droppable[source];
-                let selectedSymbols: string = 'selectedSymbols'; remove(this.droppable[selectedSymbols]);
             }
             else {
                 let arg: IDropEventArgs | IBlazorDropEventArgs = {
@@ -8690,11 +8706,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         element: undefined,
                         cancel: false,
                         position: undefined,
+                        target: {}
                     } as IBlazorDropEventArgs;
                     this.getDropEventArgs(arg);
                 }
                 this.triggerEvent(DiagramEvent.drop, arg); let clonedObject: Object; let id: string = 'id';
             }
+            let selectedSymbols: string = 'selectedSymbols';
+            if (this.droppable[selectedSymbols]) { remove(this.droppable[selectedSymbols]); }
         };
         this.droppable.out = (args: Object) => {
             if (this.currentSymbol && !this.eventHandler.focus) {

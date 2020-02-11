@@ -62,7 +62,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==220&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="64.15384615384616"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="63.76923076923079"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.480769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.480769230769231").toBe(true);
+                    expect(length == 220 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "64.15384615384616" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "63.76923076923079" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.480769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.480769230769231").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -91,7 +91,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==225&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="77.59615384615384"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="63.76923076923079"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.480769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.480769230769231").toBe(true);
+                    expect(length == 225 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "77.59615384615384" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "63.76923076923079" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.480769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.480769230769231").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -120,7 +120,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==216&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="140.326923076923"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="63.76923076923079"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.480769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.480769230769231").toBe(true);
+                    expect(length == 216 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "140.326923076923" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "63.76923076923079" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.480769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.480769230769231").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -149,7 +149,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==308&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="111.65000000000008"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 308 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "111.65000000000008" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -179,7 +179,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==321&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="134.9500000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 321 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "134.9500000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -209,7 +209,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==330&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="127.18333333333344"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 330 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "127.18333333333344" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -237,7 +237,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==413&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="120.55882352941171"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    expect(length == 413 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "120.55882352941171" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -265,7 +265,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==314&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="57.28333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 314 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "57.28333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -295,7 +295,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==458&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="113.70588235294113"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="61.397058823529434"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    expect(length == 458 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "113.70588235294113" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "61.397058823529434" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -323,7 +323,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==454&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="65.73529411764707"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.82352941176472"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    expect(length == 454 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "65.73529411764707" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.82352941176472" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -351,7 +351,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==441&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="130.8382352941176"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.82352941176472"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    expect(length == 441 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "130.8382352941176" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.82352941176472" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -378,7 +378,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==439&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="120.55882352941171"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.82352941176472"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    expect(length == 439 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "120.55882352941171" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.82352941176472" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -408,7 +408,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==579&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="118.39473684210519"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    expect(length == 579 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "118.39473684210519" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -436,7 +436,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==560&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="133.72368421052624"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    expect(length == 560 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "133.72368421052624" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -464,7 +464,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==547&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="90.80263157894734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    expect(length == 547 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "90.80263157894734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -491,7 +491,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==552&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="115.32894736842098"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    expect(length == 552 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "115.32894736842098" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -521,7 +521,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==739&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="108.3214285714285"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.4761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    expect(length == 739 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "108.3214285714285" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -549,7 +549,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==709&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="122.19047619047609"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.4761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    expect(length == 709 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "122.19047619047609" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -577,7 +577,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==884&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="115.19565217391299"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.7173913043478"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    expect(length == 884 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "115.19565217391299" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.7173913043478" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -605,7 +605,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==712&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="97.22619047619042"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.4761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    expect(length == 712 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "97.22619047619042" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -636,7 +636,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==875&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="125.32608695652168"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.7173913043478"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    expect(length == 875 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "125.32608695652168" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.7173913043478" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -665,7 +665,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==869&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="122.7934782608695"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.7173913043478"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    expect(length == 869 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "122.7934782608695" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.7173913043478" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -694,7 +694,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==877&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="97.46739130434779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.7173913043478"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    expect(length == 877 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "97.46739130434779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.7173913043478" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -723,7 +723,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==846&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="77.20652173913041"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.24999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    expect(length == 846 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "77.20652173913041" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.24999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -754,7 +754,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1121&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="141.94"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.91999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.33").toBe(true);
+                    expect(length == 1121 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "141.94" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.91999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.33").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -783,7 +783,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1090&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="127.95999999999994"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="63.58999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.33").toBe(true);
+                    expect(length == 1090 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "127.95999999999994" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "63.58999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.33").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -812,7 +812,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1032&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="139.60999999999999"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.91999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.33").toBe(true);
+                    expect(length == 1032 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "139.60999999999999" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.91999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.33").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -841,7 +841,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1066&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="86.01999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.91999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.33").toBe(true);
+                    expect(length == 1066 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "86.01999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.91999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.33").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -872,7 +872,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1248&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="137.69444444444443"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="234.61111111111106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.63888888888889"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.63888888888889").toBe(true);
+                    expect(length == 1248 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "137.69444444444443" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "234.61111111111106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.63888888888889" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.63888888888889").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -901,7 +901,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1211&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="132.36111111111103"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.09259259259257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.1574074074074074"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.1574074074074074").toBe(true);
+                    expect(length == 1211 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "132.36111111111103" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.09259259259257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.1574074074074074" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.1574074074074074").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -930,7 +930,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1237&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="136.67592592592587"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.09259259259257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.1574074074074074"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.1574074074074074").toBe(true);
+                    expect(length == 1237 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "136.67592592592587" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.09259259259257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.1574074074074074" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.1574074074074074").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -959,7 +959,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1208&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="52.537037037037024"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.09259259259257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.1574074074074074"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.1574074074074074").toBe(true);
+                    expect(length == 1208 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "52.537037037037024" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.09259259259257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.1574074074074074" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.1574074074074074").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -991,7 +991,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==1510&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="225.8706896551725"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="227.16379310344834"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.043103448275861"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.043103448275861").toBe(true);
+                    expect(length == 1510 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "225.8706896551725" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "227.16379310344834" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.043103448275861" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.043103448275861").toBe(true);
                     done();
                 });
             });
@@ -1019,7 +1019,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1443&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="130.12931034482767"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.24137931034487"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.0086206896551726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.0086206896551726").toBe(true);
+                    expect(length == 1443 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "130.12931034482767" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.24137931034487" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.0086206896551726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.0086206896551726").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1048,7 +1048,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1642&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="60.540322580645196"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000004"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.8790322580645162"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.8790322580645162").toBe(true);
+                    expect(length == 1642 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "60.540322580645196" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000004" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.8790322580645162" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.8790322580645162").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1077,7 +1077,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1441&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="47.77586206896552"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.24137931034487"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.0086206896551726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.0086206896551726").toBe(true);
+                    expect(length == 1441 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "47.77586206896552" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.24137931034487" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.0086206896551726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.0086206896551726").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1108,7 +1108,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1701&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="347.81451612903214"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.72580645161304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.524193548387097"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.524193548387097").toBe(true);
+                    expect(length == 1701 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "347.81451612903214" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.72580645161304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.524193548387097" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.524193548387097").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1137,7 +1137,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1649&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="133.8225806451612"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.37096774193553"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.8790322580645162"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.8790322580645162").toBe(true);
+                    expect(length == 1649 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "133.8225806451612" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.37096774193553" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.8790322580645162" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.8790322580645162").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1166,7 +1166,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1694&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="101.87903225806448"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000004"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.8790322580645162"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.8790322580645162").toBe(true);
+                    expect(length == 1694 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "101.87903225806448" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000004" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.8790322580645162" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.8790322580645162").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1195,7 +1195,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1608&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="143.21774193548376"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.37096774193553"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.8790322580645162"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.8790322580645162").toBe(true);
+                    expect(length == 1608 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "143.21774193548376" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.37096774193553" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.8790322580645162" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.8790322580645162").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1226,7 +1226,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2032&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="299.4772727272726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.18181818181807"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.068181818181818"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.068181818181818").toBe(true);
+                    expect(length == 2032 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "299.4772727272726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.18181818181807" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.068181818181818" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.068181818181818").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1255,7 +1255,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1917&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="87.6439393939394"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.4848484848485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.7651515151515151"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.7651515151515151").toBe(true);
+                    expect(length == 1917 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "87.6439393939394" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.4848484848485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.7651515151515151" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.7651515151515151").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1284,7 +1284,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1941&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="78.81818181818183"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.7651515151515151"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.7651515151515151").toBe(true);
+                    expect(length == 1941 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "78.81818181818183" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.7651515151515151" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.7651515151515151").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1313,7 +1313,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1954&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="73.52272727272728"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.4848484848485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.7651515151515151"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.7651515151515151").toBe(true);
+                    expect(length == 1954 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "73.52272727272728" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.4848484848485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.7651515151515151" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.7651515151515151").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1344,7 +1344,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2153&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="303.31428571428563"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="229.9214285714285"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.664285714285715"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.664285714285715").toBe(true);
+                    expect(length == 2153 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "303.31428571428563" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "229.9214285714285" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.664285714285715" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.664285714285715").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1373,7 +1373,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2167&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="60.05714285714282"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.24999999999994"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.6642857142857144"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.6642857142857144").toBe(true);
+                    expect(length == 2167 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "60.05714285714282" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.24999999999994" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.6642857142857144" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.6642857142857144").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1402,7 +1402,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2104&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="144.93571428571408"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.92142857142852"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.6642857142857144"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.6642857142857144").toBe(true);
+                    expect(length == 2104 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "144.93571428571408" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.92142857142852" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.6642857142857144" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.6642857142857144").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1431,7 +1431,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2163&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="90.01428571428562"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.58571428571423"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.6642857142857144"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.6642857142857144").toBe(true);
+                    expect(length == 2163 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "90.01428571428562" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.58571428571423" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.6642857142857144" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.6642857142857144").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1462,7 +1462,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2515&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="168.04729729729732"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.94594594594608"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.304054054054054"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.304054054054054").toBe(true);
+                    expect(length == 2515 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "168.04729729729732" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.94594594594608" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.304054054054054" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.304054054054054").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1491,7 +1491,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2526&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="117.3175675675675"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.67567567567563"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.5743243243243243"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.5743243243243243").toBe(true);
+                    expect(length == 2526 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "117.3175675675675" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.67567567567563" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.5743243243243243" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.5743243243243243").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1530,7 +1530,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2403&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="151.9527027027026"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.10135135135131"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.5743243243243243"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.5743243243243243").toBe(true);
+                    expect(length == 2403 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "151.9527027027026" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.10135135135131" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.5743243243243243" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.5743243243243243").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1559,7 +1559,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2432&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="101.57432432432427"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.24999999999996"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.5743243243243243"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.5743243243243243").toBe(true);
+                    expect(length == 2432 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "101.57432432432427" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.24999999999996" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.5743243243243243" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.5743243243243243").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1590,7 +1590,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2748&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="417.4615384615382"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="231.28846153846143"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.980769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.980769230769231").toBe(true);
+                    expect(length == 2748 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "417.4615384615382" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "231.28846153846143" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.980769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.980769230769231").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1619,7 +1619,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2819&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="144.80769230769215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.26282051282054"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.4935897435897436"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.4935897435897436").toBe(true);
+                    expect(length == 2819 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "144.80769230769215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.26282051282054" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.4935897435897436" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.4935897435897436").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1648,7 +1648,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2766&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="65.6474358974359"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.4935897435897436"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.4935897435897436").toBe(true);
+                    expect(length == 2766 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "65.6474358974359" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.4935897435897436" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.4935897435897436").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1677,7 +1677,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2748&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="92.53205128205117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.75641025641028"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.4935897435897436"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.4935897435897436").toBe(true);
+                    expect(length == 2748 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "92.53205128205117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.75641025641028" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.4935897435897436" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.4935897435897436").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1708,7 +1708,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3108&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="323.95731707317066"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.56097560975607"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.689024390243903"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.689024390243903").toBe(true);
+                    expect(length == 3108 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "323.95731707317066" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.56097560975607" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.689024390243903" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.689024390243903").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1737,7 +1737,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3102&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="50.274390243902445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000003"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.420731707317073"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.420731707317073").toBe(true);
+                    expect(length == 3102 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "50.274390243902445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000003" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.420731707317073" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.420731707317073").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1766,7 +1766,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3041&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="50.274390243902445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.82926829268295"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.420731707317073"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.420731707317073").toBe(true);
+                    expect(length == 3041 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "50.274390243902445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.82926829268295" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.420731707317073" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.420731707317073").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1795,7 +1795,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3021&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="149.7256097560974"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.82926829268295"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.420731707317073"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.420731707317073").toBe(true);
+                    expect(length == 3021 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "149.7256097560974" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.82926829268295" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.420731707317073" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.420731707317073").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1826,7 +1826,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3391&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="108.9651162790698"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.82558139534865"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.424418604651163"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.424418604651163").toBe(true);
+                    expect(length == 3391 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "108.9651162790698" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.82558139534865" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.424418604651163" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.424418604651163").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1855,7 +1855,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3449&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="51.232558139534866"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.89534883720927"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.3546511627906976"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.3546511627906976").toBe(true);
+                    expect(length == 3449 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "51.232558139534866" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.89534883720927" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.3546511627906976" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.3546511627906976").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1884,7 +1884,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3378&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="110.8372093023257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.89534883720927"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.3546511627906976"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.3546511627906976").toBe(true);
+                    expect(length == 3378 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "110.8372093023257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.89534883720927" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.3546511627906976" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.3546511627906976").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1913,7 +1913,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3320&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="70.19767441860463"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.89534883720927"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.3546511627906976"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.3546511627906976").toBe(true);
+                    expect(length == 3320 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "70.19767441860463" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.89534883720927" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.3546511627906976" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.3546511627906976").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1945,7 +1945,7 @@ describe('Barcode Control', () => {
                     debugger
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3744&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="415.8666666666669"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.0666666666668"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.183333333333334"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.183333333333334").toBe(true);
+                    expect(length == 3744 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "415.8666666666669" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.0666666666668" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.183333333333334" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.183333333333334").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -1974,7 +1974,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3763&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="50.81111111111111"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2944444444444445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2944444444444445").toBe(true);
+                    expect(length == 3763 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "50.81111111111111" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2944444444444445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2944444444444445").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2003,7 +2003,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3695&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="57.28333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.95555555555556"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2944444444444445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2944444444444445").toBe(true);
+                    expect(length == 3695 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "57.28333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.95555555555556" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2944444444444445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2944444444444445").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2032,7 +2032,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3732&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="67.6388888888889"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2944444444444445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2944444444444445").toBe(true);
+                    expect(length == 3732 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "67.6388888888889" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2944444444444445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2944444444444445").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2063,7 +2063,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4062&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="51.48936170212765"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.28723404255308"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.962765957446808"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.962765957446808").toBe(true);
+                    expect(length == 4062 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "51.48936170212765" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.28723404255308" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.962765957446808" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.962765957446808").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2092,7 +2092,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4049&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="143.37765957446783"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="67.01063829787233"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2393617021276595"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2393617021276595").toBe(true);
+                    expect(length == 4049 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "143.37765957446783" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "67.01063829787233" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2393617021276595" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2393617021276595").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2121,7 +2121,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4072&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="82.64893617021266"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="67.01063829787233"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2393617021276595"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2393617021276595").toBe(true);
+                    expect(length == 4072 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "82.64893617021266" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "67.01063829787233" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2393617021276595" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2393617021276595").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2150,7 +2150,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4151&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="60.340425531914896"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="67.01063829787233"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2393617021276595"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2393617021276595").toBe(true);
+                    expect(length == 4151 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "60.340425531914896" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "67.01063829787233" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2393617021276595" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2393617021276595").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2181,7 +2181,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4474&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="349.9642857142856"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.48979591836726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    expect(length == 4474 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "349.9642857142856" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.48979591836726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2210,7 +2210,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4447&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="359.4846938775509"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.48979591836726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    expect(length == 4447 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "359.4846938775509" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.48979591836726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2239,7 +2239,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4480&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="364.24489795918356"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.48979591836726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    expect(length == 4480 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "364.24489795918356" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.48979591836726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2268,7 +2268,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4496&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="127.55102040816321"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.1020408163264"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.8979591836734695"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.8979591836734695").toBe(true);
+                    expect(length == 4496 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "127.55102040816321" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.1020408163264" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.8979591836734695" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.8979591836734695").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2299,7 +2299,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4861&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="126.51470588235298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.67647058823508"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.573529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.573529411764706").toBe(true);
+                    expect(length == 4861 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "126.51470588235298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.67647058823508" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.573529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.573529411764706").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2328,7 +2328,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4450&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="273.8010204081632"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.48979591836726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    expect(length == 4450 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "273.8010204081632" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.48979591836726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2357,7 +2357,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4797&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="103.64705882352943"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.67647058823508"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.573529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.573529411764706").toBe(true);
+                    expect(length == 4797 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "103.64705882352943" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.67647058823508" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.573529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.573529411764706").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2386,7 +2386,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4819&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="174.70588235294125"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="275.00000000000017"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.705882352941177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.705882352941177").toBe(true);
+                    expect(length == 4819 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "174.70588235294125" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "275.00000000000017" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.705882352941177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.705882352941177").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2417,7 +2417,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==5312&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="399.63207547169776"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="234.44811320754698"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    expect(length == 5312 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "399.63207547169776" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "234.44811320754698" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2446,7 +2446,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==5326&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="175.18396226415084"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.8490566037734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    expect(length == 5326 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "175.18396226415084" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.8490566037734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2475,7 +2475,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==5276&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="426.0377358490562"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.8490566037734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    expect(length == 5276 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "426.0377358490562" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.8490566037734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2504,7 +2504,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==5313&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="354.1509433962268"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.47169811320776"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.528301886792453"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.528301886792453").toBe(true);
+                    expect(length == 5313 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "354.1509433962268" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.47169811320776" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.528301886792453" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.528301886792453").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2535,7 +2535,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==5700&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="33.71363636363637"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000014"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.240909090909091"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.240909090909091").toBe(true);
+                    expect(length == 5700 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "33.71363636363637" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000014" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.240909090909091" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.240909090909091").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2564,7 +2564,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==5666&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="372.98636363636405"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="234.76818181818194"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.240909090909091"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.240909090909091").toBe(true);
+                    expect(length == 5666 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "372.98636363636405" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "234.76818181818194" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.240909090909091" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.240909090909091").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2593,7 +2593,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==5676&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="250.00000000000017"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.00909090909104"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.240909090909091"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.240909090909091").toBe(true);
+                    expect(length == 5676 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "250.00000000000017" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.00909090909104" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.240909090909091" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.240909090909091").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2622,7 +2622,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==5660&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="367.81818181818227"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.63636363636385"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.363636363636363"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.363636363636363").toBe(true);
+                    expect(length == 5660 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "367.81818181818227" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.63636363636385" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.363636363636363" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.363636363636363").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2653,7 +2653,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6245&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="450.5131578947378"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.15789473684194"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.092105263157895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.092105263157895").toBe(true);
+                    expect(length == 6245 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "450.5131578947378" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.15789473684194" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.092105263157895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.092105263157895").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2682,7 +2682,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6200&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="286.82894736842104"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.15789473684194"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.092105263157895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.092105263157895").toBe(true);
+                    expect(length == 6200 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "286.82894736842104" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.15789473684194" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.092105263157895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.092105263157895").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2711,7 +2711,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6179&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="188.61842105263148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.15789473684194"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.092105263157895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.092105263157895").toBe(true);
+                    expect(length == 6179 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "188.61842105263148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.15789473684194" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.092105263157895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.092105263157895").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2740,7 +2740,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6137&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="81.57894736842107"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="275.0000000000003"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.2105263157894735"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.2105263157894735").toBe(true);
+                    expect(length == 6137 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "81.57894736842107" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "275.0000000000003" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.2105263157894735" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.2105263157894735").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2771,7 +2771,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6736&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="269.76694915254257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.29661016949177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9533898305084745"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9533898305084745").toBe(true);
+                    expect(length == 6736 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "269.76694915254257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.29661016949177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9533898305084745" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9533898305084745").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2800,7 +2800,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6579&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="234.18644067796632"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.29661016949177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9533898305084745"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9533898305084745").toBe(true);
+                    expect(length == 6579 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "234.18644067796632" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.29661016949177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9533898305084745" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9533898305084745").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2829,7 +2829,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6554&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="265.8135593220341"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.29661016949177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9533898305084745"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9533898305084745").toBe(true);
+                    expect(length == 6554 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "265.8135593220341" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.29661016949177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9533898305084745" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9533898305084745").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2858,7 +2858,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6631&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="290.6779661016949"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.9322033898306"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.067796610169491"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.067796610169491").toBe(true);
+                    expect(length == 6631 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "290.6779661016949" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.9322033898306" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.067796610169491" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.067796610169491").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2889,7 +2889,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==7207&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="177.34836065573774"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.4262295081969"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8237704918032787"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8237704918032787").toBe(true);
+                    expect(length == 7207 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "177.34836065573774" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.4262295081969" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8237704918032787" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8237704918032787").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2918,7 +2918,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==7151&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="269.1188524590165"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.4262295081969"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8237704918032787"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8237704918032787").toBe(true);
+                    expect(length == 7151 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "269.1188524590165" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.4262295081969" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8237704918032787" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8237704918032787").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2947,7 +2947,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6999&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="89.40163934426228"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2500000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8237704918032787"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8237704918032787").toBe(true);
+                    expect(length == 6999 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "89.40163934426228" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2500000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8237704918032787" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8237704918032787").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -2976,7 +2976,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==6957&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="470.3278688524581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.0655737704919"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9344262295081966"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9344262295081966").toBe(true);
+                    expect(length == 6957 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "470.3278688524581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.0655737704919" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9344262295081966" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9344262295081966").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3017,7 +3017,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==7638&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="113.01190476190469"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.5476190476193"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.7023809523809526"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.7023809523809526").toBe(true);
+                    expect(length == 7638 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "113.01190476190469" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.5476190476193" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.7023809523809526" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.7023809523809526").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3046,7 +3046,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==7603&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="342.5595238095243"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.5476190476193"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.7023809523809526"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.7023809523809526").toBe(true);
+                    expect(length == 7603 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "342.5595238095243" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.5476190476193" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.7023809523809526" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.7023809523809526").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3075,7 +3075,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==7507&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="46.369047619047606"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.5476190476193"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.7023809523809526"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.7023809523809526").toBe(true);
+                    expect(length == 7507 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "46.369047619047606" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.5476190476193" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.7023809523809526" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.7023809523809526").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3104,7 +3104,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==7575&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="417.6190476190466"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.1904761904757"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8095238095238093"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8095238095238093").toBe(true);
+                    expect(length == 7575 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "417.6190476190466" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.1904761904757" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8095238095238093" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8095238095238093").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3135,7 +3135,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==7996&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="145.93461538461543"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.6615384615383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.5884615384615386"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.5884615384615386").toBe(true);
+                    expect(length == 7996 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "145.93461538461543" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.6615384615383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.5884615384615386" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.5884615384615386").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3164,7 +3164,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==8091&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="282.2961538461538"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.6615384615383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.5884615384615386"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.5884615384615386").toBe(true);
+                    expect(length == 8091 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "282.2961538461538" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.6615384615383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.5884615384615386" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.5884615384615386").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3193,7 +3193,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==8032&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="31.10384615384615"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999983"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.5884615384615386"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.5884615384615386").toBe(true);
+                    expect(length == 8032 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "31.10384615384615" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999983" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.5884615384615386" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.5884615384615386").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3223,7 +3223,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==7959&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="475.23076923076803"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="267.6153846153842"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.6923076923076925"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.6923076923076925").toBe(true);
+                    expect(length == 7959 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "475.23076923076803" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "267.6153846153842" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.6923076923076925" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.6923076923076925").toBe(true);
                     done();
                 });
             });
@@ -3253,7 +3253,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==8673&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="319.6268656716412"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.76865671641758"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4813432835820897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4813432835820897").toBe(true);
+                    expect(length == 8673 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "319.6268656716412" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.76865671641758" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4813432835820897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4813432835820897").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3282,7 +3282,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==8586&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="44.60074626865672"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.76865671641758"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4813432835820897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4813432835820897").toBe(true);
+                    expect(length == 8586 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "44.60074626865672" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.76865671641758" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4813432835820897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4813432835820897").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3311,7 +3311,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==8629&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="187.33582089552223"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.76865671641758"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4813432835820897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4813432835820897").toBe(true);
+                    expect(length == 8629 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "187.33582089552223" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.76865671641758" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4813432835820897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4813432835820897").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3341,7 +3341,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==8604&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="192.68656716417934"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.4179104477616"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.582089552238806"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.582089552238806").toBe(true);
+                    expect(length == 8604 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "192.68656716417934" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.4179104477616" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.582089552238806" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.582089552238806").toBe(true);
                     done();
                 });
             });
@@ -3371,7 +3371,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==9293&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="361.5543478260866"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    expect(length == 9293 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "361.5543478260866" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3400,7 +3400,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==9189&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="385.2173913043474"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    expect(length == 9189 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "385.2173913043474" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     output(barcode);
                     done();
                 });
@@ -3430,7 +3430,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==9199&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="40.41304347826087"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    expect(length == 9199 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "40.41304347826087" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     done();
                 });
             });
@@ -3456,10 +3456,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==9168&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="361.3043478260862"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="268.04347826086956"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4782608695652173"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4782608695652173").toBe(true);
+                    expect(length == 9168 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "361.3043478260862" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "268.04347826086956" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4782608695652173" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4782608695652173").toBe(true);
                     done();
                 });
             });
@@ -3490,7 +3490,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==9755&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="92.30985915492954"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.96478873239428"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    expect(length == 9755 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "92.30985915492954" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.96478873239428" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -3519,7 +3519,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==9693&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="450.39788732394345"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.96478873239428"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    expect(length == 9693 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "450.39788732394345" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.96478873239428" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -3546,9 +3546,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==9581&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="417.54577464788713"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.67957746478865"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    expect(length == 9581 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "417.54577464788713" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.67957746478865" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -3574,10 +3574,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==9749&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="422.39436619718356"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="268.239436619718"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380281690140845"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380281690140845").toBe(true);
+                    expect(length == 9749 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "422.39436619718356" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "268.239436619718" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380281690140845" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380281690140845").toBe(true);
                     done();
                 });
             });
@@ -3608,7 +3608,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==10357&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="419.3458904109591"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.05479452054803"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    expect(length == 10357 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "419.3458904109591" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.05479452054803" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -3637,7 +3637,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==10305&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="381.0034246575344"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.05479452054803"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    expect(length == 10305 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "381.0034246575344" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.05479452054803" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -3664,9 +3664,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==10135&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="77.45890410958907"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000009"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    expect(length == 10135 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "77.45890410958907" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000009" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -3693,9 +3693,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==10164&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="33.01369863013698"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.71232876712315"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.287671232876712"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.287671232876712").toBe(true);
+                    expect(length == 10164 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "33.01369863013698" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.71232876712315" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.287671232876712" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.287671232876712").toBe(true);
                     done();
                 });
             });
@@ -3726,7 +3726,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==10890&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="396.17000000000115"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.14000000000047"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.11"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.11").toBe(true);
+                    expect(length == 10890 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "396.17000000000115" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.14000000000047" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.11" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.11").toBe(true);
                     done();
                 });
             });
@@ -3755,7 +3755,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==10820&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="277.99000000000063"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.03000000000046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.11"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.11").toBe(true);
+                    expect(length == 10820 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "277.99000000000063" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.03000000000046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.11" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.11").toBe(true);
                     done();
                 });
             });
@@ -3781,10 +3781,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==10820&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="380.6200000000011"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.14000000000047"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.11"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.11").toBe(true);
+                    expect(length == 10820 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "380.6200000000011" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.14000000000047" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.11" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.11").toBe(true);
                     done();
                 });
             });
@@ -3810,10 +3810,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==10866&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="198.7999999999998"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.7999999999996"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.2"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.2").toBe(true);
+                    expect(length == 10866 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "198.7999999999998" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.7999999999996" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.2" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.2").toBe(true);
                     done();
                 });
             });
@@ -3844,7 +3844,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==11465&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="253.02922077922136"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2500000000005"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11465 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "253.02922077922136" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2500000000005" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -3873,7 +3873,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==11486&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="452.9577922077937"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.19155844155893"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11486 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "452.9577922077937" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.19155844155893" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -3899,10 +3899,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==11488&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="34.925324675324674"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2500000000005"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11488 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "34.925324675324674" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2500000000005" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -3928,10 +3928,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==11442&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="324.80519480519473"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.8831168831168"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.116883116883117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.116883116883117").toBe(true);
+                    expect(length == 11442 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "324.80519480519473" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.8831168831168" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.116883116883117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.116883116883117").toBe(true);
                     done();
                 });
             });
@@ -3962,7 +3962,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==12081&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="232.28481012658236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.29746835443046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 12081 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "232.28481012658236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.29746835443046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -3991,7 +3991,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==12094&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="61.03797468354432"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000009"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 12094 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "61.03797468354432" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000009" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -4017,10 +4017,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==12148&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="250.00000000000009"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.29746835443046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 12148 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "250.00000000000009" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.29746835443046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -4046,10 +4046,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==11995&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="292.5316455696197"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.9620253164552"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.037974683544304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.037974683544304").toBe(true);
+                    expect(length == 11995 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "292.5316455696197" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.9620253164552" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.037974683544304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.037974683544304").toBe(true);
                     done();
                 });
             });
@@ -4080,7 +4080,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==12853&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="82.98148148148154"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12853 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "82.98148148148154" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -4109,7 +4109,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==12776&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="293.19444444444395"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12776 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "293.19444444444395" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -4135,10 +4135,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==12618&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="448.6944444444434"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12618 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "448.6944444444434" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -4165,9 +4165,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==12661&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="42.59259259259258"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.0370370370371"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.962962962962963"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.962962962962963").toBe(true);
+                    expect(length == 12661 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "42.59259259259258" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.0370370370371" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.962962962962963" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.962962962962963").toBe(true);
                     done();
                 });
             });
@@ -4198,7 +4198,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==13513&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="238.75903614457823"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.4397590361445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    expect(length == 13513 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "238.75903614457823" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.4397590361445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -4225,9 +4225,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==13373&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="134.78012048192767"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.4397590361445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    expect(length == 13373 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "134.78012048192767" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.4397590361445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -4253,10 +4253,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==13327&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="112.2981927710843"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.4397590361445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    expect(length == 13327 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "112.2981927710843" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.4397590361445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -4282,10 +4282,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==13374&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="192.1686746987952"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.10843373494"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.891566265060241"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.891566265060241").toBe(true);
+                    expect(length == 13374 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "192.1686746987952" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.10843373494" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.891566265060241" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.891566265060241").toBe(true);
                     done();
                 });
             });
@@ -4316,7 +4316,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==14263&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="41.447058823529396"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.50588235294148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    expect(length == 14263 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "41.447058823529396" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.50588235294148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -4343,9 +4343,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==14143&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="129.25882352941184"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.50588235294148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    expect(length == 14143 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "129.25882352941184" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.50588235294148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -4372,9 +4372,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==13976&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="255.48823529411797"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.50588235294148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    expect(length == 13976 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "255.48823529411797" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.50588235294148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -4403,7 +4403,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==14021&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="286.7058823529407"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.17647058823485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.823529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.823529411764706").toBe(true);
+                    expect(length == 14021 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "286.7058823529407" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.17647058823485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.823529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.823529411764706").toBe(true);
                     done();
 
                 });
@@ -4435,7 +4435,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==14876&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="429.6293103448271"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.56896551724185"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    expect(length == 14876 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "429.6293103448271" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.56896551724185" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
             });
@@ -4461,10 +4461,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==14765&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="201.7413793103451"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.56896551724185"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    expect(length == 14765 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "201.7413793103451" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.56896551724185" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
             });
@@ -4491,9 +4491,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==14709&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="461.80172413793036"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.20689655172458"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    expect(length == 14709 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "461.80172413793036" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.20689655172458" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
             });
@@ -4520,9 +4520,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==14629&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="291.37931034482773"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.241379310345"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7586206896551726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7586206896551726").toBe(true);
+                    expect(length == 14629 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "291.37931034482773" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.241379310345" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7586206896551726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7586206896551726").toBe(true);
                     done();
                 });
             });
@@ -4553,7 +4553,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==15492&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="121.58146067415716"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.6292134831462"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6207865168539324"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6207865168539324").toBe(true);
+                    expect(length == 15492 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "121.58146067415716" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.6292134831462" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6207865168539324" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6207865168539324").toBe(true);
                     done();
                 });
             });
@@ -4580,9 +4580,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==15466&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="286.691011235955"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.6292134831462"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6207865168539324"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6207865168539324").toBe(true);
+                    expect(length == 15466 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "286.691011235955" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.6292134831462" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6207865168539324" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6207865168539324").toBe(true);
                     done();
                 });
             });
@@ -4609,9 +4609,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==15397&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="82.26966292134827"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.00842696629226"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6207865168539324"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6207865168539324").toBe(true);
+                    expect(length == 15397 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "82.26966292134827" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.00842696629226" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6207865168539324" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6207865168539324").toBe(true);
                     done();
                 });
             });
@@ -4638,17 +4638,17 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==15402&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="360.56179775280924"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.30337078651655"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.696629213483146"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.696629213483146").toBe(true);
+                    expect(length == 15402 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "360.56179775280924" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.30337078651655" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.696629213483146" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.696629213483146").toBe(true);
                     sessionStorage.clear();
                     window.localStorage.clear();
                     done();
-                   
+
                 });
             });
         });
-        
+
         describe('Version40', () => {
             describe('Low error correction', () => {
 
@@ -4665,7 +4665,7 @@ describe('Barcode Control', () => {
                     });
                     barcode.appendTo('#QrCode3_binary_Data2');
                 });
-           
+
                 afterAll((): void => {
                     barcode.destroy();
                     ele.remove();
@@ -4675,7 +4675,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==16292&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="229.49450549450518"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.68681318681283"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    expect(length == 16292 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "229.49450549450518" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.68681318681283" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -4701,10 +4701,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==16379&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="365.34340659340575"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.12362637362602"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    expect(length == 16379 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "365.34340659340575" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.12362637362602" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -4731,9 +4731,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==16032&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="175.6675824175823"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.68681318681283"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    expect(length == 16032 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "175.6675824175823" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.68681318681283" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -4759,28 +4759,15 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==16170&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="123.4065934065935"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.362637362637"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6373626373626373"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6373626373626373").toBe(true);
+                    expect(length == 16170 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "123.4065934065935" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.362637362637" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6373626373626373" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6373626373626373").toBe(true);
                     done();
                 });
             });
         });
     });
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     ///////////////////divide 
@@ -4812,7 +4799,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==229&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="106.46153846153847"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="225.30769230769226"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="17.942307692307693"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="17.942307692307693").toBe(true);
+                    expect(length == 229 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "106.46153846153847" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "225.30769230769226" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "17.942307692307693" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "17.942307692307693").toBe(true);
                     done();
                 });
             });
@@ -4841,7 +4828,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==219&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="232.05769230769226"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="207.36538461538458"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="17.942307692307693"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="17.942307692307693").toBe(true);
+                    expect(length == 219 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "232.05769230769226" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "207.36538461538458" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "17.942307692307693" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "17.942307692307693").toBe(true);
                     done();
                 });
             });
@@ -4867,10 +4854,12 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version1 Quartile error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==217&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="285.8846153846153"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="225.30769230769226"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="17.942307692307693"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="17.942307692307693").toBe(true);
+                    output1(barcode);
+                    var children = document.getElementById('QrCode3_AlphaNumeric_Data2').children[0];
+                    expect(length == 225&&children.getAttribute("id")==="QrCode3_AlphaNumeric_Data2content" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "142.34615384615387" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "225.30769230769226" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "17.942307692307693" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "17.942307692307693").toBe(true);
                     done();
                 });
             });
@@ -4896,10 +4885,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version1 High error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==209&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="249.99999999999994"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="225.30769230769226"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="17.942307692307693"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="17.942307692307693").toBe(true);
+                    output1(barcode);
+                    expect(length == 232 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "214.11538461538458" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "225.30769230769226" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "17.942307692307693" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "17.942307692307693").toBe(true);
                     done();
                 });
             });
@@ -4930,7 +4920,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==339&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="141.14999999999998"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="227.70000000000007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="15.55"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="15.55").toBe(true);
+                    expect(length == 339 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "141.14999999999998" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "227.70000000000007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "15.55" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "15.55").toBe(true);
                     done();
                 });
             });
@@ -4959,7 +4949,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==319&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="203.35000000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="227.70000000000007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="15.55"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="15.55").toBe(true);
+                    expect(length == 319 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "203.35000000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "227.70000000000007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "15.55" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "15.55").toBe(true);
                     done();
                 });
             });
@@ -4985,10 +4975,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version2 Quartile error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==312&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="421.0500000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="227.70000000000007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="15.55"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="15.55").toBe(true);
+                    output1(barcode);
+                    expect(length == 310 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "343.3000000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "212.15000000000006" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "15.55" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "15.55").toBe(true);
                     done();
                 });
             });
@@ -5014,10 +5005,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version2 High error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==312&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="405.50000000000017"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="227.70000000000007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="15.55"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="15.55").toBe(true);
+                    output1(barcode);
+                    expect(length == 320 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "203.35000000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "227.70000000000007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "15.55" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "15.55").toBe(true);
                     done();
                 });
             });
@@ -5045,10 +5037,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version3 Low error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==430&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="57.91176470588235"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="229.52941176470586"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="13.720588235294118"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="13.720588235294118").toBe(true);
+                    output1(barcode);
+                    expect(length == 440 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "222.55882352941174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "229.52941176470586" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "13.720588235294118" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "13.720588235294118").toBe(true);
                     done();
                 });
             });
@@ -5074,10 +5067,12 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version3 Medium error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==433&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="222.55882352941174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="229.52941176470586"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="13.720588235294118"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="13.720588235294118").toBe(true);
+                    // Error scan text
+                    output1(barcode);
+                    expect(length == 429 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "291.1617647058824" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "229.52941176470586" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "13.720588235294118" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "13.720588235294118").toBe(true);
                     done();
                 });
             });
@@ -5103,10 +5098,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version3 Quartile error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==410&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="85.35294117647058"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="229.52941176470586"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="13.720588235294118"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="13.720588235294118").toBe(true);
+                    output1(barcode);
+                    expect(length == 412 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "428.3676470588238" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "215.80882352941174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "13.720588235294118" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "13.720588235294118").toBe(true);
                     done();
                 });
             });
@@ -5135,7 +5131,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==413&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="153.95588235294116"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="229.52941176470586"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="13.720588235294118"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="13.720588235294118").toBe(true);
+                    expect(length == 413 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "153.95588235294116" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "229.52941176470586" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "13.720588235294118" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "13.720588235294118").toBe(true);
                     done();
                 });
             });
@@ -5163,10 +5159,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version4 Low error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==570&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="274.5526315789475"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="230.97368421052641"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="12.276315789473685"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="12.276315789473685").toBe(true);
+                    output1(barcode);
+                    expect(length == 574 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "385.0394736842108" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "218.69736842105272" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "12.276315789473685" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "12.276315789473685").toBe(true);
                     done();
                 });
             });
@@ -5192,10 +5189,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version4 Medium error correction Rendering ");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==545&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="151.78947368421052"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="230.97368421052641"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="12.276315789473685"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="12.276315789473685").toBe(true);
+                    output1(barcode);
+                    expect(length == 560 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "385.0394736842108" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "230.97368421052641" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "12.276315789473685" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "12.276315789473685").toBe(true);
                     done();
                 });
             });
@@ -5221,10 +5219,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version4 Quartile error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==562&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="250.0000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="230.97368421052641"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="12.276315789473685"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="12.276315789473685").toBe(true);
+                    output1(barcode);
+                    expect( length ==552&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="102.6842105263158"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="230.97368421052641"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="12.276315789473685"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="12.276315789473685").toBe(true);
                     done();
                 });
             });
@@ -5253,7 +5252,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==565&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="372.7631578947371"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="230.97368421052641"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="12.276315789473685"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="12.276315789473685").toBe(true);
+                    expect(length == 565 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "372.7631578947371" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "230.97368421052641" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "12.276315789473685" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "12.276315789473685").toBe(true);
                     done();
                 });
             });
@@ -5281,10 +5280,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version5 Low error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==680&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="94.50000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000006"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="11.107142857142858"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="11.107142857142858").toBe(true);
+                    output1(barcode);
+                    expect(length == 680 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "38.964285714285715" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000006" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "11.107142857142858" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "11.107142857142858").toBe(true);
                     done();
                 });
             });
@@ -5313,7 +5313,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==695&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="294.4285714285714"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="221.03571428571433"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="11.107142857142858"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="11.107142857142858").toBe(true);
+                    expect(length == 695 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "294.4285714285714" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "221.03571428571433" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "11.107142857142858" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "11.107142857142858").toBe(true);
                     done();
                 });
             });
@@ -5342,7 +5342,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==685&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="61.17857142857143"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000006"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="11.107142857142858"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="11.107142857142858").toBe(true);
+                    expect(length == 685 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "61.17857142857143" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000006" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "11.107142857142858" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "11.107142857142858").toBe(true);
                     done();
                 });
             });
@@ -5371,7 +5371,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==695&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="416.60714285714255"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="221.03571428571433"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="11.107142857142858"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="11.107142857142858").toBe(true);
+                    expect(length == 695 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "416.60714285714255" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "221.03571428571433" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "11.107142857142858" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "11.107142857142858").toBe(true);
                     done();
                 });
             });
@@ -5399,10 +5399,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version6 Low error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==845&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="168.86956521739137"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="233.108695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="10.141304347826088"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="10.141304347826088").toBe(true);
+                    output1(barcode);
+                    expect(length == 862 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "128.304347826087" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "233.108695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "10.141304347826088" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "10.141304347826088").toBe(true);
                     done();
                 });
             });
@@ -5428,10 +5429,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version6 Medium error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==849&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="37.03260869565217"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000009"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="10.141304347826088"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="10.141304347826088").toBe(true);
+                    output1(barcode);
+                    expect(length == 845 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "77.59782608695653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000009" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "10.141304347826088" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "10.141304347826088").toBe(true);
                     done();
                 });
             });
@@ -5460,7 +5462,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==825&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="108.02173913043481"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="233.108695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="10.141304347826088"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="10.141304347826088").toBe(true);
+                    expect(length == 825 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "108.02173913043481" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "233.108695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "10.141304347826088" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "10.141304347826088").toBe(true);
                     done();
                 });
             });
@@ -5486,10 +5488,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version6 High error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==878&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="280.4239130434783"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="233.108695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="10.141304347826088"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="10.141304347826088").toBe(true);
+                    output1(barcode);
+                    expect(length == 890 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "280.4239130434783" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "233.108695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "10.141304347826088" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "10.141304347826088").toBe(true);
                     done();
                 });
             });
@@ -5520,7 +5523,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==1087&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="417.9399999999999"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="233.92000000000013"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="9.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="9.33").toBe(true);
+                    expect(length == 1087 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "417.9399999999999" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "233.92000000000013" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "9.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "9.33").toBe(true);
                     done();
                 });
             });
@@ -5546,10 +5549,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version7 Medium error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==1052&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="371.28999999999996"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="224.59000000000012"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="9.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="9.33").toBe(true);
+                    output1(barcode);
+                    expect(length == 1047 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "72.72999999999999" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "233.92000000000013" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "9.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "9.33").toBe(true);
                     done();
                 });
             });
@@ -5578,7 +5582,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==1054&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="352.63"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="233.92000000000013"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="9.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="9.33").toBe(true);
+                    expect(length == 1054 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "352.63" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "233.92000000000013" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "9.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "9.33").toBe(true);
                     done();
                 });
             });
@@ -5607,7 +5611,7 @@ describe('Barcode Control', () => {
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
                     output(barcode);
-                    expect( length ==1052&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="445.92999999999984"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="233.92000000000013"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="9.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="9.33").toBe(true);
+                    expect(length == 1052 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "445.92999999999984" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "233.92000000000013" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "9.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "9.33").toBe(true);
                     done();
                 });
             });
@@ -5635,10 +5639,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
+                    console.log("Version8 Low error correction Rendering");
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    output(barcode);
-                    expect( length ==1219&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="120.41666666666664"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999994"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.63888888888889"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.63888888888889").toBe(true);
+                    output1(barcode);
+                    expect(length == 1225 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "206.80555555555551" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999994" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.63888888888889" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.63888888888889").toBe(true);
                     done();
                 });
             });
@@ -5665,9 +5670,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1226&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="319.11111111111126"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="234.61111111111106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.63888888888889"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.63888888888889").toBe(true);
+                    expect(length == 1226 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "319.11111111111126" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "234.61111111111106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.63888888888889" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.63888888888889").toBe(true);
                     done();
                 });
             });
@@ -5696,7 +5701,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1235&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="111.77777777777776"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="234.61111111111106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.63888888888889"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.63888888888889").toBe(true);
+                    expect(length == 1235 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "111.77777777777776" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "234.61111111111106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.63888888888889" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.63888888888889").toBe(true);
                     done();
                 });
             });
@@ -5725,7 +5730,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1235&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="258.63888888888886"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="225.97222222222217"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.63888888888889"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.63888888888889").toBe(true);
+                    expect(length == 1235 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "258.63888888888886" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "225.97222222222217" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.63888888888889" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.63888888888889").toBe(true);
                     done();
                 });
             });
@@ -5753,10 +5758,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version9 Low error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1448&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="217.82758620689663"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="227.16379310344834"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.043103448275861"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.043103448275861").toBe(true);
+                    expect(length == 1447 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "56.9655172413793" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.2068965517242" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.043103448275861" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.043103448275861").toBe(true);
                     done();
                 });
             });
@@ -5782,10 +5788,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version9 Medium error correction Rendering")
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1413&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="451.0775862068969"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.2068965517242"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.043103448275861"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.043103448275861").toBe(true);
+                    expect(length == 1423 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "185.65517241379314" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000009" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.043103448275861" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.043103448275861").toBe(true);
                     done();
                 });
             });
@@ -5814,7 +5821,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1419&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="370.6465517241382"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.2068965517242"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.043103448275861"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.043103448275861").toBe(true);
+                    expect(length == 1419 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "370.6465517241382" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.2068965517242" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.043103448275861" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.043103448275861").toBe(true);
                     done();
                 });
             });
@@ -5840,10 +5847,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version9 High error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1432&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="258.043103448276"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.2068965517242"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.043103448275861"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.043103448275861").toBe(true);
+                    expect(length == 1448 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "290.2155172413795" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.2068965517242" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.043103448275861" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.043103448275861").toBe(true);
                     done();
                 });
             });
@@ -5874,7 +5882,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1658&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="377.91129032258044"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.72580645161304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.524193548387097"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.524193548387097").toBe(true);
+                    expect(length == 1658 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "377.91129032258044" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.72580645161304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.524193548387097" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.524193548387097").toBe(true);
                     done();
                 });
             });
@@ -5903,7 +5911,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1631&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="392.9596774193546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.72580645161304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.524193548387097"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.524193548387097").toBe(true);
+                    expect(length == 1631 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "392.9596774193546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.72580645161304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.524193548387097" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.524193548387097").toBe(true);
                     done();
                 });
             });
@@ -5932,7 +5940,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1647&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="265.0483870967743"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.72580645161304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.524193548387097"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.524193548387097").toBe(true);
+                    expect(length == 1647 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "265.0483870967743" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.72580645161304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.524193548387097" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.524193548387097").toBe(true);
                     done();
                 });
             });
@@ -5958,10 +5966,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version10 High error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1641&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="392.9596774193546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.72580645161304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.524193548387097"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.524193548387097").toBe(true);
+                    expect(length == 1649 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "280.09677419354847" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.72580645161304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.524193548387097" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.524193548387097").toBe(true);
                     done();
                 });
             });
@@ -5992,7 +6001,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1871&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="426.7045454545452"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.18181818181807"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.068181818181818"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.068181818181818").toBe(true);
+                    expect(length == 1871 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "426.7045454545452" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.18181818181807" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.068181818181818" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.068181818181818").toBe(true);
                     done();
                 });
             });
@@ -6021,7 +6030,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1886&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="129.84090909090907"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2499999999999"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.068181818181818"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.068181818181818").toBe(true);
+                    expect(length == 1886 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "129.84090909090907" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2499999999999" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.068181818181818" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.068181818181818").toBe(true);
                     done();
                 });
             });
@@ -6047,10 +6056,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version11 Quartile error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1924&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="30.88636363636364"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.18181818181807"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.068181818181818"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.068181818181818").toBe(true);
+                    expect(length == 1955 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "30.88636363636364" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.18181818181807" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.068181818181818" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.068181818181818").toBe(true);
                     done();
                 });
             });
@@ -6079,7 +6089,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==1908&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="228.79545454545445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.18181818181807"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.068181818181818"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.068181818181818").toBe(true);
+                    expect(length == 1908 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "228.79545454545445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.18181818181807" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.068181818181818" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.068181818181818").toBe(true);
                     done();
                 });
             });
@@ -6110,7 +6120,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2154&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="336.6357142857142"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.5857142857142"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.664285714285715"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.664285714285715").toBe(true);
+                    expect(length == 2154 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "336.6357142857142" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.5857142857142" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.664285714285715" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.664285714285715").toBe(true);
                     done();
                 });
             });
@@ -6139,7 +6149,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2113&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="329.9714285714285"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.5857142857142"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.664285714285715"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.664285714285715").toBe(true);
+                    expect(length == 2113 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "329.9714285714285" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.5857142857142" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.664285714285715" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.664285714285715").toBe(true);
                     done();
                 });
             });
@@ -6168,7 +6178,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2131&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="383.28571428571416"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.5857142857142"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.664285714285715"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.664285714285715").toBe(true);
+                    expect(length == 2131 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "383.28571428571416" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.5857142857142" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.664285714285715" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.664285714285715").toBe(true);
                     done();
                 });
             });
@@ -6194,10 +6204,12 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    // Error scan data
+                    console.log("Version12 High error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2158&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="383.28571428571416"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.5857142857142"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.664285714285715"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.664285714285715").toBe(true);
+                    expect(length == 2139 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "243.3357142857142" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.5857142857142" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.664285714285715" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.664285714285715").toBe(true);
                     done();
                 });
             });
@@ -6225,10 +6237,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version13 Low error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2381&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="231.08783783783795"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.94594594594608"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.304054054054054"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.304054054054054").toBe(true);
+                    expect(length == 2388 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "218.47972972972983" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.94594594594608" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.304054054054054" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.304054054054054").toBe(true);
                     done();
                 });
             });
@@ -6254,10 +6267,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version13 Medium error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2423&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="357.1689189189192"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.94594594594608"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.304054054054054"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.304054054054054").toBe(true);
+                    expect(length == 2415 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "313.04054054054075" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.94594594594608" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.304054054054054" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.304054054054054").toBe(true);
                     done();
                 });
             });
@@ -6283,10 +6297,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version13 Quartile error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2383&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="376.0810810810814"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.94594594594608"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.304054054054054"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.304054054054054").toBe(true);
+                    expect(length == 2394 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "350.8648648648651" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.94594594594608" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.304054054054054" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.304054054054054").toBe(true);
                     done();
                 });
             });
@@ -6312,10 +6327,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes;
+                    console.log("Version13 High error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2404&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="382.38513513513544"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.94594594594608"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.304054054054054"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.304054054054054").toBe(true);
+                    expect(length == 2407 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "388.6891891891895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.94594594594608" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.304054054054054" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.304054054054054").toBe(true);
                     done();
                 });
             });
@@ -6346,7 +6362,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2754&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="297.8461538461537"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.26923076923066"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.980769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.980769230769231").toBe(true);
+                    expect(length == 2754 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "297.8461538461537" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.26923076923066" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.980769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.980769230769231").toBe(true);
                     done();
                 });
             });
@@ -6375,7 +6391,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2714&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="232.0576923076922"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.26923076923066"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.980769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.980769230769231").toBe(true);
+                    expect(length == 2714 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "232.0576923076922" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.26923076923066" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.980769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.980769230769231").toBe(true);
                     done();
                 });
             });
@@ -6404,7 +6420,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2643&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="184.2115384615384"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.26923076923066"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.980769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.980769230769231").toBe(true);
+                    expect(length == 2643 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "184.2115384615384" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.26923076923066" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.980769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.980769230769231").toBe(true);
                     done();
                 });
             });
@@ -6433,7 +6449,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3047&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="215.86585365853654"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.56097560975607"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.689024390243903"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.689024390243903").toBe(true);
+                    expect(length == 3047 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "215.86585365853654" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.56097560975607" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.689024390243903" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.689024390243903").toBe(true);
                     done();
                 });
             });
@@ -6464,7 +6480,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==2993&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="420.670731707317"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.56097560975607"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.689024390243903"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.689024390243903").toBe(true);
+                    expect(length == 2993 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "420.670731707317" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.56097560975607" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.689024390243903" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.689024390243903").toBe(true);
                     done();
                 });
             });
@@ -6493,7 +6509,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3352&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="260.84883720930213"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.82558139534865"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.424418604651163"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.424418604651163").toBe(true);
+                    expect(length == 3352 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "260.84883720930213" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.82558139534865" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.424418604651163" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.424418604651163").toBe(true);
                     done();
                 });
             });
@@ -6522,7 +6538,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3001&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="124.84146341463412"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.56097560975607"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.689024390243903"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.689024390243903").toBe(true);
+                    expect(length == 3001 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "124.84146341463412" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.56097560975607" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.689024390243903" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.689024390243903").toBe(true);
                     done();
                 });
             });
@@ -6551,7 +6567,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3047&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="215.86585365853654"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.56097560975607"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.689024390243903"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.689024390243903").toBe(true);
+                    expect(length == 3047 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "215.86585365853654" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.56097560975607" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.689024390243903" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.689024390243903").toBe(true);
                     done();
                 });
             });
@@ -6582,7 +6598,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3329&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="369.33720930232573"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.82558139534865"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.424418604651163"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.424418604651163").toBe(true);
+                    expect(length == 3329 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "369.33720930232573" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.82558139534865" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.424418604651163" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.424418604651163").toBe(true);
                     done();
                 });
             });
@@ -6611,7 +6627,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3357&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="434.4302325581399"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.82558139534865"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.424418604651163"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.424418604651163").toBe(true);
+                    expect(length == 3357 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "434.4302325581399" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.82558139534865" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.424418604651163" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.424418604651163").toBe(true);
                     done();
                 });
             });
@@ -6640,7 +6656,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3354&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="136.08720930232562"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.82558139534865"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.424418604651163"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.424418604651163").toBe(true);
+                    expect(length == 3354 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "136.08720930232562" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.82558139534865" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.424418604651163" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.424418604651163").toBe(true);
                     done();
                 });
             });
@@ -6669,7 +6685,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3266&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="184.90697674418598"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.82558139534865"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.424418604651163"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.424418604651163").toBe(true);
+                    expect(length == 3266 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "184.90697674418598" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.82558139534865" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.424418604651163" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.424418604651163").toBe(true);
                     done();
                 });
             });
@@ -6700,7 +6716,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3649&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="322.56666666666683"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.0666666666668"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.183333333333334"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.183333333333334").toBe(true);
+                    expect(length == 3649 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "322.56666666666683" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.0666666666668" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.183333333333334" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.183333333333334").toBe(true);
                     done();
                 });
             });
@@ -6729,7 +6745,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3717&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="421.05000000000024"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.0666666666668"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.183333333333334"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.183333333333334").toBe(true);
+                    expect(length == 3717 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "421.05000000000024" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.0666666666668" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.183333333333334" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.183333333333334").toBe(true);
                     done();
                 });
             });
@@ -6758,7 +6774,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3650&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="224.08333333333346"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.0666666666668"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.183333333333334"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.183333333333334").toBe(true);
+                    expect(length == 3650 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "224.08333333333346" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.0666666666668" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.183333333333334" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.183333333333334").toBe(true);
                     done();
                 });
             });
@@ -6787,7 +6803,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3680&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="374.4000000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.0666666666668"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.183333333333334"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.183333333333334").toBe(true);
+                    expect(length == 3680 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "374.4000000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.0666666666668" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.183333333333334" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.183333333333334").toBe(true);
                     done();
                 });
             });
@@ -6818,7 +6834,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==3992&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="195.40957446808503"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.28723404255308"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.962765957446808"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.962765957446808").toBe(true);
+                    expect(length == 3992 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "195.40957446808503" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.28723404255308" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.962765957446808" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.962765957446808").toBe(true);
                     done();
                 });
             });
@@ -6847,7 +6863,7 @@ describe('Barcode Control', () => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4120&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="274.813829787234"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.28723404255308"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.962765957446808"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.962765957446808").toBe(true);
+                    expect(length == 4120 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "274.813829787234" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.28723404255308" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.962765957446808" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.962765957446808").toBe(true);
                     done();
                 });
             });
@@ -6873,10 +6889,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version18 Quartile error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4054&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="205.33510638297864"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.28723404255308"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.962765957446808"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.962765957446808").toBe(true);
+                    expect(length == 4060 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "200.37234042553183" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.28723404255308" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.962765957446808" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.962765957446808").toBe(true);
                     done();
                 });
             });
@@ -6902,10 +6919,11 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
+                    console.log("Version18 High error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes;
                     length = element.length;
-                    expect( length ==4047&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="453.47340425532"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.28723404255308"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.962765957446808"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.962765957446808").toBe(true);
+                    expect(length == 4064 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "140.81914893617017" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2499999999999" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.962765957446808" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.962765957446808").toBe(true);
                     done();
                 });
             });
@@ -6933,9 +6951,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==4299&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="169.07653061224485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="233.7295918367346"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    expect(length == 4299 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "169.07653061224485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "233.7295918367346" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     done();
                 });
             });
@@ -6961,9 +6979,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==4442&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="140.51530612244895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999991"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    expect(length == 4442 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "140.51530612244895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999991" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     done();
                 });
             });
@@ -6989,9 +7007,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4289&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="283.3214285714285"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.48979591836726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    console.log("Version19 Quartile error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4274 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "269.04081632653055" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.48979591836726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     done();
                 });
             });
@@ -7018,8 +7037,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4353&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="294.0816326530612"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.1020408163264"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.8979591836734695"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.8979591836734695").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4353 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "294.0816326530612" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.1020408163264" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.8979591836734695" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.8979591836734695").toBe(true);
                     done();
                 });
             });
@@ -7047,9 +7066,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==4767&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="153.95588235294116"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999977"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.573529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.573529411764706").toBe(true);
+                    expect(length == 4767 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "153.95588235294116" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999977" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.573529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.573529411764706").toBe(true);
                     done();
                 });
             });
@@ -7076,8 +7095,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4736&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="144.80882352941177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.67647058823508"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.573529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.573529411764706").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4736 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "144.80882352941177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.67647058823508" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.573529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.573529411764706").toBe(true);
                     done();
                 });
             });
@@ -7104,8 +7123,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4888&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="144.80882352941177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.67647058823508"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.573529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.573529411764706").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4888 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "144.80882352941177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.67647058823508" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.573529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.573529411764706").toBe(true);
                     done();
                 });
             });
@@ -7132,8 +7151,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4736&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="47.647058823529406"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.294117647059"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.705882352941177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.705882352941177").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4736 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "47.647058823529406" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.294117647059" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.705882352941177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.705882352941177").toBe(true);
                     done();
                 });
             });
@@ -7162,8 +7181,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5145&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="355.62264150943366"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.8490566037734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5145 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "355.62264150943366" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.8490566037734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     done();
                 });
             });
@@ -7190,8 +7209,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5194&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="254.4009433962262"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.8490566037734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5194 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "254.4009433962262" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.8490566037734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     done();
                 });
             });
@@ -7218,8 +7237,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5208&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="355.62264150943366"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.8490566037734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5208 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "355.62264150943366" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.8490566037734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     done();
                 });
             });
@@ -7245,9 +7264,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5127&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="96.03773584905659"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="275.0000000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.528301886792453"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.528301886792453").toBe(true);
+                    console.log("Version21 High error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5127 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "109.62264150943393" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "275.0000000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.528301886792453" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.528301886792453").toBe(true);
                     done();
                 });
             });
@@ -7276,8 +7296,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5553&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="296.65000000000026"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.00909090909104"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.240909090909091"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.240909090909091").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5553 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "296.65000000000026" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.00909090909104" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.240909090909091" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.240909090909091").toBe(true);
                     done();
                 });
             });
@@ -7303,9 +7323,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5667&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="148.2181818181818"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000014"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.240909090909091"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.240909090909091").toBe(true);
+                    expect(length == 5667 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "148.2181818181818" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000014" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.240909090909091" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.240909090909091").toBe(true);
                     done();
                 });
             });
@@ -7331,9 +7351,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5676&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="93.08636363636361"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.00909090909104"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.240909090909091"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.240909090909091").toBe(true);
+                    expect(length == 5676 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "93.08636363636361" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.00909090909104" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.240909090909091" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.240909090909091").toBe(true);
                     done();
                 });
             });
@@ -7359,9 +7379,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("Version22 High error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5635&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="276.1818181818184"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.63636363636385"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.363636363636363"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.363636363636363").toBe(true);
+                    expect(length == 5640 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "284.90909090909116" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.63636363636385" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.363636363636363" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.363636363636363").toBe(true);
                     done();
                 });
             });
@@ -7389,9 +7410,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("Version23 Low error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5986&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="41.30263157894737"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.15789473684194"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.092105263157895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.092105263157895").toBe(true);
+                    expect(length == 5988 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "450.5131578947378" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.06578947368405" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.092105263157895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.092105263157895").toBe(true);
                     done();
                 });
             });
@@ -7418,8 +7440,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==6082&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="57.67105263157896"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.15789473684194"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.092105263157895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.092105263157895").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 6082 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "57.67105263157896" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.15789473684194" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.092105263157895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.092105263157895").toBe(true);
                     done();
                 });
             });
@@ -7445,9 +7467,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("Version23 Quartile error correction Rendering")
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==6050&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="421.86842105263236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999983"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.092105263157895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.092105263157895").toBe(true);
+                    expect(length == 6054 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "364.5789473684215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999983" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.092105263157895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.092105263157895").toBe(true);
                     done();
                 });
             });
@@ -7473,9 +7496,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5970&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="182.63157894736858"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.7894736842108"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.2105263157894735"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.2105263157894735").toBe(true);
+                    expect(length == 5970 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "182.63157894736858" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.7894736842108" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.2105263157894735" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.2105263157894735").toBe(true);
                     done();
                 });
             });
@@ -7504,8 +7527,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==6370&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="305.3474576271187"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.29661016949177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9533898305084745"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9533898305084745").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 6370 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "305.3474576271187" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.29661016949177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9533898305084745" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9533898305084745").toBe(true);
                     done();
                 });
             });
@@ -7531,9 +7554,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==6545&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="194.65254237288147"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.29661016949177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9533898305084745"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9533898305084745").toBe(true);
+                    expect(length == 6545 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "194.65254237288147" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.29661016949177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9533898305084745" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9533898305084745").toBe(true);
                     done();
                 });
             });
@@ -7560,8 +7583,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==6497&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="32.563559322033896"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000026"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9533898305084745"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9533898305084745").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 6497 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "32.563559322033896" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000026" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9533898305084745" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9533898305084745").toBe(true);
                     done();
                 });
             });
@@ -7588,8 +7611,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==6416&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="254.06779661016967"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.9322033898306"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.067796610169491"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.067796610169491").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 6416 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "254.06779661016967" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.9322033898306" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.067796610169491" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.067796610169491").toBe(true);
                     done();
                 });
             });
@@ -7617,9 +7640,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==6984&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="104.69672131147537"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.4262295081969"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8237704918032787"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8237704918032787").toBe(true);
+                    console.log("Version25 Low error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 6991 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "154.405737704918" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.4262295081969" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8237704918032787" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8237704918032787").toBe(true);
                     done();
                 });
             });
@@ -7645,9 +7669,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==6990&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="93.22540983606555"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2500000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8237704918032787"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8237704918032787").toBe(true);
+                    expect(length == 6990 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "93.22540983606555" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2500000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8237704918032787" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8237704918032787").toBe(true);
                     done();
                 });
             });
@@ -7673,9 +7697,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==7025&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="257.64754098360675"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.4262295081969"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8237704918032787"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8237704918032787").toBe(true);
+                    console.log("Version25 Quartile error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 7020 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "238.52868852459034" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.4262295081969" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8237704918032787" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8237704918032787").toBe(true);
                     done();
                 });
             });
@@ -7701,9 +7726,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==6947&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="289.344262295082"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.0655737704919"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9344262295081966"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9344262295081966").toBe(true);
+                    console.log("Version25 High error correction Rendering")
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 6972 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "340.4918032786883" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.0655737704919" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9344262295081966" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9344262295081966").toBe(true);
                     done();
                 });
             });
@@ -7732,8 +7758,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==7382&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="64.88095238095235"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.5476190476193"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.7023809523809526"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.7023809523809526").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 7382 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "64.88095238095235" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.5476190476193" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.7023809523809526" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.7023809523809526").toBe(true);
                     done();
                 });
             });
@@ -7759,9 +7785,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==7428&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="461.03571428571513"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.84523809523833"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.7023809523809526"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.7023809523809526").toBe(true);
+                    expect(length == 7428 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "461.03571428571513" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.84523809523833" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.7023809523809526" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.7023809523809526").toBe(true);
                     done();
                 });
             });
@@ -7788,8 +7814,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==7442&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="242.59523809523833"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.5476190476193"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.7023809523809526"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.7023809523809526").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 7442 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "242.59523809523833" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.5476190476193" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.7023809523809526" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.7023809523809526").toBe(true);
                     done();
                 });
             });
@@ -7815,9 +7841,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==7449&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="451.9047619047608"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.1904761904757"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8095238095238093"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8095238095238093").toBe(true);
+                    expect(length == 7449 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "451.9047619047608" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.1904761904757" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8095238095238093" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8095238095238093").toBe(true);
                     done();
                 });
             });
@@ -7845,9 +7871,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("Version27 Low error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==7834&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="336.1230769230772"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.6615384615383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.5884615384615386"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.5884615384615386").toBe(true);
+                    expect(length == 7829 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "321.76923076923094" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.6615384615383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.5884615384615386" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.5884615384615386").toBe(true);
                     done();
                 });
             });
@@ -7875,7 +7902,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==8007&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="372.00769230769276"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.6615384615383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.5884615384615386"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.5884615384615386").toBe(true);
+                    expect(length == 8007 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "372.00769230769276" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.6615384615383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.5884615384615386" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.5884615384615386").toBe(true);
                     done();
                 });
             });
@@ -7902,8 +7929,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==7961&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="400.71538461538523"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.6615384615383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.5884615384615386"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.5884615384615386").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 7961 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "400.71538461538523" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.6615384615383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.5884615384615386" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.5884615384615386").toBe(true);
                     done();
                 });
             });
@@ -7929,9 +7956,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==7943&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="423.5384615384605"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.30769230769187"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.6923076923076925"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.6923076923076925").toBe(true);
+                    console.log("Version27 High error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 7955 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "357.0769230769223" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.30769230769187" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.6923076923076925" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.6923076923076925").toBe(true);
                     done();
                 });
             });
@@ -7959,9 +7987,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==8385&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="173.41044776119392"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.76865671641758"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4813432835820897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4813432835820897").toBe(true);
+                    expect(length == 8385 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "173.41044776119392" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.76865671641758" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4813432835820897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4813432835820897").toBe(true);
                     done();
                 });
             });
@@ -7988,8 +8016,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==8463&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="23.712686567164177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999966"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4813432835820897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4813432835820897").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 8463 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "23.712686567164177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999966" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4813432835820897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4813432835820897").toBe(true);
                     done();
                 });
             });
@@ -8017,8 +8045,8 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     console.log("Version28 Quartile error correction Rendering");
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==8491&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="152.52238805970146"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.2873134328355"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4813432835820897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4813432835820897").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 8491 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "152.52238805970146" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.2873134328355" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4813432835820897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4813432835820897").toBe(true);
                     done();
                 });
             });
@@ -8046,7 +8074,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==8468&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="178.3582089552241"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="275.0000000000004"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.582089552238806"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.582089552238806").toBe(true);
+                    expect(length == 8468 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "178.3582089552241" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "275.0000000000004" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.582089552238806" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.582089552238806").toBe(true);
                     done();
                 });
             });
@@ -8075,8 +8103,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==9042&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="412.2608695652169"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 9042 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "412.2608695652169" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     done();
                 });
             });
@@ -8103,8 +8131,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==9013&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="429.16304347826036"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 9013 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "429.16304347826036" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     done();
                 });
             });
@@ -8132,7 +8160,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==8857&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="239.8586956521738"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    expect(length == 8857 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "239.8586956521738" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     done();
                 });
             });
@@ -8159,8 +8187,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==8979&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="357.826086956521"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.52173913043475"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4782608695652173"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4782608695652173").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 8979 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "357.826086956521" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.52173913043475" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4782608695652173" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4782608695652173").toBe(true);
                     done();
                 });
             });
@@ -8188,9 +8216,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==9580&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="62.74295774647885"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999991"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    console.log("Version30 Low error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 9580 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "197.43661971830977" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999991" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -8218,7 +8247,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==9395&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="213.86267605633793"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.96478873239428"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    expect(length == 9395 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "213.86267605633793" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.96478873239428" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -8245,8 +8274,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==9730&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="135.01760563380276"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999991"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 9730 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "135.01760563380276" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999991" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -8272,9 +8301,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==9483&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="351.40845070422546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.61971830985885"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380281690140845"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380281690140845").toBe(true);
+                    expect(length == 9483 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "351.40845070422546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.61971830985885" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380281690140845" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380281690140845").toBe(true);
                     done();
                 });
             });
@@ -8303,8 +8332,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==10094&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="218.04794520547955"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.05479452054803"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 10094 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "218.04794520547955" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.05479452054803" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -8330,9 +8359,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==10117&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="464.0787671232879"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.85958904109597"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    expect(length == 10117 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "464.0787671232879" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.85958904109597" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -8358,9 +8387,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==10074&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="285.14726027397273"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.05479452054803"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    console.log("Version31 Quartile error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 10073 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "297.92808219178096" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.05479452054803" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -8386,9 +8416,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==10087&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="240.1369863013697"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.71232876712315"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.287671232876712"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.287671232876712").toBe(true);
+                    expect(length == 10087 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "240.1369863013697" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.71232876712315" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.287671232876712" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.287671232876712").toBe(true);
                     done();
                 });
             });
@@ -8416,9 +8446,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("Version32 Low error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==10621&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="215.79000000000036"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.14000000000047"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.11"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.11").toBe(true);
+                    expect(length == 10632 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "206.46000000000032" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.14000000000047" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.11" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.11").toBe(true);
                     done();
                 });
             });
@@ -8444,9 +8475,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==6082&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="57.67105263157896"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.15789473684194"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.092105263157895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.092105263157895").toBe(true);
+                    expect(length == 6082 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "57.67105263157896" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.15789473684194" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.092105263157895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.092105263157895").toBe(true);
                     done();
                 });
             });
@@ -8472,9 +8503,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11276&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="389.34415584415706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.22077922077972"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11276 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "389.34415584415706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.22077922077972" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -8500,9 +8531,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==10636&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="122.00000000000007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.7999999999996"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.2"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.2").toBe(true);
+                    expect(length == 10636 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "122.00000000000007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.7999999999996" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.2" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.2").toBe(true);
                     done();
                 });
             });
@@ -8530,9 +8561,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11168&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="465.0746753246769"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.22077922077972"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11168 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "465.0746753246769" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.22077922077972" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -8558,9 +8589,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11069&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="392.37337662337785"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.22077922077972"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11069 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "392.37337662337785" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.22077922077972" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -8586,9 +8617,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11285&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="459.0162337662353"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.22077922077972"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11285 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "459.0162337662353" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.22077922077972" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -8614,9 +8645,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11214&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="340.3896103896103"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.8831168831168"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.116883116883117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.116883116883117").toBe(true);
+                    expect(length == 11214 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "340.3896103896103" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.8831168831168" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.116883116883117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.116883116883117").toBe(true);
                     done();
                 });
             });
@@ -8644,9 +8675,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11717&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="196.8544303797469"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000009"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 11717 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "196.8544303797469" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000009" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -8673,8 +8704,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==11861&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="300.19303797468325"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.29746835443046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 11861 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "300.19303797468325" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.29746835443046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -8701,8 +8732,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==11910&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="276.5727848101265"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000009"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 11910 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "276.5727848101265" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000009" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -8728,9 +8759,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("Version34 High error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11777&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="359.3670886075941"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.9620253164552"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.037974683544304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.037974683544304").toBe(true);
+                    expect(length == 11787 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "356.3291139240498" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.9620253164552" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.037974683544304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.037974683544304").toBe(true);
                     done();
                 });
             });
@@ -8758,9 +8790,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==12643&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="350.7870370370363"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12643 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "350.7870370370363" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -8786,9 +8818,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==12597&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="22.50925925925926"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12597 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "22.50925925925926" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -8815,8 +8847,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==12512&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="316.2314814814809"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 12512 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "316.2314814814809" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -8843,8 +8875,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==12542&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="324.0740740740746"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.0370370370371"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.962962962962963"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.962962962962963").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 12542 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "324.0740740740746" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.0370370370371" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.962962962962963" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.962962962962963").toBe(true);
                     done();
                 });
             });
@@ -8873,8 +8905,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13207&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="435.47590361445947"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.62951807228907"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13207 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "435.47590361445947" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.62951807228907" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -8901,8 +8933,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13119&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="160.07228915662645"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.4397590361445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13119 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "160.07228915662645" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.4397590361445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -8929,8 +8961,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13153&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="443.9066265060258"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.4397590361445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13153 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "443.9066265060258" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.4397590361445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -8957,8 +8989,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13214&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="134.33734939759023"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.10843373494"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.891566265060241"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.891566265060241").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13214 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "134.33734939759023" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.10843373494" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.891566265060241" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.891566265060241").toBe(true);
                     done();
                 });
             });
@@ -8987,8 +9019,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13803&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="33.21470588235293"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.50588235294148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13803 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "33.21470588235293" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.50588235294148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -9015,8 +9047,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13822&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="406.41470588235353"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.76176470588265"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13822 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "406.41470588235353" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.76176470588265" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -9043,8 +9075,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13744&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="241.76764705882383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.50588235294148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13744 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "241.76764705882383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.50588235294148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -9070,9 +9102,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==13829&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="238.70588235294085"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="274.99999999999955"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.823529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.823529411764706").toBe(true);
+                    expect(length == 13829 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "238.70588235294085" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "274.99999999999955" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.823529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.823529411764706").toBe(true);
                     done();
                 });
             });
@@ -9101,8 +9133,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==14412&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="282.17241379310383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.56896551724185"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 14412 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "282.17241379310383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.56896551724185" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
             });
@@ -9129,8 +9161,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==14399&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="233.9137931034487"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.56896551724185"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 14399 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "233.9137931034487" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.56896551724185" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
             });
@@ -9156,9 +9188,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==14348&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="121.31034482758615"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000048"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    expect(length == 14348 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "121.31034482758615" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000048" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
             });
@@ -9184,9 +9216,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==14521&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="15.517241379310345"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.241379310345"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7586206896551726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7586206896551726").toBe(true);
+                    expect(length == 14521 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "15.517241379310345" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.241379310345" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7586206896551726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7586206896551726").toBe(true);
                     done();
                 });
             });
@@ -9214,9 +9246,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15410&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="111.09831460674145"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.6292134831462"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6207865168539324"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6207865168539324").toBe(true);
+                    expect(length == 15410 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "111.09831460674145" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.6292134831462" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6207865168539324" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6207865168539324").toBe(true);
                     done();
                 });
             });
@@ -9242,10 +9274,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==15223&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="45.57865168539326"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.6292134831462"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6207865168539324"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6207865168539324").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 15223 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "45.57865168539326" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.6292134831462" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6207865168539324" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6207865168539324").toBe(true);
                     done();
                 });
             });
@@ -9271,9 +9303,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15195&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="270.9662921348315"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.6292134831462"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6207865168539324"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6207865168539324").toBe(true);
+                    expect(length == 15195 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "270.9662921348315" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.6292134831462" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6207865168539324" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6207865168539324").toBe(true);
                     done();
                 });
             });
@@ -9299,9 +9331,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15283&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="414.4943820224725"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.30337078651655"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.696629213483146"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.696629213483146").toBe(true);
+                    expect(length == 15283 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "414.4943820224725" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.30337078651655" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.696629213483146" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.696629213483146").toBe(true);
                     done();
                 });
             });
@@ -9329,9 +9361,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==15661&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="367.90659340659255"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999963"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    console.log("Version40 Low error correction Rendering");
+                    output1(barcode);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 15639 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "411.4807692307682" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999963" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -9357,9 +9390,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15928&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="378.15934065933976"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999963"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    expect(length == 15928 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "378.15934065933976" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999963" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -9385,9 +9418,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15764&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="137.21978021978026"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.68681318681283"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    expect(length == 15764 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "137.21978021978026" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.68681318681283" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -9414,25 +9447,17 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==15852&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="223.62637362637338"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.362637362637"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6373626373626373"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6373626373626373").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 15852 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "223.62637362637338" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.362637362637" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6373626373626373" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6373626373626373").toBe(true);
                     done();
                 });
             });
         });
     });
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  ////////////////////////////////divide
-  
+
+    ////////////////////////////////divide
+
     describe('QRCode - Versions and combination of error correction level (Numeric data)', () => {
         describe('Version1', () => {
             describe('Low error correction', () => {
@@ -9458,8 +9483,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==230&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="113.44230769230765"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="59.288461538461554"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.480769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.480769230769231").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 230 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "113.44230769230765" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "59.288461538461554" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.480769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.480769230769231").toBe(true);
                     done();
                 });
             });
@@ -9486,8 +9511,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==231&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="135.84615384615378"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="59.288461538461554"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.480769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.480769230769231").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 231 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "135.84615384615378" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "59.288461538461554" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.480769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.480769230769231").toBe(true);
                     done();
                 });
             });
@@ -9515,7 +9540,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==216&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="64.15384615384616"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="63.76923076923079"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.480769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.480769230769231").toBe(true);
+                    expect(length == 216 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "64.15384615384616" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "63.76923076923079" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.480769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.480769230769231").toBe(true);
                     done();
                 });
             });
@@ -9542,8 +9567,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==220&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="55.1923076923077"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="63.76923076923079"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.480769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.480769230769231").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 220 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "55.1923076923077" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "63.76923076923079" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.480769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.480769230769231").toBe(true);
                     done();
                 });
             });
@@ -9571,9 +9596,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==307&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="96.11666666666672"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 307 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "96.11666666666672" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -9599,9 +9624,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==310&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="76.70000000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 310 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "76.70000000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -9627,9 +9652,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==324&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="80.58333333333336"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 324 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "80.58333333333336" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -9656,8 +9681,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==298&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="100.00000000000006"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 298 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "100.00000000000006" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -9686,8 +9711,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==425&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="62.30882352941178"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.82352941176472"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 425 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "62.30882352941178" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.82352941176472" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -9714,8 +9739,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==433&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="65.73529411764707"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.82352941176472"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 433 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "65.73529411764707" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.82352941176472" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -9741,9 +9766,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==427&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="69.16176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.82352941176472"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    expect(length == 427 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "69.16176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.82352941176472" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -9769,9 +9794,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==433&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="113.70588235294113"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.82352941176472"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.426470588235294"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.426470588235294").toBe(true);
+                    expect(length == 433 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "113.70588235294113" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.82352941176472" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.426470588235294" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.426470588235294").toBe(true);
                     done();
                 });
             });
@@ -9800,8 +9825,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==552&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="66.2763157894737"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 552 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "66.2763157894737" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -9828,8 +9853,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==568&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="66.2763157894737"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 568 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "66.2763157894737" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -9855,9 +9880,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==567&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="103.06578947368416"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    expect(length == 567 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "103.06578947368416" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -9884,8 +9909,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==555&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="139.85526315789468"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 555 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "139.85526315789468" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -9913,9 +9938,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==697&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="77.8095238095238"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.4761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    expect(length == 697 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "77.8095238095238" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     done();
                 });
             });
@@ -9943,7 +9968,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==695&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="80.58333333333331"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.4761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    expect(length == 695 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "80.58333333333331" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     done();
                 });
             });
@@ -9970,8 +9995,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==683&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="99.99999999999994"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.4761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 683 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "99.99999999999994" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     done();
                 });
             });
@@ -9997,9 +10022,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==712&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="72.26190476190476"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.4761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    expect(length == 712 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "72.26190476190476" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     done();
                 });
             });
@@ -10028,8 +10053,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==849&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="132.92391304347822"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.7173913043478"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 849 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "132.92391304347822" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.7173913043478" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     done();
                 });
             });
@@ -10055,9 +10080,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==831&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="97.46739130434779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.7173913043478"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    expect(length == 831 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "97.46739130434779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.7173913043478" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     done();
                 });
             });
@@ -10083,9 +10108,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==819&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="62.01086956521738"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.7173913043478"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    expect(length == 819 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "62.01086956521738" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.7173913043478" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     done();
                 });
             });
@@ -10111,9 +10136,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==813&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="105.0652173913043"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.7173913043478"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.532608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.532608695652174").toBe(true);
+                    expect(length == 813 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "105.0652173913043" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.7173913043478" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.532608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.532608695652174").toBe(true);
                     done();
                 });
             });
@@ -10141,9 +10166,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1038&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="125.62999999999994"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.91999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.33").toBe(true);
+                    expect(length == 1038 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "125.62999999999994" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.91999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.33").toBe(true);
                     done();
                 });
             });
@@ -10170,8 +10195,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1058&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="51.06999999999999"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.91999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.33").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1058 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "51.06999999999999" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.91999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.33").toBe(true);
                     done();
                 });
             });
@@ -10198,8 +10223,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1008&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="102.32999999999996"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.91999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.33").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1008 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "102.32999999999996" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.91999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.33").toBe(true);
                     done();
                 });
             });
@@ -10225,9 +10250,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1020&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="51.06999999999999"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.24999999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.33"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.33").toBe(true);
+                    expect(length == 1020 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "51.06999999999999" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.24999999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.33" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.33").toBe(true);
                     done();
                 });
             });
@@ -10256,8 +10281,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1234&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="241.36111111111106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="234.61111111111106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.63888888888889"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.63888888888889").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1234 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "241.36111111111106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "234.61111111111106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.63888888888889" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.63888888888889").toBe(true);
                     done();
                 });
             });
@@ -10284,9 +10309,9 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode)
-                    
-                 element = barcode.element.childNodes[0].childNodes; length = element.length;
-                 expect( length ==1227&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="102.15740740740733"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.09259259259257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.1574074074074074"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.1574074074074074").toBe(true);
+
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1227 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "102.15740740740733" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.09259259259257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.1574074074074074" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.1574074074074074").toBe(true);
                     done();
                 });
             });
@@ -10312,9 +10337,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1249&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="71.95370370370367"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.09259259259257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.1574074074074074"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.1574074074074074").toBe(true);
+                    expect(length == 1249 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "71.95370370370367" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.09259259259257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.1574074074074074" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.1574074074074074").toBe(true);
                     done();
                 });
             });
@@ -10341,8 +10366,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1219&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="125.88888888888879"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="63.935185185185155"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.1574074074074074"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.1574074074074074").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1219 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "125.88888888888879" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "63.935185185185155" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.1574074074074074" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.1574074074074074").toBe(true);
                     done();
                 });
             });
@@ -10370,9 +10395,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1438&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="56.9655172413793"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.2068965517242"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="8.043103448275861"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="8.043103448275861").toBe(true);
+                    expect(length == 1438 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "56.9655172413793" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.2068965517242" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "8.043103448275861" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "8.043103448275861").toBe(true);
                     done();
                 });
             });
@@ -10398,9 +10423,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1446&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="47.77586206896552"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.24137931034487"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.0086206896551726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.0086206896551726").toBe(true);
+                    expect(length == 1446 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "47.77586206896552" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.24137931034487" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.0086206896551726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.0086206896551726").toBe(true);
                     done();
                 });
             });
@@ -10427,8 +10452,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1431&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="110.04310344827593"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.24137931034487"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.0086206896551726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.0086206896551726").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1431 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "110.04310344827593" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.24137931034487" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.0086206896551726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.0086206896551726").toBe(true);
                     done();
                 });
             });
@@ -10455,8 +10480,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1425&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="87.94827586206901"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.24137931034487"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.0086206896551726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.0086206896551726").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1425 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "87.94827586206901" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.24137931034487" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.0086206896551726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.0086206896551726").toBe(true);
                     done();
                 });
             });
@@ -10485,8 +10510,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1653&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="265.0483870967743"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.72580645161304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.524193548387097"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.524193548387097").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1653 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "265.0483870967743" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.72580645161304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.524193548387097" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.524193548387097").toBe(true);
                     done();
                 });
             });
@@ -10513,8 +10538,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1642&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="135.7016129032257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.49193548387102"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.8790322580645162"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.8790322580645162").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1642 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "135.7016129032257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.49193548387102" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.8790322580645162" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.8790322580645162").toBe(true);
                     done();
                 });
             });
@@ -10540,9 +10565,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1644&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="120.66935483870961"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.37096774193553"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.8790322580645162"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.8790322580645162").toBe(true);
+                    expect(length == 1644 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "120.66935483870961" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.37096774193553" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.8790322580645162" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.8790322580645162").toBe(true);
                     done();
                 });
             });
@@ -10568,9 +10593,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1662&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="73.6935483870968"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000004"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.8790322580645162"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.8790322580645162").toBe(true);
+                    expect(length == 1662 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "73.6935483870968" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000004" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.8790322580645162" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.8790322580645162").toBe(true);
                     done();
                 });
             });
@@ -10598,9 +10623,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1900&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="207.590909090909"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.18181818181807"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="7.068181818181818"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="7.068181818181818").toBe(true);
+                    expect(length == 1900 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "207.590909090909" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.18181818181807" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "7.068181818181818" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "7.068181818181818").toBe(true);
                     done();
                 });
             });
@@ -10626,9 +10651,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1968&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="131.77272727272725"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.4848484848485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.7651515151515151"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.7651515151515151").toBe(true);
+                    expect(length == 1968 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "131.77272727272725" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.4848484848485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.7651515151515151" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.7651515151515151").toBe(true);
                     done();
                 });
             });
@@ -10654,9 +10679,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1878&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="124.71212121212123"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.4848484848485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.7651515151515151"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.7651515151515151").toBe(true);
+                    expect(length == 1878 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "124.71212121212123" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.4848484848485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.7651515151515151" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.7651515151515151").toBe(true);
                     done();
                 });
             });
@@ -10683,8 +10708,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==1955&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="144.12878787878776"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.4848484848485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.7651515151515151"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.7651515151515151").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 1955 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "144.12878787878776" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.4848484848485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.7651515151515151" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.7651515151515151").toBe(true);
                     done();
                 });
             });
@@ -10712,9 +10737,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==2072&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="256.66428571428565"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999991"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.664285714285715"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.664285714285715").toBe(true);
+                    expect(length == 2072 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "256.66428571428565" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999991" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.664285714285715" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.664285714285715").toBe(true);
                     done();
                 });
             });
@@ -10741,8 +10766,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2159&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="88.34999999999991"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.58571428571423"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.6642857142857144"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.6642857142857144").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2159 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "88.34999999999991" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.58571428571423" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.6642857142857144" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.6642857142857144").toBe(true);
                     done();
                 });
             });
@@ -10769,8 +10794,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2120&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="151.59285714285693"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.92142857142852"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.6642857142857144"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.6642857142857144").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2120 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "151.59285714285693" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.92142857142852" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.6642857142857144" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.6642857142857144").toBe(true);
                     done();
                 });
             });
@@ -10796,9 +10821,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==2166&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="116.642857142857"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.58571428571423"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.6642857142857144"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.6642857142857144").toBe(true);
+                    expect(length == 2166 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "116.642857142857" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.58571428571423" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.6642857142857144" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.6642857142857144").toBe(true);
                     done();
                 });
             });
@@ -10827,8 +10852,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2355&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="281.52027027027043"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.94594594594608"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="6.304054054054054"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="6.304054054054054").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2355 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "281.52027027027043" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.94594594594608" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "6.304054054054054" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "6.304054054054054").toBe(true);
                     done();
                 });
             });
@@ -10855,8 +10880,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2387&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="65.36486486486484"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.67567567567563"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.5743243243243243"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.5743243243243243").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2387 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "65.36486486486484" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.67567567567563" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.5743243243243243" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.5743243243243243").toBe(true);
                     done();
                 });
             });
@@ -10883,8 +10908,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2412&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="125.18918918918911"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.67567567567563"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.5743243243243243"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.5743243243243243").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2412 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "125.18918918918911" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.67567567567563" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.5743243243243243" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.5743243243243243").toBe(true);
                     done();
                 });
             });
@@ -10911,8 +10936,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2420&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="122.04054054054046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.10135135135131"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.5743243243243243"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.5743243243243243").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2420 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "122.04054054054046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.10135135135131" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.5743243243243243" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.5743243243243243").toBe(true);
                     done();
                 });
             });
@@ -10940,9 +10965,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==2768&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="357.65384615384596"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.26923076923066"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.980769230769231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.980769230769231").toBe(true);
+                    expect(length == 2768 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "357.65384615384596" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.26923076923066" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.980769230769231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.980769230769231").toBe(true);
                     done();
                 });
             });
@@ -10968,9 +10993,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==2685&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="98.50641025641012"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.75641025641028"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.4935897435897436"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.4935897435897436").toBe(true);
+                    expect(length == 2685 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "98.50641025641012" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.75641025641028" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.4935897435897436" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.4935897435897436").toBe(true);
                     done();
                 });
             });
@@ -10997,8 +11022,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2689&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="129.87179487179463"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.75641025641028"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.4935897435897436"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.4935897435897436").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2689 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "129.87179487179463" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.75641025641028" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.4935897435897436" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.4935897435897436").toBe(true);
                     done();
                 });
             });
@@ -11025,8 +11050,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2740&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="149.2884615384614"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.75641025641028"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.4935897435897436"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.4935897435897436").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2740 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "149.2884615384614" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.75641025641028" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.4935897435897436" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.4935897435897436").toBe(true);
                     done();
                 });
             });
@@ -11054,9 +11079,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3006&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="341.02439024390236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.56097560975607"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.689024390243903"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.689024390243903").toBe(true);
+                    expect(length == 3006 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "341.02439024390236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.56097560975607" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.689024390243903" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.689024390243903").toBe(true);
                     done();
                 });
             });
@@ -11082,9 +11107,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3101&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="70.16463414634148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000003"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.420731707317073"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.420731707317073").toBe(true);
+                    expect(length == 3101 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "70.16463414634148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000003" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.420731707317073" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.420731707317073").toBe(true);
                     done();
                 });
             });
@@ -11111,8 +11136,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==3009&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="125.57317073170738"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.40853658536588"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.420731707317073"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.420731707317073").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 3009 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "125.57317073170738" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.40853658536588" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.420731707317073" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.420731707317073").toBe(true);
                     done();
                 });
             });
@@ -11139,8 +11164,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==2998&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="65.90243902439026"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000003"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.420731707317073"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.420731707317073").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 2998 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "65.90243902439026" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.25000000000003" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.420731707317073" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.420731707317073").toBe(true);
                     done();
                 });
             });
@@ -11168,9 +11193,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3359&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="141.51162790697677"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.82558139534865"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.424418604651163"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.424418604651163").toBe(true);
+                    expect(length == 3359 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "141.51162790697677" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.82558139534865" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.424418604651163" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.424418604651163").toBe(true);
                     done();
                 });
             });
@@ -11196,9 +11221,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3366&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="93.22674418604657"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.89534883720927"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.3546511627906976"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.3546511627906976").toBe(true);
+                    expect(length == 3366 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "93.22674418604657" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.89534883720927" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.3546511627906976" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.3546511627906976").toBe(true);
                     done();
                 });
             });
@@ -11224,9 +11249,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3394&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="148.76744186046537"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.54069767441857"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.3546511627906976"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.3546511627906976").toBe(true);
+                    expect(length == 3394 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "148.76744186046537" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.54069767441857" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.3546511627906976" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.3546511627906976").toBe(true);
                     done();
                 });
             });
@@ -11252,9 +11277,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3245&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="58.00581395348834"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.89534883720927"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.3546511627906976"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.3546511627906976").toBe(true);
+                    expect(length == 3245 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "58.00581395348834" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.89534883720927" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.3546511627906976" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.3546511627906976").toBe(true);
                     done();
                 });
             });
@@ -11282,9 +11307,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3659&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="53.033333333333346"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.0666666666668"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.183333333333334"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.183333333333334").toBe(true);
+                    expect(length == 3659 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "53.033333333333346" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.0666666666668" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.183333333333334" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.183333333333334").toBe(true);
                     done();
                 });
             });
@@ -11310,9 +11335,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3638&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="146.60000000000042"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.66111111111111"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2944444444444445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2944444444444445").toBe(true);
+                    expect(length == 3638 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "146.60000000000042" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.66111111111111" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2944444444444445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2944444444444445").toBe(true);
                     done();
                 });
             });
@@ -11338,9 +11363,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3653&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="145.30555555555597"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.66111111111111"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2944444444444445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2944444444444445").toBe(true);
+                    expect(length == 3653 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "145.30555555555597" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.66111111111111" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2944444444444445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2944444444444445").toBe(true);
                     done();
                 });
             });
@@ -11366,9 +11391,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3710&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="48.22222222222222"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.95555555555556"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2944444444444445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2944444444444445").toBe(true);
+                    expect(length == 3710 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "48.22222222222222" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.95555555555556" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2944444444444445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2944444444444445").toBe(true);
                     done();
                 });
             });
@@ -11396,9 +11421,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==4047&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="76.30319148936168"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.28723404255308"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.962765957446808"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.962765957446808").toBe(true);
+                    expect(length == 4047 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "76.30319148936168" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.28723404255308" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.962765957446808" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.962765957446808").toBe(true);
                     done();
                 });
             });
@@ -11425,8 +11450,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4102&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="145.85638297872316"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.77127659574468"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2393617021276595"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2393617021276595").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4102 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "145.85638297872316" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.77127659574468" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2393617021276595" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2393617021276595").toBe(true);
                     done();
                 });
             });
@@ -11453,8 +11478,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4011&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="123.5478723404252"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="67.01063829787233"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2393617021276595"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2393617021276595").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4011 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "123.5478723404252" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "67.01063829787233" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2393617021276595" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2393617021276595").toBe(true);
                     done();
                 });
             });
@@ -11480,9 +11505,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==3991&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="140.8989361702125"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="67.01063829787233"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="1.2393617021276595"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="1.2393617021276595").toBe(true);
+                    expect(length == 3991 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "140.8989361702125" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "67.01063829787233" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "1.2393617021276595" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "1.2393617021276595").toBe(true);
                     done();
                 });
             });
@@ -11510,9 +11535,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==4375&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="54.83163265306122"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.48979591836726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    expect(length == 4375 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "54.83163265306122" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.48979591836726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     done();
                 });
             });
@@ -11538,9 +11563,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==4402&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="126.23469387755098"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.48979591836726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    expect(length == 4402 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "126.23469387755098" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.48979591836726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     done();
                 });
             });
@@ -11567,8 +11592,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4367&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="197.63775510204076"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.48979591836726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.760204081632653"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.760204081632653").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4367 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "197.63775510204076" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.48979591836726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.760204081632653" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.760204081632653").toBe(true);
                     done();
                 });
             });
@@ -11595,8 +11620,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4301&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="421.428571428572"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="265.2040816326529"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.8979591836734695"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.8979591836734695").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4301 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "421.428571428572" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "265.2040816326529" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.8979591836734695" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.8979591836734695").toBe(true);
                     done();
                 });
             });
@@ -11625,8 +11650,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4700&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="405.49999999999943"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999977"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.573529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.573529411764706").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4700 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "405.49999999999943" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999977" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.573529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.573529411764706").toBe(true);
                     done();
                 });
             });
@@ -11653,8 +11678,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4747&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="76.20588235294117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.67647058823508"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.573529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.573529411764706").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4747 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "76.20588235294117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.67647058823508" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.573529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.573529411764706").toBe(true);
                     done();
                 });
             });
@@ -11681,8 +11706,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4736&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="172.24999999999994"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999977"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.573529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.573529411764706").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4736 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "172.24999999999994" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999977" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.573529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.573529411764706").toBe(true);
                     done();
                 });
             });
@@ -11709,8 +11734,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==4815&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="259.4117647058826"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.294117647059"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.705882352941177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.705882352941177").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 4815 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "259.4117647058826" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.294117647059" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.705882352941177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.705882352941177").toBe(true);
                     done();
                 });
             });
@@ -11739,8 +11764,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5135&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="29.95283018867925"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2499999999998"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5135 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "29.95283018867925" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2499999999998" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     done();
                 });
             });
@@ -11767,8 +11792,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5192&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="131.17452830188674"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.8490566037734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5192 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "131.17452830188674" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.8490566037734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     done();
                 });
             });
@@ -11794,9 +11819,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5181&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="236.79716981132057"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.8490566037734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    expect(length == 5181 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "236.79716981132057" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.8490566037734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     done();
                 });
             });
@@ -11822,9 +11847,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5175&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="295.2830188679248"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.47169811320776"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.528301886792453"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.528301886792453").toBe(true);
+                    expect(length == 5175 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "295.2830188679248" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.47169811320776" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.528301886792453" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.528301886792453").toBe(true);
                     done();
                 });
             });
@@ -11852,9 +11877,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5529&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="245.75909090909107"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.00909090909104"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.240909090909091"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.240909090909091").toBe(true);
+                    expect(length == 5529 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "245.75909090909107" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.00909090909104" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.240909090909091" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.240909090909091").toBe(true);
                     done();
                 });
             });
@@ -11881,8 +11906,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5607&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="322.09545454545486"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.00909090909104"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.240909090909091"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.240909090909091").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5607 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "322.09545454545486" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.00909090909104" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.240909090909091" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.240909090909091").toBe(true);
                     done();
                 });
             });
@@ -11909,8 +11934,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==5181&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="236.79716981132057"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.8490566037734"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.400943396226415"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.400943396226415").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 5181 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "236.79716981132057" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.8490566037734" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.400943396226415" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.400943396226415").toBe(true);
                     done();
                 });
             });
@@ -11936,9 +11961,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==5658&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="136.54545454545448"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="270.63636363636385"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.363636363636363"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.363636363636363").toBe(true);
+                    expect(length == 5658 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "136.54545454545448" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "270.63636363636385" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.363636363636363" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.363636363636363").toBe(true);
                     done();
                 });
             });
@@ -11967,8 +11992,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==6004&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="425.9605263157903"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="235.06578947368405"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.092105263157895"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.092105263157895").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 6004 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "425.9605263157903" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "235.06578947368405" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.092105263157895" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.092105263157895").toBe(true);
                     done();
                 });
             });
@@ -11994,9 +12019,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==7900&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="232.05769230769215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.6615384615383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.5884615384615386"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.5884615384615386").toBe(true);
+                    expect(length == 7900 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "232.05769230769215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.6615384615383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.5884615384615386" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.5884615384615386").toBe(true);
                     done();
                 });
             });
@@ -12023,8 +12048,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==10681&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="256.22000000000054"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.14000000000047"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.11"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.11").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 10681 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "256.22000000000054" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.14000000000047" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.11" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.11").toBe(true);
                     done();
                 });
             });
@@ -12051,8 +12076,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13897&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="187.88235294117632"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.17647058823485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.823529411764706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.823529411764706").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13897 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "187.88235294117632" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.17647058823485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.823529411764706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.823529411764706").toBe(true);
                     done();
                 });
             });
@@ -12081,8 +12106,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==6450&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="447.6694915254231"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.29661016949177"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.9533898305084745"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.9533898305084745").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 6450 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "447.6694915254231" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.29661016949177" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.9533898305084745" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.9533898305084745").toBe(true);
                     done();
                 });
             });
@@ -12109,8 +12134,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==8479&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="37.63805970149254"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.24999999999966"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4813432835820897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4813432835820897").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 8479 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "37.63805970149254" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.24999999999966" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4813432835820897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4813432835820897").toBe(true);
                     done();
                 });
             });
@@ -12136,9 +12161,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11209&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="325.7305194805204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.22077922077972"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11209 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "325.7305194805204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.22077922077972" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -12164,9 +12189,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15017&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="171.7977528089887"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.30337078651655"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.696629213483146"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.696629213483146").toBe(true);
+                    expect(length == 15017 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "171.7977528089887" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.30337078651655" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.696629213483146" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.696629213483146").toBe(true);
                     done();
                 });
             });
@@ -12194,9 +12219,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==6826&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="215.5860655737706"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.4262295081969"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8237704918032787"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8237704918032787").toBe(true);
+                    expect(length == 6826 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "215.5860655737706" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.4262295081969" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8237704918032787" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8237704918032787").toBe(true);
                     done();
                 });
             });
@@ -12222,9 +12247,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==8998&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="202.67391304347822"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    expect(length == 8998 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "202.67391304347822" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     done();
                 });
             });
@@ -12250,9 +12275,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11765&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="111.23101265822788"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.29746835443046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 11765 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "111.23101265822788" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.29746835443046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -12278,9 +12303,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15925&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="310.6593406593401"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.362637362637"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6373626373626373"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6373626373626373").toBe(true);
+                    expect(length == 15925 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "310.6593406593401" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.362637362637" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6373626373626373" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6373626373626373").toBe(true);
                     done();
                 });
             });
@@ -12308,9 +12333,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==7405&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="375.880952380953"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.5476190476193"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.7023809523809526"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.7023809523809526").toBe(true);
+                    expect(length == 7405 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "375.880952380953" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.5476190476193" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.7023809523809526" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.7023809523809526").toBe(true);
                     done();
                 });
             });
@@ -12336,9 +12361,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==9563&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="105.45070422535207"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.96478873239428"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    expect(length == 9563 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "105.45070422535207" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.96478873239428" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -12364,9 +12389,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==13253&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="424.2349397590377"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.62951807228907"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    expect(length == 13253 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "424.2349397590377" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.62951807228907" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -12392,9 +12417,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==7375&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="139.5238095238095"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.1904761904757"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8095238095238093"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8095238095238093").toBe(true);
+                    expect(length == 7375 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "139.5238095238095" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.1904761904757" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8095238095238093" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8095238095238093").toBe(true);
                     done();
                 });
             });
@@ -12422,9 +12447,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==7832&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="232.05769230769215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.6615384615383"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.5884615384615386"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.5884615384615386").toBe(true);
+                    expect(length == 7832 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "232.05769230769215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.6615384615383" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.5884615384615386" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.5884615384615386").toBe(true);
                     done();
                 });
             });
@@ -12450,9 +12475,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==8976&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="131.68478260869577"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    expect(length == 8976 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "131.68478260869577" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     done();
                 });
             });
@@ -12479,8 +12504,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==8951&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="118.16304347826097"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 8951 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "118.16304347826097" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     done();
                 });
             });
@@ -12507,8 +12532,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==9029&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="48.2608695652174"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="274.99999999999994"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4782608695652173"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4782608695652173").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 9029 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "48.2608695652174" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "274.99999999999994" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4782608695652173" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4782608695652173").toBe(true);
                     done();
                 });
             });
@@ -12537,8 +12562,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==8395&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="277.8507462686563"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.76865671641758"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.4813432835820897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.4813432835820897").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 8395 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "277.8507462686563" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.76865671641758" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.4813432835820897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.4813432835820897").toBe(true);
                     done();
                 });
             });
@@ -12565,8 +12590,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==9588&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="177.72535211267598"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.96478873239428"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 9588 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "177.72535211267598" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.96478873239428" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -12592,9 +12617,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==9561&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="92.30985915492954"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.96478873239428"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    expect(length == 9561 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "92.30985915492954" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.96478873239428" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -12622,8 +12647,8 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     console.log('Version28 High error correction Rendering');
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==9482&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="229.71830985915463"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="268.239436619718"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380281690140845"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380281690140845").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 9482 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "229.71830985915463" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "268.239436619718" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380281690140845" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380281690140845").toBe(true);
                     done();
                 });
             });
@@ -12652,8 +12677,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==8928&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="141.82608695652183"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.86956521739117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.380434782608696"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.380434782608696").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 8928 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "141.82608695652183" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.86956521739117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.380434782608696" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.380434782608696").toBe(true);
                     done();
                 });
             });
@@ -12680,8 +12705,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==10142&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="198.8767123287672"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.05479452054803"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 10142 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "198.8767123287672" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.05479452054803" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -12708,8 +12733,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==10079&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="253.19520547945217"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.05479452054803"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 10079 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "253.19520547945217" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.05479452054803" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -12736,8 +12761,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==10225&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="394.657534246576"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.71232876712315"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.287671232876712"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.287671232876712").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 10225 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "394.657534246576" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.71232876712315" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.287671232876712" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.287671232876712").toBe(true);
                     done();
                 });
             });
@@ -12765,9 +12790,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==9602&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="75.88380281690138"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="239.96478873239428"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.285211267605634"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.285211267605634").toBe(true);
+                    expect(length == 9602 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "75.88380281690138" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "239.96478873239428" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.285211267605634" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.285211267605634").toBe(true);
                     done();
                 });
             });
@@ -12793,9 +12818,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==10708&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="302.87000000000074"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.14000000000047"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.11"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.11").toBe(true);
+                    expect(length == 10708 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "302.87000000000074" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.14000000000047" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.11" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.11").toBe(true);
                     done();
                 });
             });
@@ -12822,8 +12847,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==10645&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="253.11000000000053"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.14000000000047"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.11"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.11").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 10645 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "253.11000000000053" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.14000000000047" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.11" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.11").toBe(true);
                     done();
                 });
             });
@@ -12850,8 +12875,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==10758&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="179.59999999999988"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.7999999999996"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.2"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.2").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 10758 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "179.59999999999988" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.7999999999996" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.2" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.2").toBe(true);
                     done();
                 });
             });
@@ -12880,8 +12905,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==9979&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="435.3219178082194"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="236.85958904109597"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.1952054794520546"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.1952054794520546").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 9979 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "435.3219178082194" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "236.85958904109597" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.1952054794520546" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.1952054794520546").toBe(true);
                     done();
                 });
             });
@@ -12907,9 +12932,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11249&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="310.58441558441643"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.22077922077972"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11249 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "310.58441558441643" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.22077922077972" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -12936,8 +12961,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==11329&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="289.3798701298709"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.19155844155893"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 11329 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "289.3798701298709" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.19155844155893" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -12965,7 +12990,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11289&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="156.49350649350646"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.8831168831168"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.116883116883117"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.116883116883117").toBe(true);
+                    expect(length == 11289 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "156.49350649350646" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.8831168831168" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.116883116883117" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.116883116883117").toBe(true);
                     done();
                 });
             });
@@ -12993,9 +13018,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==10521&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="333.9700000000009"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.14000000000047"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.11"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.11").toBe(true);
+                    expect(length == 10521 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "333.9700000000009" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.14000000000047" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.11" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.11").toBe(true);
                     done();
                 });
             });
@@ -13021,9 +13046,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11790&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="232.28481012658236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.29746835443046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 11790 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "232.28481012658236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.29746835443046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -13049,9 +13074,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11822&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="72.8481012658228"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.29746835443046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 11822 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "72.8481012658228" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.29746835443046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -13077,9 +13102,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11849&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="76.83544303797471"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.9620253164552"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.037974683544304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.037974683544304").toBe(true);
+                    expect(length == 11849 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "76.83544303797471" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.9620253164552" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.037974683544304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.037974683544304").toBe(true);
                     done();
                 });
             });
@@ -13107,9 +13132,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11175&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="304.52597402597485"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.22077922077972"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.029220779220779"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.029220779220779").toBe(true);
+                    expect(length == 11175 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "304.52597402597485" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.22077922077972" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.029220779220779" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.029220779220779").toBe(true);
                     done();
                 });
             });
@@ -13135,9 +13160,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==12547&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="129.05555555555566"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12547 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "129.05555555555566" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -13163,9 +13188,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==12496&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="45.546296296296305"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2499999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12496 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "45.546296296296305" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2499999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -13191,9 +13216,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==12507&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="113.70370370370367"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="275.0000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.962962962962963"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.962962962962963").toBe(true);
+                    expect(length == 12507 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "113.70370370370367" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "275.0000000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.962962962962963" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.962962962962963").toBe(true);
                     done();
                 });
             });
@@ -13221,9 +13246,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11725&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="368.1012658227839"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.34493670886084"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 11725 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "368.1012658227839" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.34493670886084" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -13250,8 +13275,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==12547&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="129.05555555555566"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 12547 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "129.05555555555566" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -13278,8 +13303,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==12496&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="45.546296296296305"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2499999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 12496 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "45.546296296296305" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2499999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -13306,8 +13331,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==11865&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="134.5569620253165"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.9620253164552"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.037974683544304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.037974683544304").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 11865 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "134.5569620253165" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.9620253164552" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.037974683544304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.037974683544304").toBe(true);
                     done();
                 });
             });
@@ -13335,9 +13360,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==12566&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="391.101851851851"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12566 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "391.101851851851" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -13363,9 +13388,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==12547&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="129.05555555555566"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.37037037037007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12547 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "129.05555555555566" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.37037037037007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -13391,9 +13416,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==12496&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="45.546296296296305"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2499999999997"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8796296296296298"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8796296296296298").toBe(true);
+                    expect(length == 12496 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "45.546296296296305" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2499999999997" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8796296296296298" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8796296296296298").toBe(true);
                     done();
                 });
             });
@@ -13421,7 +13446,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11865&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="134.5569620253165"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="271.9620253164552"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.037974683544304"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.037974683544304").toBe(true);
+                    expect(length == 11865 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "134.5569620253165" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "271.9620253164552" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.037974683544304" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.037974683544304").toBe(true);
                     done();
                 });
             });
@@ -13451,7 +13476,7 @@ describe('Barcode Control', () => {
                 it('Rendering', (done: Function) => {
                     output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==13167&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="131.96987951807225"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.4397590361445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    expect(length == 13167 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "131.96987951807225" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.4397590361445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -13477,9 +13502,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==13074&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="219.0873493975903"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.4397590361445"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    expect(length == 13074 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "219.0873493975903" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.4397590361445" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -13505,9 +13530,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==13153&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="373.6506024096396"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="237.62951807228907"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.8102409638554215"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.8102409638554215").toBe(true);
+                    expect(length == 13153 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "373.6506024096396" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "237.62951807228907" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.8102409638554215" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.8102409638554215").toBe(true);
                     done();
                 });
             });
@@ -13534,8 +13559,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13197&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="64.93975903614458"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="275.0000000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.891566265060241"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.891566265060241").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13197 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "64.93975903614458" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "275.0000000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.891566265060241" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.891566265060241").toBe(true);
                     done();
                 });
             });
@@ -13564,8 +13589,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13841&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="173.1647058823531"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.50588235294148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13841 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "173.1647058823531" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.50588235294148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -13592,8 +13617,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==13848&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="387.2058823529417"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.2500000000003"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 13848 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "387.2058823529417" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.2500000000003" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -13619,9 +13644,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==13695&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="101.81764705882357"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.50588235294148"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7441176470588236"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7441176470588236").toBe(true);
+                    expect(length == 13695 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "101.81764705882357" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.50588235294148" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7441176470588236" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7441176470588236").toBe(true);
                     done();
                 });
             });
@@ -13647,9 +13672,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==13197&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="64.93975903614458"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="275.0000000000002"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.891566265060241"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.891566265060241").toBe(true);
+                    expect(length == 13197 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "64.93975903614458" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "275.0000000000002" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.891566265060241" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.891566265060241").toBe(true);
                     done();
                 });
             });
@@ -13677,9 +13702,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==14484&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="426.9482758620685"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.56896551724185"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    expect(length == 14484 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "426.9482758620685" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.56896551724185" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
                 // it('memory leak', () => {
@@ -13715,10 +13740,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes;
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==14432&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="464.48275862068897"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.56896551724185"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 14432 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "464.48275862068897" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.56896551724185" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
             });
@@ -13745,8 +13770,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==14392&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="97.18103448275858"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000048"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6810344827586206"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6810344827586206").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 14392 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "97.18103448275858" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000048" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6810344827586206" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6810344827586206").toBe(true);
                     done();
                 });
             });
@@ -13772,9 +13797,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==14436&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="92.75862068965522"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.241379310345"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7586206896551726"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7586206896551726").toBe(true);
+                    expect(length == 14436 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "92.75862068965522" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.241379310345" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7586206896551726" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7586206896551726").toBe(true);
                     done();
                 });
             });
@@ -13802,9 +13827,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==11894&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="123.04113924050637"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.29746835443046"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.9525316455696204"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.9525316455696204").toBe(true);
+                    expect(length == 11894 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "123.04113924050637" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.29746835443046" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.9525316455696204" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.9525316455696204").toBe(true);
                     done();
                 });
             });
@@ -13831,8 +13856,8 @@ describe('Barcode Control', () => {
 
                 it('Rendering', (done: Function) => {
                     output(barcode);
-                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                     expect( length ==15274&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="202.82584269662925"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.6292134831462"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6207865168539324"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6207865168539324").toBe(true);
+                    element = barcode.element.childNodes[0].childNodes; length = element.length;
+                    expect(length == 15274 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "202.82584269662925" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.6292134831462" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6207865168539324" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6207865168539324").toBe(true);
                     done();
                 });
             });
@@ -13858,9 +13883,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15081&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="302.41573033707846"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="243.25000000000014"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6207865168539324"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6207865168539324").toBe(true);
+                    expect(length == 15081 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "302.41573033707846" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "243.25000000000014" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6207865168539324" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6207865168539324").toBe(true);
                     done();
                 });
             });
@@ -13886,9 +13911,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15213&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="201.46067415730317"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="269.6067415730334"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.696629213483146"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.696629213483146").toBe(true);
+                    expect(length == 15213 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "201.46067415730317" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "269.6067415730334" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.696629213483146" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.696629213483146").toBe(true);
                     done();
                 });
             });
@@ -13916,9 +13941,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15756&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="378.15934065933976"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.68681318681283"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    expect(length == 15756 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "378.15934065933976" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.68681318681283" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -13944,9 +13969,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15938&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="175.6675824175823"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="240.68681318681283"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    expect(length == 15938 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "175.6675824175823" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "240.68681318681283" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -13972,9 +13997,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15756&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="232.05769230769198"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="238.12362637362602"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.5631868131868134"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.5631868131868134").toBe(true);
+                    expect(length == 15756 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "232.05769230769198" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "238.12362637362602" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.5631868131868134" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.5631868131868134").toBe(true);
                     done();
                 });
             });
@@ -14000,9 +14025,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==15969&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="271.0989010989007"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="272.362637362637"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.6373626373626373"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.6373626373626373").toBe(true);
+                    expect(length == 15969 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "271.0989010989007" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "272.362637362637" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.6373626373626373" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.6373626373626373").toBe(true);
                     done();
                 });
             });
@@ -14040,9 +14065,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("QRCode - user define version Alpha Numeric data Low error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==559&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="81.60526315789473"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    expect(length == 549 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "118.39473684210519" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -14071,9 +14097,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("QRCode - user define version Alpha Numeric data Medium error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==679&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="47.29761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.25000000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    expect(length == 688 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "99.99999999999994" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     done();
                 });
             });
@@ -14102,9 +14129,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("QRCode - user define version Alpha Numeric data Quartile error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==530&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="106.13157894736837"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    expect(length == 520 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "109.19736842105257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -14133,9 +14161,10 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    console.log("QRCode - user define version Alpha Numeric data High error correction Rendering");
+                    output1(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==1211&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="63.32407407407405"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="66.09259259259257"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.1574074074074074"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.1574074074074074").toBe(true);
+                    expect(length == 1248 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "46.06481481481481" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "66.09259259259257" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.1574074074074074" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.1574074074074074").toBe(true);
                     done();
                 });
             });
@@ -14166,9 +14195,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==332&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="61.166666666666664"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 332 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "61.166666666666664" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -14197,9 +14226,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==312&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="49.516666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 312 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "49.516666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -14228,9 +14257,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==309&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="68.93333333333334"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 309 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "68.93333333333334" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -14259,9 +14288,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==308&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="88.35000000000004"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 308 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "88.35000000000004" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -14292,9 +14321,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==316&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="134.9500000000001"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 316 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "134.9500000000001" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
                 it('property change', (done: Function) => {
@@ -14331,9 +14360,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==330&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="72.81666666666668"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="64.36666666666666"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.8833333333333333"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.8833333333333333").toBe(true);
+                    expect(length == 330 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "72.81666666666668" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "64.36666666666666" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.8833333333333333" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.8833333333333333").toBe(true);
                     done();
                 });
             });
@@ -14360,9 +14389,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==665&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="91.67857142857139"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.4761904761905"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="2.7738095238095237"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="2.7738095238095237").toBe(true);
+                    expect(length == 665 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "91.67857142857139" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.4761904761905" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "2.7738095238095237" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "2.7738095238095237").toBe(true);
                     done();
                 });
             });
@@ -14389,9 +14418,9 @@ describe('Barcode Control', () => {
                 });
 
                 it('Rendering', (done: Function) => {
-                    output(barcode); 
+                    output(barcode);
                     element = barcode.element.childNodes[0].childNodes; length = element.length;
-                    expect( length ==531&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="124.5263157894736"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="65.18421052631581"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                    expect(length == 531 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "124.5263157894736" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "65.18421052631581" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                     done();
                 });
             });
@@ -14405,11 +14434,11 @@ describe('Barcode Control', () => {
                     barcode = new QRCodeGenerator({
                         width: '200px', height: '150px',
                         ////type: 'QRCode',
-                        mode:'Canvas',
+                        mode: 'Canvas',
                         value: "asxdfgh1234567[]",
                         xDimension: 3,
                         version: QRCodeVersion.Version04,
-                        errorCorrectionLevel: ErrorCorrectionLevel.High, 
+                        errorCorrectionLevel: ErrorCorrectionLevel.High,
                     });
                     barcode.appendTo('#QrCode_Binary_version4');
                 });
@@ -14429,8 +14458,8 @@ describe('Barcode Control', () => {
                 });
             });
         });
-        
-        
+
+
     });
 
     describe('User Not denfied error coorection level', () => {
@@ -14459,8 +14488,8 @@ describe('Barcode Control', () => {
 
             it('Rendering', (done: Function) => {
                 element = barcode.element.childNodes[0].childNodes; length = element.length;
-                output(barcode); 
-                expect( length ==544&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="139.85526315789468"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="62.118421052631604"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="3.0657894736842106"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="3.0657894736842106").toBe(true);
+                output(barcode);
+                expect(length == 544 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "139.85526315789468" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "62.118421052631604" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "3.0657894736842106" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "3.0657894736842106").toBe(true);
                 done();
             });
         });
@@ -14493,7 +14522,7 @@ describe('Barcode Control', () => {
             it('Rendering', (done: Function) => {
                 element = barcode.element.childNodes[0].childNodes; length = element.length;
                 output1(barcode);
-                expect( length ==229&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="46.480769230769226"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="68.38461538461537"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.865384615384615"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.865384615384615").toBe(true);
+                expect(length == 229 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "46.480769230769226" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "68.38461538461537" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.865384615384615" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.865384615384615").toBe(true);
                 done();
             });
         });
@@ -14523,7 +14552,7 @@ describe('Barcode Control', () => {
             it('Rendering', (done: Function) => {
                 element = barcode.element.childNodes[0].childNodes; length = element.length;
                 output1(barcode);
-                expect( length ==229&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="46.480769230769226"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="115.13461538461536"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="4.865384615384615"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="4.865384615384615").toBe(true);
+                expect(length == 229 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "46.480769230769226" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "115.13461538461536" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "4.865384615384615" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "4.865384615384615").toBe(true);
                 done();
             });
         });
@@ -14561,9 +14590,10 @@ describe('Barcode Control', () => {
                 barcode = new QRCodeGenerator({
                     width: '200px', height: '200px',
                     value: "bar",
-                    displayText:{
-                        position:'Top',
-                        margin:{top:0,bottom:20}},
+                    displayText: {
+                        position: 'Top',
+                        margin: { top: 0, bottom: 20 }
+                    },
                     mode: 'SVG'
                 });
                 barcode.appendTo('#QrCode_Binary_version5');
@@ -14577,9 +14607,39 @@ describe('Barcode Control', () => {
             it('Rendering', (done: Function) => {
                 element = barcode.element.childNodes[0].childNodes; length = element.length;
                 output1(barcode);
-                expect( length ==229&& (element[Math.round(length/2)] as HTMLElement).getAttribute("x") =="38.019230769230774"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("y") =="104.36538461538464"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("width") =="5.634615384615385"&& (element[Math.round(length/2)] as HTMLElement).getAttribute("height") =="5.634615384615385").toBe(true);
+                expect(length == 229 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "38.019230769230774" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "104.36538461538464" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.634615384615385" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.634615384615385").toBe(true);
                 done();
             });
         });
     });
+
+    describe('Customer Issue - 262067', () => {
+
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'QrCode_Customer_issue1' });
+            document.body.appendChild(ele);
+            let barcode: QRCodeGenerator = new QRCodeGenerator({
+                width: '200px', height: '150px',
+                value: "ELEM-004:TITRE-TEST",
+                xDimension: 3,
+                errorCorrectionLevel: ErrorCorrectionLevel.Low,
+                mode: 'SVG'
+            });
+            barcode.appendTo('#QrCode_Customer_issue1');
+        });
+
+        afterAll((): void => {
+            barcode.destroy();
+            ele.remove();
+        });
+
+        it('Rendering', (done: Function) => {
+            output1(barcode);
+            element = barcode.element.childNodes[0].childNodes; length = element.length;
+            expect(length == 229 && (element[Math.round(length / 2)] as HTMLElement).getAttribute("x") == "38.019230769230774" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("y") == "104.36538461538464" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("width") == "5.634615384615385" && (element[Math.round(length / 2)] as HTMLElement).getAttribute("height") == "5.634615384615385").toBe(true);
+            done();
+        });
+    });
+
 });

@@ -1321,12 +1321,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * @memberof Tooltip
      */
     public destroy(): void {
-        super.destroy();
+        if (!isBlazor()) {
+            super.destroy();
+            if (this.popupObj) { this.popupObj.destroy(); }
+            if (this.tooltipEle) { remove(this.tooltipEle); }
+        }
         removeClass([this.element], ROOT);
         this.unwireEvents(this.opensOn);
         this.unwireMouseEvents(this.element);
-        if (this.popupObj) { this.popupObj.destroy(); }
-        if (this.tooltipEle) { remove(this.tooltipEle); }
         this.tooltipEle = null;
         this.popupObj = null;
     }

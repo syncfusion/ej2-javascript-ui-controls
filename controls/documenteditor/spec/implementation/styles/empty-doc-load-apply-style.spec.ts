@@ -1,4 +1,4 @@
-import { TextExport } from '../../../src/index';
+import { TextExport, DocumentHelper } from '../../../src/index';
 import { createElement, } from '@syncfusion/ej2-base';
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
@@ -12,7 +12,7 @@ import { ParagraphWidget } from '../../../src/index';
 
 describe('Load Empty Document - Edit and Apply Style', () => {
     let editor: DocumentEditor;
-    let viewer: LayoutViewer;
+    let documentHelper: DocumentHelper;
     let event: any;
     let currentPara: ParagraphWidget = undefined;
     let json: string = '{"sections":[{"blocks":[{"paragraphFormat":{"styleName":"Normal"},"inlines":[{"name":"_GoBack","bookmarkType":0},{"name":"_GoBack","bookmarkType":1}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal"},{"type":"Character","name":"Default Paragraph Font"}]}';
@@ -23,16 +23,16 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
         editor.acceptTab = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        viewer = editor.viewer as PageLayoutViewer;
+        documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
-        viewer.destroy();
-        viewer = undefined;
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
@@ -53,7 +53,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(12.0);
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         currentPara = editor.selection.start.currentWidget.paragraph;
         editor.editorModule.insertText('Heading');
@@ -76,7 +76,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -98,7 +98,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -119,7 +119,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -139,7 +139,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
@@ -159,7 +159,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         expect(editor.selection.paragraphFormat.afterSpacing).toBe(0);
 
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.viewer.onKeyDownInternal(event);
+        editor.documentHelper.onKeyDownInternal(event);
 
         editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");

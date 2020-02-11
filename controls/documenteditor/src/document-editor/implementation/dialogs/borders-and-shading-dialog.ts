@@ -1,4 +1,3 @@
-import { LayoutViewer } from '../index';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -10,12 +9,13 @@ import { TableCellWidget } from '../viewer/page';
 import { Selection } from '../index';
 import { Editor } from '../index';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
+import { DocumentHelper } from '../viewer';
 
 /**
  * The Borders and Shading dialog is used to modify borders and shading options for selected table or cells.
  */
 export class BordersAndShadingDialog {
-    private owner: LayoutViewer;
+    public documentHelper: DocumentHelper;
     private dialog: Dialog;
     private target: HTMLElement;
     private tableFormatIn: WTableFormat;
@@ -73,10 +73,9 @@ export class BordersAndShadingDialog {
     /**
      * @private
      */
-    constructor(viewer: LayoutViewer) {
-        this.owner = viewer;
+    constructor(documentHelper: DocumentHelper) {
+        this.documentHelper = documentHelper;
     }
-
     private getModuleName(): string {
         return 'BordersAndShadingDialog';
     }
@@ -88,7 +87,7 @@ export class BordersAndShadingDialog {
     public initBordersAndShadingsDialog(localeValue: L10n, isRtl?: boolean): void {
         let instance: BordersAndShadingDialog = this;
         this.target = createElement('div', {
-            id: instance.owner.owner.containerId + '_table_border_shadings',
+            id: instance.documentHelper.owner.containerId + '_table_border_shadings',
             className: 'e-de-table-border-shading-dlg'
         });
         let displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
@@ -534,12 +533,12 @@ export class BordersAndShadingDialog {
         this.ulelementShading.appendTo(ulelementShading);
         this.borderColorPicker = new ColorPicker({
             value: '#000000', change: this.applyPreviewTableBorderColor,
-            enableRtl: isRtl, locale: this.owner.owner.locale, cssClass: 'e-de-dlg-clr-picker'
+            enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker'
         });
         this.borderColorPicker.appendTo(borderColorPickerElement);
         this.shadingColorPicker = new ColorPicker({
             value: '#000000', change: this.applyPreviewTableBackgroundColor,
-            enableRtl: isRtl, locale: this.owner.owner.locale, cssClass: 'e-de-dlg-clr-picker'
+            enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker'
         });
         this.shadingColorPicker.appendTo(shadingColorPickerElement);
         if (isRtl) {
@@ -547,8 +546,8 @@ export class BordersAndShadingDialog {
         }
     }
     private applyBordersShadingsProperties = (): void => {
-        let tablePropertiesDialog: TablePropertiesDialog = this.owner.owner.tablePropertiesDialogModule;
-        let selectedCell: TableCellWidget = this.owner.selection.start.paragraph.associatedCell;
+        let tablePropertiesDialog: TablePropertiesDialog = this.documentHelper.owner.tablePropertiesDialogModule;
+        let selectedCell: TableCellWidget = this.documentHelper.selection.start.paragraph.associatedCell;
         //Need to bind the properties with current cell and current table formats.
         let borders: WBorders = undefined;
         if (this.checkClassName(this.previewDivTopTop) || this.checkClassName(this.previewDivTopBottom)
@@ -582,7 +581,7 @@ export class BordersAndShadingDialog {
             }
         }
         let shading: WShading = new WShading();
-        let editorModule: Editor = this.owner.owner.editorModule;
+        let editorModule: Editor = this.documentHelper.owner.editorModule;
         shading.backgroundColor = this.shadingColorPicker.value;
         if (this.ulelementShading.index === 0) {
             this.applyTo = 0;
@@ -607,7 +606,7 @@ export class BordersAndShadingDialog {
                 tablePropertiesDialog.isTableBordersAndShadingUpdated = true;
             }
             this.applyTo = 1;
-            let currentTableFormat: WTableFormat = this.owner.owner.selection.tableFormat.table.tableFormat;
+            let currentTableFormat: WTableFormat = this.documentHelper.owner.selection.tableFormat.table.tableFormat;
             this.tableFormat.copyFormat(currentTableFormat);
             this.tableFormat.borders = new WBorders();
             if (!isNullOrUndefined(borders)) {
@@ -628,8 +627,8 @@ export class BordersAndShadingDialog {
         this.closeDialog();
     }
     private applyFormat(): void {
-        let selection: Selection = this.owner.selection;
-        let editorModule: Editor = this.owner.owner.editorModule;
+        let selection: Selection = this.documentHelper.selection;
+        let editorModule: Editor = this.documentHelper.owner.editorModule;
         editorModule.initComplexHistory('BordersAndShading');
         editorModule.isBordersAndShadingDialog = true;
         if (this.applyTo === 0) {
@@ -637,8 +636,8 @@ export class BordersAndShadingDialog {
         } else {
             editorModule.onTableFormat(this.tableFormat, this.isShadingChanged);
         }
-        if (!isNullOrUndefined(this.owner.owner.editorHistory.currentHistoryInfo)) {
-            this.owner.owner.editorHistory.updateComplexHistory();
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
+            this.documentHelper.owner.editorHistory.updateComplexHistory();
         }
         editorModule.isBordersAndShadingDialog = false;
     }
@@ -656,31 +655,31 @@ export class BordersAndShadingDialog {
      * @private
      */
     public closeDialog = (): void => {
-        this.owner.dialog.hide();
+        this.documentHelper.dialog.hide();
         this.closeBordersShadingsDialog();
     }
     private closeBordersShadingsDialog = (): void => {
-        this.owner.dialog2.element.style.pointerEvents = '';
-        this.owner.updateFocus();
+        this.documentHelper.dialog2.element.style.pointerEvents = '';
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
      */
     public show(): void {
-        let localeValue: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
-        localeValue.setLocale(this.owner.owner.locale);
+        let localeValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localeValue.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
-            this.initBordersAndShadingsDialog(localeValue, this.owner.owner.enableRtl);
+            this.initBordersAndShadingsDialog(localeValue, this.documentHelper.owner.enableRtl);
         }
         this.loadBordersShadingsPropertiesDialog();
-        this.owner.dialog.content = this.target;
-        this.owner.dialog.header = localeValue.getConstant('Borders and Shading');
-        this.owner.dialog.beforeOpen = this.owner.updateFocus;
-        this.owner.dialog.close = this.closeBordersShadingsDialog;
-        this.owner.dialog.position = { X: 'center', Y: 'center' };
-        this.owner.dialog.width = 'auto';
-        this.owner.dialog.height = 'auto';
-        this.owner.dialog.buttons = [{
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.header = localeValue.getConstant('Borders and Shading');
+        this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
+        this.documentHelper.dialog.close = this.closeBordersShadingsDialog;
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.buttons = [{
             click: this.applyBordersShadingsProperties,
             buttonModel: { content: localeValue.getConstant('Ok'), cssClass: 'e-flat e-table-border-shading-okay', isPrimary: true }
         },
@@ -688,8 +687,8 @@ export class BordersAndShadingDialog {
             click: this.closeDialog,
             buttonModel: { content: localeValue.getConstant('Cancel'), cssClass: 'e-flat e-table-border-shading-cancel' }
         }];
-        this.owner.dialog.dataBind();
-        this.owner.dialog.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.show();
     }
     private handleSettingCheckBoxAction = (event: Event): void => {
         let targetId: string = (event.target as HTMLElement).id;
@@ -918,7 +917,7 @@ export class BordersAndShadingDialog {
         }
     }
     private loadBordersShadingsPropertiesDialog(): void {
-        let tableFormat: WTableFormat = this.owner.selection.tableFormat.table.tableFormat;
+        let tableFormat: WTableFormat = this.documentHelper.selection.tableFormat.table.tableFormat;
         let lineStyle: number;
         let borderColor: string;
         let fillColor: string;

@@ -101,7 +101,7 @@ export class AxisRenderer {
         if (style.position === 'Outside') {
             radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) + (labelPadding / 2);
         } else if (style.position === 'Cross') {
-            radius = radius - (axis.maxLabelSize.height / 2) - axis.labelStyle.offset;
+            radius = radius - (axis.maxLabelSize.height / 4) - axis.labelStyle.offset;
         } else {
             radius -= (axis.farSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2) + (style.autoAngle ? labelPadding : 0));
         }

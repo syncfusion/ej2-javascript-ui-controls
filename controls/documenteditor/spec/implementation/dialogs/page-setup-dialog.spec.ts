@@ -19,10 +19,10 @@ describe('PageSetup Dialog Test Case Validation - 1', function () {
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enableEditorHistory = true;
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show()
@@ -58,10 +58,10 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditor:true, enableEditorHistory: true, enableSelection: true, isReadOnly: false });
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show();
@@ -77,7 +77,7 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
         }, 2000);
     });
     it('Load sectionFormat test case', function () {
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         selectionSectionFormat.topMargin = 70;
         selectionSectionFormat.bottomMargin = 100;
         selectionSectionFormat.leftMargin = 100;
@@ -86,75 +86,75 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
     });
     it('Apply portrait to the document', () => {
         editor.editorModule.onPortrait();
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(612);
         expect(selectionSectionFormat.pageHeight).toEqual(792);
     });
 
     it('Apply paper size to letter', () => {
         editor.editorModule.onPaperSize('letter')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(611.9);
         expect(selectionSectionFormat.pageHeight).toEqual(791.9);
     });
     it('Apply paper size to tabloid', () => {
         editor.editorModule.onPaperSize('tabloid')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(791.9);
         expect(selectionSectionFormat.pageHeight).toEqual(1223.9);
     });
     it('Apply paper size to legal', () => {
         editor.editorModule.onPaperSize('legal')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(611.9);
         expect(selectionSectionFormat.pageHeight).toEqual(1007.9);
     });
     it('Apply paper size to statement', () => {
         editor.editorModule.onPaperSize('statement')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(396);
         expect(selectionSectionFormat.pageHeight).toEqual(611.9);
     });
 
     it('Apply paper size to executive', () => {
         editor.editorModule.onPaperSize('executive')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(521.9);
         expect(selectionSectionFormat.pageHeight).toEqual(755.9);
     });
     it('Apply paper size to a3', () => {
         editor.editorModule.onPaperSize('a3')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(841.8);
         expect(selectionSectionFormat.pageHeight).toEqual(1190.4);
     });
     it('Apply paper size to a4', () => {
         editor.editorModule.onPaperSize('a4')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(595.2);
         expect(selectionSectionFormat.pageHeight).toEqual(841.8);
     });
     it('Apply paper size to a5', () => {
         editor.editorModule.onPaperSize('a5')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(419.5);
         expect(selectionSectionFormat.pageHeight).toEqual(595.2);
     });
     it('Apply paper size to b4', () => {
         editor.editorModule.onPaperSize('b4')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(728.4);
         expect(selectionSectionFormat.pageHeight).toEqual(1031.7);
     });
     it('Apply paper size to b5', () => {
         editor.editorModule.onPaperSize('b5')
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(515.8);
         expect(selectionSectionFormat.pageHeight).toEqual(728.4);
     });
     it('Apply margin value to lastCustomSetting', () => {
         editor.editorModule.changeMarginValue('lastCustomSetting');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.topMargin).toEqual(72);
         expect(selectionSectionFormat.bottomMargin).toEqual(72);
         expect(selectionSectionFormat.leftMargin).toEqual(72);
@@ -162,7 +162,7 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
     });
     it('Apply margin value to normal', () => {
         editor.editorModule.changeMarginValue('normal');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.topMargin).toEqual(72);
         expect(selectionSectionFormat.bottomMargin).toEqual(72);
         expect(selectionSectionFormat.leftMargin).toEqual(72);
@@ -170,7 +170,7 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
     });
     it('Apply margin value to narrow', () => {
         editor.editorModule.changeMarginValue('narrow');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.topMargin).toEqual(36);
         expect(selectionSectionFormat.bottomMargin).toEqual(36);
         expect(selectionSectionFormat.leftMargin).toEqual(36);
@@ -178,7 +178,7 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
     });
     it('Apply margin value to moderate', () => {
         editor.editorModule.changeMarginValue('moderate');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.topMargin).toEqual(72);
         expect(selectionSectionFormat.bottomMargin).toEqual(72);
         expect(selectionSectionFormat.leftMargin).toEqual(54);
@@ -186,7 +186,7 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
     });
     it('Apply margin value to wide', () => {
         editor.editorModule.changeMarginValue('wide');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.topMargin).toEqual(72);
         expect(selectionSectionFormat.bottomMargin).toEqual(72);
         expect(selectionSectionFormat.leftMargin).toEqual(144);
@@ -194,7 +194,7 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
     });
     it('Apply margin value to mirrored', () => {
         editor.editorModule.changeMarginValue('mirrored');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.topMargin).toEqual(72);
         expect(selectionSectionFormat.bottomMargin).toEqual(72);
         expect(selectionSectionFormat.leftMargin).toEqual(90);
@@ -202,7 +202,7 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
     });
     it('Apply margin value to office2003Default', () => {
         editor.editorModule.changeMarginValue('office2003Default');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.topMargin).toEqual(72);
         expect(selectionSectionFormat.bottomMargin).toEqual(72);
         expect(selectionSectionFormat.leftMargin).toEqual(90);
@@ -220,10 +220,10 @@ describe('PageSetup Dialog Test Case Validation - 3', function () {
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show();
@@ -240,68 +240,68 @@ describe('PageSetup Dialog Test Case Validation - 3', function () {
     });
     it('Apply landscape to the document', () => {
         editor.editorModule.onLandscape();
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(792);
         expect(selectionSectionFormat.pageHeight).toEqual(612);
     });
     it('Apply paper size to letter', () => {
         editor.editorModule.onPaperSize('letter');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(791.9);
         expect(selectionSectionFormat.pageHeight).toEqual(611.9);
     });
     it('Apply paper size to tabloid', () => {
         editor.editorModule.onPaperSize('tabloid');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(1223.9);
         expect(selectionSectionFormat.pageHeight).toEqual(791.9);
     });
     it('Apply paper size to legal', () => {
         editor.editorModule.onPaperSize('legal');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(1007.9);
         expect(selectionSectionFormat.pageHeight).toEqual(611.9);
     });
     it('Apply paper size to statement', () => {
         editor.editorModule.onPaperSize('statement');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(611.9);
         expect(selectionSectionFormat.pageHeight).toEqual(396);
     });
 
     it('Apply paper size to executive', () => {
         editor.editorModule.onPaperSize('executive');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(755.9);
         expect(selectionSectionFormat.pageHeight).toEqual(521.9);
     });
     it('Apply paper size to a3', () => {
         editor.editorModule.onPaperSize('a3');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(1190.4);
         expect(selectionSectionFormat.pageHeight).toEqual(841.8);
     });
     it('Apply paper size to a4', () => {
         editor.editorModule.onPaperSize('a4');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(841.8);
         expect(selectionSectionFormat.pageHeight).toEqual(595.2);
     });
     it('Apply paper size to a5', () => {
         editor.editorModule.onPaperSize('a5');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(595.2);
         expect(selectionSectionFormat.pageHeight).toEqual(419.5);
     });
     it('Apply paper size to b4', () => {
         editor.editorModule.onPaperSize('b4');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(1031.7);
         expect(selectionSectionFormat.pageHeight).toEqual(728.4);
     });
     it('Apply paper size to b5', () => {
         editor.editorModule.onPaperSize('b5');
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(728.4);
         expect(selectionSectionFormat.pageHeight).toEqual(515.8);
     });
@@ -316,10 +316,10 @@ describe('PageSetup Dialog Test Case Validation - 4', function () {
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show();
@@ -340,7 +340,7 @@ describe('PageSetup Dialog Test Case Validation - 4', function () {
     it('Apply portrait to the document', () => {
         editor.editorModule.onLandscape();
         editor.editorModule.onPortrait();
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(612);
         expect(selectionSectionFormat.pageHeight).toEqual(792);
     });
@@ -355,10 +355,10 @@ describe('PageSetup Dialog Test Case Validation - 5', function () {
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show();
@@ -478,10 +478,10 @@ describe('PageSetup Dialog Test Case Validation - 6', function () {
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show();
@@ -501,7 +501,7 @@ describe('PageSetup Dialog Test Case Validation - 6', function () {
     });
     it('Apply landscape to the document', () => {
         editor.editorModule.onLandscape();
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(792);
         expect(selectionSectionFormat.pageHeight).toEqual(612);
     });
@@ -607,10 +607,10 @@ describe('PageSetup Dialog Test Case Validation - 7', function () {
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show();
@@ -649,10 +649,10 @@ describe('PageSetup Dialog Test Case Validation - 8', function () {
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show();
@@ -672,7 +672,7 @@ describe('PageSetup Dialog Test Case Validation - 8', function () {
         let event: any = { preventDefault: function () { }, value: 'statement' };
         dialog.changeByPaperSize(event);
         dialog.applyPageSetupProperties();
-        selectionSectionFormat = editor.viewer.selection.sectionFormat;
+        selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(612);
         expect(selectionSectionFormat.pageHeight).toEqual(392);
     });
@@ -693,10 +693,10 @@ describe('PageSetup Dialog Test Case Validation - 9', function () {
         DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
         editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         editor.enablePageSetupDialog = true;
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         dialog = editor.pageSetupDialogModule
         dialog.show();
@@ -712,8 +712,8 @@ describe('PageSetup Dialog Test Case Validation - 9', function () {
         }, 2000);
     });
     it('Legal page size', () => {
-        editor.viewer.selection.sectionFormat.pageWidth=612;
-        editor.viewer.selection.sectionFormat.pageHeight=1008;
+        editor.documentHelper.selection.sectionFormat.pageWidth=612;
+        editor.documentHelper.selection.sectionFormat.pageHeight=1008;
         (dialog as any).portrait.checked = true;
         
         dialog.loadPageSetupDialog();
@@ -722,8 +722,8 @@ describe('PageSetup Dialog Test Case Validation - 9', function () {
         dialog.closePageSetupDialog();
     });
     it('tabloid page size', () => {
-        editor.viewer.selection.sectionFormat.pageWidth=792;
-        editor.viewer.selection.sectionFormat.pageHeight=1224;
+        editor.documentHelper.selection.sectionFormat.pageWidth=792;
+        editor.documentHelper.selection.sectionFormat.pageHeight=1224;
         (dialog as any).portrait.checked = true;
         
         dialog.loadPageSetupDialog();
@@ -732,8 +732,8 @@ describe('PageSetup Dialog Test Case Validation - 9', function () {
         dialog.closePageSetupDialog();
     });
     it('a3 page size', () => {
-        editor.viewer.selection.sectionFormat.pageWidth=841.9;
-        editor.viewer.selection.sectionFormat.pageHeight=1190.55;
+        editor.documentHelper.selection.sectionFormat.pageWidth=841.9;
+        editor.documentHelper.selection.sectionFormat.pageHeight=1190.55;
         (dialog as any).portrait.checked = true;
         
         dialog.loadPageSetupDialog();

@@ -330,12 +330,14 @@ export class Toolbar {
                 break;
             case id + HEADER_ID:
                 this.container.documentEditor.selection.goToHeader();
+                this.container.statusBar.toggleWebLayout();
                 break;
             case id + TABLE_OF_CONTENT_ID:
                 this.onToc();
                 break;
             case id + FOOTER_ID:
                 this.container.documentEditor.selection.goToFooter();
+                this.container.statusBar.toggleWebLayout();
                 break;
             case id + PAGE_SET_UP_ID:
                 this.container.documentEditor.showDialog('PageSetup');
@@ -390,7 +392,7 @@ export class Toolbar {
             this.container.restrictEditing = !this.container.restrictEditing;
             this.container.showPropertiesPane = !this.container.restrictEditing;
         } else if (id === parentId + PROTECTIONS) {
-            this.documentEditor.viewer.restrictEditingPane.showHideRestrictPane(true);
+            this.documentEditor.documentHelper.restrictEditingPane.showHideRestrictPane(true);
         }
         setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
     }

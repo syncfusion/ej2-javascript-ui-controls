@@ -10,7 +10,7 @@ import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
 import { TextSearchResults } from './text-search-results';
 import { DocumentEditor } from '../../document-editor';
-import { LayoutViewer } from '../index';
+import { DocumentHelper } from '../index';
 import { SearchResultsChangeEventArgs } from '../../base';
 /** 
  * @private
@@ -21,11 +21,11 @@ export class TextSearch {
     private owner: DocumentEditor;
     private isHeader: boolean = false;
     private isFooter: boolean = false;
-    get viewer(): LayoutViewer {
-        return this.owner.viewer;
-    }
+    private documentHelper: DocumentHelper;
+
     constructor(owner: DocumentEditor) {
         this.owner = owner;
+        this.documentHelper = this.owner.documentHelper;
     }
 
     public find(pattern: string | RegExp, findOption?: FindOption): TextSearchResult {
@@ -86,8 +86,8 @@ export class TextSearch {
             results.currentIndex = 0;
         }
         if (!isNullOrUndefined(results.currentSearchResult)) {
-            let eventArgs: SearchResultsChangeEventArgs = { source: this.viewer.owner };
-            this.viewer.owner.trigger('searchResultsChange', eventArgs);
+            let eventArgs: SearchResultsChangeEventArgs = { source: this.documentHelper.owner };
+            this.documentHelper.owner.trigger('searchResultsChange', eventArgs);
             return results;
         }
         return undefined;
@@ -202,9 +202,9 @@ export class TextSearch {
             if (isFirstMatch) {
                 results.currentIndex = 0;
                 break;
-            // tslint:disable-next-line:max-line-length   
+                // tslint:disable-next-line:max-line-length   
             } else if (results.currentIndex < 0 && !isNullOrUndefined(selectionEnd) && (selectionEnd.isExistBefore(result.start) ||
-            selectionEnd.isAtSamePosition(result.start))) {
+                selectionEnd.isAtSamePosition(result.start))) {
                 results.currentIndex = results.indexOf(result);
             }
             if (!isNullOrUndefined(startPosition) && isMatched) {
@@ -264,7 +264,7 @@ export class TextSearch {
             }
         }
         let section: BodyWidget;
-        section = this.viewer.pages[0].bodyWidgets[0] as BodyWidget;
+        section = this.documentHelper.pages[0].bodyWidgets[0] as BodyWidget;
         while (!isNullOrUndefined(section) && section.childWidgets.length === 0) {
             section = section.nextWidget as BodyWidget;
         }
@@ -273,15 +273,15 @@ export class TextSearch {
         }
         this.isHeader = false; this.isFooter = false;
         this.findInlineText(section, pattern, findOption, isFirstMatch, results, selectionEnd);
-        for (let i: number = 0; i < this.viewer.pages.length; i++) {
-            let headerWidget: HeaderFooterWidget = this.viewer.pages[i].headerWidget as HeaderFooterWidget;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            let headerWidget: HeaderFooterWidget = this.documentHelper.pages[i].headerWidget as HeaderFooterWidget;
             if (!isNullOrUndefined(headerWidget)) {
                 this.isHeader = true; this.isFooter = false;
                 this.findInlineText(headerWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
             }
         }
-        for (let i: number = 0; i < this.viewer.pages.length; i++) {
-            let footerWidget: HeaderFooterWidget = this.viewer.pages[i].footerWidget as HeaderFooterWidget;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            let footerWidget: HeaderFooterWidget = this.documentHelper.pages[i].footerWidget as HeaderFooterWidget;
             if (!isNullOrUndefined(footerWidget)) {
                 this.isHeader = false; this.isFooter = true;
                 this.findInlineText(footerWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
