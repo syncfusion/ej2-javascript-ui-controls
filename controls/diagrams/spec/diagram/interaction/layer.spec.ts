@@ -16,7 +16,6 @@ function getDSNodeHtmlContent(dsName: string, dsType: string): string {
               </div>`;
 }
 function created(args: any) {
-    debugger
     let sfDiagram = (document.getElementById('diagram') as any).ej2_instances[0];
     installGlassLayer();
 

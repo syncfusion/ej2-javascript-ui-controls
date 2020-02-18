@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../../spreadsheet/index';
-import { performUndoRedo, updateUndoRedoCollection, enableRibbonItems, ICellRenderer, updateAction, completeAction } from '../common/index';
-import { UndoRedoEventArgs, setActionData, getBeforeActionData } from '../common/index';
+import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction } from '../common/index';
+import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs } from '../common/index';
 import { selectRange, clearUndoRedoCollection } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation } from '../../workbook/index';
@@ -119,8 +119,8 @@ export class UndoRedo {
     }
 
     private updateUndoRedoIcons(): void {
-        this.parent.notify(enableRibbonItems, [{ id: this.parent.element.id + '_undo', isEnable: this.undoCollection.length > 0 }]);
-        this.parent.notify(enableRibbonItems, [{ id: this.parent.element.id + '_redo', isEnable: this.redoCollection.length > 0 }]);
+        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_undo'], enable: this.undoCollection.length > 0 }]);
+        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_redo'], enable: this.redoCollection.length > 0 }]);
     }
 
     private undoForClipboard(args: CollaborativeEditArgs): CollaborativeEditArgs {

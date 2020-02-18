@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 1.0 (2020-02-18)
+
+### Maps
+
+#### Bug Fixes
+
+- `#264141`  - The data labels will now be rendered properly while using `zoomToCoordinates()` method.
+
 ## 17.4.49 (2020-02-11)
 
 ### Maps

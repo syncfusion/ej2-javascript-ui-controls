@@ -287,10 +287,10 @@ export class Month extends ViewBase implements IRenderer {
                 let elementId: string = this.parent.element.id + '_';
                 let viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
                 let templateId: string = elementId + viewName + 'dateHeaderTemplate';
-                let dateTemplate: NodeList =
-                    this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false);
+                let dateTemplate: HTMLElement[] =
+                    [].slice.call(this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false));
                 if (dateTemplate && dateTemplate.length) {
-                    append([].slice.call(dateTemplate), tdEle);
+                    append(dateTemplate, tdEle);
                 }
             } else {
                 let ele: Element = createElement('span', { className: cls.NAVIGATE_CLASS });
@@ -439,8 +439,9 @@ export class Month extends ViewBase implements IRenderer {
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.cellTemplateName;
             let templateId: string = scheduleId + viewName + 'cellTemplate';
-            let cellTemplate: NodeList = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
-            append([].slice.call(cellTemplate), ntd);
+            let cellTemplate: HTMLElement[] =
+                [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false));
+            append(cellTemplate, ntd);
         }
         let args: RenderCellEventArgs = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
         if (!isBlazor()) {
@@ -460,9 +461,9 @@ export class Month extends ViewBase implements IRenderer {
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.cellHeaderTemplateName;
             let templateId: string = scheduleId + viewName + 'cellHeaderTemplate';
-            let cellheaderTemplate: NodeList =
-                this.parent.getCellHeaderTemplate()(args, this.parent, 'cellHeaderTemplate', templateId, false);
-            append([].slice.call(cellheaderTemplate), dateHeader);
+            let cellheaderTemplate: HTMLElement[] =
+                [].slice.call(this.parent.getCellHeaderTemplate()(args, this.parent, 'cellHeaderTemplate', templateId, false));
+            append(cellheaderTemplate, dateHeader);
         } else {
             let innerText: string =
                 (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?

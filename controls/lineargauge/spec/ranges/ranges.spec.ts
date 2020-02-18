@@ -178,6 +178,29 @@ describe('Linear gauge control', () => {
             ];
             gauge.refresh();
         });
+        it('checking with ranges in position as cross', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg != null).toBe(true);
+                svg = document.getElementById('container_AxisIndex_0_Range_1');
+                expect(svg != null).toBe(true);
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes[0].opposedPosition = false;
+     		gauge.axes[0].ranges[0].position = 'Cross';
+            gauge.axes[0].ranges[1].position = 'Cross';
+            gauge.refresh();
+        });
+        it('checking with ranges in position as cross with vertical orinetation', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg != null).toBe(true);
+                svg = document.getElementById('container_AxisIndex_0_Range_1');
+                expect(svg != null).toBe(true);
+            };
+            gauge.orientation = 'Vertical';
+            gauge.refresh();
+        });
     });
     it('memory leak', () => {     
         profile.sample();

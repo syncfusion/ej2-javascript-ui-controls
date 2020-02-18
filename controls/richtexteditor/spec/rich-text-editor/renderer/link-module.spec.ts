@@ -548,6 +548,7 @@ describe('insert Link', () => {
             (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
             expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
         });
+        
         it('check display text', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let selObj: any = new NodeSelection();
@@ -564,6 +565,19 @@ describe('insert Link', () => {
             expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value).toBe('https://www.syncfusion.com');
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
             expect(document.getElementsByTagName('a')[0].firstChild.textContent).toBe("syncfusion");          
+        });
+        it('Apply link to the link element along with extra text', () => {
+            rteObj.value = '<a>syncfusion</a>test';
+            rteObj.dataBind();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
+            rteObj.selectAll();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelector('p').children[0].tagName === 'A').toBe(true);
         });
     });
     describe('iOS device - insert link with selected text', () => {

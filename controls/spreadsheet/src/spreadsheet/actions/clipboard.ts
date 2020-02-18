@@ -6,7 +6,7 @@ import { CellStyleModel, getRangeAddress } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
 import { ExtendedSheet, Cell } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, BeforePasteEventArgs, hasTemplate } from '../common/index';
-import { enableRibbonItems, rowHeightChanged, completeAction, beginAction } from '../common/index';
+import { enableToolbarItems, rowHeightChanged, completeAction, beginAction } from '../common/index';
 import { clearCopy, locateElem, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
@@ -343,7 +343,7 @@ export class Clipboard {
     }
 
     private hidePaste(isShow?: boolean): void {
-        this.parent.notify(enableRibbonItems, [{ id: this.parent.element.id + '_paste', isEnable: isShow || false }]);
+        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_paste'], enable: isShow || false }]);
     }
 
     private setExternalCells(args: ClipboardEvent): void {

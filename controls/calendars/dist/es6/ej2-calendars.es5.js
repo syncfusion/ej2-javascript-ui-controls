@@ -758,7 +758,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             // if (args.isDisabled && +this.value === +args.date) {
             //     this.setProperties({ value: null }, true);
             // }
-            if (multiSelection && !isNullOrUndefined(values) && !otherMnthBool && !disabledCls) {
+            if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (var tempValue = 0; tempValue < values.length; tempValue++) {
                     var type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                     var formatOptions = { type: 'date', skeleton: 'short', calendar: type };
@@ -776,7 +776,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                     this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
                 }
             }
-            else if (!otherMnthBool && !disabledCls && this.getDateVal(localDate, value)) {
+            else if (!disabledCls && this.getDateVal(localDate, value)) {
                 addClass([tdEle], SELECTED);
             }
             else {
@@ -878,6 +878,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
+                if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
+                    addClass([tdEle], SELECTED);
+                }
                 if (year < new Date(this.checkValue(this.min)).getFullYear() ||
                     year > new Date(this.checkValue(this.max)).getFullYear()) {
                     addClass([tdEle], DISABLED);
@@ -10846,6 +10849,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             };
             var eventArgs = this.openPopupEventArgs;
             this.trigger('open', eventArgs, function (eventArgs) {
+                if ((isBlazor() && _this.isServerRendered)) {
+                    eventArgs.popup = _this.popupObj || null;
+                }
                 _this.openPopupEventArgs = eventArgs;
                 if (!_this.openPopupEventArgs.cancel && !_this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
                     _this.openPopupEventArgs.appendTo.appendChild(_this.popupWrapper);

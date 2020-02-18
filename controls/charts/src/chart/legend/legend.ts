@@ -212,7 +212,10 @@ export class Legend extends BaseLegend {
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
             chart.refreshAxis();
-            series.refreshAxisLabel();
+            // No need to refresh the trendline series in legend click.
+            if (!(series.category === 'TrendLine')) {
+                series.refreshAxisLabel();
+            }
             this.refreshSeries(chart.visibleSeries);
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });

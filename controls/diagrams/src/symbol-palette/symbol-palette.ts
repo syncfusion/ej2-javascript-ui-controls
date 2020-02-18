@@ -5,7 +5,7 @@ import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel } from '../diagram/index';
 import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
-import { DiagramElement, TextElement, MarginModel, Canvas, BpmnShape, PointModel, IElement } from '../diagram/index';
+import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';
 import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel, SymbolDragSizeModel } from './symbol-palette-model';
 import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';
 import { SvgRenderer } from '../diagram/rendering/svg-renderer';
@@ -89,7 +89,7 @@ export class Palette extends ChildProperty<Palette> {
 export class SymbolDragSize extends ChildProperty<SymbolDragSize> {
 
     /**
-     * Sets the drag width of the symbols
+     * Defines diagram symbol width.
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -98,7 +98,7 @@ export class SymbolDragSize extends ChildProperty<SymbolDragSize> {
     public width: number;
 
     /**
-     * Sets the drag height of the symbols
+     * Defines diagram symbol height.
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -308,7 +308,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     public symbolPreview: SymbolPreviewModel;
 
     /**
-     * Defines the size of a drop symbol
+     * Defines the symbol drag size that drops to the diagram and its applicable for all symbols in SymbolPalette.
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -1438,7 +1438,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 child.staticSize = false;
             }
             symbol.wrapper = wrapper;
-        } else if (symbol.shape instanceof BpmnShape && this.bpmnModule) {
+        } else if (symbol.shape.type === 'Bpmn' && this.bpmnModule) {
             let wrapper: Container = symbol.wrapper;
             symbol.wrapper = symbolContainer;
             symbolContainer.children[0].width = width;

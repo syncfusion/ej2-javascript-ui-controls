@@ -697,56 +697,48 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * @hidden
-     * @blazorproperty 'QueryCellInfo'
      */
     @Event()
     protected queryCellInfo: EmitType<QueryCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'HeaderCellInfo'
      */
     @Event()
     protected headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'Resizing'
      */
     @Event()
     protected resizing: EmitType<ResizeArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ResizeStopped'
      */
     @Event()
     protected resizeStop: EmitType<ResizeArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'PdfHeaderQueryCellInfo'
      */
     @Event()
     protected pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'PdfQueryCellInfo'
      */
     @Event()
     protected pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ExcelHeaderQueryCellInfo'
      */
     @Event()
     protected excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ExcelQueryCellInfo'
      */
     @Event()
     protected excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -773,49 +765,42 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * @hidden
-     * @blazorproperty 'OnColumnsRender'
      */
     @Event()
     public beforeColumnsRender: EmitType<ColumnRenderEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'Selected'
      */
     @Event()
     public selected: EmitType<CellSelectEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'CellDeselected'
      */
     @Event()
     public cellDeselected: EmitType<CellDeselectEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'RowSelected'
      */
     @Event()
     public rowSelected: EmitType<RowSelectEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'RowDeselected'
      */
     @Event()
     public rowDeselected: EmitType<RowDeselectEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ChartTooltipRendered'
      */
     @Event()
     protected chartTooltipRender: EmitType<ITooltipRenderEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ChartLoaded'
      */
     @Event()
     protected chartLoaded: EmitType<ILoadedEventArgs>;
@@ -826,14 +811,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * @hidden
-     * @blazorproperty 'ChartResized'
      */
     @Event()
     protected chartResized: EmitType<IResizeEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ChartAxisLabelRender'
      * @deprecated
      */
     @Event()
@@ -841,7 +824,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * @hidden
-     * @blazorproperty 'ContextMenuItemClicked'
      * @deprecated
      */
     @Event()
@@ -849,7 +831,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * @hidden
-     * @blazorproperty 'ContextMenuOpened'
      * @deprecated
      */
     @Event()
@@ -959,7 +940,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when a field getting dropped into any axis.
      * @event
-     * @blazorproperty 'fieldDrop'
+     * @blazorproperty 'FieldDrop'
      */
     @Event()
     public fieldDrop: EmitType<FieldDropEventArgs>;
@@ -989,7 +970,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /**
      * This allows to set properties for exporting.
      * @event
-     * @blazorproperty 'OnExport'
      * @deprecated
      */
     @Event()
@@ -1074,7 +1054,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /**
      * This allows to change the cell value.
      * @event
-     * @blazorproperty 'AggregateCellInfo'
      * @deprecated
      */
     @Event()
@@ -1744,28 +1723,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let keyEntity: string[] = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
         /* tslint:disable */
         this.chartSettings['tooltipRender'] = undefined;
-        this.chartSettings['resized'] = undefined;
-        this.chartSettings['loaded'] = undefined;
-        this.chartSettings['beforePrint'] = undefined;
-        this.chartSettings['animationComplete'] = undefined;
-        this.chartSettings['load'] = undefined;
-        this.chartSettings['textRender'] = undefined;
-        this.chartSettings['legendRender'] = undefined;
-        this.chartSettings['seriesRender'] = undefined;
-        this.chartSettings['pointRender'] = undefined;
-        this.chartSettings['axisLabelRender'] = undefined;
-        this.chartSettings['chartMouseClick'] = undefined;
-        this.chartSettings['chartMouseMove'] = undefined;
-        this.chartSettings['pointMove'] = undefined;
-        this.chartSettings['pointClick'] = undefined;
-        this.chartSettings['chartMouseDown'] = undefined;
-        this.chartSettings['chartMouseLeave'] = undefined;
-        this.chartSettings['dragComplete'] = undefined;
-        this.chartSettings['chartMouseUp'] = undefined;
-        this.chartSettings['scrollStart'] = undefined;
-        this.chartSettings['zoomComplete'] = undefined;
-        this.chartSettings['scrollChanged'] = undefined;
-        this.chartSettings['scrollEnd'] = undefined;
         /* tslint:enable */
         return this.addOnPersist(keyEntity);
     }

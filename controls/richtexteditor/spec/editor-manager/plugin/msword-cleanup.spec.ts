@@ -27,7 +27,8 @@ describe('MSWord Content Paste testing', () => {
     rteObj = renderRTE({
       pasteCleanupSettings: {
         prompt: true
-      }
+      },
+      value: ''
     });
     done();
   });
@@ -40,17 +41,14 @@ describe('MSWord Content Paste testing', () => {
     */
     let localElem: string = `
     <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
-Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->One Node-1<o:p></o:p></p>
-
-<p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
-Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Two Node-1<o:p></o:p></p>
-
-<p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
-Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Three Node-1<o:p></o:p></p>
-    `;
+    Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]-->One Node-1<o:p></o:p></p>
+    <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+    Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]-->Two Node-1<o:p></o:p></p>
+    <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+    Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]-->Three Node-1<o:p></o:p></p>`;
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
@@ -58,7 +56,6 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       items: []
     };
     (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -67,10 +64,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
       let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-1</p></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim() !== expectedElem) {
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -86,24 +83,23 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       3. Three Node-1
     </ol>
      */
-    let localElem: string = `
-  <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  </span></span></span><!--[endif]-->One Node-1<o:p></o:p></p>
-  
-  <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>2.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  </span></span></span><!--[endif]-->Two Node-1<o:p></o:p></p>
-  
-  <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>3.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  </span></span></span><!--[endif]-->Three Node-1<o:p></o:p></p>
-  `;
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]-->One Node-1<o:p></o:p></p>
+    
+    <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>2.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]-->Two Node-1<o:p></o:p></p>
+    
+    <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>3.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]-->Three Node-1<o:p></o:p></p>`;
+    rteObj.value = '<p>2</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -112,12 +108,13 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Node-1</p></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol>`;
-      if (allElem[0].parentElement.innerHTML.trim() !== expectedElem) {
+      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Node-1</p></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol><p>2</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
+      (rteObj as any).inputElement.blur();
       expect(expected).toBe(true);
       done();
     }, 100);
@@ -130,32 +127,28 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       •	Three Node-3
       •	Four Node-3
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Node-3<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level2 lfo1'><!--[if !supportLists]--><span style='font-family:&quot;Courier New&quot;;mso-fareast-font-family:&quot;Courier New&quot;'><span style='mso-list:Ignore'>o<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Node-3<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:2.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level4 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Three Node-3<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Four Node-3<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Four Node-3<o:p></o:p></p>`;
+    rteObj.value = '<p>3</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -164,10 +157,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-3</p><ul level="2" style="list-style: square;"><li style="list-style: square;"><p>Two Node-3</p><ul><li style="list-style-type: none;"><ul level="4" style="list-style: disc;"><li style="list-style: disc;"><p>Three Node-3</p></li></ul></li></ul></li></ul></li><li><p>Four Node-3</p></li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim() !== expectedElem) {
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-3</p><ul level="2" style="list-style: square;"><li style="list-style: square;"><p>Two Node-3</p><ul><li style="list-style-type: none;"><ul level="4" style="list-style: disc;"><li style="list-style: disc;"><p>Three Node-3</p></li></ul></li></ul></li></ul></li><li><p>Four Node-3</p></li></ul><p>3</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -182,29 +175,25 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         o	Three Node-4
       2.	Four Node-4
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Node-4<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level2 lfo1'><!--[if !supportLists]--><span style='font-family:&quot;Courier New&quot;;mso-fareast-font-family:&quot;Courier New&quot;'><span style='mso-list:Ignore'>o<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Node-4<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level2 lfo1'><!--[if !supportLists]--><span style='font-family:&quot;Courier New&quot;;mso-fareast-font-family:&quot;Courier New&quot;'><span style='mso-list:Ignore'>o<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Three Node-4<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>2.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Four Node-4<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Four Node-4<o:p></o:p></p>`;
+    rteObj.value = '<p>4</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -213,10 +202,10 @@ auto;text-indent:-.25in;mso-list:l0 level2 lfo1'><!--[if !supportLists]--><span 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Node-4</p><ul level="2" style="list-style: square;"><li style="list-style: square;"><p>Two Node-4</p></li><li><p>Three Node-4</p></li></ul></li><li><p>Four Node-4</p></li></ol>`;
-      if (allElem[0].parentElement.innerHTML.trim() !== expectedElem) {
+      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Node-4</p><ul level="2" style="list-style: square;"><li style="list-style: square;"><p>Two Node-4</p></li><li><p>Three Node-4</p></li></ul></li><li><p>Four Node-4</p></li></ol><p>4</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -237,49 +226,39 @@ auto;text-indent:-.25in;mso-list:l0 level2 lfo1'><!--[if !supportLists]--><span 
       1.	Eight Separate Type-5
       2.	Nine Separate Type-5
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Type-5<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l1 level2 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>a.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Type-5<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.5in;mso-add-space:
 auto;text-indent:-1.5in;mso-text-indent-alt:-9.0pt;mso-list:l1 level3 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'><span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span>i.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Three Type-5<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l1 level2 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>b.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Four Type-5<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>2.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Five Type-5<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>3.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Six Type-5<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='margin-left:1.0in;mso-add-space:auto;
 text-indent:-.25in;mso-list:l1 level2 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>a.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Seven Type-5<o:p></o:p></p>
-
 <p class='MsoNormal'><o:p>&nbsp;</o:p></p>
-
 <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo2'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Eight Separate Type-5<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo2'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>2.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Nine Separate Type-5<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Nine Separate Type-5<o:p></o:p></p>`;
+    rteObj.value = '<p>5</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -288,10 +267,10 @@ text-indent:-.25in;mso-list:l1 level2 lfo1'><!--[if !supportLists]--><span style
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Type-5</p><ol level="2" style="list-style: lower-alpha;"><li style="list-style: lower-alpha;"><p>Two Type-5</p><ol level="3" style="list-style: lower-roman;"><li style="list-style: lower-roman;"><p>Three Type-5</p></li></ol></li><li><p>Four Type-5</p></li></ol></li><li><p>Five Type-5</p></li><li><p>Six Type-5</p><ol level="2" style="list-style: lower-alpha;"><li style="list-style: lower-alpha;"><p>Seven Type-5</p></li></ol></li></ol><br><ol level="1" style="list-style: decimal;"><li><p>Eight Separate Type-5</p></li><li><p>Nine Separate Type-5</p></li></ol>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Type-5</p><ol level="2" style="list-style: lower-alpha;"><li style="list-style: lower-alpha;"><p>Two Type-5</p><ol level="3" style="list-style: lower-roman;"><li style="list-style: lower-roman;"><p>Three Type-5</p></li></ol></li><li><p>Four Type-5</p></li></ol></li><li><p>Five Type-5</p></li><li><p>Six Type-5</p><ol level="2" style="list-style: lower-alpha;"><li style="list-style: lower-alpha;"><p>Seven Type-5</p></li></ol></li></ol><p><br></p><ol level="1" style="list-style: decimal;"><li><p>Eight Separate Type-5</p></li><li><p>Nine Separate Type-5</p></li></ol><p>5</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -306,31 +285,27 @@ text-indent:-.25in;mso-list:l1 level2 lfo1'><!--[if !supportLists]--><span style
       •	Three Node-6
     2.	Four Node-6
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Node-6<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:.75in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level1 lfo2'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Node-6<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:.75in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level1 lfo2'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Three Node-6<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>2.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Four Node-6<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Four Node-6<o:p></o:p></p>`;
+    rteObj.value = '<p>6</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -339,10 +314,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Node-6</p></li></ol><ul level="1"><li><p>Two Node-6</p></li><li><p>Three Node-6</p></li></ul><ol level="1"><li><p>Four Node-6</p></li></ol>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Node-6</p></li></ol><ul level="1"><li><p>Two Node-6</p></li><li><p>Three Node-6</p></li></ul><ol level="1"><li><p>Four Node-6</p></li></ol><p>6</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -359,40 +334,34 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         o	Five Node-7
       •	Six Node-7
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Node-7<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Node-7<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:2.5in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level5 lfo1'><!--[if !supportLists]--><span style='font-family:&quot;Courier New&quot;;mso-fareast-font-family:&quot;Courier New&quot;'><span style='mso-list:Ignore'>o<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Three Node-7<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:3.5in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level7 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Four Node-7<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l1 level2 lfo2'><!--[if !supportLists]--><span style='font-family:&quot;Courier New&quot;;mso-fareast-font-family:&quot;Courier New&quot;'><span style='mso-list:Ignore'>o<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Five Node-7<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Six Node-7<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Six Node-7<o:p></o:p></p>`;
+    rteObj.value = '<p>7</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -401,10 +370,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-7</p></li><li><p>Two Node-7</p><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul level="5" style="list-style: square;"><li style="list-style: square;"><p>Three Node-7</p><ul><li style="list-style-type: none;"><ul level="7" style="list-style: disc;"><li style="list-style: disc;"><p>Four Node-7</p></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li><ul level="2" style="list-style: square;"><li><p>Five Node-7</p></li></ul><li><p>Six Node-7</p></li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-7</p></li><li><p>Two Node-7</p><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul level="5" style="list-style: square;"><li style="list-style: square;"><p>Three Node-7</p><ul><li style="list-style-type: none;"><ul level="7" style="list-style: disc;"><li style="list-style: disc;"><p>Four Node-7</p></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul></li><ul level="2" style="list-style: square;"><li><p>Five Node-7</p></li></ul><li><p>Six Node-7</p></li></ul><p>7</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -421,41 +390,35 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
             •	Five Node-8
       •	Six Node-8
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Node-8<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Node-8<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:2.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level4 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Three Node-8<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:2.5in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level5 lfo1'><!--[if !supportLists]--><span style='font-family:&quot;Courier New&quot;;mso-fareast-font-family:&quot;Courier New&quot;'><span style='mso-list:Ignore'>o<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Four Node -8<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:2.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l0 level4 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Five Node-8<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Six Node-8<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Six Node-8<o:p></o:p></p>`;
+    rteObj.value = '<p>8</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -464,10 +427,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-8</p></li><li><p>Two Node-8</p><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul level="4" style="list-style: disc;"><li style="list-style: disc;"><p>Three Node-8</p><ul level="5" style="list-style: square;"><li style="list-style: square;"><p>Four Node -8</p></li></ul></li><li><p>Five Node-8</p></li></ul></li></ul></li></ul></li><li><p>Six Node-8</p></li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-8</p></li><li><p>Two Node-8</p><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul level="4" style="list-style: disc;"><li style="list-style: disc;"><p>Three Node-8</p><ul level="5" style="list-style: square;"><li style="list-style: square;"><p>Four Node -8</p></li></ul></li><li><p>Five Node-8</p></li></ul></li></ul></li></ul></li><li><p>Six Node-8</p></li></ul><p>8</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -482,30 +445,26 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
           2.	Three Node-9
       •	Four Node-9
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l1 level1 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Node-9<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l1 level2 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Node-9<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='margin-left:1.0in;mso-add-space:
 auto;text-indent:-.25in;mso-list:l1 level2 lfo1'><!--[if !supportLists]--><span style='mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin'><span style='mso-list:Ignore'>2.<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Three Node-9<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo2'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Four Node-9<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Four Node-9<o:p></o:p></p>`;
+    rteObj.value = '<p>9</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -514,10 +473,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Node-9</p><ol level="2" style="list-style: lower-alpha;"><li style="list-style: lower-alpha;"><p>Two Node-9</p></li><li><p>Three Node-9</p></li></ol></li></ol><ul level="1" style="list-style: disc;"><li><p>Four Node-9</p></li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ol level="1" style="list-style: decimal;"><li><p>One Node-9</p><ol level="2" style="list-style: lower-alpha;"><li style="list-style: lower-alpha;"><p>Two Node-9</p></li><li><p>Three Node-9</p></li></ol></li></ol><ul level="1" style="list-style: disc;"><li><p>Four Node-9</p></li></ul><p>9</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -531,27 +490,24 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       •	Two Node-10
       •	Three Node-10
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Node-10<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l0 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Node-10<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Three Node-10<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Three Node-10<o:p></o:p></p>`;
+    rteObj.value = '<p>10</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -560,10 +516,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-10</p></li><li><p>Two Node-10</p></li><li><p>Three Node-10</p></li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-10</p></li><li><p>Two Node-10</p></li><li><p>Three Node-10</p></li></ul><p>10</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -577,27 +533,25 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       •	Two Node-10
       •	Three Node-10
     */
-    let localElem: string = `
-    <p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+    let localElem: string = `<p class='MsoListParagraphCxSpFirst' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->One Node-10<o:p></o:p></p>
 <h2></h2>
 <p class='MsoListParagraphCxSpMiddle' style='text-indent:-.25in;mso-list:l0 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Two Node-10<o:p></o:p></p>
-
 <p class='MsoListParagraphCxSpLast' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
 Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><!--[endif]-->Three Node-10<o:p></o:p></p>
-  `;
+</span></span></span><!--[endif]-->Three Node-10<o:p></o:p></p>`;
+    rteObj.value = '<p>11</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -606,10 +560,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-10</p></li></ul><ul level="1" style="list-style: disc;"><li><p>Two Node-10</p></li><li><p>Three Node-10</p></li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>One Node-10</p></li></ul><ul level="1" style="list-style: disc;"><li><p>Two Node-10</p></li><li><p>Three Node-10</p></li></ul><p>11</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -623,17 +577,16 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       •	Two Node-10
       •	Three Node-10
     */
-    let localElem: string = `
-    <ul level="1" style="list-style: disc;"><li>One Node-10</li></ul><h2></h2><ul level="1" style="list-style: disc;"><li>Two Node-10</li><li>Three Node-10</li></ul>
-  `;
+    let localElem: string = `<ul level="1" style="list-style: disc;"><li>One Node-10</li></ul><h2></h2><ul level="1" style="list-style: disc;"><li>Two Node-10</li><li>Three Node-10</li></ul>`;
+    rteObj.value = '<p>12</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -642,10 +595,10 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li>One Node-10</li></ul><h2></h2><ul level="1" style="list-style: disc;"><li>Two Node-10</li><li>Three Node-10</li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li>One Node-10</li></ul><ul level="1" style="list-style: disc;"><li>Two Node-10</li><li>Three Node-10</li></ul><p>12</p>`;
+      if (pastedElem !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -654,262 +607,7 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
   });
 
   it('MSWord content with list inside table', (done) => {
-    let localElem: string = `<html>    
-    <head>    
-    <style>
-    <!--
-     /* Font Definitions */
-     @font-face
-      {font-family:"Cambria Math";
-      panose-1:2 4 5 3 5 4 6 3 2 4;
-      mso-font-charset:0;
-      mso-generic-font-family:roman;
-      mso-font-pitch:variable;
-      mso-font-signature:3 0 0 0 1 0;}
-    @font-face
-      {font-family:Calibri;
-      panose-1:2 15 5 2 2 2 4 3 2 4;
-      mso-font-charset:0;
-      mso-generic-font-family:swiss;
-      mso-font-pitch:variable;
-      mso-font-signature:-536858881 -1073732485 9 0 511 0;}
-     /* Style Definitions */
-     p.MsoNormal, li.MsoNormal, div.MsoNormal
-      {mso-style-unhide:no;
-      mso-style-qformat:yes;
-      mso-style-parent:"";
-      margin-top:0in;
-      margin-right:0in;
-      margin-bottom:8.0pt;
-      margin-left:0in;
-      line-height:107%;
-      mso-pagination:widow-orphan;
-      font-size:11.0pt;
-      font-family:"Calibri",sans-serif;
-      mso-ascii-font-family:Calibri;
-      mso-ascii-theme-font:minor-latin;
-      mso-fareast-font-family:Calibri;
-      mso-fareast-theme-font:minor-latin;
-      mso-hansi-font-family:Calibri;
-      mso-hansi-theme-font:minor-latin;
-      mso-bidi-font-family:"Times New Roman";
-      mso-bidi-theme-font:minor-bidi;}
-    p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
-      {mso-style-priority:34;
-      mso-style-unhide:no;
-      mso-style-qformat:yes;
-      margin-top:0in;
-      margin-right:0in;
-      margin-bottom:8.0pt;
-      margin-left:.5in;
-      mso-add-space:auto;
-      line-height:107%;
-      mso-pagination:widow-orphan;
-      font-size:11.0pt;
-      font-family:"Calibri",sans-serif;
-      mso-ascii-font-family:Calibri;
-      mso-ascii-theme-font:minor-latin;
-      mso-fareast-font-family:Calibri;
-      mso-fareast-theme-font:minor-latin;
-      mso-hansi-font-family:Calibri;
-      mso-hansi-theme-font:minor-latin;
-      mso-bidi-font-family:"Times New Roman";
-      mso-bidi-theme-font:minor-bidi;}
-    p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
-      {mso-style-priority:34;
-      mso-style-unhide:no;
-      mso-style-qformat:yes;
-      mso-style-type:export-only;
-      margin-top:0in;
-      margin-right:0in;
-      margin-bottom:0in;
-      margin-left:.5in;
-      margin-bottom:.0001pt;
-      mso-add-space:auto;
-      line-height:107%;
-      mso-pagination:widow-orphan;
-      font-size:11.0pt;
-      font-family:"Calibri",sans-serif;
-      mso-ascii-font-family:Calibri;
-      mso-ascii-theme-font:minor-latin;
-      mso-fareast-font-family:Calibri;
-      mso-fareast-theme-font:minor-latin;
-      mso-hansi-font-family:Calibri;
-      mso-hansi-theme-font:minor-latin;
-      mso-bidi-font-family:"Times New Roman";
-      mso-bidi-theme-font:minor-bidi;}
-    p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
-      {mso-style-priority:34;
-      mso-style-unhide:no;
-      mso-style-qformat:yes;
-      mso-style-type:export-only;
-      margin-top:0in;
-      margin-right:0in;
-      margin-bottom:0in;
-      margin-left:.5in;
-      margin-bottom:.0001pt;
-      mso-add-space:auto;
-      line-height:107%;
-      mso-pagination:widow-orphan;
-      font-size:11.0pt;
-      font-family:"Calibri",sans-serif;
-      mso-ascii-font-family:Calibri;
-      mso-ascii-theme-font:minor-latin;
-      mso-fareast-font-family:Calibri;
-      mso-fareast-theme-font:minor-latin;
-      mso-hansi-font-family:Calibri;
-      mso-hansi-theme-font:minor-latin;
-      mso-bidi-font-family:"Times New Roman";
-      mso-bidi-theme-font:minor-bidi;}
-    p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
-      {mso-style-priority:34;
-      mso-style-unhide:no;
-      mso-style-qformat:yes;
-      mso-style-type:export-only;
-      margin-top:0in;
-      margin-right:0in;
-      margin-bottom:8.0pt;
-      margin-left:.5in;
-      mso-add-space:auto;
-      line-height:107%;
-      mso-pagination:widow-orphan;
-      font-size:11.0pt;
-      font-family:"Calibri",sans-serif;
-      mso-ascii-font-family:Calibri;
-      mso-ascii-theme-font:minor-latin;
-      mso-fareast-font-family:Calibri;
-      mso-fareast-theme-font:minor-latin;
-      mso-hansi-font-family:Calibri;
-      mso-hansi-theme-font:minor-latin;
-      mso-bidi-font-family:"Times New Roman";
-      mso-bidi-theme-font:minor-bidi;}
-    .MsoChpDefault
-      {mso-style-type:export-only;
-      mso-default-props:yes;
-      font-family:"Calibri",sans-serif;
-      mso-ascii-font-family:Calibri;
-      mso-ascii-theme-font:minor-latin;
-      mso-fareast-font-family:Calibri;
-      mso-fareast-theme-font:minor-latin;
-      mso-hansi-font-family:Calibri;
-      mso-hansi-theme-font:minor-latin;
-      mso-bidi-font-family:"Times New Roman";
-      mso-bidi-theme-font:minor-bidi;}
-    .MsoPapDefault
-      {mso-style-type:export-only;
-      margin-bottom:8.0pt;
-      line-height:107%;}
-    @page WordSection1
-      {size:8.5in 11.0in;
-      margin:1.0in 1.0in 1.0in 1.0in;
-      mso-header-margin:.5in;
-      mso-footer-margin:.5in;
-      mso-paper-source:0;}
-    div.WordSection1
-      {page:WordSection1;}
-     /* List Definitions */
-     @list l0
-      {mso-list-id:1271623225;
-      mso-list-type:hybrid;
-      mso-list-template-ids:-1412529100 67698703 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
-    @list l0:level1
-      {mso-level-tab-stop:none;
-      mso-level-number-position:left;
-      text-indent:-.25in;}
-    @list l0:level2
-      {mso-level-number-format:alpha-lower;
-      mso-level-tab-stop:none;
-      mso-level-number-position:left;
-      text-indent:-.25in;}
-    @list l0:level3
-      {mso-level-number-format:roman-lower;
-      mso-level-tab-stop:none;
-      mso-level-number-position:right;
-      text-indent:-9.0pt;}
-    @list l0:level4
-      {mso-level-tab-stop:none;
-      mso-level-number-position:left;
-      text-indent:-.25in;}
-    @list l0:level5
-      {mso-level-number-format:alpha-lower;
-      mso-level-tab-stop:none;
-      mso-level-number-position:left;
-      text-indent:-.25in;}
-    @list l0:level6
-      {mso-level-number-format:roman-lower;
-      mso-level-tab-stop:none;
-      mso-level-number-position:right;
-      text-indent:-9.0pt;}
-    @list l0:level7
-      {mso-level-tab-stop:none;
-      mso-level-number-position:left;
-      text-indent:-.25in;}
-    @list l0:level8
-      {mso-level-number-format:alpha-lower;
-      mso-level-tab-stop:none;
-      mso-level-number-position:left;
-      text-indent:-.25in;}
-    @list l0:level9
-      {mso-level-number-format:roman-lower;
-      mso-level-tab-stop:none;
-      mso-level-number-position:right;
-      text-indent:-9.0pt;}
-    ol
-      {margin-bottom:0in;}
-    ul
-      {margin-bottom:0in;}
-    -->
-    </style>
-    <!--[if gte mso 10]>
-    <style>
-     /* Style Definitions */
-     table.MsoNormalTable
-      {mso-style-name:"Table Normal";
-      mso-tstyle-rowband-size:0;
-      mso-tstyle-colband-size:0;
-      mso-style-noshow:yes;
-      mso-style-priority:99;
-      mso-style-parent:"";
-      mso-padding-alt:0in 5.4pt 0in 5.4pt;
-      mso-para-margin-top:0in;
-      mso-para-margin-right:0in;
-      mso-para-margin-bottom:8.0pt;
-      mso-para-margin-left:0in;
-      line-height:107%;
-      mso-pagination:widow-orphan;
-      font-size:11.0pt;
-      font-family:"Calibri",sans-serif;
-      mso-ascii-font-family:Calibri;
-      mso-ascii-theme-font:minor-latin;
-      mso-hansi-font-family:Calibri;
-      mso-hansi-theme-font:minor-latin;
-      mso-bidi-font-family:"Times New Roman";
-      mso-bidi-theme-font:minor-bidi;}
-    table.MsoTableGrid
-      {mso-style-name:"Table Grid";
-      mso-tstyle-rowband-size:0;
-      mso-tstyle-colband-size:0;
-      mso-style-priority:39;
-      mso-style-unhide:no;
-      border:solid windowtext 1.0pt;
-      mso-border-alt:solid windowtext .5pt;
-      mso-padding-alt:0in 5.4pt 0in 5.4pt;
-      mso-border-insideh:.5pt solid windowtext;
-      mso-border-insidev:.5pt solid windowtext;
-      mso-para-margin:0in;
-      mso-para-margin-bottom:.0001pt;
-      mso-pagination:widow-orphan;
-      font-size:11.0pt;
-      font-family:"Calibri",sans-serif;
-      mso-ascii-font-family:Calibri;
-      mso-ascii-theme-font:minor-latin;
-      mso-hansi-font-family:Calibri;
-      mso-hansi-theme-font:minor-latin;
-      mso-bidi-font-family:"Times New Roman";
-      mso-bidi-theme-font:minor-bidi;}
-    </style>
-    <![endif]-->
-    </head>    
+    let localElem: string = `<html></head>    
     <body lang=EN-US style='tab-interval:.5in'>
     <!--StartFragment-->    
     <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
@@ -970,20 +668,16 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
       <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
       normal'><b><span style='font-size:14.0pt'><o:p>&nbsp;</o:p></span></b></p>
-      </td>
-     </tr>
-    </table>    
-    <!--EndFragment-->
-    </body>    
-    </html>`;
+      </td></tr></table><!--EndFragment--></body></html>`;
+    rteObj.value = '<p>13</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -992,7 +686,7 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
       let expectedElem: string = `<table border="1" cellspacing="0" cellpadding="0" style="border:none;"><tbody><tr><td width="54" valign="top" style="width:40.25pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
       normal;"><b><span style="font-size:14.0pt;">No.</span></b></p></td><td width="186" valign="top" style="width:139.5pt;border:solid windowtext 1.0pt;
@@ -1003,12 +697,12 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
       normal;"><b><span style="font-size:14.0pt;">Past participle form</span></b></p></td></tr><tr><td width="54" valign="top" style="width:40.25pt;border:solid windowtext 1.0pt;
       border-top:none;
-      padding:0in 5.4pt 0in 5.4pt;"><ol level="1"><li><p><span style="font-size:14.0pt;">&nbsp;</span></p></li></ol></td><td width="186" valign="top" style="width:139.5pt;border-top:none;border-left:
+      padding:0in 5.4pt 0in 5.4pt;"><ol level="1" style="list-style: decimal;"><li><p><span style="font-size:14.0pt;">&nbsp;</span></p></li></ol></td><td width="186" valign="top" style="width:139.5pt;border-top:none;border-left:
       none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
       normal;"><span style="font-size:14.0pt;">Bring</span></p></td><td width="174" valign="top" style="width:130.5pt;border-top:none;border-left:
       none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><br></td><td width="210" valign="top" style="width:157.25pt;border-top:none;border-left:
-      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><br></td></tr></tbody></table>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><br></td></tr></tbody></table><p>13</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -1224,17 +918,16 @@ ul
 <p class=MsoNormal>List Sample Content<o:p></o:p></p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 <ul style='margin-top:0in' type=disc><li class=MsoListParagraph style='margin-left:0in;mso-list:l0 level1 lfo1'>List1<o:p></o:p></li><li class=MsoListParagraph style='margin-left:0in;mso-list:l0 level1 lfo1'>List2<o:p></o:p></li><li class=MsoListParagraph style='margin-left:0in;mso-list:l0 level1 lfo1'>List3<o:p></o:p></li></ul>
-<!--EndFragment-->
-</body>
-</html>`;
+<!--EndFragment--></body></html>`;
+    rteObj.value = '<p>14</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -1243,10 +936,10 @@ ul
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p style="margin:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">List Sample Content</p><br><ul type="disc" style="margin-bottom:0in;margin-top:0in;"><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List1</li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List2</li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List3</li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') === expectedElem) {
+      let expectedElem: string = `<p style="margin:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">List Sample Content</p><p><br></p><ul type="disc" style="margin-bottom:0in;margin-top:0in;"><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List1</li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List2</li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List3</li></ul><p>14</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') === expectedElem) {
         expected = true;
       }
       expect(expected).toBe(true);
@@ -1258,16 +951,8 @@ ul
     let localElem: string = `<html xmlns:v="urn:schemas-microsoft-com:vml"
     xmlns:o="urn:schemas-microsoft-com:office:office"
     xmlns:x="urn:schemas-microsoft-com:office:excel"
-    xmlns="http://www.w3.org/TR/REC-html40">
-    
+    xmlns="http://www.w3.org/TR/REC-html40">    
     <head>
-    <meta http-equiv=Content-Type content="text/html; charset=utf-8">
-    <meta name=ProgId content=Excel.Sheet>
-    <meta name=Generator content="Microsoft Excel 15">
-    <link id=Main-File rel=Main-File
-    href="file:///C:/Users/REVANT~2/AppData/Local/Temp/msohtmlclip1/01/clip.htm">
-    <link rel=File-List
-    href="file:///C:/Users/REVANT~2/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">
     <style>
     <!--table
       {mso-displayed-decimal-separator:"\.";
@@ -1331,10 +1016,8 @@ ul
       border:.5pt solid black;}
     -->
     </style>
-    </head>
-    
+    </head> 
     <body link="#0563C1" vlink="#954F72">
-    
     <table border=0 cellpadding=0 cellspacing=0 width=425 style='border-collapse:
      collapse;width:319pt'>
     <!--StartFragment-->
@@ -1359,20 +1042,16 @@ ul
       <td class=xl66 align=right style='border-top:none;border-left:none'>42</td>
       <td class=xl67 align=right style='border-top:none;border-left:none'>0</td>
      </tr>
-    <!--EndFragment-->
-    </table>
-    
-    </body>
-    
-    </html>`;
+    <!--EndFragment--></table></body></html>`;
+    rteObj.value = '<p>15</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -1381,11 +1060,11 @@ ul
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
       let expectedElem: string = `<table border="0" cellpadding="0" cellspacing="0" width="425"><tbody><tr height="19"><td height="19" width="233">Hauptansicht
-      mit Panelverwaltung</td><td align="right" width="64">10</td><td align="right" width="64">84</td><td align="right" width="64">0</td></tr><tr height="19"><td height="19">Bericht</td><td align="right">20</td><td align="right">168</td><td align="right">0</td></tr><tr height="19"><td height="19">Filterauswahl</td><td align="right">5</td><td align="right">42</td><td align="right">0</td></tr></tbody></table>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') === expectedElem) {
+      mit Panelverwaltung</td><td align="right" width="64">10</td><td align="right" width="64">84</td><td align="right" width="64">0</td></tr><tr height="19"><td height="19">Bericht</td><td align="right">20</td><td align="right">168</td><td align="right">0</td></tr><tr height="19"><td height="19">Filterauswahl</td><td align="right">5</td><td align="right">42</td><td align="right">0</td></tr></tbody></table><p>15</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') === expectedElem) {
         expected = true;
       }
       expect(expected).toBe(true);
@@ -1394,8 +1073,7 @@ ul
   });
 
   it('EJ2-26590 - Pasting Content from word does prompt the paste dialog', (done) => {
-    let localElem: string = `
-    <p class='MsoListParagraph' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-ascii-font-family:Calibri;mso-fareast-font-family:Calibri;
+    let localElem: string = `<p class='MsoListParagraph' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-ascii-font-family:Calibri;mso-fareast-font-family:Calibri;
 mso-hansi-font-family:Calibri;mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>-<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><!--[endif]-->Para 1 <o:p></o:p></p>
 <p class='MsoNormal'><o:p>&nbsp;</o:p></p>
@@ -1411,18 +1089,16 @@ mso-hansi-font-family:Calibri;mso-bidi-font-family:Calibri'><span style='mso-lis
   </td>
   <td width='312' valign='top' style='width:233.75pt;border:solid windowtext 1.0pt; border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
   <p class='MsoNormal' style='margin-bottom:0in;margin-bottom:.0001pt;line-height:normal'>T-3 <o:p></o:p></p>
-  </td>
- </tr></tbody>
-</table>
-  `;
+  </td></tr></tbody></table>`;
+    rteObj.value = '<p>16</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -1431,10 +1107,10 @@ mso-hansi-font-family:Calibri;mso-bidi-font-family:Calibri'><span style='mso-lis
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>Para 1 </p></li></ul><br><h1>Head 1 </h1><table border="1" cellspacing="0" cellpadding="0" style="border:none;"><tbody><tr><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:1.0in;margin-bottom:.0001pt;line-height:normal;">T-1</p></td><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt;border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-2</p></td><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt; border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-3 </p></td></tr></tbody></table>`
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>Para 1 </p></li></ul><p><br></p><h1>Head 1 </h1><table border="1" cellspacing="0" cellpadding="0" style="border:none;"><tbody><tr><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:1.0in;margin-bottom:.0001pt;line-height:normal;">T-1</p></td><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt;border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-2</p></td><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt; border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-3 </p></td></tr></tbody></table><p>16</p>`
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -1443,12 +1119,7 @@ mso-hansi-font-family:Calibri;mso-bidi-font-family:Calibri'><span style='mso-lis
   });
 
   it('Paste from Word feature', (done) => {
-    let localElem: string = `
-    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-<meta name='ProgId' content='Word.Document'>
-<meta name='Generator' content='Microsoft Word 15'>
-<meta name='Originator' content='Microsoft Word 15'>
-<style>
+    let localElem: string = `<style>
 <!--
  /* Font Definitions */
  @font-face
@@ -1603,26 +1274,20 @@ div.WordSection1
 	mso-bidi-theme-font:minor-bidi;}
 </style>
 <![endif]-->
-
-
-
 <!--StartFragment-->
-
 <h1>Heading 1<o:p></o:p></h1>
-
 <p class='MsoNormal'>Normal Text content <span style='color:red'>red color </span><span style='color:yellow'>yellow color </span><span style='font-size:23.0pt;
 line-height:107%'>font size 23</span> <b style='mso-bidi-font-weight:normal'>bold
-text</b> <i style='mso-bidi-font-style:normal'>italic text</i> <span style='font-family:Algerian'>font family text</span> <o:p></o:p></p>
-
-<!--EndFragment-->`;
+text</b> <i style='mso-bidi-font-style:normal'>italic text</i> <span style='font-family:Algerian'>font family text</span> <o:p></o:p></p><!--EndFragment-->`;
+    rteObj.value = '<p>17</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -1631,12 +1296,12 @@ text</b> <i style='mso-bidi-font-style:normal'>italic text</i> <span style='font
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
       let expectedElem: string = `<h1 style="margin-top:12.0pt;margin-right:0in;margin-bottom:0in;margin-left:0in;margin-bottom:.0001pt;line-height:107%;font-size:16.0pt;font-family:'Calibri Light',sans-serif;color:#2F5496;font-weight:normal;">Heading 1</h1><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:'Calibri',sans-serif;">Normal Text content <span style="color:red;">red color </span><span style="color:yellow;">yellow color </span><span style="font-size:23.0pt;
 line-height:107%;">font size 23</span><b>bold
-text</b><i>italic text</i><span style="font-family:Algerian;">font family text</span></p>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+text</b><i>italic text</i><span style="font-family:Algerian;">font family text</span></p><p>17</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -1649,7 +1314,6 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     xmlns:w='urn:schemas-microsoft-com:office:word'
     xmlns:m='http://schemas.microsoft.com/office/2004/12/omml'
     xmlns='http://www.w3.org/TR/REC-html40'>
-    
     <head>
     <style>
     <!--
@@ -1743,33 +1407,23 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     </style>
     <![endif]-->
     </head>
-    
     <body lang=EN-US style='tab-interval:.5in'>
     <!--StartFragment-->
-    
     <p class=MsoNormal>Tab<o:p></o:p></p>
-    
     <p class=MsoNormal style='text-indent:.5in'>Tab 1<o:p></o:p></p>
-    
     <p class=MsoNormal style='margin-left:.5in;text-indent:.5in'>Tab 2<o:p></o:p></p>
-    
     <p class=MsoNormal style='margin-left:1.0in;text-indent:.5in'>Tab 3<o:p></o:p></p>
-    
     <p class=MsoNormal style='margin-left:1.5in;text-indent:.5in'>Tab 4<o:p></o:p></p>
-    
-    <!--EndFragment-->
-    </body>
-    
-    </html>
-    `;
+    <!--EndFragment--></body></html>`;
+    rteObj.value = '<p>18</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -1778,10 +1432,10 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<p>Tab</p><p style="text-indent:.5in;">Tab 1</p><p style="margin-left:.5in;text-indent:.5in;">Tab 2</p><p style="margin-left:1.0in;text-indent:.5in;">Tab 3</p><p style="margin-left:1.5in;text-indent:.5in;">Tab 4</p>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<p>Tab</p><p style="text-indent:.5in;">Tab 1</p><p style="margin-left:.5in;text-indent:.5in;">Tab 2</p><p style="margin-left:1.0in;text-indent:.5in;">Tab 3</p><p style="margin-left:1.5in;text-indent:.5in;">Tab 4</p><p>18</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -1794,9 +1448,7 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     xmlns:w='urn:schemas-microsoft-com:office:word'
     xmlns:m='http://schemas.microsoft.com/office/2004/12/omml'
     xmlns='http://www.w3.org/TR/REC-html40'>
-    
-    <head>
-    <style>
+    <head><style>
     <!--
      /* Font Definitions */
      @font-face
@@ -1888,29 +1540,21 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     </style>
     <![endif]-->
     </head>
-    
     <body lang=EN-US style='tab-interval:.5in'>
     <!--StartFragment-->
-    
     <p class=MsoNormal>First line to left<o:p></o:p></p>
-    
     <p class=MsoNormal align=right style='text-align:right'>Second line to right<o:p></o:p></p>
-    
     <p class=MsoNormal>Third line to left<o:p></o:p></p>
-    
-    <!--EndFragment-->
-    </body>
-    
-    </html>
-    `;
+    <!--EndFragment--></body></html>`;
+    rteObj.value = '<p>19</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -1919,10 +1563,10 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<p>First line to left</p><p align="right" style="text-align:right;">Second line to right</p><p>Third line to left</p>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+      let expectedElem: string = `<p>First line to left</p><p align="right" style="text-align:right;">Second line to right</p><p>Third line to left</p><p>19</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -1935,641 +1579,7 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     xmlns:w="urn:schemas-microsoft-com:office:word"
     xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
     xmlns="http://www.w3.org/TR/REC-html40">
-    
-    <head>
-    <meta http-equiv=Content-Type content="text/html; charset=utf-8">
-    <meta name=ProgId content=Word.Document>
-    <meta name=Generator content="Microsoft Word 15">
-    <meta name=Originator content="Microsoft Word 15">
-    <link rel=File-List
-    href="file:///C:/Users/REVANT~2/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">
-    <!--[if gte mso 9]><xml>
-     <o:OfficeDocumentSettings>
-      <o:AllowPNG/>
-     </o:OfficeDocumentSettings>
-    </xml><![endif]-->
-    <link rel=themeData
-    href="file:///C:/Users/REVANT~2/AppData/Local/Temp/msohtmlclip1/01/clip_themedata.thmx">
-    <link rel=colorSchemeMapping
-    href="file:///C:/Users/REVANT~2/AppData/Local/Temp/msohtmlclip1/01/clip_colorschememapping.xml">
-    <!--[if gte mso 9]><xml>
-     <w:WordDocument>
-      <w:View>Normal</w:View>
-      <w:Zoom>0</w:Zoom>
-      <w:TrackMoves/>
-      <w:TrackFormatting/>
-      <w:PunctuationKerning/>
-      <w:ValidateAgainstSchemas/>
-      <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
-      <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
-      <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
-      <w:DoNotPromoteQF/>
-      <w:LidThemeOther>EN-US</w:LidThemeOther>
-      <w:LidThemeAsian>X-NONE</w:LidThemeAsian>
-      <w:LidThemeComplexScript>X-NONE</w:LidThemeComplexScript>
-      <w:Compatibility>
-       <w:BreakWrappedTables/>
-       <w:SnapToGridInCell/>
-       <w:WrapTextWithPunct/>
-       <w:UseAsianBreakRules/>
-       <w:DontGrowAutofit/>
-       <w:SplitPgBreakAndParaMark/>
-       <w:EnableOpenTypeKerning/>
-       <w:DontFlipMirrorIndents/>
-       <w:OverrideTableStyleHps/>
-      </w:Compatibility>
-      <m:mathPr>
-       <m:mathFont m:val="Cambria Math"/>
-       <m:brkBin m:val="before"/>
-       <m:brkBinSub m:val="&#45;-"/>
-       <m:smallFrac m:val="off"/>
-       <m:dispDef/>
-       <m:lMargin m:val="0"/>
-       <m:rMargin m:val="0"/>
-       <m:defJc m:val="centerGroup"/>
-       <m:wrapIndent m:val="1440"/>
-       <m:intLim m:val="subSup"/>
-       <m:naryLim m:val="undOvr"/>
-      </m:mathPr></w:WordDocument>
-    </xml><![endif]--><!--[if gte mso 9]><xml>
-     <w:LatentStyles DefLockedState="false" DefUnhideWhenUsed="false"
-      DefSemiHidden="false" DefQFormat="false" DefPriority="99"
-      LatentStyleCount="375">
-      <w:LsdException Locked="false" Priority="0" QFormat="true" Name="Normal"/>
-      <w:LsdException Locked="false" Priority="9" QFormat="true" Name="heading 1"/>
-      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="heading 2"/>
-      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="heading 3"/>
-      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="heading 4"/>
-      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="heading 5"/>
-      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="heading 6"/>
-      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="heading 7"/>
-      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="heading 8"/>
-      <w:LsdException Locked="false" Priority="9" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="heading 9"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 5"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 6"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 7"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 8"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index 9"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 1"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 2"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 3"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 4"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 5"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 6"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 7"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 8"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" Name="toc 9"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Normal Indent"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="footnote text"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="annotation text"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="header"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="footer"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="index heading"/>
-      <w:LsdException Locked="false" Priority="35" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="caption"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="table of figures"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="envelope address"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="envelope return"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="footnote reference"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="annotation reference"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="line number"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="page number"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="endnote reference"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="endnote text"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="table of authorities"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="macro"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="toa heading"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Bullet"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Number"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List 5"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Bullet 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Bullet 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Bullet 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Bullet 5"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Number 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Number 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Number 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Number 5"/>
-      <w:LsdException Locked="false" Priority="10" QFormat="true" Name="Title"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Closing"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Signature"/>
-      <w:LsdException Locked="false" Priority="1" SemiHidden="true"
-       UnhideWhenUsed="true" Name="Default Paragraph Font"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Body Text"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Body Text Indent"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Continue"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Continue 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Continue 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Continue 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="List Continue 5"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Message Header"/>
-      <w:LsdException Locked="false" Priority="11" QFormat="true" Name="Subtitle"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Salutation"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Date"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Body Text First Indent"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Body Text First Indent 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Note Heading"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Body Text 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Body Text 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Body Text Indent 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Body Text Indent 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Block Text"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Hyperlink"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="FollowedHyperlink"/>
-      <w:LsdException Locked="false" Priority="22" QFormat="true" Name="Strong"/>
-      <w:LsdException Locked="false" Priority="20" QFormat="true" Name="Emphasis"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Document Map"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Plain Text"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="E-mail Signature"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Top of Form"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Bottom of Form"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Normal (Web)"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Acronym"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Address"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Cite"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Code"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Definition"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Keyboard"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Preformatted"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Sample"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Typewriter"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="HTML Variable"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Normal Table"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="annotation subject"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="No List"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Outline List 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Outline List 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Outline List 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Simple 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Simple 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Simple 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Classic 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Classic 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Classic 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Classic 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Colorful 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Colorful 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Colorful 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Columns 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Columns 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Columns 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Columns 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Columns 5"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Grid 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Grid 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Grid 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Grid 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Grid 5"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Grid 6"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Grid 7"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Grid 8"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table List 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table List 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table List 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table List 4"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table List 5"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table List 6"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table List 7"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table List 8"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table 3D effects 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table 3D effects 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table 3D effects 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Contemporary"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Elegant"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Professional"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Subtle 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Subtle 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Web 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Web 2"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Web 3"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Balloon Text"/>
-      <w:LsdException Locked="false" Priority="39" Name="Table Grid"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Table Theme"/>
-      <w:LsdException Locked="false" SemiHidden="true" Name="Placeholder Text"/>
-      <w:LsdException Locked="false" Priority="1" QFormat="true" Name="No Spacing"/>
-      <w:LsdException Locked="false" Priority="60" Name="Light Shading"/>
-      <w:LsdException Locked="false" Priority="61" Name="Light List"/>
-      <w:LsdException Locked="false" Priority="62" Name="Light Grid"/>
-      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1"/>
-      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2"/>
-      <w:LsdException Locked="false" Priority="65" Name="Medium List 1"/>
-      <w:LsdException Locked="false" Priority="66" Name="Medium List 2"/>
-      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1"/>
-      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2"/>
-      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3"/>
-      <w:LsdException Locked="false" Priority="70" Name="Dark List"/>
-      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading"/>
-      <w:LsdException Locked="false" Priority="72" Name="Colorful List"/>
-      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid"/>
-      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 1"/>
-      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 1"/>
-      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 1"/>
-      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 1"/>
-      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 1"/>
-      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 1"/>
-      <w:LsdException Locked="false" SemiHidden="true" Name="Revision"/>
-      <w:LsdException Locked="false" Priority="34" QFormat="true"
-       Name="List Paragraph"/>
-      <w:LsdException Locked="false" Priority="29" QFormat="true" Name="Quote"/>
-      <w:LsdException Locked="false" Priority="30" QFormat="true"
-       Name="Intense Quote"/>
-      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 1"/>
-      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 1"/>
-      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 1"/>
-      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 1"/>
-      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 1"/>
-      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 1"/>
-      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 1"/>
-      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 1"/>
-      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 2"/>
-      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 2"/>
-      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 2"/>
-      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 2"/>
-      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 2"/>
-      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 2"/>
-      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 2"/>
-      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 2"/>
-      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 2"/>
-      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 2"/>
-      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 2"/>
-      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 2"/>
-      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 2"/>
-      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 2"/>
-      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 3"/>
-      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 3"/>
-      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 3"/>
-      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 3"/>
-      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 3"/>
-      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 3"/>
-      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 3"/>
-      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 3"/>
-      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 3"/>
-      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 3"/>
-      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 3"/>
-      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 3"/>
-      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 3"/>
-      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 3"/>
-      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 4"/>
-      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 4"/>
-      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 4"/>
-      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 4"/>
-      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 4"/>
-      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 4"/>
-      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 4"/>
-      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 4"/>
-      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 4"/>
-      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 4"/>
-      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 4"/>
-      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 4"/>
-      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 4"/>
-      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 4"/>
-      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 5"/>
-      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 5"/>
-      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 5"/>
-      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 5"/>
-      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 5"/>
-      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 5"/>
-      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 5"/>
-      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 5"/>
-      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 5"/>
-      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 5"/>
-      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 5"/>
-      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 5"/>
-      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 5"/>
-      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 5"/>
-      <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 6"/>
-      <w:LsdException Locked="false" Priority="61" Name="Light List Accent 6"/>
-      <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 6"/>
-      <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 6"/>
-      <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 6"/>
-      <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 6"/>
-      <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 6"/>
-      <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 6"/>
-      <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 6"/>
-      <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 6"/>
-      <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 6"/>
-      <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 6"/>
-      <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 6"/>
-      <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 6"/>
-      <w:LsdException Locked="false" Priority="19" QFormat="true"
-       Name="Subtle Emphasis"/>
-      <w:LsdException Locked="false" Priority="21" QFormat="true"
-       Name="Intense Emphasis"/>
-      <w:LsdException Locked="false" Priority="31" QFormat="true"
-       Name="Subtle Reference"/>
-      <w:LsdException Locked="false" Priority="32" QFormat="true"
-       Name="Intense Reference"/>
-      <w:LsdException Locked="false" Priority="33" QFormat="true" Name="Book Title"/>
-      <w:LsdException Locked="false" Priority="37" SemiHidden="true"
-       UnhideWhenUsed="true" Name="Bibliography"/>
-      <w:LsdException Locked="false" Priority="39" SemiHidden="true"
-       UnhideWhenUsed="true" QFormat="true" Name="TOC Heading"/>
-      <w:LsdException Locked="false" Priority="41" Name="Plain Table 1"/>
-      <w:LsdException Locked="false" Priority="42" Name="Plain Table 2"/>
-      <w:LsdException Locked="false" Priority="43" Name="Plain Table 3"/>
-      <w:LsdException Locked="false" Priority="44" Name="Plain Table 4"/>
-      <w:LsdException Locked="false" Priority="45" Name="Plain Table 5"/>
-      <w:LsdException Locked="false" Priority="40" Name="Grid Table Light"/>
-      <w:LsdException Locked="false" Priority="46" Name="Grid Table 1 Light"/>
-      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2"/>
-      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3"/>
-      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4"/>
-      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark"/>
-      <w:LsdException Locked="false" Priority="51" Name="Grid Table 6 Colorful"/>
-      <w:LsdException Locked="false" Priority="52" Name="Grid Table 7 Colorful"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="Grid Table 1 Light Accent 1"/>
-      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 1"/>
-      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 1"/>
-      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 1"/>
-      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 1"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="Grid Table 6 Colorful Accent 1"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="Grid Table 7 Colorful Accent 1"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="Grid Table 1 Light Accent 2"/>
-      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 2"/>
-      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 2"/>
-      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 2"/>
-      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 2"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="Grid Table 6 Colorful Accent 2"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="Grid Table 7 Colorful Accent 2"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="Grid Table 1 Light Accent 3"/>
-      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 3"/>
-      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 3"/>
-      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 3"/>
-      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 3"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="Grid Table 6 Colorful Accent 3"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="Grid Table 7 Colorful Accent 3"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="Grid Table 1 Light Accent 4"/>
-      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 4"/>
-      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 4"/>
-      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 4"/>
-      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 4"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="Grid Table 6 Colorful Accent 4"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="Grid Table 7 Colorful Accent 4"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="Grid Table 1 Light Accent 5"/>
-      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 5"/>
-      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 5"/>
-      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 5"/>
-      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 5"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="Grid Table 6 Colorful Accent 5"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="Grid Table 7 Colorful Accent 5"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="Grid Table 1 Light Accent 6"/>
-      <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 6"/>
-      <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 6"/>
-      <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 6"/>
-      <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 6"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="Grid Table 6 Colorful Accent 6"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="Grid Table 7 Colorful Accent 6"/>
-      <w:LsdException Locked="false" Priority="46" Name="List Table 1 Light"/>
-      <w:LsdException Locked="false" Priority="47" Name="List Table 2"/>
-      <w:LsdException Locked="false" Priority="48" Name="List Table 3"/>
-      <w:LsdException Locked="false" Priority="49" Name="List Table 4"/>
-      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark"/>
-      <w:LsdException Locked="false" Priority="51" Name="List Table 6 Colorful"/>
-      <w:LsdException Locked="false" Priority="52" Name="List Table 7 Colorful"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="List Table 1 Light Accent 1"/>
-      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 1"/>
-      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 1"/>
-      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 1"/>
-      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 1"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="List Table 6 Colorful Accent 1"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="List Table 7 Colorful Accent 1"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="List Table 1 Light Accent 2"/>
-      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 2"/>
-      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 2"/>
-      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 2"/>
-      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 2"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="List Table 6 Colorful Accent 2"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="List Table 7 Colorful Accent 2"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="List Table 1 Light Accent 3"/>
-      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 3"/>
-      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 3"/>
-      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 3"/>
-      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 3"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="List Table 6 Colorful Accent 3"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="List Table 7 Colorful Accent 3"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="List Table 1 Light Accent 4"/>
-      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 4"/>
-      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 4"/>
-      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 4"/>
-      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 4"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="List Table 6 Colorful Accent 4"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="List Table 7 Colorful Accent 4"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="List Table 1 Light Accent 5"/>
-      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 5"/>
-      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 5"/>
-      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 5"/>
-      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 5"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="List Table 6 Colorful Accent 5"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="List Table 7 Colorful Accent 5"/>
-      <w:LsdException Locked="false" Priority="46"
-       Name="List Table 1 Light Accent 6"/>
-      <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 6"/>
-      <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 6"/>
-      <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 6"/>
-      <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 6"/>
-      <w:LsdException Locked="false" Priority="51"
-       Name="List Table 6 Colorful Accent 6"/>
-      <w:LsdException Locked="false" Priority="52"
-       Name="List Table 7 Colorful Accent 6"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Mention"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Smart Hyperlink"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Hashtag"/>
-      <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-       Name="Unresolved Mention"/>
-     </w:LatentStyles>
-    </xml><![endif]-->
-    <style>
+    <head><style>
     <!--
      /* Font Definitions */
      @font-face
@@ -2716,25 +1726,19 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     </style>
     <![endif]-->
     </head>
-    
     <body lang=EN-US style='tab-interval:.5in'>
     <!--StartFragment-->
-    
-    <h2>Heading2<o:p></o:p></h2>
-    
-    <!--EndFragment-->
-    </body>
-    
-    </html>
-    `;
+    <h2 class=MsoNormal>Heading2<o:p></o:p></h2>
+    <!--EndFragment--></body></html>`;
+    rteObj.value = '<p>20</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -2743,10 +1747,10 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<h2>Heading2</h2>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') === expectedElem) {
+      let expectedElem: string = `<h2>Heading2</h2><p>20</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') === expectedElem) {
         expected = true;
       }
       expect(expected).toBe(true);
@@ -2759,7 +1763,6 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     xmlns:w='urn:schemas-microsoft-com:office:word'
     xmlns:m='http://schemas.microsoft.com/office/2004/12/omml'
     xmlns='http://www.w3.org/TR/REC-html40'>
-    
     <head>
     <style>
     <!--
@@ -3028,27 +2031,22 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     </style>
     <![endif]-->
     </head>
-    
     <body lang=EN-US style='tab-interval:.5in'>
     <!--StartFragment-->
-    
     <p class=MsoListParagraphCxSpFirst style='text-indent:-.25in;mso-list:l0 level1 lfo1'><![if !supportLists]><span
     style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
     Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt 'Times New Roman''>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </span></span></span><![endif]>List 1 with <span style='font-size:26.0pt;
     line-height:107%'>font size</span><o:p></o:p></p>
-    
     <p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in;mso-list:l0 level1 lfo1'><![if !supportLists]><span
     style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
     Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt 'Times New Roman''>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </span></span></span><![endif]>List 2 with <span style='color:red'>font color</span><o:p></o:p></p>
-    
     <p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in;mso-list:l0 level1 lfo1'><![if !supportLists]><span
     style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
     Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt 'Times New Roman''>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </span></span></span><![endif]>List 3 with <span style='font-family:Algerian'>font
-    family</span><o:p></o:p></p>
-    
+    family</span><o:p></o:p></p>    
     <p class=MsoListParagraphCxSpLast style='text-indent:-.25in;mso-list:l0 level1 lfo1'><![if !supportLists]><span
     style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
     Symbol;color:white;mso-style-textoutline-type:solid;mso-style-textoutline-fill-color:
@@ -3074,21 +2072,16 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
     mso-effects-shadow-alpha:100.0%;mso-effects-shadow-dpiradius:0pt;mso-effects-shadow-dpidistance:
     3.0pt;mso-effects-shadow-angledirection:2700000;mso-effects-shadow-align:topleft;
     mso-effects-shadow-pctsx:100.0%;mso-effects-shadow-pctsy:100.0%;mso-effects-shadow-anglekx:
-    0;mso-effects-shadow-angleky:0'><o:p></o:p></span></b></p>
-    
-    <!--EndFragment-->
-    </body>
-    
-    </html>
-    `;
+    0;mso-effects-shadow-angleky:0'><o:p></o:p></span></b></p><!--EndFragment--></body></html>`;
+    rteObj.value = '<p>21</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -3097,13 +2090,13 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
       let expectedElem: string = `<ul level="1"><li><p>List 1 with <span style="font-size:26.0pt;
     line-height:107%;">font size</span></p></li><li><p>List 2 with <span style="color:red;">font color</span></p></li><li><p>List 3 with <span style="font-family:Algerian;">font
     family</span></p></li><li><p>List
-    4 with <span style="background:yellow;">background color</span></p></li></ul>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+    4 with <span style="background:yellow;">background color</span></p></li></ul><p>21</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);
@@ -3228,7 +2221,7 @@ text</b><i>italic text</i><span style="font-family:Algerian;">font family text</
 \\ipgp0\\itap0\\li0\\ri0\\sb0\\sa0}}{\\*\\rsidtbl \\rsid2709252\\rsid3551130}{\\mmathPr\\mmathFont34\\mbrkBin0\\mbrkBinSub0\\msmallFrac0\\mdispDef1\\mlMargin0\\mrMargin0\\mdefJc1\\mwrapIndent1440\\mintLim0\\mnaryLim1}{\\*\\xmlnstbl {\\xmlns1 http://schemas.microsoft.com/office/wo
 rd/2003/wordml}}\\paperw12240\\paperh15840\\margl1440\\margr1440\\margt1440\\margb1440\\gutter0\\ltrsect 
 \\widowctrl\\ftnbj\\aenddoc\\trackmoves0\\trackformatting1\\donotembedsysfont1\\relyonvml0\\donotembedlingdata0\\grfdocevents0\\validatexml1\\showplaceholdtext0\\ignoremixedcontent0\\saveinvalidxml0\\showxmlerrors1\\noxlattoyen
-\\expshrtn\\noultrlspc\\dntblnsbdb\\nospaceforul\\formshade\\horzdoc\\dgmargin\\dghspace180\\dgvspace180\\dghorigin300\\dgvorigin0\\dghshow1\\dgvshow1
+\\expshrtn\\noultrlspc\\dntblnsbdb\\nospaceforul\\formshade\\horzdoc\\dgmargin\\dghspace180\\dgvspace180\\dghorigin100\\dgvorigin0\\dghshow1\\dgvshow1
 \\jexpand\\pgbrdrhead\\pgbrdrfoot\\splytwnine\\ftnlytwnine\\htmautsp\\nolnhtadjtbl\\useltbaln\\alntblind\\lytcalctblwd\\lyttblrtgr\\lnbrkrule\\nobrkwrptbl\\snaptogridincell\\allowfieldendsel\\wrppunct\\asianbrkrule\\rsidroot3551130
 \\newtblstyruls\\nogrowautofit\\usenormstyforlist\\noindnmbrts\\felnbrelev\\nocxsptable\\indrlsweleven\\noafcnsttbl\\afelev\\utinl\\hwelev\\spltpgpar\\notcvasp\\notbrkcnstfrctbl\\notvatxbx\\krnprsnet\\cachedcolbal \\nouicompat \\fet0{\\*\\wgrffmtfilter 2450}
 \\nofeaturethrottle1\\ilfomacatclnup0\\ltrpar \\sectd \\ltrsect\\linex0\\endnhere\\sectdefaultcl\\sftnbj {\\*\\pnseclvl1\\pnucrm\\pnstart1\\pnindent720\\pnhang {\\pntxta .}}{\\*\\pnseclvl2\\pnucltr\\pnstart1\\pnindent720\\pnhang {\\pntxta .}}{\\*\\pnseclvl3
@@ -3238,13 +2231,13 @@ rd/2003/wordml}}\\paperw12240\\paperh15840\\margl1440\\margr1440\\margt1440\\mar
 \\ltrch\\fcs0 \\insrsid3551130  INCLUDEPICTURE "cid:image001.png@01D56274.7F955880" \\\\* MERGEFORMATINET }}{\\fldrslt {\\rtlch\\fcs1 \\af37 \\ltrch\\fcs0 \\insrsid3551130 {\\*\\shppict{\\pict{\\*\\picprop\\shplid1025{\\sp{\\sn shapeType}{\\sv 75}}{\\sp{\\sn fFlipH}{\\sv 0}}
 {\\sp{\\sn fFlipV}{\\sv 0}}{\\sp{\\sn pibName}{\\sv cid:image001.png@01D56274.7F955880}}{\\sp{\\sn pibFlags}{\\sv 74}}{\\sp{\\sn fLine}{\\sv 0}}{\\sp{\\sn wzName}{\\sv Picture 1}}{\\sp{\\sn fLayoutInCell}{\\sv 1}}}
 \\picscalex150\\picscaley150\\piccropl0\\piccropr0\\piccropt0\\piccropb0\\picw2258\\pich2258\\picwgoal1280\\pichgoal1280\\pngblip\\bliptag897655604{\\*\\blipuid 3581233405128f118ef6f8b80321bbf2}
-89504e470d0a1a0a0000000d4948445200000080000000800803000000f4e091f90000006c504c5445ffffff030303353535cececefcfcfc0b0b0bededed8888
+89504e470d0a1a0a0000000d4948445200000080000000800801000000f4e091f90000006c504c5445ffffff030303353535cececefcfcfc0b0b0bededed8888
 88f9f9f93e3e3ee1e1e14c4c4c1d1d1d232323f3f3f3171717797979292929c3c3c36a6a6a5e5e5e949494585858b4b4b4a6a6a6c9c9c9323232464646111111
-646464bababa7c7c7cd8d8d8aaaaaa8e8e8e9d9d9d2a07e730000003d949444154789ced5adbb6aa300c6cbc00a27847515151ffff1f775a6029d0a32904fa70
+646464bababa7c7c7cd8d8d8aaaaaa8e8e8e9d9d9d2a07e710000003d949444154789ced5adbb6aa100c6cbc00a27847515151ffff1f775a6029d0a32904fa70
 3a2fdbbd16d0c0b4d3641a211c1c1c1c1c1c1c1cba616b3b80fdc4eef81e1ced0690c0d56e007348ad72104c016e36034800606733803d06b0b2c8816400c0a2
 141c01a656394006e6000b6b1c4c5280c42607371cdc9b59e460870c881820b234fe6405108bd01e075bc98010c8c1da4e00c8c00cff3cad7110490684e2e064
 63fc130e1cca1f234b1cac730684f02d71800cf8ea87e4603cfcf8e3920121ce5638b8039c8b9fc8c166f800ce2503426436389083661fc1dc870ea0f2d9fd37
-1d83a1b2f82d70505b7a1f136220d43680fbe01cd4b6c0ca941c028d2460333007713d155d0fccc1a59e087e08f310f0a05112468372f06a1664c8c168b800b0
+1d83a1b2f82d70505b7a1f136220d43680fbe01cd4b6c0ca941c028d2460331007713d155d0fccc1a59e087e08f310f0a05112468372f06a1664c8c168b800b0
 1aa9db02a72139f0b01e6b1823c8c193e1d94b59ef12b00aea772207e98880d9affc3199b61a5f786b52e4e7ece747c8466dc62746b0d6dd5947b0265f5a8d60
 fc0db85fc1826ae7dcb0e88211e7a48e25b1738f7cbd875207e9836b780fd72d4c63a37b7c19f27ec932fe6d81cfda98662ca7a8cd5d1a047739a576c6534a2c
 0ff2bb751617b5a8d276866e623873b4cf48f11997b6f359454f5e3b1ae45fb1c336d956120ae4f3a85bedde4112263e70aca4d69210ceb8b44449c2d5f4451e
@@ -3256,11 +2249,11 @@ ada5eb3bc20bc18d8aba89f777f8b400faab0f289e2806c09649d54172855132f67d05403a9b4870
 c72750e5606146703776ecca9372e599acfea1f48fb71dc3cd41d1ab205edf1d9f0f49e06dec900c8414c7e72d09bc8d1d79afc2966213dc0a49e06dec900742
 f9cbfd364ad4224d5fac8d1dea488ceef8e492c0d9d8210f054d1c9f5c1280ef40fbacddf5bf40394453360ec6a0cd7bbee2a17215a6c60ee5379a3a3ea13af8
 e1e1e0dccaf1519acdd2d811e6898f395012580eb4fdd68e0f4a020707870e09ee93e13075d2e9c0a2db6987838383838383c3ff813f76bb29ecdb4237f40000000049454e44ae426082}}{\\nonshppict{\\pict\\picscalex100\\picscaley100\\piccropl0\\piccropr0\\piccropt0\\piccropb0
-\\picw3387\\pich3387\\picwgoal1920\\pichgoal1920\\wmetafile8\\bliptag897655604{\\*\\blipuid 3581233405128f118ef6f8b80321bbf2}0100090000034a22000000002122000000000400000003010800050000000b0200000000050000000c0281008100030000001e00040000000701040004000000
+\\picw3387\\pich3387\\picwgoal1920\\pichgoal1920\\wmetafile8\\bliptag897655604{\\*\\blipuid 3581233405128f118ef6f8b80321bbf2}0100090000034a22000000002122000000000400000003010800050000000b0200000000050000000c0281008100010000001e00040000000701040004000000
 0701040021220000410b2000cc008000800000000000800080000000000028000000800000008000000001000800000000000000000000000000000000000000
-00000000000000000000ffffff00c3c3c3005e5e5e00fcfcfc00ededed0003030300b4b4b400a6a6a600646464004c4c4c0011111100f9f9f9000b0b0b00baba
-ba006a6a6a00171717001d1d1d003e3e3e009494940023232300e1e1e100797979008e8e8e00c9c9c9003535350088888800cecece00323232007c7c7c002929
-2900d8d8d800464646009d9d9d00f3f3f300aaaaaa00585858000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000ffffff00c3c3c1005e5e5e00fcfcfc00ededed0003030100b4b4b400a6a6a600646464004c4c4c0011111100f9f9f9000b0b0b00baba
+ba006a6a6a00171717001d1d1d003e3e3e009494940023232100e1e1e100797979008e8e8e00c9c9c9003535350088888800cecece00323232007c7c7c002929
+2900d8d8d800464646009d9d9d00f3f3f100aaaaaa00585858000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -3529,20 +2522,20 @@ ba006a6a6a00171717001d1d1d003e3e3e009494940023232300e1e1e100797979008e8e8e00c9c9
 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
 01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101
-01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101040000002701ffff030000000000}}}}}\\sectd \\ltrsect\\linex0\\endnhere\\sectdefaultcl\\sftnbj {\\rtlch\\fcs1 \\af37 
+01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101040000002701ffff010000000000}}}}}\\sectd \\ltrsect\\linex0\\endnhere\\sectdefaultcl\\sftnbj {\\rtlch\\fcs1 \\af37 
 \\ltrch\\fcs0 \\insrsid2709252 
-\\par }{\\*\\themedata 504b030414000600080000002100e9de0fbfff0000001c020000130000005b436f6e74656e745f54797065735d2e786d6cac91cb4ec3301045f748fc83e52d4a
+\\par }{\\*\\themedata 504b030414000600080000002100e9de0fbfff0000001c020000110000005b436f6e74656e745f54797065735d2e786d6cac91cb4ec3301045f748fc83e52d4a
 9cb2400825e982c78ec7a27cc0c8992416c9d8b2a755fbf74cd25442a820166c2cd933f79e3be372bd1f07b5c3989ca74aaff2422b24eb1b475da5df374fd9ad
 5689811a183c61a50f98f4babebc2837878049899a52a57be670674cb23d8e90721f90a4d2fa3802cb35762680fd800ecd7551dc18eb899138e3c943d7e503b6
 b01d583deee5f99824e290b4ba3f364eac4a430883b3c092d4eca8f946c916422ecab927f52ea42b89a1cd59c254f919b0e85e6535d135a8de20f20b8c12c3b0
-0c895fcf6720192de6bf3b9e89ecdbd6596cbcdd8eb28e7c365ecc4ec1ff1460f53fe813d3cc7f5b7f020000ffff0300504b030414000600080000002100a5d6
-a7e7c0000000360100000b0000005f72656c732f2e72656c73848fcf6ac3300c87ef85bd83d17d51d2c31825762fa590432fa37d00e1287f68221bdb1bebdb4f
+0c895fcf6720192de6bf3b9e89ecdbd6596cbcdd8eb28e7c365ecc4ec1ff1460f53fe813d3cc7f5b7f020000ffff0100504b030414000600080000002100a5d6
+a7e7c0000000360100000b0000005f72656c732f2e72656c73848fcf6ac3100c87ef85bd83d17d51d2c31825762fa590432fa37d00e1287f68221bdb1bebdb4f
 c7060abb0884a4eff7a93dfeae8bf9e194e720169aaa06c3e2433fcb68e1763dbf7f82c985a4a725085b787086a37bdbb55fbc50d1a33ccd311ba548b6309512
 0f88d94fbc52ae4264d1c910d24a45db3462247fa791715fd71f989e19e0364cd3f51652d73760ae8fa8c9ffb3c330cc9e4fc17faf2ce545046e37944c69e462
-a1a82fe353bd90a865aad41ed0b5b8f9d6fd010000ffff0300504b0304140006000800000021006b799616830000008a0000001c0000007468656d652f746865
+a1a82fe353bd90a865aad41ed0b5b8f9d6fd010000ffff0100504b0304140006000800000021006b799616810000008a0000001c0000007468656d652f746865
 6d652f7468656d654d616e616765722e786d6c0ccc4d0ac3201040e17da17790d93763bb284562b2cbaebbf600439c1a41c7a0d29fdbd7e5e38337cedf14d59b
 4b0d592c9c070d8a65cd2e88b7f07c2ca71ba8da481cc52c6ce1c715e6e97818c9b48d13df49c873517d23d59085adb5dd20d6b52bd521ef2cdd5eb9246a3d8b
-4757e8d3f729e245eb2b260a0238fd010000ffff0300504b0304140006000800000021007b43bc5d8d070000cf200000160000007468656d652f7468656d652f
+4757e8d3f729e245eb2b260a0238fd010000ffff0100504b0304140006000800000021007b43bc5d8d070000cf200000160000007468656d652f7468656d652f
 7468656d65312e786d6cec595f8b1bc9117f0fe43b0cf32eebdf8cfe2c960f692479cfdeb58d253bdc63afd49a696fcfb4e86eed5a1c86e07bca4b207077e425
 90b73c1cc71ddc418ebce4c3186c92cb874875cf68d42db5ecddc504137605cb4ceb57d5bfaeaaae2a75dffdec654abd0bcc056159cfafdfa9f91ece666c4eb2
 b8e73f9b8e2b1ddf131265734459867bfe1a0bffb37bbffdcd5d7424139c620fe43371847a7e22e5f2a85a15331846e20e5be20cbe5b309e2209af3caece39ba
@@ -3563,7 +2556,7 @@ be04197c6d1948eca6cc7b6d3345d49a601b3053045d862bdd8288e5fead882aae5a6ce5945bd89b
 ba1eb7622b655db3df3994528e77ba9c43b8ddde26627c4e3efdd6668856d9130cd5643f6fdd7636b79d8dff7fdfd91cdacfb7fdcca1aee3b69ff1a1cfb8ed67
 8a23968fd3cf6c5b18e86ed4b1477edca30f7fd283673f0b42e944ae293e11faf847c0af9af91806959c3ef7c4e559e032814755e660020b1773a4653ccee4ef
 884c26095ac21951dd574a6251a88e85b764028e8ef4b053b7c2d3557acae6f99167bdae8e37f3ca2a90dc8ed7c2721c8eab648e6eb5b7c778a57acd36d6c7ad
-1b024af63a248cc96c124d0789f6665019491fee82d11c24f4ca3e0a8bae834547a9dfb86a8f05502bbd023fbb3df8b1def3c3004440084ee5a0459f2b3fe5ae
+1b024af63a248cc96c124d0789f6665019491fee82d11c24f4ca3e0a8bae834547a9dfb86a8f05502bbd023fbb3df8b1def3c1004440084ee5a0459f2b3fe5ae
 de78573bf3637afa9031ad0880367b13015b4f7715d783cb53abcb43ed0a9eb64818e16693d096d10d9e48e0c770119d6af42a34aeebebeed6a5163d650a3d1f
 84d69646bbf33e1637f535c8ede6069a99998266de65cf6f35430899195af6fc051c1dc363ba84d811ea9717a231dcbfcc24cf37fc4d32cb920b394422c90dae
 934e9e0d522231f728497bbe5a7ee9069ae91ca2b9d51b90103e59725d482b9f1a3970baed64bc58e09934dd6e8c284be7af90e1f35ce1fc568bdf1cac24d90a
@@ -3573,13 +2566,13 @@ dbdde4ba9d3ea1ac1260f0d27e8eaa7b85826050db4e6651538cf7d3b0cad9c5a85d3b360bfc00b5
 438b4d5fa92dadefcecdeb6d76f60292c710badc159542bb12ce7739828668a27b923c6dc01679298bad014fde8a939eff652dec0751238c2ab54e38aa04cda0
 56e984fd66a51f86cdfa28acd78683c62b282c3249eb617e6f3f866b0cba2e6eeff5f8de0d7ebab9a9b933636995e91bfaaa26ae6ff0eb8dc337f81e81a4f365
 ab31ee36bb8356a5dbec8f2bc170d0a974a3d6a0326c45ede17818859deef895ef5d6870d06f46416bd4a9b4ea5154095a3545bfd3adb48346a31fb4fb9d51d0
-7f55b431b0f23c7d14b600f36a5ef7fe0b0000ffff0300504b0304140006000800000021000dd1909fb60000001b010000270000007468656d652f7468656d65
+7f55b431b0f23c7d14b600f36a5ef7fe0b0000ffff0100504b0304140006000800000021000dd1909fb60000001b010000270000007468656d652f7468656d65
 2f5f72656c732f7468656d654d616e616765722e786d6c2e72656c73848f4d0ac2301484f78277086f6fd3ba109126dd88d0add40384e4350d363f2451eced0d
 ae2c082e8761be9969bb979dc9136332de3168aa1a083ae995719ac16db8ec8e4052164e89d93b64b060828e6f37ed1567914b284d262452282e3198720e274a
 939cd08a54f980ae38a38f56e422a3a641c8bbd048f7757da0f19b017cc524bd62107bd5001996509affb3fd381a89672f1f165dfe514173d9850528a2c6cce0
-239baa4c04ca5bbabac4df000000ffff0300504b01022d0014000600080000002100e9de0fbfff0000001c020000130000000000000000000000000000000000
-5b436f6e74656e745f54797065735d2e786d6c504b01022d0014000600080000002100a5d6a7e7c0000000360100000b00000000000000000000000000300100
-005f72656c732f2e72656c73504b01022d00140006000800000021006b799616830000008a0000001c00000000000000000000000000190200007468656d652f
+239baa4c04ca5bbabac4df000000ffff0100504b01022d0014000600080000002100e9de0fbfff0000001c020000110000000000000000000000000000000000
+5b436f6e74656e745f54797065735d2e786d6c504b01022d0014000600080000002100a5d6a7e7c0000000360100000b00000000000000000000000000100100
+005f72656c732f2e72656c73504b01022d00140006000800000021006b799616810000008a0000001c00000000000000000000000000190200007468656d652f
 7468656d652f7468656d654d616e616765722e786d6c504b01022d00140006000800000021007b43bc5d8d070000cf2000001600000000000000000000000000
 d60200007468656d652f7468656d652f7468656d65312e786d6c504b01022d00140006000800000021000dd1909fb60000001b01000027000000000000000000
 00000000970a00007468656d652f7468656d652f5f72656c732f7468656d654d616e616765722e786d6c2e72656c73504b050600000000050005005d010000920b00000000}
@@ -3676,8 +2669,8 @@ d60200007468656d652f7468656d652f7468656d65312e786d6c504b01022d001400060008000000
 \\lsdpriority46 \\lsdlocked0 List Table 1 Light Accent 6;\\lsdpriority47 \\lsdlocked0 List Table 2 Accent 6;\\lsdpriority48 \\lsdlocked0 List Table 3 Accent 6;\\lsdpriority49 \\lsdlocked0 List Table 4 Accent 6;
 \\lsdpriority50 \\lsdlocked0 List Table 5 Dark Accent 6;\\lsdpriority51 \\lsdlocked0 List Table 6 Colorful Accent 6;\\lsdpriority52 \\lsdlocked0 List Table 7 Colorful Accent 6;\\lsdsemihidden1 \\lsdunhideused1 \\lsdlocked0 Mention;
 \\lsdsemihidden1 \\lsdunhideused1 \\lsdlocked0 Smart Hyperlink;\\lsdsemihidden1 \\lsdunhideused1 \\lsdlocked0 Hashtag;\\lsdsemihidden1 \\lsdunhideused1 \\lsdlocked0 Unresolved Mention;}}{\\*\\datastore 010500000200000018000000
-4d73786d6c322e534158584d4c5265616465722e362e3000000000000000000000060000
-d0cf11e0a1b11ae1000000000000000000000000000000003e000300feff090006000000000000000000000001000000010000000000000000100000feffffff00000000feffffff0000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+4d73786d6c322e534158584d4c5265616465722e362e1000000000000000000000060000
+d0cf11e0a1b11ae1000000000000000000000000000000003e000100feff090006000000000000000000000001000000010000000000000000100000feffffff00000000feffffff0000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -4972,17 +3965,17 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     \\lang1024\\langfe1024\\noproof\\langnp1033\\langfenp2052\\insrsid9312063\\charrsid9312063 {\\*\\shppict{\\pict{\\*\\picprop\\shplid1025{\\sp{\\sn shapeType}{\\sv 75}}{\\sp{\\sn fFlipH}{\\sv 0}}
     {\\sp{\\sn fFlipV}{\\sv 0}}{\\sp{\\sn fLockAgainstUngrouping}{\\sv 0}}{\\sp{\\sn fLockRotation}{\\sv 0}}{\\sp{\\sn fLockAspectRatio}{\\sv 1}}{\\sp{\\sn fLockPosition}{\\sv 0}}{\\sp{\\sn fLockAgainstSelect}{\\sv 0}}{\\sp{\\sn fLockCropping}{\\sv 0}}
     {\\sp{\\sn fLockVerticies}{\\sv 0}}{\\sp{\\sn fLockText}{\\sv 0}}{\\sp{\\sn fLockAdjustHandles}{\\sv 0}}{\\sp{\\sn fLockAgainstGrouping}{\\sv 0}}{\\sp{\\sn fLine}{\\sv 0}}{\\sp{\\sn wzName}{\\sv Picture 2}}{\\sp{\\sn metroBlob}{\\sv {\\*\\svb 
-    504b030414000600080000002100b18267b60a01000013020000130000005b436f6e74656e745f54797065735d2e786d6c9491c14ec3300c86ef48bc43942b6a53764008addd818e2320341e204adc36a271a23894eded49ba4d828921ed18dbdfef2fc972b5b5239b20907158f3dbb2e20c50396db0aff9fbe6a9b8e78ca2
-    442d478750f31d105f35d757cbcdce03b14423d57c88d13f08416a002ba9741e30753a17ac8ce9187ae1a5fa903d884555dd09e53002c622e60cde2c5be8e4e718d97a9bca7b138f3d678ffbb9bcaae6c6663ed7c59f4480914e10e9fd68948ce96e62427de2551c9cca44ce3334184f3749fccc86dcf9edf473c1817b498f
-    198c06f62a437c9636990b1d48c0c2b54e95ff6764494b85eb3aa3a06c03ad67eae8742e5bbb2f0c305d1ade26ec0da663ba98bfb4f9060000ffff0300504b03041400060008000000210038fd21ffd6000000940100000b0000005f72656c732f2e72656c73a490c16ac3300c86ef83bd83d17d719ac318a34e2fa3d06be9
+    504b030414000600080000002100b18267b60a01000013020000110000005b436f6e74656e745f54797065735d2e786d6c9491c14ec3100c86ef48bc43942b6a53764008addd818e2320341e204adc36a271a23894eded49ba4d828921ed18dbdfef2fc972b5b5239b20907158f3dbb2e20c50396db0aff9fbe6a9b8e78ca2
+    442d478750f31d105f35d757cbcdce03b14423d57c88d13f08416a002ba9741e30753a17ac8ce9187ae1a5fa903d884555dd09e51002c622e60cde2c5be8e4e718d97a9bca7b138f3d678ffbb9bcaae6c6663ed7c59f4480914e10e9fd68948ce96e62427de2551c9cca44ce3334184f3749fccc86dcf9edf473c1817b498f
+    198c06f62a437c9636990b1d48c0c2b54e95ff6764494b85eb3aa3a06c03ad67eae8742e5bbb2f0c305d1ade26ec0da663ba98bfb4f9060000ffff0100504b03041400060008000000210038fd21ffd6000000940100000b0000005f72656c732f2e72656c73a490c16ac3100c86ef83bd83d17d719ac318a34e2fa3d06be9
     1ec0d88a631a5b4632d9faf63383c1327adb51bfd0f7897f7ff84c8b5a91255236b0eb7a50981df9988381f7cbf1e90594549bbd5d28a3811b0a1cc6c787fd19175bdb91ccb1886a942c06e65acbabd6e2664c563a2a98db66224eb6b691832ed65d6d403df4fdb3e6df0c18374c75f206f8e40750975b69e63fec141d93d0
-    543b4749d33445778faa3d7de433ae8d62396035e059be43c6b56bcf81beefddfdd31bd89639ba23db846fe4b67e1ca8653f7abde972fc020000ffff0300504b030414000600080000002100c6b5e6a422020000670400000e0000006472732f65326f446f632e786d6ca4944b6fdb300cc7ef03f61d04dd5b3ff26866c4e9
+    543b4749d33445778faa3d7de433ae8d62396035e059be43c6b56bcf81beefddfdd31bd89639ba23db846fe4b67e1ca8653f7abde972fc020000ffff0100504b030414000600080000002100c6b5e6a422020000670400000e0000006472732f65326f446f632e786d6ca4944b6fdb100cc7ef03f61d04dd5b3ff26866c4e9
     61418701c316b41b7aa6653916aa1724398f6f3f4a76baecb4a13d38a648f9cf1f292aebfb9392e4c09d1746d7b4b8cd29e19a9956e87d4d7ffd7cb85951e203e816a4d1bca667eee9fde6e387f5d156bc34bd912d770445b4af8eb6a67d08b6ca32cf7aaec0df1acb35063be314045cba7dd63a38a2ba925999e7cbec685c
     6b9d61dc7bf46ec720dd24fdaee32cfce83acf0391355dcc57cb3925a1a6cbfcd312495d4deff222475f83bea22ce634dbaca1da3bb0bd601316bc814a81d008f12ab585006470e20d5256b030388e6a6855f84c5868bd436d1251ffa5a1c0bd0cf68619652188464811cea9fb13943eec04dbb991907d3fec1c116d4d4b4a
     34283c748cc6124819db8bdc55dc13bfc06516d77f093452d80721656c5fb427543cac7f0f87e93ac1f8d6b041711dc609715c22b5d1be17d6e3a1575c351cf1dcd7b618cfdb07c703eb63c20e133fe2d44432a85e0389f20f5864f636560cd5a9732abe313539d514c7ea1c7fd320f153200c9de55db958618461a858cc66
     e52cc631c1e563eb7cf8c28d22d1403424c0de4205876f7e62b96c896e9e261b4329f110b87beadb2369e4e01e014b5bce1639a6f398bac8f19a443ba69e6c907bbcac2c38ec8609cf22f44f3d583ca83c258d993e4b470e8097a691c05e4616697b189d73944c256209d3ee548eb9a0a4d51565eadfd8b1646203d396e9a6
-    c5eb71bd46fbfaff61f31b0000ffff0300504b03040a0000000000000021009ee4693ee8dc0000e8dc0000140000006472732f6d656469612f696d616765312e706e6789504e470d0a1a0a0000000d4948445200000280000001680806000001b0357ac7000000017352474200aece1ce90000000467414d410000b18f0bfc
-    6105000000097048597300000ec300000ec301c76fa8640000dc7d49444154785eecfd095c15e99def8fe7f6647273f3cfcde49f576e6e6e6732ffdc4cdfdc4c6ea6273799c964e6975fa6279349d2994ca7a72793a4d3e9a4d3ad9d6e7771c1051177dc1054440404115954544051944d05c105144576040459458403673f
+    c5eb71bd46fbfaff61f31b0000ffff0100504b03040a0000000000000021009ee4693ee8dc0000e8dc0000140000006472732f6d656469612f696d616765312e706e6789504e470d0a1a0a0000000d4948445200000280000001680806000001b0357ac7000000017352474200aece1ce90000000467414d410000b18f0bfc
+    6105000000097048597100000ec100000ec301c76fa8640000dc7d49444154785eecfd095c15e99def8fe7f6647273f3cfcde49f576e6e6e6732ffdc4cdfdc4c6ea6273799c964e6975fa6279349d2994ca7a72793a4d3e9a4d3ad9d6e7771c1051177dc1054440404115954544051944d05c105144576040459458403673f
     7cfef57daaea50e750e7705638709e373e56d5534f2de7a96f7debfb6cdfe723e07805cf402fe119e8253c03bd8467a097f00cf4129e815ee234033ff21171f7273ef109b6b4e7c2850b6c29a77bfdf5d7d93298709a81afbcf28ab426f2cd6f7e535a03befce52f4b6b22f3e6cdc3faf5eba5ade081bfc25e32e732d078f0
     3e349f4b84e5e1a0142362d85505cda7e2a52ddfe15206ae080dc3175e7ad9ad30156ac74c15d418fdd23169cd7d465f4a95d63c675666e0c8470e486bbe41f3f92469cd7d5ccac0274f9ea0afafcf269cccbf2aedf5cd0fa21fa13cbf1a96c62169cd96caca4a696d7ad06ab5d29a0f333023ebb4b4e519740ee5f9ebebeb
     a53d80e96287b4a68e2f33d0d23622ad39c6a30cf435e33d63d29a63349f4990d69ce34f09acadadb5099a4f1f712f030d3bab58061a226e4a31be816e642a5c550d4fbe958c7d9b164b5beed3a5d5e068d401ac8bcc926226e8e8e8b009744f6e4be0a3f967a535dfe1cb0c2409d40fdc83b1ef0e469aaf48b18e79fefc39
@@ -5007,7 +4000,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     737333ab1ca6f3d2f1049d83caf89ee865824ba08bb4d5a8d76ff20cf49219cf4079ec310d30a45790203388c2c58b1759dcb56b53d734cf145c02bd8467206746e102c89951b8007266142e809c19850b206746f14800e561c4caa1c4ce70351d27f8f08964c802262fc9cf1aad7fec631f63db723c4d9841ebcab1eeb49d
     9a2a0e46a07539adfd3ecedcc4270228d7e90f0f0fb3e5a73ef529b6941df4c942252f09ea91ae74b6a0dc4728f771e62e3e11407bc8310587e30a7e11400ec7557c268034e2561e75e6af401e1abc817c09ab9dd797810690c9a687bbd0b87ce6414231eb9eaf20470c637fedfe0c58fec6270248fdde6c275fff19427ffb
     32fee96f5ec6fbbf784311ef5d98aaafdc54509f0d3a4fc28e5064ecd8824b9971f8d586bd93aee36d70d6ffce94d706ed0f1c3ba99e6e342f4e1e633c9df84c00a76396075f08e074200ba0b9a26792eb2947500728b5be90d31d86ff6fba6abcb7c1519f4e9f0aa078b18728bd94876b7967b037211bd71f3d44dc81fdd6
-    1b39992f0ecfc8ce3e8fad1151b8d2aab1ba47783af01459d1bbd92857357c258074add493b9a87dd284e8a452943d3100860e6c3b51611dbb48f79a5f7a49b8ff3e441dccc3cd4ef1fe69e0a9230d47136cd37cfb9ef440a65e7639bbc270bbb70b51478fa2b8ae1746e3004a1a69e68f710c345e8359f83b7cf20a8a2f5e
+    1b39992f0ecfc8ce3e8fad1151b8d2aab1ba47783af01459d1bbd92857357c258074add493b9a87dd284e8a452943d3100860e6c3b51611dbb48f79a5f7a49b8ff3e441dccc3cd4ef1fe69e0a9230d47136cd37cfb9ef440a65e7639bbc270bbb70b51478fa2b8ae1746e1004a1a69e68f710c345e8359f83b7cf20a8a2f5e
     c6c1c8ed6818f0ec53ef12e4e7c3e09d29208f8aa6bef88ef2846b402f197d69723da5270278b3a25275e06e20402f95374cbb002e0fdf81f0a8445476096f767d3d52af8a858782ba11546645212ae43d14145e41e2a6f760ca6e619ec72cf5cf581a67f84200e589d889c17b69c8ddb692f96e9998db521cbcb62e2c9ec5
     ad094b4361a756da3f3109bb3361f144001f1cb39d913ad0181f9a3cf7074143ba5efdc637d0d9d9c99c4ed076d91ffd115b926f2cca27af0490cd939ed104c36eb14fb03c1f9c6e61295b1224808fe69f45a7709379555d482ca8474b5529de5b1e0efd48170a3c987f580d5f0b607e5a1813be1aed8460c52f5e8acac1a9
     67fbf7b500ca73e1ddaeaaf15b50c372bb0f0f0befaaa69f2a501e4c15c8c7854f34a07e4325f4e195d0be9acbaa0b0cdb6f432fd86ab42d6b40f9a232349c98e82c144716788baf0590c84f8b42447cb6d351bb6a287fa73d6e0ba0606fc90248145cb77d014669aaa9e111b63ee4815d462d54722b15411e5e9e7475b2a5
@@ -5019,9 +4012,9 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     d43ec1d445cb55c1b4174086b646b0111a91764f34f82316bfc91cb253057566e842bcffd636569d1415be90ed274ca7c51749c65cd5cf34abec3c7352668f996079e0bc40e14f1b306804d01ef6e0c8afa5b613f1f199d689be9de1c93c0a6a904f0f9af14989aa00fa01caec519599a10833cd37460dfd76c802a87fd681
     a4bdfb5176a79d6dfb82a015c0c5247c0e70240c376edc106cac5336a54fb5e04ae74afb7b9a4e0154a2f45baf44fb46beb4362180c97b62b072cb1eacd99e8693d11bb06c5d18ca6e7af75252c12e2805d015c8f9981212406a9fb447f65c2433f2b143d29a6302450065a85d74bc53ddeffff34f4e9e0a6eae10d0022823
     df2009a01ae4b9aee3fcd49f70258126804a8cc975d29a88d206a4e1ab292929d8b6e520728e6dc7bc450760d1f640d75d89555b762166eb662cff2004b1bb0f6057c245768c31b3892d09fdc68973514d01f9fba5a00f2d8731ee01f3074ceb14475f135a376535b37863ba3819107536a178c2b07fa22383dc0985e6d219
-    1f165dc6ea975cb57add57635608a00cf59c359bcdaa213f3f1f43ff2d9ed513aaedb70f745f4a02490095d03c14fe2c84cc34b34a009d2197829fffd7b849c2e50a812a808452008d4623929292b0654b2cf23376e38325b1300e3722efcc016c8fdd86e4f3a21fd4b4dc6c1c385686fda9e5080d0985aea712eba2275a5a
+    1f165dc6ea975cb57add57635608a00cf59c359bcdaa213f3f1f43ff2d9ed513aaedb70f745f4a02490095d03c14fe2c84cc34b34a009d2197829fffd7b849c2e50a812a808452008d4623929292b0654b2cf23376e38325b1100e3722efcc016c8fdd86e4f3a21fd4b4dc6c1c385686fda9e5080d0985aea712eba2275a5a
     74bf11bd82cb9a8c062691077436a3abde0ccbfda7a2f693b4276944599392a6240fe9dab7c4d628ea8647c7e9d7dc60e7a099c49866ad1bb49edf1133268054b94b3d613a858bd3924dd8e206f40309d96d7cf507e9ec9341db2cbebc1b3a41fd13946132f271962661a91861365b0470ae31831a508ba815ebf1ce1ad1a3
-    7065570deb592cf740ceac71fca0d4da7a95f580b290b9433008a03cf10485d07547f1e17bab6ce25adb6c27aa287cf0082b17fe16a1a16158b072351e4bf1be6c279e739f604f096401a4eeeb3b4b07e664787bff152e8044200b60b0e233016c6a6ac2f321b1c69d2ded83541bef4df0850052750e3b9f9fee91021740d7
+    7065570deb592cf740ceac71fca0d4da7a95f580b290b9431008a03cf10485d07547f1e17bab6ce25adb6c27aa287cf0082b17fe16a1a16158b072351e4bf1be6c279e739f604f096401a4eeeb3b4b07e664787bff152e8044200b60b0e233016c6a6ac2f321b1c69d2ded83541bef4df0850052750e3b9f9fee91021740d7
     f1890072389ec2059033a3cc0a01fcca5ffe0d0bfb0fd98e68e3cc7e7c2e8064ff504b853b1ea21a1bc5e61f19d98692cf410e7f5efcf3af636fccd4edbf9e40d751b3dba842d81decef5b468e8f8b13db7bedf7d3b67d9c1a8eee93e2ecefd53e4f95b8722d6fe9fdd53169cd39fc13ccf109ef9e7f059ae377305afa1168
     aebb2e565c0055a079c338cea1a90b6fdd9c182373e6cc19a4a5a561fdba75282a2ab25664efd9bd1b3131316c9dc6029db4f392c105d04f9c3a754a5ae338830b206746e102c89951b8007266142e809c19850b206746e102c89951b8007266142e809c19850b206746e102c89951b8007266142e809c19c56d01a489a5e5
     f0ce3bef48b1ce71c52b162738f14800dd850b20c7113e11401ac84c53351134d5fe97bef4259b74b200bef0c20b2c9e9cef102b57aeb4a6fbec673fcbd67b7a7ad8b6721f67eee29100ca41e657bffa15222323d93a09a08c9c8604f0ecd9b36c9d2041247ef0831fb0a592cf7ffef36ca9b68f33f7f04800ed510aa42301
@@ -5040,7 +4033,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     250da8fdf9445baebd00ce9bb71629fbc3c565741ceafa47a0efb98198d49b08df9e8bf48c7c1cdde55a614fed13fce449270bb45eb95dbd74ec0a9a4f4db49fab31e302d83958c32a7a8bbac46dfa24af5f92c42a7973b7adc4961df16e15507c298096f6a38249ff0886ca1d829dfb08a325deb79010ee684019a50086ed
     76fe50dd455d00bb58906d407f31e302e86b665a03525776a5e652c31501d47cdab6d94d298057efb5e14e4b3fd2d2d2a5bddee18a0de82f665c0049db1535d7b00a5f59d355268521aaa80499a1efb04a606d67215e5b188e9ac126963e2a9c9ac4d4996901d42fbb86d1af1c97b6d4994a00cd45a21327254a010cd91c8f
     dc43d188493e8103ab5648293c47cd06940750cd291bd0f2609035c5d987b1a36249cf5ba805464d00e52641737127c69f3a6e069405900a146af73955187be58c742611538658176a8f2b1ad01eb54288af50fb0453154c6bfb44358cbf985601a48764ea142bae47ca273c61d18f1cfc1f4770fcf8719611724745476168
-    68483a52143ac37ef19cb4ae397adfba2e57829300eac32a98001a921eb2fb60ebc25289bd06ac4c5a8288a83441ad76222a2282ad6b9bdd33c84998ed7196d986cdea0f5b2980daee1b58fb9b0f70e4a4709e71f72b9eed712480cd6ded734f00c785cf286131091a6244076d552253f35dbf380d8d46630df9f9f96c4e5e
+    68483a52143ac37ef19cb4ae397adfba2e57829100eac32a98001a921eb2fb60ebc25289bd06ac4c5a8288a83441ad76222a2282ad6b9bdd33c84998ed7196d986cdea0f5b2980daee1b58fb9b0f70e4a4709e71f72b9eed712480cd6ded734f00c785cf286131091a6244076d552253f35dbf380d8d46630df9f9f96c4e5e
     659c1c46471d0f170cc452f078f3738c0f4bddba051c65b6e69387a5b5c92805b0adbb0f05a557d0f47848b8df5e54961442d75b89aad222dc7ed08dd6fa0728a9105f445720e1a3cfad23419b330248c2e3099441252525d2d604c6943ae83754c2107b1fda5773a15f7703a3c71e40277d72696c8961afd88446de000cdb
     6fc3985cc7966ad80be060a3ed3523defa96b4e618358d27238f0351cbeca9ea10fdf909a666381a14a46c0bbe75eb160b73ae1e7069490ffafbfbd1faa80d2d9dfdace5f2a9460fea984dde13fa3b5bd0d42a08817e98a5b7a7a5a585b970b362547c824c962935e0b8d6b1e784c91a50cb7abe94340ea2f37e1e5b4fcbaf
     6695e68e18ef13afaffb75015bda433d9aed33db950a6ca500a6ecde86f88c3bd8b465138e46c560cf6eefc666d80b207d76bbbabb5998539f6025172f7a3f6086043933d3b66ece179f60ea3441e682bb41f77eb1742611cde793a4355b28b3b53f38c7d647bfee5a558acd27b86ec2761dd0d3ab2b8eabf094a012c09fa7
@@ -5063,7 +4056,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     b47005c8e1708216ae00391c4ed0c2152087c3095ab802e47038410b57801c0e2768e10a90c3e1042d5c0172389ca0852b400e8713b47005c8e17082966951806af3ef501818f0ddb47c1ff9c8476c46e672381cce544c8b0224e5e46fb802e47038eec2152087c3095a024601926b65391d2d878686d83af1faebafe3e31f
     ff387a7a7aa418e0dd77dfc5473ffa51696bb202a46df20e2643ebcafba0732ab7653ef5a94f61ebd6098fb2c3c3c32e1dc7e170661fd3f226bbaa30f6eddb87175e7801515151528c08291df2f96e8ff2bcb42e2bc0eddbb7e3e59727dc98cb7ce52b5fc19e3d7bd83a9d73d9b2656c5d099de795575e99148e1f3fcef63b
     3a8ec3e1cc3ea64d01a6a4a4a806194a235b78172e5cb0516ea4745e7bed357cfdeb5f67ee49656b4ea988685b6901525ab2e61e3c78c002ad539c8c2345b677ef5ea684e918e2d0a14393ee852b400e676e302d0ad05bb8d2e17038fe802b400e8713b4cc0a05c8e17038fe802b400ec75f982cb03c1c84e96c2b0c7baa61
-    88b809dd3b8562f8cd658cbd7206da37f227e28440694c29f530977461bc6d443a11c75f0494021c1f1f87d96c66738acdf660b158a45f3533f0bcf42da693cdd0fe3007231f3980d13f4b817e6519cc579f487ba79f718d11a6cc2668bf7f96ddd3d8774ec194d620ede5b84ac028407a6169785c4141016b059eeda1a8a8
+    88b809dd3b8562f8cd658cbd7206da37f227e28440694c29f530977461bc6d443a11c75f0494021c1f1f87d96c66738acdf660b158a45f3533f0bcf42da693cdd0fe1007231f3980d13f4b817e6519cc579f487ba79f718d11a6cc2668bf7f96ddd3d8774ec194d620ede5b84ac028407a6169785c4141016b059eeda1a8a8
     c86656fde984e7a57b8c0f1ba05f74952912ed4f7261b92d4e963adbb1343fc7d8df9f86e6938761ca6e9162394a024a013e7af4082b42c3f085975e9ef5e1ca952b33aa00795e4ec698f810231f3b8431c16a1aef08dee2a5e9540b465e380843f4d473d7cf75025a015ebb7e057f272c33766c11b67fc6e2427ffb327eb5
     612f92b372d9f6defde232d042a029c060cacbf13e2d46bf7602a35f4d635610676a465f4e677590c106b700fd14b805e8bbe0342f7566e1e5cd80f607e758a303c77b2c6dc3ac3ac0d2a99162e62e01a7009f3cf14fc5b2e9423b6b61530d9b6fb117494c688161ebed4969a835cf1d024101dae7a5f1d08349bfcb5930ee
     af918e9c59947969ca68622fa7b97c625cb8afa006979a9a1a9c3e7d1a274f9ee44108a732b230fc470790732453757fa08453a74ee1c68d1bd0e974d2d3748d8055807d7d7d527888b8e40cc5b66da8eb6c538da7409cccbfca5e6622f672adf0bf06b552f54f5975bbb822402f95bca456c7a2b4245c494dc0f555bf65f1
@@ -5133,14 +4126,14 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     e615fe1e623c741f9a4f1e0674662966eec315a01f025780be0b53e5a55cb96f3adb2ac570bc45fbd33ce87e7149da9adb049c029c0bd0fc2581a000e7028ef252f7ab4bd0bc7814e3033a29c67b8c46239e3e7d8abebe3e1eda9e60e48f633170ad597d7f8085fefe7ee8f5eeb7e6078702345960d87a9b8dc7540ba63313
     d603d587d8ef77b7d5301015208d12b0ff5d53051a0131d3d8e4a5f01c475fce80f6b5f3d25edf42caefd2a54b3879f2240f52a87a3d116dff3741755f20059a2fa8b3b3d3ed772e201560575797aa96772728bf06544472562f64ca6882f1f0035c0c3909c3be7b2cee5659315b1254bfa4f97c92b4353581a400cf1494b1
     e5e8d74eb0a53bb0fa34818167cfd9522d9f1d858e8e0e760cd1dede2eadb90fcbcb074dccdad3bd5b28c5fa07ba6f7a9938b68c0f1bc477c810981dc40de671360ba427ef5c402a40d2e4f28bb466e51e5436a82bc4cae262141657abeea373c8d0c32b3b798cad6f58b48e2d61b0b56e64ab87283c162b1cdf85c4d57f60
-    db041300170924057832ff2a5bd26fdbb8f6001a070c6cdb9ec6ea2adca9b65554727ec8e790f3f642723c5b867e182ac675365af7c9a1a1a1811d4343d94646465058e881f2d299a1f95c22fa3fbc382d7949f72d2b40a35eeb7440884e67db87ce6cd44333e6a0383e3e371a1568b48cb9bc47da9a796499d09be6b802bc
-    dbda870deb22117ffa266e36dc652f1cbd841792931175300fcb8534c9672e588fa130590166e2fcdd41140acb9a8a52d48ef430a5989794cad2c80af04cd4160c0d8fb2cc1c1ad6b27dc45c5180d4d3616b44144e1434a16940b0d2840f01e503e5cfe1a452840a694e155eb31e434c5680c9c82869c41961597a290fd71f
+    db041100170924057832ff2a5bd26fdbb8f6001a070c6cdb9ec6ea2adca9b65554727ec8e790f3f642723c5b867e182ac675365af7c9a1a1a1811d4343d94646465058e881f2d299a1f95c22fa3fbc382d7949f72d2b40a35eeb7440884e67db87ce6cd44333e6a0383e3e371a1568b48cb9bc47da9a796499d09be6b802bc
+    dbda870deb22117ffa266e36dc652f1cbd841792931175100fcb8534c9672e588fa130590166e2fcdd41140acb9a8a52d48ef430a5989794cad2c80af04cd4160c0d8fb2cc1c1ad6b27dc45c5180d4d3616b44144e1434a16940b0d2840f01e503e5cfe1a452840a694e155eb31e434c5680c9c82869c41961597a290fd71f
     3d64cf23fd80a8182990026c6e6e86c16060d396d2d2652ce3187d29958dd698cebca4fb1615a005d73bc790bb6b3bcec41e41655e2a0a2ede45e4b6ed682abd8ca8943ce177df4144f82654e5a7a34fb08c72b76e600a90d2141795a0a4b008d15bb6c0681cc099e232acfcd13f413fd486b3a5f5d8ba75bb78c15908c984
     fefd89d2d14c10b262050b32735a018a165e17d2b30b5077fb3a8b8b4bcec6ddb23216f24e670896e02594deb889bcb25aeb71f60ab0e3a1b0afa59d2dafe4e60a42ab61eb1408590112a35a03f27efc1718d64c78fb980b0a50b4f084df76b942c88b072c3ef56481351fae15e40a96e00dd4d435e1dac36e870a90f2bdee
     f65db6cc4ecf405d679bf579c869640b90bcb950fd0c3530b8020de667635725664601023b4e54226c7e38362e3f8ab00d47b130241eb71acb7176eb46e46d09c3a615493871b3091fcc8b84ce28fcc6cd61c2512696e679d3255c7b3c8ccb757db8de7e17c6d13ae46cdf8853e1cb31343286d4ade284feb3154b553fc6fe
     feb4b435fd049502f434d82b40a7502389f0b28f6cadc4f8a01e599959282e2ec1b16362b19998ed0a90dc25b98b3eac822ded15a02b415680f7eedd434b4b0bf3ece20c83702d2a62d933530a5049c6811dc8bae3793de65cc4221425c84a0f04e69c02f435c6d8fb4c81390a9a8fc74929c1fcaba9a5b1d4bbee92299014
     a00c791f56fb5dcec2d83732a4a3fd87f9ca63361ccb914382995080e48054698572d4a1b1c4ee340efa0bae00fd00757df1b41b48202ac040c1227b4816ac6e723f450ad019d3ad000b234e40f3e923ec03c0991a7232411eb16712ae00fd80372f40a0294072f944de3f6632c87546a3825539f6bd6ce699c51566c202e4
-    cacf3dc63b35cc6a7615f2a82d9732bc09721d3557803e865e58aba5e20181a400c98dfb384db01300505157165e579976059879d2fa62715c871a46f421d7a52dc7d03c27e4b9bab7b717b5b5b5d64075c6caed9e9e1e9bedbaba3a9b6d9af241f7eb0276ce39af002bb3a21015be5cda026a2bc41f3e193d4217bc85aa96
+    cacf3dc63b35cc6a7615f2a82d9732bc09721d3557803e865e58aba5e20181a400c98dfb384db01100505157165e579976059879d2fa62715c871a46f421d7a52dc7d03c27e4b9bab7b717b5b5b5d64075c6caed9e9e1e9bedbaba3a9b6d9af241f7eb0276ce39af002bb3a21015be5cda026a2bc41f3e193d4217bc85aa96
     01691bf8f7b742505790887a499fbdb729515c5181e678a097d37277e2784f08240548eea0eca9144af6eb972421375b6c74884a8bc16063094a1a9b312f3a1b5111112c9ea5d9b612d5f9691814fe58bcb613d9258d484b8b6769e858fbb808215d517e354bdf599d8f46a926813e2a3497863b4cb7027cf07a8ab4c57117
     fdea72582a7aa52d75e48f4b7d7d3deb2c4f81063eacffcfffd9bafdf8f1633c7cf8d0ba4d0d9aabbffd6d9bfdd4bb20682c4052806bd76e47416204b6872e4054c8bf232b2a04899bdec37b828293d7095a2646bc8793421cdb4e3e8a4d91a2020c5f2ea4171460ead5565c6d152bdd291399a34c41f1d16c5ebe209014a0
     9a359350de89b0f80ae4366951d15523e8af4244ad588ff561494c3916768afd1f49016e9ab701f3e6450b5bcdc2899b9019ba90eda37495d2b1b6714d6c9d8e95cf935933d19fd25deb6aba15a0bd753a6e3141abe7de655c85b5e43b1931a2a60017bff71eb6fcd11fe1e8d1a35605a7548029c78ec1f4918fa05d8897f7
@@ -5162,31 +4155,31 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     7a84654bb761dfa608c4842f43f496cdb8525688d2cc78d4f6f6615d5c16d6addd2a1d35bdb8a2001d61558046036edcaf45d1b9741c4d3e8a676db77120b308d1bbbd535053c115a002f714e002e67184eaada2c2a9418406ead708a193ed8bdf1185b8d8c9eed5a70bae007d87bff292a641555a7f849a020c3f908d6b25
     e9b871ee086252aea3bda30c9bf69ec4fa4d5bb1716d34ba9f6950f4a010350fdcf372e32b7ca500afdeadc1c19dfbb1efe835446e588f0d2b5763ebb67d6cbfbfe00a50813b2f2db560129dda41d6a997ec3f1a3912111165dd3793049202341ebccf7afb93b04d57187b39436c16f501feca4b7beb8f70b508dcd0ea9dbb
     345fe28a02a4f958aaabab6d02c54d5504f637242bde10b40a30d009240538f6dd9999bd4bf359c77e17ddc11f7969d87c8b4d766f8f9a020c09db899317afe271ef30eedd6f40576b1df41603ca9bbad83660c62ac14afcf1abbfc3deb8a38235358ef97f08c7a1f377d831350f5a71e5f235d4d790b231a1b1bd03658d13
-    bd22bcc5150528378228036b04497cc8ac60ae000300ae007d87322fa9016226f056b865fc91978ee6b0505380d75a8731d452087d6f058e1d4b45f89a6dd82c1413bb7b2bd93629c086fbb948d91f27fce84e748c99b060e1266884fdba9e4a18bbca703cf610f625a620766f144bdfe360689827b8aa00eb1b5a98e29397
+    bd22bcc5150528378228036b04497cc8ac60ae000100ae007d87322fa9016226f056b865fc91978ee6b0505380d75a8731d452087d6f058e1d4b45f89a6dd82c1413bb7b2bd93629c086fbb948d91f27fce84e748c99b060e1266884fdba9e4a18bbca703cf610f625a620766f144bdfe360689827b8aa00eb1b5a98e29397
     144790253c130ad07cbd1bda1f8a2eec3c256815203582c487ad933c159357e234eb9856314e8bf8ec6ce6dd98d50f0e56081710bd16cb5e90a90e91d2bff9ca77d9b62f09740568d40af137a3317a651f4c233a584cc23195e9b0f495c2d09c01e3e044675e4f09540538faf574696d32ae1681dd2564cb5169cdf7b8aa00
     7bfa07b060c936eb52568034c840f37f4eb0e7359d81fa0b7b4b502bc0e4c84da2a762ade895b8286a05e217cf93bc1703bf5bbd8d75f82505a8f45a2c7b41161b4cc48ec0be26d015e058732b46f3b76124ff2046cbd2052558c7e235a5f4a23e62ebde4242ee0b7c9997e3033aa716b19a025cb06809860de27665d23e3c
     7e3ed1ef3510705501deba798f597ef2d2aa00057ca5e8a79ba055809371dd5bb1a814fd4ba02b4025a6b6b33603d47d45202a40679e8a89490ad06840b7d684bd211bb072c93ca4c525e1e73ff815d6866f9352cc3cae28c06bd7ae3107a4ca407d0365b8020c00bc53808145202940478e2afc0d29409a5dcf5b45e8abbc
     d4af2c536df850a266019e4813ab4cd2d24ea0a3a515ed35d771b376eab1c1d3852b0a702ab8020c00dc518062b1d5d6ea939d75da768369664e3fa742d5d1a75044f6944052809a4fc5332534dd819cddd272ecfb67d97d788a4ff272ccc4e6a29d0a35055859518111e3e46b0f3c1b93d66616ae0083580152a7e7c2e810
     ac094b5378385e83ccd077f0dac2709686286aae41c4e237f1cb7f0ec1baf028cc0b8d60c7922764f95865dcd210711634f93ce43cd41d024901ce24a35f3b01cbed3eb1e8e964a63067f8222fa72afaca4c2e021bf1de8245b892bc1587a3a3b1725d18b6adfe0316ad88c0fca53bb1615f825faa0fdcc1150548f57dd4ef
     4f19781da0c82c2d029337e334a6ecc8a5137586268fc5e4e198e6b725eb2d229e5a80c5ced104b5fa2e7f7d219ba396e6ab955b8de56395718d25d9423a21a1749e8808c9d79b9ab307096346a3b436f9a555ee53c3103931378ae5d1c4f84b63b2d838e12e81a2009590c765b9e3ad3b78ab0075f38ad97ccfaea0a600e7
-    7fb8108f864da81ad0e383f716e058f2099c3d968e8d8bdec2d2654b678d02a4860f65e00a50242015a021ea2eabbc77358c0f4dcfc074670e5ee5c9a188490a50b16f2a27b196c6892e28f4db3c419997da1fe762ecef4f4dca337f057dc87556f4a562a73dc68487d07cc6d629e65478a300292ff5d2c439aea056040e74
+    7fb8108f864da81ad0e383f716e058f2099c3d968e8d8bdec2d2654b678d02a4860f65e00a50242015a021ea2eabbc77358c0f4dcfc074670e5ee5c9a188490a50b16f2a27b196c6892e28f4db3c419997da1fe762ecef4f4dca337f057dc87556f4a562a73dc68487d07cc6d629e65478a100292ff5d2c439aea056040e74
     dc55808d0f6bb9025410700a70f4a55436ad9eabd0f478f4c21d3b760cc597ae089922f559f003a4bcd8e44e0a8546e8debe0cfd9a1b56175fca97d67e1f9d43bfae42d006b64542f2a938fe58c35e5ad9b72229145341074c675aad8a51ed587b940a70ec7b64094f3fd400a28a900f3434cf5c224fbde41c6f14a0e6d347
     a435d7986c011a905b5c8aad51477164e75a945fda8f8b572e60d7b12bd8b6650f4a5b34687e36b3cac37505f8185b177d88a703bd5c012a083805c8ac070143f5c48b6ba85c8eb12bf3a52de1fd6fb6edcc4ac7349ca960cb4b972ee1c89123c8cbcb437777377317ee6d2037e3168b45d57ad32d2cc5d88f72542d40b57d
     fa2557a10f2d6753872aa1564a8a2745470e3a4969328b4a8823efd95605a872ac3d36d6b4700e7bde8ac843545414ba1a4bf0e68e6c56fcd752715f28ea533c5b8f4ac3177fbc443ac27de4e7e808f2fc3d4a6386a7c05305484ad65dd414e013ad095bb7ecc2a9b3f9b8d37c0b697bd661cdbacd2c3e75d35b52ca99c375
     05285a80b52c0d57803201ab004df7d231bce7ff65eba400097d9f0ec369dfc1c889978404dd78766613fbc1748c3fc3c0bf9f15325bddb2a41eedc643f7a52d11f9a5d5af2e9bb46f3a70450146e43523a97210c2026169f7d0d955c946d550fcd265f310fac657fdaa0009ea984ce92c765e599478a20069b487ece5d91d
-    dc2d0277744ccca23653b8a200af5ebdca261a57068a93e10a3000b0578063f51333cb9bbb2e415b9928246a85b62a916d9315a8ad2b65fbe998c63ab1db05596c342f827da099b0525252d8bcc234c9b25a1ab5303a3a0a9d4ee756c67a536cf3055329c0e9c0150528430e1b68563635dccd4bddbb45ace5d913d414e0bc
+    dc2d0277744ccca23653b8a200af5ebdca261a57068a93e10a1000b0578063f51333cb9bbb2e415b9928246a85b62a916d9315a8ad2b65fbe998c63ab1db05596c342f827da099b0525252d8bcc234c9b25a1ab5303a3a0a9d4ee756c67a536cf3055329c0e9c0150528430e1b68563635dccd4bddbb45ace5d913d414e0bc
     e54770ef661152626250fba81f952545e8efe9457f770f8bc7f81836848abe007ff6cabfd251b8f9a00ee7cb4ad0d75e2bbc9c63282ab98a47b51550e94de335942fcad6ddf6f636b7151a57800180fcd2d21c1686f04af6e2ba1ae865a3c9a049595151752a1e3f7e8c53a74ee1f4e9d3e8ecf4a1670ea988acf6d21adc6c
-    01a509a63c255014a029a59e3d4b575c6339ea2ee38e0234ecbbc71a5a3c454d01c6a5df42afde84c8dd71485cb3011d63e308ddb80749bb77a14f88dfb1350a4776ed117e800ef33efc3d92a24487074ffa6e63577c09562ddb005dcf4d145fc847b34ac3902ff0745e6019ae000300e54b7be1c205b4b4b837798ea790d0
+    01a509a63c255014a029a59e3d4b575c6339ea2ee38e0234ecbbc71a5a3c454d01c6a5df42afde84c8dd71485cb3011d63e308ddb80749bb77a14f88dfb1350a4776ed117e800ef33efc3d92a24487074ffa6e63577c09562ddb005dcf4d145fc847b34ac3902ff0745e6019ae000100e54b7be1c205b4b4b837798ea790d0
     e7e4e420333313adad531469a499efd86a58054c279b8517ae163a9a0d6fd4c8baad18339bd0bbea8af5611862efb3460cea0a23a765c7d30c79cbc5e148741ec35e71de0e79e63cedabb9528389b8ed0e5329c0d7df780db94ec60452d19831e8bcfb8e33480152d0fd429cbddf55ecbbcbb8aa008d490fa1dfe89db277b7
-    081c284ca5006fdcb8815bb76ed9048a93e10a300050beb4447e71194a4bc5226e7fa7a80c87c7b4b018b5181d1e84563304ad4e03bd5eb0fa847d2d0dedc257d888fea743783aa4c1e0f0289e3e7dcaf6f5f7f7a3a1a9151aadf3074d02448d28e9e9e9a8ad9dece1576e9d95d1cd2f9ed4c545b7e4eaa497566e3956a625
+    081c284ca5006fdcb8815bb76ed9048a93e10a100050beb4447e71194a4bc5226e7fa7a80c87c7b4b018b5181d1e84563304ad4e03bd5eb0fa847d2d0dedc257d888fea743783aa4c1e0f0289e3e7dcaf6f5f7f7a3a1a9151aadf3074d02448d28e9e9e9a8ad9dece1576e9d95d1cd2f9ed4c545b7e4eaa497566e3956a625
     74ef88bf978e51c266ce5b3a31848db6dd612a0558d4450e72e2a16dca45d2921f63c98fbf8837befa45fcc9b7dec217bf370f49c2072822741e9af32298271d5a7717a600058b8e4660687f704e8a750d63529db5bb8c2b0a9029bf65decfb63649010aa58a5ffe863ad40bd71872d42753b0f69cf40f9d0ea65280ca4610
     39f0461091805580c7cb1fe383b8429c397306c3fd4231d5ac87513b0ca3e62953884dad4f84b83174b489ca9114a06ea817bd1d4da87bd48596ce7ef40febf1f4d933a6041b5a3ad1d0decdd2ba02d5fb15171733654895cbd68c9567c153ce702721cf8ae792d562b440f77eb1b4a1c0febc2ad7998aa914605a54041bdd
     429dc3c97d587e5a14b2e3a3f0272ffd2df3ac2defa38ee4a2a76d5a770f5280727176bc59783185ed71d9ad8a2b48dd65ba32ee38cd4b6a1167dd8c7c809a05b8ff58199a872d78dc5589d4b045f8ddaf97a345d8a6b8aabb25f8f1cf3f600e1366125715607d4d8d75c915a048c02ac007d2c0756a7d2525e4ee0ff325d4
     d7908a0c741fb4a46d67b8536fe50f9479a9fd492e5b4e379acf4d1e5f4d8e48a9bb8f3b8cbc7f05cfff2255352fa9786dcaf06cb63935d4146061e10d418f8f335ddef5f4192e95dc92b6c731f2f411aa1eb4b1f599c41505b865d107187cda675d72052812b00ad09e8c8c0c8c8dcdfc0074ca60b208491992854896a23d
     81a40047bf9a06dd6faf304b705ac2e65bcccbb023cf2ba60bede27c1c2e2a0d969755620bbfb2bb8ce67389b00896a52f515380a4f87a46267ff0f2d227d229d76702571420b700d5095c0bb0736248d848572db2b212919b9bcb1ea02b3c1bb3155a2ab9dac7f902aa2b246578f1e2452680442029c04085bcd4b862bd29
-    f392759779b340ece4ec07ab4bad0ef0ad77b7e1c8da3f6055680462d32e207dd7412c89cac4ceddfb11b27e038e1f08c386b55b847df938be7b1bde7a6ba574f4f4319502a4baf4fbf7efdb04b97e9de00a3000b07f698f963ec25bb16271292a44ec71ff5e4422f6ed8941e9b5eb78aad1634c3f06e3d83356f747f582dd
+    f392759779b340ece4ec07ab4bad0ef0ad77b7e1c8da3f6055680462d32e207dd7412c89cac4ceddfb11b27e038e1f08c386b55b847df938be7b1bde7a6ba574f4f4319502a4baf4fbf7efdb04b97e9de00a1000b07f698f963ec25bb16271292a44ec71ff5e4422f6ed8941e9b5eb78aad1634c3f06e3d83356f747f582dd
     ed0da86dea405347afb5ee8f1a4b48f10deb81fe817e58f4c3d6b4be865a91a93599bad850bfc34054809ae1a18009ba4d9518fe42a2755b0da50224df86da7f3def957719674cb6000d782abc64ebb62421ffe4192c99f721cc638fa07d7403f9a7cf62f1bc0568afbe84e5e187b03464051a1e5ec112617dba994a014e05
-    57800180fd4b9b79ab073d4372f152cf3a30d75614a065408f6bd58d3877ee1c8c66236b1536eb4761d46a58ab6fffe0306b05d61a2dacf597025b17e2e5386a45d60c3d95ceed7be8a5bd7dfb36eb67482f94ab56abaf980d16a095319358bc7da0de2d87f2b2edc6c3c945600fbdcb3843ad083c1be00a3008ea00eda1ba
+    57800180fd4b9b79ab073d4372f152cf3a30d75614a065408f6bd58d3877ee1c8c66236b1536eb4761d46a58ab6fffe0306b05d61a2dacf597025b17e2e5386a45d60c3d95ceed7be8a5bd7dfb36eb67482f94ab56abaf980d16a095319358bc7da0de2d87f2b2edc6c3c945600fbdcb3843ad083c1be00a1008ea00eda1ba
     37aa170c44ec8bc0a474e5be864d4dbeabb477c4ac528012aadd65746636bd666f58b1aa602bbbcbf882c94560d125fed903bb51d6fc182ba213b16a7f0a56ae5887b065d35fd47504578041a80065a8fe4dad216226b157804a48400b0a0ad87d3f7860db2fd0574c9597f3e67d804d871c7b89c9cd173b65cb90a3d8a8b4
     7c69cb0e6d27f3a1e80bc65b8799a5673adf264ed71856e1342f19b27799ab4fa408cf51ab033c7af214362e0fc3bdb67e1cbb7a17a945d938793a1b7b12bdef77e82bb8029c830a90fa9f5daae941538fa030122310bb691d5aefe6508b08724aab902314894f276e424541168e1e3d8a9aea5b620769a1986bb458a0379b
     591de04c30e54b2b418abba4a48429432a32bbfbf01c31950224475495496178ffad6d76deb4458fd8344540ca8e1df8e9dfbe86a8a22e313ebb84a589df1185b8d834540825d6a22ef2b84d9eb927bc70ab79cf365dec70ee94d4203cb3c30f58cb2eb9d1a2966bb9bb8cab79a95f741563dff0ae44c08bc0b38b39ad00fb
@@ -5212,7 +4205,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     9210b13f1f1d5a035aae1c45cce526ac5cb81acb7ff1531c4ebf8c25ef2fc5c2f71622f1da635cda17c9ceb96fc522e4555ec2bb1f2c42dce9b36c9974ad13a18b176311a52db98f958b7f8f88658bd169b0f55e242b4065df3f5224d4af8fb0ef6b475d4ce43e7f729f4042d9ff8fa0fe78ac3b8c009d9ba07350b71ab99b
     0c212b40ea3223f7db73d4e7cf726f809d8382f188784eea42638c17d6b52631deeefedd851781030ce54b4b75761d558de8ff7f4e4cdb04ee5c017a86a34610527ab2054feb313107b06ff7011c8b89c5da8d5118edbb89fe9bb9ac4fdf96edb1d8b7211c6b37edc385a8cdd873e43476ac0d454c4a05a28e9663b0ae1407
     84e3372f5a86e4f32791b23f0e3b77ec61cb3dfb527070f75a441fabc4def853888e5c89dd5ba2d0fc7c72e9811490b2ef9fdcbf8fb0ef6b474bb9cf9fdc2790b0e9ffb7f41a2cf79f5a2d3bd94293fbe6292d3ed65750dab62a53953e7fbadf17b2a2325d9f827c3dba577d7825f42bcaacf1cafb7717ae00030cfb97967e
-    db4058095b4e075c017a066f05760f527a8140d02940b9882b7782b6dff61772d183be5a66c55020da96a12f67476aa5f561c8fbc812d42d2a65ebae603f3e52fe22bb0257809ec115e0ec24681520ebec3c58c1b61b0727b633b7ad46f4bc37591a5f62a3002b7b99396fcc6a62db64d2c368618aeaf1992af47d78910d29
+    db4058095b4e075c017a066f05760f527a8140d02940b9882b7782b6dff61772d183be5a66c55020da96a12f67476aa5f561c8fbc812d42d2a65ebae603f3e52fe22bb0257809ec115e0ec24681520ebec3c58c1b61b0727b633b7ad46f4bc37591a5f62a1002b7b99396fcc6a62db64d2c368618aeaf1992af47d78910d29
     52eed3be2a1493da86a1978a08847edd0d5624a13a179da4f4284e1e5a64bed52b06e1bcec7ad4faa6353105497527ecdc764507ae003d832bc0d949d02940f2084d2dbd6267e741b1f373529a751b838d58fdd63296d697d828404121599a8660691fb65a79727cc7f19b785c520b73db739b7dccaaa37194bb6d477e68df
     2ab0a9632174efd8e685f57a42301c90ea5a226eb2f92dcce5b643f6b802f40cae006727bc0e70a6102cb1f127a3d2c604f4d2b6d5355b2b88ad48ad68640d5a91e39428f7ab215c97d2b08a6395e3b902f48c405280db4b9ee24f36367a1d3eb7a9899dafb1b1918d4af2361417fbc6a9af2fe10a30c098ce97560d9e979e
     11480a70c39501747576b05145de844f6c10fd16928723b5fdee869b3727bcc0040a41a700c58ed0835687a35407182f8d09a6752a1e57e7a749f58210b663840b889da5e3e333fde2a45489b39756adf7be5b1e775d802b40cf982d0af0f1e3762c0c598edcbc0ce41fda8c8ec79daae9283853808d372f61f9f210b4b7b7
@@ -5230,7 +4223,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     58b620e9f729f35dbe5779a93c76fefcf96ca93c96ee85e4b3bcbc1c0909094c59d1b1ca344a19a67d729e11f6bf9fee97941e619f9774ad37df7c936ddbcb274169e5fbf637c607b5d29aff98357580f2174a5eaae16c9f1ab240242525b1a53b28af450af01f7ef833a108fc972cbcf8e7a20548a8dd13c5d10b44d82b0e
     77509e7baaf34d953753ed57225f4bc69d633dc5fe1aeee69bb7c72b91cf35d5efa66b501a5250aee02c5fe57df60a5b8e579361e5f16af73a95cc10f6fbe463ecefd59f181bfbc495f171747c651b4c8f268c1b6fe18d203e60effe38ec8d11022df71f6281c3e1784edd531dfe3cee217adfcfc2dd6fef052ca2c2ed7d43
     50f43ef40dc9152087c309381a076b60a92d40fef70fe00fff7717464b3f82d1eb9f92f6fa0eae00391cce8c72e5f265b6b48c5bf0cb73df120c3c8bb06e4646ed018cebc9f21bc785e614f48e3e66e9648a555ac7dd852b400e8733a3141516b2a5ce34869f9dfe0b68879fc3f03013a355ff0986c7bba16f780ff71bff33
-    52eeef61e964a861ca5bb802e47038338aac0065fadf49c7e09218689bfe42300b1d4f87c0152087c399f5d82b4057e10a90e316345b1c756bf0a60b883b50075a5f51535323ad71e61a5c0172a6057954cc54d82b9b8e8e0e69cd3de48eb9be60ba461f70fccba68808d6c93a72c70ea49f38c1e264057860ff7ef4f4f4e0
+    52eeef61e964a861ca5bb802e47038338aac0065fadf49c7e09218689bfe42100b1d4f87c0152087c399f5d82b4057e10a90e316345b1c756bf0a60b883b50075a5f51535323ad71e61a5c0172a6057954cc54d82b9b8e8e0e69cd3de48eb9be60ba461f70fccba68808d6c93a72c70ea49f38c1e264057860ff7ef4f4f4e0
     786a2adb26f6ecdecdd21f3c7000a9423c8d1a9247fb5cbe7c1985c2b10f1f3ec499ec6c1647c7d30898dbb76fa35665d8a13d5c0106114a0568301870e9d225d6ab9f2c429a485d86940d6d9380d1f0393aeefaf5ebcc82a4112d345939eda774742c75ce95c7ff9e3f7f1e77efde65eb4a05a8b43ce9b8dede5e9bf3c95c
     bc7811f9f9f96c9dce49f3029bcd66764c5656168ba7e1729cd907292525f2b03f5280f61dab636262d8522e4590fcc9ec97f6252624b025d1ddddcd96b25225cacacaa435c770051844902223a54442252bc36bd7ae4d2a12cb0a90a074b20548eba4dc689fbc5f3e96844d4e373636c6964a054871725a52aca4f494e7b3
     87e604a6fb20e8bcb44e4adb97c56acef492979727ad89646566b2252940e5d03d252323236c49722a439622a13c9f2c73caae310d0d0dd29a63b8020c2264a547c8d6171529a65280b49f8a1a246474ccfdfbf75515204103edd52c408aa7405cb87001f7eeddb3399f0c59a5b20568af0009d90ae4cc4e2e4acf96e4e794
@@ -5246,7 +4239,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     1d838cfa16ca7d0ae3e3e3a5d8c9508d6a545494b4650b3700391c0e87c3093ce69401e86e50360593c1253763d2400735c888a1fdd4d7b0b1b1518a15511a3a348af8d39ffeb4f53af6810c39b55abca90c40a2afafcf3a10c451a0fd944e0d4f0cb298981856f3687f1d65a0411ece0681700390c3e170389cc0614e1880
     81003774381c0e87c3e1cc16b801e823b801c8e170381c0e67b6c00d401fc10d400e87c3e17038b3056e00fa08fb192f381c0e87c3e17002156e0072381c0e87c3e10419dc00e470381c0e87c30932b801c8e170381c0e871364700390c3e1703801c378c708cce53d309d6e8131fa1ef42bcba0fbd5258c7d371ba35f3a86
     918f1c500f2f1c64fb47bf9a86b157ce4c0ada37f2a17ba75035685fbf30f998bfce62e7d37c2641fd7a42187df128c6be7d929d5bbfe41a0cbbaa604a6f84f9ea138cf7d8cec3cee1041adc00e470381c8e5f18efd4c074b61586889ba291f5f574683e1e6735a0349f8ac7d837339981a70faf8429b501e6922e585a8701
-    833813d3acc36461f76fbad801e3fe1ae8175dc5d80f7398b168fddd421eb0dffd41098c476a61b93bc08ee370a6136e00aa4053c0d1546e23232378f6ec199e3e7dca4300047a16f44ce8d9c8d3f405135c2e033304a35c8e0f1b60bad0ce8c36edf7cf42f3c9c3a271f3b143a261f36e21abbd23636e7c482f1dc57184e5
+    833813d3acc36461f76fbad801e3fe1ae8175dc5d80f7398b168fddd421eb0dffd41098c476a61b93bc08ee370a6136e00aa4053c0d1546e23232378f6ec199e3e7dca4100047a16f44ce8d9c8d3f405135c2e033304a35c8e0f1b60bad0ce8c36edf7cf42f3c9c3a271f3b143a261f36e21abbd23636e7c482f1dc57184e5
     e1204c690dac1671ec3ba7ac46f2e84ba9cc48349d6cc6f8a04e4acde1f8066e00da313e3e0ebd5e8faeae2e545656e2fcf9f3c8cecec6e9d3a77998c140cf809e053d137a36f48ce859050b5c2e0333cc55b9a46658e3d13ae87e5d00cde793c45aab4fc431634f1f56c18c3f320239d30333b8b35ba15f508ad1af1c179f
     c7671258f3353d0be8cc524a0ec775b8016807296fad568b478f1ee1ca952b58111a862fbcf4320f0110e859d033a16743cf28d80c402e97811966ab5c5a6ef7c1105e89b1bf3f8d918fc6b23e74d49f8d0c3caab99bb54db041c6f89351180fdd87f607e7d87324435df7db2bac1f2287e30c6e00dac13fb4811bb801c8e5
     32104320cb25ab394a6f84f65797accdb4d4444b7df22c354fa5549cb908352beb43ae43f3b94466186a7f92cbfa63f2be861c196e00dae1da87f67d24ec08556cff0c193bb658d7ef34dec13ffdcdcbf887657b11fa5b31cdaf36ecc5821ffe0469e7f3f1ea3f8a7191a9b9d8bb3f0e3f7ffd27d2b13c380bdc00e4721988
@@ -5267,13 +4260,13 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     be1ec5c5c56c1f6d97954d34477b82a56d04badf5c66bf8f3e5a96878eddb1048f014898712d2f15bbf7ec457dbf1e66e3539415dfc7382c283b9f86d8f81d581f76121d3585d873e828aedeba8f26416f748d98d172e33a1e0ff5a1bce82ef252a3b07bf71e14dfefc4bd2ba7b06bf75e94370fb22b340be9ba464423b3f3
     de15f13c95c235cc1a649fbbc06a1d4d238f11bf770f4e5ebe078b740f6c59f200034d65883a9e07a390e6f09eddd877fc3cae9f3f8ea87dc731e06e9525c7a7905ba3d12f1dc3e8cbe941e35f90dea5152b56e0d9335187d03244d8a631054ab8011800d87f682f9796b30f1b85c4cc3c249fca9ff140f721df53f6a5ebec
     becd377bc58fd50f73d887d993a0fbf945760e535e1b3be79de472f7ce195ec9e69d6cfe622c4e5d28f52ac8bf4f19e859700370b25c6e3e705c4a0536df274df344fd00559f91af82f4ac6944ab4c444caaf59ee252b35565d71781ce2d5fc757e1d485abe88c2c63bfa9fbbfecc7a9d7e2d8c02ab5b4f6612ecaa5aa0168
-    b2c0b0ab0ae6f21e29959271180d7ae1a3261a6e1c8e33c6077418fd6626f377c97d5d8a70033000b0ffd02a6b5a3822f4c2324331b3498a991e780d20974b5f62e91881f68d7cb190f3da79581a87a43dee31976b006f9655e0de1bc918fca358964f2c7cec10c6fbb4524a0ec773a83978ecef4fb35a41aa750f66b80118
-    00f00fedd48c7d23c3a6e667bae00620974b4f306cbf83b157ceb075f3d52718fdda0966c4504da62f7cf1cd6503d05a0358d00bcda78f40bfe82acb379ab184a60de3707c0135078f7e358df5b31d1f0c2c374fd30537000300fea1750c95d0e823c03ea633a0fcb901a82e97343d93e633096cba26edcff3a15f5966db5c
+    b2c0b0ab0ae6f21e29959271180d7ae1a3261a6e1c8e33c6077418fd6626f377c97d5d8a70031000b0ffd02a6b5a3822f4c2324331b3498a991e780d20974b5f62e91881f68d7cb190f3da79581a87a43dee31976b006f9655e0de1bc918fca358964f2c7cec10c6fbb4524a0ec773a83978ecef4fb35a41aa750f66b80118
+    00f00fedd48c7d23c3a6e667bae00620974b4f306cbf83b157ceb075f3d52718fdda0966c4504da62f7cf1cd6503d05a0358d00bcda78f40bfe82acb379ab184a60de3707c0135078f7e358df5b31d1f0c2c374fd30537000100fea1750c95d0e823c03ea633a0fcb901a82e97343d93e633096cba26edcff3a15f5966db5c
     1b4441f74109c6be7dd2da75819a2bad355742301ea89172cd7704830198f477e7302a14fc381c7f32de3acc9a85e9ddf5d5889df1213d3b279bbde4fd6255bd319d411f5661f5afab0f11bb7011dc000c00b80138197351a7e8f24230322c55e250f699801b8093e592a610a33e7f1641713a232f620d2a591ffb66ac5f92
     c4e22633795f6349213a555bfb9af1cbbf7d0d11118bf1c1863429ce539cdd931dda4ee4e6574b1bced1875732256bd85d0d43d45de8179462ec87e73c6eea75c45c3700af6c4f67f938db9c5973662fa6138d6281cd07930a90d145e7920d4a1a3046ef2acd72a30c34782cf5d8312c7cff7dd5fd1468461cf235ea683f39
-    6f3e9e9ece066aaaed27b755e4b580b0de9704370003006f0cc0caac28446555e26e6e2c6273ef0a4f7400395959c8ca29c540572d96bff7ef883a5581da8a02b40ce851559a83ae01294d56012a84f89c9c1c965e2f9d9348dcf41e0aea4780912e215d16724ac9979f085d73e1c285c8119473eabe9d0859f81eeae573d2
+    6f3e9e9ece066aaaed27b755e4b580b0de9704370001006f0cc0caac28446555e26e6e2c6273ef0a4f7400395959c8ca29c540572d96bff7ef883a5581da8a02b40ce851559a83ae01294d56012a84f89c9c1c965e2f9d9348dcf41e0aea4780912e215d16724ac9979f085d73e1c285c8119473eabe9d0859f81eeae573d2
     798463283d5d53eddc933058583399eed705ac998c39165e768df9749a69b80138592ea9544b25caa9b03700f3221620a1bc1385d121286aaec19ab034c1b62ac4bb64880d3632c38ed6e5e33243dfc1bcd008bcb6309c9d4f69b4552685b173fc940cc2c56f22aaa804bffce710e17e3bb12e3ccae658ba6edabd41c42f5e
-    8a9a41dbeb3a4ed784a521d1ec5af2759569a3c217a25add4a65f24b8ad69fcc7503b0f7c5383c5b724ddac3e14c131641e7fd2417a32f1ec578a7468a741f7b438b0c4032d4ec8d3392f7b0952b11f6f18fa355d8a6091794fbc940240390fc8eaa1ddf2eec0ffbebbfc6d53ffa2324a7a44c3202e9786e000638be30004b
+    8a9a41dbeb3a4ed784a521d1ec5af2759569a3c217a25add4a65f24b8ad69fcc7503b0f7c5383c5b724ddac3e14c131641e7fd2417a32f1ec578a7468a741f7b438b0c4032d4ec8d3392f7b0952b11f6f18fa355d8a6091794fbc940240390fc8eaa1ddf2eec0ffbebbfc6d53ffa2324a7a44c3202e9786e000638be10004b
     d37660475a294e468520adb455f80a0d40b0f710bbf62d54760159423c196c6c5b10c6f7dedb04eafe4af1594202abc127216f2746bc87abad7a76de823a713f5d33abb21e910bdf4262411da242dec385bc5484449d44ea8e852828bc82f736253a3c3773d429082175c2a5be7d64ec91cfb340f4d5c40d401503f0d3475c
     3470b4488b8a4044946070095b64d86d888e427c7609db5b921d8fa8b43414e557a3b33a5f48178fa2f26ac1162c41447c36ab798b8a108ea77586609cd1764494b586b03a3f4dd88e4049632596bfbe90ad3792d1a93856ae519497caeb3a4bd758922d9d6f70525a3a474444bc70479321d9e606a0fbc80660d79bd9e8f9
     efb1aa3381349565e3745933743d3711b9632fa28f4dcf0c341cdf73e3e265ac59bb1661e187d0ef86ab9c7b95b731fcbc0dd76e8b3e1cfd010d3a649e0d567ae6dac91503b05d086bfff11f61fa88601209e1fc0b2fe0cc9933cc68531a708e0cc047eded58fe7fff2f7a8563c78490271881890909364620370015e8175f
@@ -5305,7 +4298,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     b270a3ba0163a3fdec393e6a6c46ffe31a241f3d8a82abf75057d780870f1bd85471b3156e0072037012de7c68fd0b8d200e4156f9c4409760831b8093e592466e92221bfbce29366d2229b4b918f4eb2aa0fdc1395169cf90f35647cc1ab974d1f823dc310007ba5b5123145efb5d985561f8d91084efdc249ef775e2e9a8
     787c5f4f17cce37a343ea841637b0f1b253a6ed6a2e9e103dc7fd00af53aa7713c1b780a9334dfab3d8eae1b0890bcf8aa0f606767e794e1d6ad5bb67d004d16bf1898810ef31020e89699801b80018aa30f2d67e6e106e064b9242546a3e5830552d872ad45a0301be472bc6384b97a31ecaa92629ce3aa0178725b24ea35
     a24966e82ec7dbbf09c1b5ca326c7e3f04612b17e1e099fbb87ae608d62d7a0f074bebb16de17c1c3b9f8d88f9e2fefdd9e47ac68cd4988388ddb913bbf76e45d8e6832848df8f3f6c3d809ad62e766e5dcf0d6cdc9981f2fc146cdb1189dffe6e05aeddbc860d0b57e1e0d63024e49762d1c2b5389b7010abd76fc0fc0fb7
-    a0f87c2c76ee4d425e6939362d988fe44b9534ee25e020799989412096078362816af3ada03300c9951cfd76f3cd99a969e6066080e2e843eb0b645f6c6fbeb582b97bf1065b171dcdf8e5dfbe8688c56f624736cdf7ea1eb3c5dd073700550c4052e0ae9462b5add05c59076de54e8c555f12221e61b42453dc27606abb0c
+    a0f87c2c76ee4d425e6939362d988fe44b9534ee25e020799989412096078362816af3ada03100c9951cfd76f3cd99a969e6066080e2e843eb0b645f6c6fbeb582b97bf1065b171dcdf8e5dfbe8688c56f624736cdf7ea1eb3c5dd073700550c4052e0ae9462b5add05c59076de54e8c555f12221e61b42453dc27606abb0c
     8bc3ee3c4330b64db84a9a49b801e83ed6193e2e8aae565cc15503503fd08ab54bff80a54b96e3c8892424675763dcfc1c87d72fc3926521385d7c135b56bc8f55a18b71e074356e67ec43e8a124c4ad0f61fbb32b1e096733e3f4d154f491c338613d3b391559c7a3b074f152acdf9d0e9d791cfafe6a249d128d57795dbe
     ce07ef2ec5b5ae61a4441fc09db22c7c387f09566e3982b607b9c2fa6244a55dc2cdf47d581d7b1281d86249f2e23303b0a31947b7adc7ae232751dbd2814e9bed7674290c4082a6811b7d3983c9c7d8ab39ac3049efd85c0ddad7ceb342f3e8578e63bc73622ad7e9861b80018aa30fad2f6006e09279088baf60fdfc7e2a
     196d51e7f3b1262c0ddace42bcab70c0cb965d8a74a9a9787b439a74ae89fe84b201f8daeb0b99619919fa0e33345f5b18ceae494e7f0ba34350d43cd1b7705d7814db47fd096dcf15b87003d073035057b6df3a2592e9fe1e18471e61247b2bc64ddd182d4b82a172074c237518ce7c1fda92a5d0b69443537a543ac2d658
@@ -5318,17 +4311,17 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     90ccd085282463ce8a6c000e62d3bc0d18d4d660debc687197b0effdb7b609465a13d685c5db1c2b9f8f2dedaeeb385d1396864c9c9bae6b7f3fa2336be5fdf9166e007a26976a4e8e677b18cd6dc06859fb445cef53e83e286646e1f3bf3886e7e5ad36e93d09ae32d372393e6c607dfd683e685fe1721fc0fd097826c599
     9eb721eec841a49fbc86a39b57e2e0f174649f2944ecbe38f4ea4d381613878ef66bd8975c898efa4aa446ed13d25c637efe821992175ff40124ff7e533503d37ed90fa0126e004e2fdc000c50bcf9d0ba8b6c60f98789dac19962fca90efac557a52d11dd9b056c49a3131d618c9bec7284e2e859dcff30d3e18ba1761c5d
     9fee632aecef5389a57108e6625b07dc744eaa959a2e9ccaa5651cc683f731f6ddd3ccd79bb279742e04cd27e298a36be600da30f588526a2a2663888ea526724b877b2360dd65260d40534613fb9da6ac6629c637f026e0e983e4850f02092eb80118a0a87d688dc71b583393f2a3e48f30f8dfe371ffca4d74777733056c
-    3299d88b3a9d1f145fe2cc00346688cdd8a693cdd0afbb01c3de6ae8975f677186ddd530c4de874e38d674a695c5c90660d5bad3ecd9688ed74e79dcf8a811da5773597f28ba17e3b17ae85797c37cd5b6a9d07cab97a5a325f466e8c32bd97deb3754625c639c3000b52636db06eda3fb6706a090de107907fa55656c09a3
+    3299d88b3a9d1f145fe2cc00346688cdd8a693cdd0afbb01c3de6ae8975f677186ddd530c4de874e38d674a695c5c90660d5bad3ecd9688ed74e79dcf8a811da5773597f28ba17e3b17ae85797c37cd5b6a9d07cab97a5a325f466e8c32bd97deb3754625c639c1000b52636db06eda3fb6706a090de107907fa55656c09a3
     059647c3d06fac14675c10f63bbaae3ba8c9256188bacb64c728fceeb98e29bb55747cbdd2f58104d464cc9a89853cd2fdba80d596f99a19310075668c7d230363df3ec9d67d8d6b06a001974e9fc3a041780706eb90752a1fd7ab267c0d9a9e3722b7b849dae23882e4c5d706e0e3c79d686fba87e307b761fd8e143477c8
     f1dc000c04b80118a0a87d68e9e361108c027f43d7791e7a15f7eeddc3b9c44c347ff900ce86c43181b87af52a5a5a5aa0d3e99861186881148abdb1ead400946aeb744b26f6ebdeb9c296ca9a3c795d3600ef2dc962cf667461b1f55ace8ed32fbd365103281863967b03d0878806a312f93e8d476a616911fb998d778d32
     c34d36000d076a6069129b062dedc362bf34218efa9e511a0a74ad4935864eaeeb2a6a7249908f37570ca2caa425782b224fda9a80dc0f79d46fb3390f5ffcf1126963faa0f790de134fb0dcee630e60ad46a40bb589ae30dd06a0519039fa0da61c72a2ec1f5ced0398bc7d238e669dc4c9e43dd8b8230a51878f61d9afd6
     a0b8a04c38fe260e67dcc689a848b48e8ce3c8da0d08db188ea6210b8c430fb1372a1d7b6362a8cc14d490bcf8de00ec42cb831b888d0cc3a6a84cb4720330a0e0066080a2f6a16506a0a2b9cf703305cf77fc0d4c9db6feac0c95cb317a9fbcd5eba049fb7b1807bb991f356dd55958062b3194f0e718b97969c2d75a5f37
     3b8eae49a569ba4edf5fa7e2f97f99a86decfc970c742d3c8feec5f9a87b3b03d75edd8fd21fc5b070f5c73178f0ebe378b2285fd87f714643cf924be84dbc85a1a121f6f17015669c495f00ddfbc56ce908e58776acf319c60da2129beab871ed841f34e5ba339ca653f9624d755e57afeb0835b924ec65d311b20118f1d6
     b7109a5983253ffe22ebaff9d6b73e82bc66207ef18ff0ca9b8bf1dadfbe848863c7f1c53ff9169ab498949e060cbdf2f28b483a7e6c660c40e1b7d26ff616d38576683e9f84918f1d6273a27ae34266ba0cc0f1d661683e9b08dd1bf95eddaf2bb8da04dcd5d601bd702f16fd105a5bdbd0d6d585abb967515059cbd2ddbd
-    9e8bf6be015c39978d7bcdfde86a17d3c362c4c1c82de818f37dede56c83e48537010717dc000c50d43eb4f61f59737d3674275e87a547547232b20168192cc550da1f60a8df89a1fc8318cbfd27e89e0c4193f557300cea3092f257d0d767e1d9994dec38ba26295cba4ed76fcea0e76f8eb1750a0fe38b515f5fcf6aff5a
+    9e8bf6be015c39978d7bcdfde86a17d3c362c4c1c82de818f37dede56c83e48537010717dc000c50d43eb4f61f59737d3674275e87a547547232b20168192cc550da1f60a8df89a1fc8318cbfd27e89e0c4193f557100cea3092f257d0d767e1d9994dec38ba26295cba4ed76fcea0e76f8eb1750a0fe38b515f5fcf6aff5a
     5b5b55c383070fd8bda6a6a6223a3a9a85c4c4445cb870812910b5637c1ddadbdbd1d3d3038d46c36a04fdc1747d68031135b924ec65d311344a9b466b538d1f391ecf4f8b62a3c31b4bb24527e0b2f37072123e28ac47a58186f3d8a4afb9c7467a474589ebf2e8f0e9c45706a01263c243683e15cf46d0529f3a77f1bb5c
     9a2cac2f2319aceecee8e129ae1a80dd4df771edfa1d8c590d5233f24f9ec153bdbb869ddd71e32634d435c0689395e3e8efe9855eff1c8fbbe78edb2392176f0d403a476f6f2feb3e3455a074f632ca0dc0e9851b80010a65f62403f063875853a0bf617314ae2f67b568345aab7ffb750c5d6c1404c5008bc5e276d0ebf5
-    cc382b2d2d456666264e9c3881ecec6c545454b0df45869ada719e067f0a2a319d0620f5ad0b24d4e49270d5009c2bf8c300b422185a34d0c45db732fe944bd6e42ddc8f29af4d8a991e5c3500753d15d87fac1c89611f20363d1bcb576dc0ae75ab9078321b8b168422336e23a28e9cc68af5db101d198d275a1392f74663
+    cc382b2d2d456666264e9c3881ecec6c545454b0df45869ada719e067f0a2a319d0620f5ad0b24d4e49270d5009c2bf8c100b422185a34d0c45db732fe944bd6e42ddc8f29af4d8a991e5c3500753d15d87fac1c89611f20363d1bcb576dc0ae75ab9078321b8b168422336e23a28e9cc68af5db101d198d275a1392f74663
     53c83c1c12d22f5bb511a784347b13b2b12a2402ddac3fe3382a33e3517c3d1bdb522b70273706fb13b35172bb1a9121cb70f26c3c220fa460fd92f5488bd9867dc712f0fb796b917d640b228e9cc0bb6f2c465a421aba66894143f242794d86995a78f6ec19aefbd940e306e0f4c20dc00045ed436b793888e72fa5b00f8f
     df8260fce97e7b857d84e81e948695afa1735249909a02ce9c3983f4f474a6e4af5fbf8eb6b636b79a70fd05f5c9b3f6dd93984e03d0beefa212b57bf3376a724990ec04a301681f4cd92d520a1f3166627ef5e8dce47cdaf2c07147497fc825d54ad2b50d7b67a620e2920128a4294bdf895fbcb51e09a99918d09b713e3d
     13897bc3f0fe8245d8955582de07f95834ef43c130cb43d3954ccc5fb4004bd6ec45cab10c963e2fe324ea6fe4e0dd0f1660d19a7d784a034a86ea917a5a2c705f493a82ca3b97b068fe42ec4ebd887b3987b13c622d8ee7542275c71afce1bd95b8d15089f4bcfb303cad456ad629ac9dbf086b76c462d00f8363fcc5f0f0
@@ -5362,16 +4355,16 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     0250ee23d58d5ddb6290be619110846f2edba2e8ffa4f45b8adcda8992b0a1a101e9e9e962268dd91ad14a0504d548521f39c63b68d4370944aa0d9c2a2c00b58b52002a3fd8be9a95992aa239faed3c2106fd6556c65b017871ff2edc7c41c6ef2d381c1e89882d1bb076cd32acde71049947b72136f33632e3f662fdda4d
     28ae6ac3f9f82d58be7a2d324fc5e1273f5d88bb0d7df60306392c00830b16801a2590056d4d51a618d1a8933bb03b463b8627673a3ab7bbf17303893f32734262b0bebedee13b3350014162e6eeddbb0e1f60a83a1f23d599187e9c06cbfd5458ca331d7b5ea0f7c822d0633c529788d7578f62b8310bc69238585fb5c154
     fc1e7a74ff2cad57093f635996083bdfb87dfbb6789e5800ce2fdc0940259ecccaf8135b63bf5fccca782b00db4a2f60fdae38e874f108d97a1849e12138785287b53be2d1f3b20431c9a7b06d75084eea4ea1f4d953ec09598f9369a7f1a2e109d62c0b41adc1c3072e886001185cb000d42873b1a0a5343f7cf850343516
-    17178b8f77a051138084adbd127d513fc6706b85c387181780c6ab6f63a8ea21fa53ff02e6ea0cf49cdf065b530a7af3e2305c1d292d133194fb3730bdecb5479d47b0009c9f782300c718b6d9fbf17de540c0fbf109b3327f76ca27b332de0a40778cda4c785656091377f1f30a1280d4af999e215a27477fea69c90270fe
+    17178b8f77a051138084adbd127d513fc6706b85c387181780c6ab6f63a8ea21fa53ff02e6ea0cf49cdf065b530a7af3e2305c1d292d133194fb3730bdecb5479d47b0009c9f782100c718b6d9fbf17de540c0fbf109b3327f76ca27b332de0a40778cda4c785656091377f1f30a1280d4af999e215a27477fea69c90270fe
     c10250a3ccf582969a65a9bf190d1ca1791f03859a00a49a0d51e02c709ec87f361c19e835fe6dae30b4ab155800ce4fa624009528ccca04a21f9f92918296299995f15600d6e61fc7ce941c3c28b98c359f47e259759de803d854d7808607a7f1c1a73bf0a4f229d2742770a3bc513a700f72d274389d7b03666b37b24f9d
     44b1e46fed6994c29cc4c386715332c1842cfaa85bcfe2c58bb166cd1af17de51ac0f9090b408d12c88236397419ee38da742733944b4670a703898cc2c242512bf8f8f163bf3f44ae02d012552e0ab2d1ee99318be20de6d07b224d5a8105e0fcc46701a86026a787f3c6ac8cb702b0e8e01e6455bc927cfa11b57107f66c
     8d82de6a43e2ae483435dd44cce1db38171d81dcdba5d8fac526848484a3716814e94949880c5b8bac1b0f51f1b40eb5755528483d889d0917e765f78fc920f12737f952d71e799d05e0fc8405a046096441dbaa273b6b467cf6f95a8f8672954670fd018d9aa57e82972f5f163361f883090230fcbe93d832242f8661cfcf
     d0b9e7ef1d3e1e187e81c1db6963eb43f7736029d90d5355168c55c592672fac8d4fa57d6da28fa045df20f999602e8b83a92e1f8399ff8481b27c115d896b9a661b1680f3137f08402533363d9c07b3329309c01bb74a50f6e8291e3fa9f2c9dd292b47858a7fb0ba8aa79eddb9ac4bb048f724504cf77eb29b9a53bb9f2c
-    0035c07c2e68e9df2419962643c664aa643a4c26005f85fc189d2bbf8ddebd3f75f878c284a1ab3b41dd85461a8f63a8ea9924004361e936c1723f0256a324108bd261be1d064bbf49c420ffb175492c0eab68661680cc4ce06f01a8643afdf8a684c2accce00f4ec3fca8c3a3006418c6bfb000d400c150d0923162fab053
+    0035c07c2e68e9df2419962643c664aa643a4c26005f85fc189d2bbf8ddebd3f75f878c284a1ab3b41dd85461a8f63a8ea9924004361e936c1723f0256a324108bd261be1d064bbf49c420ffb175492c0eab68661680cc4ce06f01a8643afdf8a684c2accce00f4ec3fca8c3a1006418c6bfb000d400c150d0923162fab053
     f33089125fa6399b4c00fa03ba17a3d697301685c0a46f73f87a0f0b40662608a4005432d57e7cbe42cdd1436fd99ba35ffef754e424a5b100649800c302500304b4a035b6222a7483e8fb77e44289c3732ac873a78e3399a998c9686d6d15fff0b3b3b3d1d3d3e3f09d1c570138da69c2c07f3a2a0a8de9ba9e0571685b10
     85170b76a166c14e69b91b2f17ec8361c17eb1af6f41bc6a3c27f73b8962695a744da44f0bb0009c9fcc94005412e8e9e1e426e0f2ec5b68f9d364fbbb14c8e66886097258006a804016b429a1bba077ac13e313e3af41a1be0eeffedf353076dfc32fde8b00a4e5b20de9c218f4913bad636148004e6640da174c2613ae5c
     b92266aea8acac74f8bac755004e0fe9da7ff8a610c6d59d360c0e0ea2beb61e7dbf6b1771c2fd8b4474fe753a7ab3ab84807a7efdeab484ef6cc002707e321b02708c004d0f270b406513b0a7e6686a4d888c8c444c4c8c935bb56ad58ccd973d57b050ed2d2dc3ef63b4cbde8d65aa503cf38a1b8e2defb1d5f462e4baf7
-    737ed339bc4da32fe9f1063abfe9e3eb62299c9fa75a94efc754ae3510b000d400812e68cbf37442e8e4d1c4fb8e11bf76c3d0dd28545992c00b8b8d4172268d1476ec53188b16a389a5a5d26fbad05cb624044910923054233002301906c36d84c55cc1a33085f8935cc59278fcdddfae447ff3352c5d9f86dcad76e11bb3
+    737ed339bc4da32fe9f1063abfe9e3eb62299c9fa75a94efc754ae3510b000d400812e68cbf37442e8e4d1c4fb8e11bf76c3d0dd28545992c00b8b8d4172268d1476ec53188b16a389a5a5d26fbad05cb624044910923054231002301906c36d84c55cc1a33085f8935cc59278fcdddfae447ff3352c5d9f86dcad76e11bb3
     6519cae788126401383f995501a8c48fd3c3a90940252377da9d9aa08f1d3b26ae5da6a2a2025bb66cc1810307c4c0b3e67bd7b17af96a2cdf168fe4bdf168f3720ee091fe1758f20f6fe2c8a5a70e9f712cafee2332360d77ca5b1c3ece583acb712cd35eb8fbca70f60b58f69609379cfb42face0ec392f444ec13628a04
     b77904963d0f61fee2b658c26a83ed451f2cfbca61de5202d3d262e127633d5d83d1412b8cff7459d4e4d2ba8c6a3ce9f8b44d02c51c5682d1012b86251167fc59ae74fef12a055b639f3ddc8e07228e6aba6401a8b24f9c67fb03711e6baa3d5d740e914649184dc80b89e133753087dc8525ba5c8c6257624dafb5efdb55
     6affc3407e5f568b7565ba09b5b032746e357139218e9b7be39a7794c7e6ad52fe7e2a95a9d2feb1fb31c9b5061a16801a800bda71babbbb919595250a00d77cf0af00ec46328957c93d6c194443492e8a924af1aa5e8f82538938f44904fa7f27010ffe2e031d1dd5b89c5382aee7d785d82dca4c16c2317016d4fc070bc0
@@ -5405,8 +4398,8 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     fc4e84ccb2a3346c9304e9b06228b0c1604055559510825a71f3e19d08342c00350017b4da653e16b4dec2cfa5760906011859cc0290610289658405e0acc305ad766101c8cfa516998fcf254da348736b3f7efc1879797942049e3e7d9a1d3b760174191919c8caca12736b53f3394d6dca027006e18256bbb000e4e7528b
     ccc7e792aec162b1a0afaf4fd404b6b5b589eb64c78e5d605d7b7b3b7a7a7ac4b7c4660b6c572316802e7041ab5de85eb000e4e7526b04f373c930ccdc8505a00b5cd06a171680fc5c6a1116800cc3cc455800bac005ad766101c8cfa5166101c830cc5c8405a00b5cd06a171680fc5c6a1116800cc3cc455800bac005ad76
     6101c8cfa5166101c830cc5c8405a00b6a052df9d1689c9974cc445800f273a9455800320c33176101e8825cd0d2543a8585852828281076b084bb94874b921bdb0ea0bb78f1223b17979f9f2fee09dd9b601580fc5c6acf05f373c930ccdc8505a00a6405bfbbbb1bb5b5b5282b2b13d6f0d9cdbea37b41f784ee0ddda360
-    839f4b6dba607f2e1986999bb00074033577d104d664119f3eeaec66dfd1bda07b12cc4d91fc5c6acff173c930cc5c840520c3300cc3304c90c10290611886611826c86001c8300cc3300c1364b00064188661188609325800320cc3300cc304192c00198661188661820c16800cc3300cc33041060b408661188661982083
-    0520c3300cc3304c90c10250059acf333c3c1c870f1f466565a5c337309c3e7ddab1e61d341f2ba54d765d5d5dc2bfaeae4e6ca7a5a5899909944cf51cfe60aae78c8a4dc457bff57dfcc137bf873fa0e5b7fe42723f702c695bf2ffe6f7111d9fe4880131f93e4dc5a5656622efe57c98c9fcf0f6ba6262621c6bd3879e6b
+    839f4b6dba607f2e1986999bb00074033577d104d664119f3eeaec66dfd1bda07b12cc4d91fc5c6acff173c930cc5c840520c3100cc3304c90c10290611886611826c86001c8100cc3100c1364b00064188661188609325800320cc3100cc304192c00198661188661820c16800cc3100cc33041060b408661188661982083
+    0520c3100cc3304c90c10250059acf333c3c1c870f1f466565a5c337309c3e7ddab1e61d341f2ba54d765d5d5dc2bfaeae4e6ca7a5a5899909944cf51cfe60aae78c8a4dc457bff57dfcc137bf873fa0e5b7fe42723f702c695bf2ffe6f7111d9fe4880131f93e4dc5a5656622efe57c98c9fcf0f6ba6262621c6bd3879e6b
     ba46ad505454e4363d5abc17d36526bf8b73859e9e1e1c3f7edcb1e51d33f96c308c275800aa40a26ac58a158e2d38adfb033a9e2cdc0e1e3c2896dea28c2bb366cd1a180c06c716b074e952c79a9da99ec357a6735d3192b0fbba24f294ee0fbf2d09bf6f7c17efbeff11feee97efe06bdffc73114ea6a6a606d7af5f776c
     b947793f5def6d20984e3ef8923e391fbccd0f774ce5dcde5e973ff39aaeafadadcdb135fbb4b4b438d6ec28f36fbaf7622accd4fbedfa7cf8f3de2aa1e3caefcf4ce2cb79293c89e2a93093ef29135846ad737bee6f16802ad00bf6c1071f8817953eae478e1c11fe1b376e1cab5da37f7d05050522ccf9f3e7c57a757535
     d6af5f0fbd5e2fc2b86ecb283f34f231c9515862f9f2e5e2b8e4424343859f0cc58d8a8a12e9923ffc1497fc525353f1f39fff7cc2bf730a17161636e6af96769ac8feb3cf3e43474707222323453882c2d2751054e0eddbb74fc493f344c974ae2b3a36115ffbd6f785a35abfbf7ee39758fcf10a9cc9ccc6fffed95ba2f6
@@ -5416,34 +4409,34 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     190abb6edd3af1f2529cbebe3ef132cb85a492e95c1709c0af4a02efbf7ce37bf8c5dbff8c0f3f5985bffaf14f4593f0d7244128c4a18a00dcb2658bf8f050415d5555253eb21f7df411424242909898e808095188cae990d727bb365ad2b612f9186ad727339d7c203ca5cf539ad5f283c2537e5041404d85cac24a0d4fe7
     56a2765df292ba212c5bb60cf1f1f178e38d37849fa76ba67d749e888808217808e5f15d51a69f0a2582de09e5b529c3c8db6afbdcc53f75ea147ef4a31f093fea7641f941f9e0faceb822e79fdaf93d1d436ddfb973e7c43da37d24bca8b0a67b4bc281f231212141c495f36ab27c543b87329dc4bbefbeabba2402fd5d94
     8fa37c7f64e8b8aecfb1d22f252565829febf3ae764f9428cfab9697326ae7958fed7a6de44ffb95efa41c562dad84da779850a65ff93d9399ecfecbeb148eee0db9070f1e8874b87b2e95e7747d5728de6465039dcbf5bd573e53f31d5baf11fd47efc1f2c8f9cf8e566001c808a87059b56a95636be689893d80af7ffb07
-    f8ba24f6fe50127bb4b48b3e1280e32e3a6ebc099861820dd7423f98a1ee008b172f166264d1a245aa7f8c671b57413419b3fd1d66bca3c734825ef38858ef3b7407ad7fbc1daddfd809d36d459fe0111bf4ff733f5abebb07cdff753bcc0f9dbb8c680116800cc3300cc3305e90d73080af1facc4d6939568fac75464fcea
-    18cebc790827de484443710d8c653fc160f10298aa3e71c4d02e2c001986611886095aa80fa36b9f5419a375d0b166e766cb25bc75ee4f61b81909c3c2ddd02f3a8533b1c528bb5a038cda60a9fc352c777e0f967af78383a8b6fae5cb978eadd9830520c3300cc330414b7e7e3e0aaf5d736cd9a9ed7e8a7f38f71dbc93f5
+    f8ba24f6fe50127bb4b48b3e1280e32e3a6ebc099861820dd7423f98a1ee008b172f166264d1a245aa7f8c671b57413419b3fd1d66bca3c734825ef38858ef3b7407ad7fbc1daddfd809d36d459fe0111bf4ff733f5abebb07cdff753bcc0f9dbb8c680116800cc3100cc3305e90d73080af1facc4d6939568fac75464fcea
+    18cebc790827de484443710d8c653fc160f10298aa3e71c4d02e2c001986611886095aa80fa36b9f5419a375d0b166e766cb25bc75ee4f61b81909c3c2ddd02f3a8533b1c528bb5a038cda60a9fc352c777e0f967af78383a8b6fae5cb978eadd9830520c3100cc330414b7e7e3e0aaf5d736cd9a9ed7e8a7f38f71dbc93f5
     977853127c0dbd558e3dc070e33e984bbe0963c52f313adc2ffc2c2f3663e0ee0294d5fc5bfcf2fc5f62dbad8f85bf1a34e887cc48cd362c001986611886095ad40420f1dadc859297d7a46537bad7e5a0f98f76c2989b88c1577f8cc1e605182c5a00ab3ede1e786400239dd968ef7d80d2b662d8466d767f155800320cc3
-    300cc3cc32ee04a09261fd6b742dcf447fca7dc0bdb6f30a16800cc3300cc330b38c3702d09fb000641826a0903dbeab57af3a395fb1582ca8a8a8706ca9f3faf56bd1997a26b87dfbb6309aab457273731d6b0cc3cc36fdfdfdb87ae50a4e9e3821841ed92fa46f476b6bab23847b01489327a49d3a85331919aad33ed27e
+    100cc3cc32ee04a09261fd6b742dcf447fca7dc0bdb6f30a16800cc3100cc330b38c3702d09fb000641826a0903dbeab57af3a395fb1582ca8a8a8706ca9f3faf56bd1997a26b87dfbb6309aab457273731d6b0cc3cc36fdfdfdb87ae50a4e9e3821841ed92fa46f476b6bab23847b01489327a49d3a85331919aad33ed27e
     b2bd7bfbd62d9c908e4f267f6c367bf520d97ca4b864cfb3b3b353f8c9c80250c495be6564b7313b2bcbfd4014a3511c9bae21efd225714d2693c96d786f6101c830f31412809e1819b1dbb15243fe887982e22bc33537378b8f992beecea3760eb283e60a85730deb8b0074970e4ff920e3298c6b9a590032ccec43e26a4b
     5898104f4a689b8c6f9fcfcc74f84c14805fa6a6a2ece143c7d63864b0fb5179b9630b08d9b4098f1e3d726cd94997c2c4c7c539b6ec344ae251393141e5d3a758b57225da544602272624e0f9f3e7627d58ba063a07cd4aa484ae61cfeeddc8cdc971f8f8060b408699a7b8d600cad3365d92fe41caff484958d10c08f441
     2147b3c5a80933da270b1b3a963c8303d50cd23f5cc255005ebc7851fc53254840d1345304c5574e57289f571659f44fb7bdbd5d7cf4e818321487e212ee0420eda7e311ca345fbe7c594cdcaf1493eed2a764b2bc724d33219ff3a15480502d00417e72ba1886093c67cf9e45c93df569daa83583de6519a500a4efd8f265
     cb10131333c145474763dfdebd221c11161a3af60d91b979f3268a5d9a77e94f6242bc63b08804d500ba8691191d1d457454945817d7505222d65de990be37998e6fafafb0006498798abb1a40123ef23f4a123599d23f6159d4b8abbd52ee2391a5145ff279686606770290906bca5ce3bb9e978e411f615f04a0528851fc
     2b57ae886ba4e66982d2209fcb5dfa94789b57729a09a53fa58704f2546b2b1986991eaf5ebd428c24d8d4a01975e85d96510a401260dbc2c3274c7fa986af02f0d9b367a2664f3a99c3671cfa96e464678b7583740d3b77ee14ebae9cd2e944b3f1746001c830410ad5dec9b561fe826ac4e45a3199e99e47ed98934102cd
     153a869ac8f3267dbe5e03350fc9b5800cc3cc2cf4ce522d3e3597d2dce4917bf6a0a0a040fc99bca668f2a59ac2d2d252c7969da6a62631df3689488a1bb56f1feedeb9e3d86b273939194343438e2d3b8fa577bebcacccb16587be3d549b2743f33d9749619e545420323212717171226da9a9a9aac293fec8eedeb54b88
-    485ae65fbe2cfe5416497f30a7030b40866198004022b4a1a1c1b1c5300ca32d5800320cc3300cc304192c00198661188661820c16800cc3300cc33041060b4086611886619820830520c3300cc3304c5001fc7fbadb736fa9a0b1500000000049454e44ae426082504b0304140006000800000021008594bcdfd900000003
+    485ae65fbe2cfe5416497f30a7030b40866198004022b4a1a1c1b1c5100ca32d5800320cc3100cc304192c00198661188661820c16800cc3100cc33041060b4086611886619820830520c3100cc3304c5001fc7fbadb736fa9a0b1500000000049454e44ae426082504b0304140006000800000021008594bcdfd900000003
     0100000f0000006472732f646f776e7265762e786d6c4c8f414bc3401085ef82ff6119c19bdd6d90a03193d20644f4662b78dd64a74968763666376df2ef5dbde865e0f11eef7d936f66db8b338dbe738cb05e2910c4b5331d37081f87e7bb07103e6836ba774c080b79d814d757b9ce8cbbf03b9df7a111b1847da611da10
-    864c4a5fb764b55fb981387a47375a1da21c1b69467d89e5b6978952a9b4bae3b8d0ea81ca96ead37eb2084db97e7b94d5eef5a5deaadd327d96ee2b2c88b737f3f60944a039fc85e1073fa24311992a37b1f1a247888f84df1bbd54a5202a84fb240159e4f23f7bf10d0000ffff0300504b030414000600080000002100aa
+    864c4a5fb764b55fb981387a47375a1da21c1b69467d89e5b6978952a9b4bae3b8d0ea81ca96ead37eb2084db97e7b94d5eef5a5deaadd327d96ee2b2c88b737f3f60944a039fc85e1073fa24311992a37b1f1a247888f84df1bbd54a5202a84fb240159e4f23f7bf10d0000ffff0100504b030414000600080000002100aa
     260ebebc00000021010000190000006472732f5f72656c732f65326f446f632e786d6c2e72656c73848f416ac3301045f785dc41cc3e969d4528c5b237a1e06d480e30486359c41a09492df5ed23c826814097f33fff3da61ffffc2a7e2965175841d7b4208875308ead82ebe57bff09221764836b6052b0518671d87df467
-    5ab1d4515e5ccca252382b584a895f5266bd90c7dc84485c9b39248fa59ec9ca88fa8696e4a16d8f323d336078618ac9284893e9405cb658cdffb3c33c3b4da7a07f3c7179a390ce57770562b2541478320e1f61d744b620875ebe3c36dc010000ffff0300504b01022d0014000600080000002100b18267b60a0100001302
-    00001300000000000000000000000000000000005b436f6e74656e745f54797065735d2e786d6c504b01022d001400060008000000210038fd21ffd6000000940100000b000000000000000000000000003b0100005f72656c732f2e72656c73504b01022d0014000600080000002100c6b5e6a422020000670400000e0000
+    5ab1d4515e5ccca252382b584a895f5266bd90c7dc84485c9b39248fa59ec9ca88fa8696e4a16d8f323d336078618ac9284893e9405cb658cdffb3c33c3b4da7a07f3c7179a390ce57770562b2541478320e1f61d744b620875ebe3c36dc010000ffff0100504b01022d0014000600080000002100b18267b60a0100001302
+    00001100000000000000000000000000000000005b436f6e74656e745f54797065735d2e786d6c504b01022d001400060008000000210038fd21ffd6000000940100000b000000000000000000000000003b0100005f72656c732f2e72656c73504b01022d0014000600080000002100c6b5e6a422020000670400000e0000
     00000000000000000000003a0200006472732f65326f446f632e786d6c504b01022d000a0000000000000021009ee4693ee8dc0000e8dc00001400000000000000000000000000880400006472732f6d656469612f696d616765312e706e67504b01022d00140006000800000021008594bcdfd9000000030100000f000000
-    00000000000000000000a2e100006472732f646f776e7265762e786d6c504b01022d0014000600080000002100aa260ebebc000000210100001900000000000000000000000000a8e200006472732f5f72656c732f65326f446f632e786d6c2e72656c73504b050600000000060006007c0100009be300000000
+    00000000000000000000a2e100006472732f646f776e7265762e786d6c504b01022d0014000600080000002100aa260ebebc000000210100001900000000000000000000000000a8e200006472732f5f72656c732f65326f446f632e786d6c2e72656c73504b050600000000060006007c0100009be100000000
     }}}{\\sp{\\sn dhgt}{\\sv 251658240}}{\\sp{\\sn fHidden}{\\sv 0}}{\\sp{\\sn fLayoutInCell}{\\sv 1}}}\\picscalex100\\picscaley100\\piccropl0\\piccropr0\\piccropt0\\piccropb0
     \\picw1067\\pich744\\picwgoal605\\pichgoal422\\pngblip\\bliptag517907953{\\*\\blipuid 1edea5f1b5a67ba24b0d15b335165747}89504e470d0a1a0a0000000d494844520000003f0000002c0806000001a51a507c000000017352474200aece1ce90000000467414d410000b18f0bfc61050000
-    000970485973000017110000171101ca26f33f00000bbf494441545847ed9969939c5515c7c70571031414d9658dfb565aa29f44df5a58a628520a58c23bbf82
+    000970485971000017110000171101ca26f33f00000bbf494441545847ed9969939c5515c7c70571031414d9658dfb565aa29f44df5a58a628520a58c23bbf82
     6f7ce137700f8228498ca60063204c984998ccc264baa767a6f7a7f77d3dfe7fb7fb364ff7f42c4c8600559caa7f2fcf73efb967bbe79ef33c33fba51b84fb84
     fb43f8a2709de0e8a19ffdf417562816ad97aa5ba15ab352a361bafe99c1ed999923a552d91abad8d92c5ba7d7b54eb73b36e00e1b525737a0f5d539067c6a70
     7b66e643c24727f011617ff461e14e21ac01b84570743d6bfef1afcfd8233f7fd2d241c18a6f6659ff6181c983019de5a875fa5dbb7061ce69a1eb3ff403ae63
     00849a9e74fd4b02c23b42e2492ddcec3071811b1fdb03981f8623ee1037ee0e826028c0eea4b15f173e2d8c985c2f1ce16624b66ef566c39ad5a675e732d695
     c2afbd36eb26366305b3be63800170e3480d183ce806359a56cf95add96ab9499d4ec7b28592bd1149da6a34a6df65187c5fb8491831e0c72785cf0b77ec81db
     042663afc3238c8165b1f0a4d527b1cd854ce6c6e70476c964cc85c1ae420dc27c4cff1b9dc5f6491a0f93910d607033378e3dfeb41dfdd1a36ed0e3477f658f
-    1c7bdcfaf98605da8d8554d10a959a359a2d182009523b82c12d4cea096df9ddd1420c975b3f51b35c2e6fc954ca2cd3d06ec9c30075b63368c9f76dc500dfec
+    1c7bdcfaf98605da8d8554d10a959a359a2d182009523b82c12d4cea096df9ddd1420c975b3f51b35c2e6fc954ca2cd3d06ec9c10075b63368c9f76dc500dfec
     187d3806fd7edf0514796027064e855e0f19b46a79104410938362d9dedcccb8202a962b30b85718a524bc70c370fc889acda693244c302b168a302098c60209
     6ec43637c251370db8fb1302928f0829b8306ddf4f62db569e460c0803e607c1249f5d8901488777d898e48b1b054c7350b069e1012fcc86a9bd6063c405cce3
     32c2d067874ae24be4701420c8363720159a7f56b89f09d168d42e5f5eb04c3a6dc964c231d9951461fd66d7fa8afd6924bedf15c81558c45b6244fc21a922e1
@@ -5459,7 +4452,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     6026a78242ff756e0daecf6e9a2de7adbb981bb4bb2a32d6b792168fc7ddfd442261993762ae3da0daaf487b48bcf7bf78ad50b5d64ad26a9992d5e345eba664
     be46d74a0b714b5fd9b2eeac34bf22c1ca6d5bdf4cd8da5a64304fa6cf17d49f0ea9523dc0e268158d44addded58f3fc9c75d355ab4b8b56a72d655546e91caf
     cbaffd8d8ac5244c438507662f968a9a23f3d3db08c5d2a0f412ef3d171f051c8bc7a2ebee37ccca899c751b6d6bb7dbee1a44b50365575296d1cec866b25255
-    112ff4b398bd6a8de178f1de73f1d10318b424785ce35557f9541b3009ef7dff88239b2fb9462c9d2fdbfcea96ad46142bf9a27640d9925915a722f1fe9ab063
+    112ff4b398bd6a8de178f1de73f1d10318b424785ce35557f9541b1009ef7dff88239b2fb9462c9d2fdbfcea96ad46142bf9a27640d9925915a722f1fe9ab063
     b423d16d6ea48845d192c5588468e71afffd755fc54e2ba94098c49be72f3c4920c58ee57724e1a2eb537723164618ba47aff94e14a8314e6dad594f82883735
     3d7dc3588683f8c31148eec5341c0c5f15be294cabd3f6036a39e67f59e080416bb22856c6da23e20fda23150250d7230487c1b4d676bf603e29959c4e4ca120
     8a8e2d0e790118800b88015f0c5e0de0033f4e33f86f5bd81337900c3010135d2de0e379eeb8f02431f0b0f001bd5df296f36e0b0377be573029db81bd1e5618
@@ -5482,9 +4475,9 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     4cc3471d3aeea83c964179c284494cbe67c877445ef95c2e3752a25229dbe2d28afde599e7743d7046e13a63b2d9ac95752cf29b6fff1be36190b021b90ed2e9
     b4bbc6f3387fdf8fe5e191a76a563924c80eff39e509794a70a296ad4b1453e4e0587444d76d3419fa789f90b975c8f7c0446813c6bcdd04fcf6ff7dd8bf5dc2
     e338a1a93aa025f82356f212ee1467beba9b0cf95d950f1b80088001fb9f288069f8750d2f1cb0b2076f3ddf6984d7637d9425c449ce243894c66978dc2bbeab
-    d73d71d31b014bb14f30024c880418620c9803f202867937c0da0039d8a2c8857c382cdcceeeeaf16914368237048c300680f12430d2b5c2b4f5910b19c30a7ba5f7adf824f9c91e9ee97b0d9372820f683acdccfc1f7e15d6090d8cc5690000000049454e44ae426082}}{\\nonshppict
+    d73d71d31b014bb14f10024c880418620c9803f202867937c0da0039d8a2c8857c382cdcceeeeaf16914368237048c100680f12430d2b5c2b4f5910b19c30a7ba5f7adf824f9c91e9ee97b0d9372820f683acdccfc1f7e15d6090d8cc5690000000049454e44ae426082}}{\\nonshppict
     {\\pict\\picscalex101\\picscaley99\\piccropl0\\piccropr0\\piccropt0\\piccropb0\\picw1067\\pich744\\picwgoal605\\pichgoal422\\wmetafile8\\bliptag517907953\\blipupi149{\\*\\blipuid 1edea5f1b5a67ba24b0d15b335165747}
-    010009000003af1100000000a110000000000400000003010800050000000b0200000000050000000c022b003d00030000001e00040000000701040004000000
+    010009000003af1100000000a110000000000400000003010800050000000b0200000000050000000c022b003d00010000001e00040000000701040004000000
     070104000800000026060f000600544e50500601d5000000410b8600ee002c003f00000000002a003c0000000000280000003f0000002c000000010001000000
     0000000000000000000000000000000000000000000000000000ffffff0000000000000000000000000000000000000000000000000000008080808000000000
     00000000000000000000000000000000000000000000000888888888880000000000000000000022222222222000007ffffffffff00000fffffffffff880007f
@@ -5624,25 +4617,25 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-    ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000800000026060f000600544e50500701040000002701ffff030000000000}}}{\\rtlch\\fcs1 \\af31507 \\ltrch\\fcs0 \\insrsid10555431 
+    ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000800000026060f000600544e50500701040000002701ffff010000000000}}}{\\rtlch\\fcs1 \\af31507 \\ltrch\\fcs0 \\insrsid10555431 
     \\hich\\af31506\\dbch\\af12\\loch\\f31506 home }{\\rtlch\\fcs1 \\af31507\\afs28 \\ltrch\\fcs0 \\b\\fs28\\insrsid10555431\\charrsid11666074 
-    \\par }{\\*\\themedata 504b030414000600080000002100e9de0fbfff0000001c020000130000005b436f6e74656e745f54797065735d2e786d6cac91cb4ec3301045f748fc83e52d4a
+    \\par }{\\*\\themedata 504b030414000600080000002100e9de0fbfff0000001c020000110000005b436f6e74656e745f54797065735d2e786d6cac91cb4ec3301045f748fc83e52d4a
     9cb2400825e982c78ec7a27cc0c8992416c9d8b2a755fbf74cd25442a820166c2cd933f79e3be372bd1f07b5c3989ca74aaff2422b24eb1b475da5df374fd9ad
     5689811a183c61a50f98f4babebc2837878049899a52a57be670674cb23d8e90721f90a4d2fa3802cb35762680fd800ecd7551dc18eb899138e3c943d7e503b6
     b01d583deee5f99824e290b4ba3f364eac4a430883b3c092d4eca8f946c916422ecab927f52ea42b89a1cd59c254f919b0e85e6535d135a8de20f20b8c12c3b0
-    0c895fcf6720192de6bf3b9e89ecdbd6596cbcdd8eb28e7c365ecc4ec1ff1460f53fe813d3cc7f5b7f020000ffff0300504b030414000600080000002100a5d6
-    a7e7c0000000360100000b0000005f72656c732f2e72656c73848fcf6ac3300c87ef85bd83d17d51d2c31825762fa590432fa37d00e1287f68221bdb1bebdb4f
+    0c895fcf6720192de6bf3b9e89ecdbd6596cbcdd8eb28e7c365ecc4ec1ff1460f53fe813d3cc7f5b7f020000ffff0100504b030414000600080000002100a5d6
+    a7e7c0000000360100000b0000005f72656c732f2e72656c73848fcf6ac3100c87ef85bd83d17d51d2c31825762fa590432fa37d00e1287f68221bdb1bebdb4f
     c7060abb0884a4eff7a93dfeae8bf9e194e720169aaa06c3e2433fcb68e1763dbf7f82c985a4a725085b787086a37bdbb55fbc50d1a33ccd311ba548b6309512
     0f88d94fbc52ae4264d1c910d24a45db3462247fa791715fd71f989e19e0364cd3f51652d73760ae8fa8c9ffb3c330cc9e4fc17faf2ce545046e37944c69e462
-    a1a82fe353bd90a865aad41ed0b5b8f9d6fd010000ffff0300504b0304140006000800000021006b799616830000008a0000001c0000007468656d652f746865
+    a1a82fe353bd90a865aad41ed0b5b8f9d6fd010000ffff0100504b0304140006000800000021006b799616810000008a0000001c0000007468656d652f746865
     6d652f7468656d654d616e616765722e786d6c0ccc4d0ac3201040e17da17790d93763bb284562b2cbaebbf600439c1a41c7a0d29fdbd7e5e38337cedf14d59b
     4b0d592c9c070d8a65cd2e88b7f07c2ca71ba8da481cc52c6ce1c715e6e97818c9b48d13df49c873517d23d59085adb5dd20d6b52bd521ef2cdd5eb9246a3d8b
-    4757e8d3f729e245eb2b260a0238fd010000ffff0300504b03041400060008000000210007b740aaca0600008f1a0000160000007468656d652f7468656d652f
+    4757e8d3f729e245eb2b260a0238fd010000ffff0100504b03041400060008000000210007b740aaca0600008f1a0000160000007468656d652f7468656d652f
     7468656d65312e786d6cec595b8bdb46147e2ff43f08bd3bbe49be2cf1065bb69336bb49889d943cceda636bb2238dd18c776342a0244f7d2914d2d28706fad6
     87521a68a0a12ffd310b1bdaf447f4cc489667ec71f6420aa1640d8b34face996fce39face48ba7aed51449d239c70c2e2965bbe52721d1c8fd898c4d3967b6f
     d82f345c870b148f1165316eb90bccdd6bbb9f7e7215ed881047d801fb98efa0961b0a31db2916f9088611bfc26638866b13964448c069322d8e13740c7e235a
     ac944ab5628448ec3a318ac0ededc9848cb033942edddda5f31e85d358703930a2c940bac68685c28e0fcb12c1173ca089738468cb8579c6ec78881f09d7a188
-    0bb8d0724beacf2dee5e2da29dcc888a2db69a5d5ffd657699c1f8b0a2e64ca607f9a49ee77bb576ee5f01a8d8c4f5eabd5aaf96fb5300341ac14a532eba4fbf
+    0bb8d0724beacf2dee5e2da29dcc888a2db69a5d5ffd657699c1f8b0a2e64ca607f9a49ee77bb576ee5f01a8d8c4f5eabd5aaf96fb5100341ac14a532eba4fbf
     d3ec74fd0cab81d2438bef6ebd5b2d1b78cd7f758373db973f03af40a97f6f03dfef07104503af4029dedfc07b5ebd1278065e81527c6d035f2fb5bb5eddc02b
     5048497cb8812ef9b56ab05c6d0e99307ac30a6ffa5ebf5ec99caf50500d7975c929262c16db6a2d420f59d2078004522448ec88c50c4fd008aa3840941c24c4
     d923d3100a6f8662c661b85429f54b55f82f7f9e3a5211413b1869d6921730e11b43928fc34709998996fb39787535c8e9ebd7274f5f9d3cfdfde4d9b393a7bf
@@ -5657,7 +4650,7 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     e1204433d8e3975de964ca33d753eecc1887adbf1ab6fa96783a8ff6d9387d642d97e5e3692a1e1c89d578c9cfc7e17143a4e85a7df51896bb576ca7ea717949
     40da5e8484369949a26a21515f0eca20a98773089a85845ad97b61d1b4b06848f7cb546db0006a795660dbe4c066abe5fa1e9880113c55218ac7324f69aa97d9
     55c97c9f99de164ca302600fb1ac8055a69b92ebd6e5c9d5a5a5768e4c1b24b4723349a8c8a81ec64334c65975cad1f3d0b868ae9bab941af46428d47c505a2b
-    1af5c6bb585c36d760b7ae0d34d69582c6ce71cbad557d2899119ab5dc093cfac3613483dae172bb8be814de9f8d4492def097519659c24517f1300db8129d54
+    1af5c6bb585c36d760b7ae0d34d69582c6ce71cbad557d2899119ab5dc093cfac3613483dae172bb8be814de9f8d4492def097519659c24517f1100db8129d54
     0d222270e25012b55cb9fc3c0d34561aa2b8952b20081f2cb926c8ca87460e926e26194f267824f4b46b2332d2e929287caa15d6abcafcf26069c9e690ee4138
     3e760ee83cb98ba0c4fc7a5906704c38bc012aa7d11c1378a5990bd9aafed61a5326bbfa3b455543e938a2b310651d4517f314aea43ca7a3cef2186867d99a21
     a05a48b2467830950d560faad14df3ae9172d8da75cf369291d34473d5330d55915dd3ae62c60ccb36b016cbcb35798dd532c4a0697a874fa57b5d729b4bad5b
@@ -5665,13 +4658,13 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     8ab4faf6a17f9e60070f413cbaf022784e0557a9848f0f09820dd140ed4952d9805be491c86e0d3872e60969b98f4b7edb0b2a7e502835fc5ec1ab7aa542c36f
     570b6ddfaf967b7eb9d4ed549e4063116154f6d3ef2e7d780d4517d9d71735bef105265abe69bb32625191a92f2c45455c7d812957b67f81710888cee35aa5df
     ac363bb542b3daee17bc6ea7516806b54ea15b0beadd7e37f01bcdfe13d7395260af5d0dbc5aaf51a89583a0e0d54a927ea359a87b954adbabb71b3daffd24db
-    c6c0ca53f9c86201e155bc76ff050000ffff0300504b0304140006000800000021000dd1909fb60000001b010000270000007468656d652f7468656d652f5f72
+    c6c0ca53f9c86201e155bc76ff050000ffff0100504b0304140006000800000021000dd1909fb60000001b010000270000007468656d652f7468656d652f5f72
     656c732f7468656d654d616e616765722e786d6c2e72656c73848f4d0ac2301484f78277086f6fd3ba109126dd88d0add40384e4350d363f2451eced0dae2c08
     2e8761be9969bb979dc9136332de3168aa1a083ae995719ac16db8ec8e4052164e89d93b64b060828e6f37ed1567914b284d262452282e3198720e274a939cd0
     8a54f980ae38a38f56e422a3a641c8bbd048f7757da0f19b017cc524bd62107bd5001996509affb3fd381a89672f1f165dfe514173d9850528a2c6cce0239baa
-    4c04ca5bbabac4df000000ffff0300504b01022d0014000600080000002100e9de0fbfff0000001c0200001300000000000000000000000000000000005b436f
-    6e74656e745f54797065735d2e786d6c504b01022d0014000600080000002100a5d6a7e7c0000000360100000b00000000000000000000000000300100005f72
-    656c732f2e72656c73504b01022d00140006000800000021006b799616830000008a0000001c00000000000000000000000000190200007468656d652f746865
+    4c04ca5bbabac4df000000ffff0100504b01022d0014000600080000002100e9de0fbfff0000001c0200001100000000000000000000000000000000005b436f
+    6e74656e745f54797065735d2e786d6c504b01022d0014000600080000002100a5d6a7e7c0000000360100000b00000000000000000000000000100100005f72
+    656c732f2e72656c73504b01022d00140006000800000021006b799616810000008a0000001c00000000000000000000000000190200007468656d652f746865
     6d652f7468656d654d616e616765722e786d6c504b01022d001400060008000000210007b740aaca0600008f1a00001600000000000000000000000000d60200
     007468656d652f7468656d652f7468656d65312e786d6c504b01022d00140006000800000021000dd1909fb60000001b01000027000000000000000000000000
     00d40900007468656d652f7468656d652f5f72656c732f7468656d654d616e616765722e786d6c2e72656c73504b050600000000050005005d010000cf0a00000000}
@@ -5768,8 +4761,8 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     \\lsdpriority46 \\lsdlocked0 List Table 1 Light Accent 6;\\lsdpriority47 \\lsdlocked0 List Table 2 Accent 6;\\lsdpriority48 \\lsdlocked0 List Table 3 Accent 6;\\lsdpriority49 \\lsdlocked0 List Table 4 Accent 6;
     \\lsdpriority50 \\lsdlocked0 List Table 5 Dark Accent 6;\\lsdpriority51 \\lsdlocked0 List Table 6 Colorful Accent 6;\\lsdpriority52 \\lsdlocked0 List Table 7 Colorful Accent 6;\\lsdsemihidden1 \\lsdunhideused1 \\lsdlocked0 Mention;
     \\lsdsemihidden1 \\lsdunhideused1 \\lsdlocked0 Smart Hyperlink;\\lsdsemihidden1 \\lsdunhideused1 \\lsdlocked0 Hashtag;\\lsdsemihidden1 \\lsdunhideused1 \\lsdlocked0 Unresolved Mention;}}{\\*\\datastore 010500000200000018000000
-    4d73786d6c322e534158584d4c5265616465722e362e3000000000000000000000060000
-    d0cf11e0a1b11ae1000000000000000000000000000000003e000300feff090006000000000000000000000001000000010000000000000000100000feffffff00000000feffffff0000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+    4d73786d6c322e534158584d4c5265616465722e362e1000000000000000000000060000
+    d0cf11e0a1b11ae1000000000000000000000000000000003e000100feff090006000000000000000000000001000000010000000000000000100000feffffff00000000feffffff0000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -6158,14 +5151,15 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     mso-fareast-font-family:Batang;mso-hansi-theme-font:minor-latin;mso-bidi-font-family:
     "Times New Roman";mso-bidi-theme-font:minor-bidi;mso-ansi-language:EN-GB;
     mso-fareast-language:EN-US;mso-bidi-language:AR-SA'>The purpose of the explorer</span><!--EndFragment--></body></html>`;
+    rteObj.value = '<p>22</p>';
+    rteObj.dataBind();
     keyBoardEvent.clipboardData = {
       getData: () => {
         return localElem;
       },
       items: []
     };
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
@@ -6174,14 +5168,14 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
         let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
         pasteOK[0].click();
       }
-      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
       let expectedElem: string = `<h1><a name="_Toc513533907"><span lang="EN-GB"><span>1.<span style="font:7.0pt &quot;Times New Roman&quot;;">&nbsp;&nbsp;
     </span></span></span><span lang="EN-GB">Explorer</span></a></h1><p><span lang="EN-GB">The following controls – Explorer, Tree,
     Federated CMDB Tree and List – are closely related, and their design should be
-    planned jointly.</span></p><ol level="2"><li><p><span lang="EN-GB">Overview</span></p></li></ol><span lang="EN-GB" style="font-size:12.0pt;line-height:
-    107%;font-family:&quot;Calibri&quot;,sans-serif;">The purpose of the explorer</span>`;
-      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+    planned jointly.</span></p><ol level="2"><li><p><span lang="EN-GB">Overview</span></p></li></ol><p><span lang="EN-GB" style="font-size:12.0pt;line-height:
+    107%;font-family:&quot;Calibri&quot;,sans-serif;">The purpose of the explorer</span></p><p>22</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
       expect(expected).toBe(true);

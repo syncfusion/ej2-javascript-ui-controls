@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, detach, closest, addClass, removeClass, select, Browser } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined as isNOU, detach, closest, addClass, removeClass, select, Browser } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
@@ -77,34 +77,17 @@ export class ImageCommand {
     }
 
     private createImage(e: IHtmlItem): void {
-        e.item.url = isNullOrUndefined(e.item.url) || e.item.url === 'undefined' ? e.item.src : e.item.url;
-        if (!isNullOrUndefined(e.item.selectParent) && (e.item.selectParent[0] as HTMLElement).tagName === 'IMG') {
+        e.item.url = isNOU(e.item.url) || e.item.url === 'undefined' ? e.item.src : e.item.url;
+        if (!isNOU(e.item.selectParent) && (e.item.selectParent[0] as HTMLElement).tagName === 'IMG') {
             let imgEle: HTMLElement = e.item.selectParent[0] as HTMLElement;
-            imgEle.setAttribute('src', e.item.url);
-            imgEle.setAttribute('alt', e.item.altText);
+            this.setStyle(imgEle, e);
         } else {
-            let imgElement: HTMLElement = createElement('img', {
-                className: 'e-rte-image ' + e.item.cssClass, attrs: {
-                    width: (isNullOrUndefined(e.item.width) || isNullOrUndefined(e.item.width.width)) ? 'auto' :
-                        e.item.width.width as string,
-                    height: (isNullOrUndefined(e.item.height) || isNullOrUndefined(e.item.height.height)) ? 'auto' :
-                        e.item.height.height as string,
-                    alt: (e.item.altText !== '') ? e.item.altText : ''
-                }
-            });
-            imgElement.setAttribute('src', isNullOrUndefined(e.item.url) ? '' : e.item.url);
-            imgElement.style.minWidth = (isNullOrUndefined(e.item.width) || isNullOrUndefined(e.item.width.minWidth)) ? 0 + 'px' :
-                e.item.width.minWidth + 'px';
-            imgElement.style.maxWidth = (isNullOrUndefined(e.item.width) || isNullOrUndefined(e.item.width.maxWidth)) ? null :
-                e.item.width.maxWidth + 'px';
-            imgElement.style.minHeight = (isNullOrUndefined(e.item.height) || isNullOrUndefined(e.item.height.minHeight)) ? 0 + 'px' :
-                e.item.height.minHeight + 'px';
-            imgElement.style.maxHeight = (isNullOrUndefined(e.item.height) || isNullOrUndefined(e.item.height.maxHeight)) ? null :
-                e.item.height.maxHeight + 'px';
-            if (!isNullOrUndefined(e.item.selection)) {
+            let imgElement: HTMLElement = createElement('img');
+            this.setStyle(imgElement, e);
+            if (!isNOU(e.item.selection)) {
                 e.item.selection.restore();
             }
-            if (!isNullOrUndefined(e.selector) && e.selector === 'pasteCleanupModule') {
+            if (!isNOU(e.selector) && e.selector === 'pasteCleanupModule') {
                 e.callBack({ requestType: 'Image',
                     editorMode: 'HTML',
                     event: e.event,
@@ -115,7 +98,7 @@ export class ImageCommand {
                 InsertHtml.Insert(this.parent.currentDocument, imgElement, this.parent.editableElement);
             }
         }
-        if (e.callBack && (isNullOrUndefined(e.selector) || !isNullOrUndefined(e.selector) && e.selector !== 'pasteCleanupModule')) {
+        if (e.callBack && (isNOU(e.selector) || !isNOU(e.selector) && e.selector !== 'pasteCleanupModule')) {
             e.callBack({
                 requestType: 'Image',
                 editorMode: 'HTML',
@@ -124,6 +107,46 @@ export class ImageCommand {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
         }
+    }
+    private setStyle(imgElement: HTMLElement, e: IHtmlItem): void {
+        if (!isNOU(e.item.url)) {
+            imgElement.setAttribute('src', e.item.url);
+        }
+        imgElement.setAttribute('class', 'e-rte-image' + (isNOU(e.item.cssClass) ? '' :  ' ' + e.item.cssClass));
+        if (!isNOU(e.item.altText)) {
+            imgElement.setAttribute('alt', e.item.altText);
+        }
+        if (!isNOU(e.item.width) && !isNOU(e.item.width.width)) {
+            imgElement.setAttribute('width', this.calculateStyleValue(e.item.width.width));
+        }
+        if (!isNOU(e.item.height) && !isNOU(e.item.height.height)) {
+            imgElement.setAttribute('height', this.calculateStyleValue(e.item.height.height));
+        }
+        if (!isNOU(e.item.width) && !isNOU(e.item.width.minWidth)) {
+            imgElement.style.minWidth = this.calculateStyleValue(e.item.width.minWidth);
+        }
+        if (!isNOU(e.item.width) && !isNOU(e.item.width.maxWidth)) {
+            imgElement.style.maxWidth = this.calculateStyleValue(e.item.width.maxWidth);
+        }
+        if (!isNOU(e.item.height) && !isNOU(e.item.height.minHeight)) {
+            imgElement.style.minHeight = this.calculateStyleValue(e.item.height.minHeight);
+        }
+        if (!isNOU(e.item.height) && !isNOU(e.item.height.maxHeight)) {
+            imgElement.style.maxHeight = this.calculateStyleValue(e.item.height.maxHeight);
+        }
+    }
+    private calculateStyleValue(value: string | number): string {
+        let styleValue: string;
+        if (typeof(value) === 'string') {
+            if (value.indexOf('px') || value.indexOf('%') || value.indexOf('auto')) {
+                styleValue = value;
+            } else {
+                styleValue = value + 'px';
+            }
+        } else {
+            styleValue = value + 'px';
+        }
+        return styleValue;
     }
     private insertImageLink(e: IHtmlItem): void {
         let anchor: HTMLElement = createElement('a', {
@@ -136,7 +159,7 @@ export class ImageCommand {
             anchor.setAttribute('contenteditable', 'true');
         }
         anchor.appendChild(e.item.selectNode[0]);
-        if (!isNullOrUndefined(e.item.target)) {
+        if (!isNOU(e.item.target)) {
             anchor.setAttribute('target', e.item.target);
         }
         InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
@@ -165,7 +188,7 @@ export class ImageCommand {
     }
     private editImageLink(e: IHtmlItem): void {
         (e.item.selectNode[0].parentElement as HTMLAnchorElement).href = e.item.url;
-        if (isNullOrUndefined(e.item.target)) {
+        if (isNOU(e.item.target)) {
             (e.item.selectNode[0].parentElement as HTMLAnchorElement).removeAttribute('target');
         } else {
             (e.item.selectNode[0].parentElement as HTMLAnchorElement).target = e.item.target;
@@ -174,12 +197,12 @@ export class ImageCommand {
     }
     private removeImage(e: IHtmlItem): void {
         if (closest(e.item.selectNode[0], 'a')) {
-            if (e.item.selectNode[0].parentElement.nodeName === 'A' && !isNullOrUndefined(e.item.selectNode[0].parentElement.innerText)) {
+            if (e.item.selectNode[0].parentElement.nodeName === 'A' && !isNOU(e.item.selectNode[0].parentElement.innerText)) {
                 detach(e.item.selectNode[0]);
             } else {
                 detach(closest(e.item.selectNode[0], 'a'));
             }
-        } else if (!isNullOrUndefined(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION))) {
+        } else if (!isNOU(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION))) {
             detach(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION));
         } else {
             detach(e.item.selectNode[0]);
@@ -206,7 +229,7 @@ export class ImageCommand {
         let selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
         selectNode.removeAttribute('class');
         addClass([selectNode], 'e-rte-image');
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
+        if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
             addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
         }
@@ -222,7 +245,7 @@ export class ImageCommand {
         let selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
         selectNode.removeAttribute('class');
         addClass([selectNode], 'e-rte-image');
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
+        if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
             addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_CENTER);
@@ -241,7 +264,7 @@ export class ImageCommand {
         let selectNode: HTMLElement = e.item.selectNode[0] as HTMLElement;
         selectNode.removeAttribute('class');
         addClass([selectNode], 'e-rte-image');
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
+        if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
             addClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_RIGHT);
         }
@@ -258,7 +281,7 @@ export class ImageCommand {
         selectNode.removeAttribute('class');
         addClass([selectNode], 'e-rte-image');
         addClass([selectNode], classes.CLASS_IMAGE_INLINE);
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
+        if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_BREAK);
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_CENTER);
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);
@@ -272,7 +295,7 @@ export class ImageCommand {
         selectNode.removeAttribute('class');
         addClass([selectNode], classes.CLASS_IMAGE_BREAK);
         addClass([selectNode], 'e-rte-image');
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
+        if (!isNOU(closest(selectNode, '.' + classes.CLASS_CAPTION))) {
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_CAPTION_INLINE);
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_CENTER);
             removeClass([closest(selectNode, '.' + classes.CLASS_CAPTION)], classes.CLASS_IMAGE_LEFT);

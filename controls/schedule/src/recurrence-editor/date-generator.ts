@@ -439,7 +439,8 @@ function monthlyDateTypeProcess(startDate: Date, endDate: Date, data: number[], 
 function monthlyDateTypeProcessforMonthFreq(startDate: Date, endDate: Date, data: number[], ruleObject: RecRule): void {
     let ruleData: RuleData = initializeRecRuleVariables(startDate, ruleObject);
     ruleData.tempDate = ruleData.mainDate = calendarUtil.getMonthStartDate(ruleData.tempDate);
-    if (ruleObject.month.length === 1 && ruleObject.month[0] === 2 && ruleObject.monthDay.length === 1 && ruleObject.monthDay[0] === 30) {
+    if (((ruleObject.freq === 'MONTHLY' && ruleObject.interval === 12) || (ruleObject.freq === 'YEARLY')) &&
+        calendarUtil.getMonthDaysCount(startDate) < ruleObject.monthDay[0]) {
         return;
     }
     while (compareDates(ruleData.tempDate, endDate)) {

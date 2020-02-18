@@ -611,10 +611,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
             layoutType: this.layoutType,
-            enableComment: this.enableComment,
             pageOutline: '#E0E0E0'
         });
         this.documentEditor.enableAllModules();
+        this.documentEditor.enableComment = this.enableComment;
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);

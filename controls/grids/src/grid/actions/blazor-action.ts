@@ -175,8 +175,9 @@ export class BlazorAction {
         let rowUid: string = 'rowUid';
         let offsetTime: string = 'offsetTime'; let off: string = 'offset';
         this.parent[rowUid] = args[rowUid];
+        args[off] = Math.sign(args[off]) === 1 ? -Math.abs(args[off]) : Math.abs(args[off]);
         this.parent[offsetTime] = args[off];
-        if (this.parent[offsetTime] !== Math.abs(new Date().getTimezoneOffset() / 60)) {
+        if (this.parent[offsetTime] !== new Date().getTimezoneOffset() / 60) {
             if (this.parent.editSettings.mode !== 'Batch') {
                 let action: string = 'action';
                 let rowIndex: string = 'rowIndex';

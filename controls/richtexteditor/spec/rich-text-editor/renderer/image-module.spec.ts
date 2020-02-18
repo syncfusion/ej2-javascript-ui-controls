@@ -1262,6 +1262,28 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('dialogOpen Event- Check dialog element', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                dialogOpen : function(e) {
+                    expect((e as any).element.querySelector('.e-upload.e-control-wrapper')).not.toBe(null);
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('Check uploader element in dialog content', function () {
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        });
+    });
+
     describe('image dialog - documentClick', () => {
         let rteObj: RichTextEditor;
         let keyboardEventArgs = {

@@ -1423,7 +1423,8 @@ export class BpmnDiagrams {
     public updateBPMN(changedProp: Node, oldObject: Node, actualObject: Node, diagram: Diagram): void {
         let newShape: BpmnShapeModel = changedProp.shape as BpmnShapeModel || {};
         let elementWrapper: DiagramElement = actualObject.wrapper.children[0];
-        let actualShape: BpmnShapes = (actualObject.shape as BpmnShapeModel).shape;
+        let actualShape: BpmnShapes = (actualObject.shape as BpmnShapeModel).shape ||
+        ((actualObject.shape as DiagramShape).bpmnShape);
         let sizeChanged: boolean = changedProp.width !== undefined || changedProp.height !== undefined;
         if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Gateway') || newShape.shape === 'Gateway') &&
             newShape.gateway) {

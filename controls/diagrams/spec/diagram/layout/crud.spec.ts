@@ -220,7 +220,9 @@ describe('Crud Diagram', () => {
         let diagramCanvas: HTMLElement = document.getElementById(
             diagram.element.id + 'content'
         );
-        mouseEvents.clickEvent(diagramCanvas, 518, 150);
+        let element = document.getElementById('node1');
+        let bounds: ClientRect | DOMRect = element.getBoundingClientRect();
+        mouseEvents.clickEvent(diagramCanvas, (bounds as DOMRect).x + diagram.element.offsetLeft, (bounds as DOMRect).y + diagram.element.offsetTop);
 
         let selectedItem: NodeModel = diagram.selectedItems.nodes[0];
         let description: string = 'data';
@@ -254,8 +256,10 @@ describe('Crud Diagram', () => {
         let diagramCanvas: HTMLElement = document.getElementById(
             diagram.element.id + 'content'
         );
-        mouseEvents.clickEvent(diagramCanvas, 648, 290);
-
+        let element = document.getElementById(diagram.nodes[diagram.nodes.length - 1].id);
+        let bounds: ClientRect | DOMRect = element.getBoundingClientRect();
+        mouseEvents.clickEvent(diagramCanvas, (bounds as DOMRect).x + diagram.element.offsetLeft, (bounds as DOMRect).y + diagram.element.offsetTop);
+        
         let selectedItem: any = diagram.selectedItems.nodes[0];
         selectedItem.Description = 'sametor';
         selectedItem.Color = 'blue';
@@ -439,7 +443,7 @@ describe('Crud read Node datasource', () => {
     it('Checking empty crud', (done: Function) => {
         let nodes: NodeModel[] = diagram.nodes;
         let connectors: ConnectorModel[] = diagram.connectors;
-       // expect(nodes.length > 0).toBe(true);
+        // expect(nodes.length > 0).toBe(true);
         done();
     });
 

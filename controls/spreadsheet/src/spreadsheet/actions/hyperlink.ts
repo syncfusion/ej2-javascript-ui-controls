@@ -4,7 +4,7 @@ import { editHyperlink, removeHyperlink, openHyperlink } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getRangeAddress, getCellIndexes } from '../../workbook/common/address';
+import { getRangeIndexes, getRangeAddress, getCellIndexes, getCellAddress } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs } from '../../workbook';
 import { beforeHyperlinkClick, afterHyperlinkClick } from '../../workbook/common/event';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
@@ -133,7 +133,7 @@ export class SpreadsheetHyperlink {
                             sheetIdx = idx + 1;
                         }
                     }
-                    address = sheetName + '!' + address;
+                    address = sheetName + '!' + address.toUpperCase();
                     let args: HyperlinkModel = { address: address };
                     this.parent.insertHyperlink(args, this.parent.getActiveSheet().activeCell, value, false);
                 } else if (dlgContent.querySelector('.e-active')) {
@@ -188,9 +188,13 @@ export class SpreadsheetHyperlink {
         this.parent.removeHyperlink(cell);
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private hlOpenHandler(trgt: HTMLElement): void {
         if (trgt.classList.contains('e-hyperlink')) {
             let range: string[] = ['', ''];
+            let selRange: string;
+            let rangeIndexes: number[];
+            let isEmpty: boolean = true;
             trgt.style.color = '#551A8B';
             let sheet: SheetModel = this.parent.getActiveSheet();
             let colIdx: number = parseInt(trgt.parentElement.getAttribute('aria-colindex'), 10) - 1;
@@ -199,17 +203,14 @@ export class SpreadsheetHyperlink {
             let address: string;
             let befArgs: BeforeHyperlinkArgs;
             let aftArgs: AfterHyperlinkArgs;
-            befArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell, cancel: false };
-            aftArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell };
+            befArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell, target: '_blank', cancel: false };
             this.parent.trigger(beforeHyperlinkClick, befArgs);
             if (befArgs.cancel) { return; }
             rangeAddr = befArgs.hyperlink;
+            aftArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell };
             if (typeof (rangeAddr) === 'string') { address = rangeAddr; }
             if (typeof (rangeAddr) === 'object') { address = rangeAddr.address; }
-            if (address.indexOf('http://') > -1 || address.indexOf('www.') > -1) {
-                address = (address.indexOf('http://') === -1) ? 'http://' + address : address;
-                window.open(address);
-            } else if (address.indexOf('www.') === -1) {
+            if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 if (!isNullOrUndefined(address)) {
                     if (this.parent.definedNames) {
                         for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
@@ -222,47 +223,70 @@ export class SpreadsheetHyperlink {
                     }
                     if (address.indexOf('!') !== -1) {
                         range = address.split('!');
+                        if (range[0].indexOf(' ') !== -1) {
+                            range[0] = range[0].slice(1, range[0].length - 1);
+                        }
                     } else {
                         range[0] = this.parent.getActiveSheet().name;
                         range[1] = address;
                     }
+                    selRange = range[1];
                     let sheetIdx: number;
                     for (let idx: number = 0; idx < this.parent.sheets.length; idx++) {
                         if (this.parent.sheets[idx].name === range[0]) {
                             sheetIdx = idx;
                         }
                     }
-                    let rangeIndexes: number[] = getRangeIndexes(range[1]);
+                    sheet = this.parent.sheets[sheetIdx];
+                    if (range[1].indexOf(':') !== -1) {
+                        let colIndex: number = range[1].indexOf(':');
+                        let left: string = range[1].substr(0, colIndex);
+                        let right: string = range[1].substr(colIndex + 1, range[1].length);
+                        left = left.replace('$', '');
+                        right = right.replace('$', '');
+                        if (right.match(/\D/g) && !right.match(/[0-9]/g) && left.match(/\D/g) && !left.match(/[0-9]/g)) {
+                            selRange = left + '1' + ':' + right + sheet.rowCount;
+                            left = left + '1';
+                            right = right + sheet.rowCount;
+                            range[1] = left + ':' + right;
+                        } else if (!right.match(/\D/g) && right.match(/[0-9]/g) && !left.match(/\D/g) && left.match(/[0-9]/g)) {
+                            selRange = getCellAddress(parseInt(left, 10) - 1, 0) + ':' +
+                             getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
+                            rangeIndexes = [parseInt(left, 10) - 1, 0, parseInt(right, 10) - 1, sheet.colCount - 1];
+                            isEmpty = false;
+                        }
+                    }
+                    rangeIndexes = isEmpty ? getRangeIndexes(range[1]) : rangeIndexes;
                     if (this.parent.scrollSettings.enableVirtualization) {
                         rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.topIndex ?
                             rangeIndexes[0] - this.parent.viewport.topIndex : rangeIndexes[0];
                         rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.leftIndex ?
                             rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
                     }
-                    sheet = this.parent.sheets[sheetIdx];
                     if (!isNullOrUndefined(sheet)) {
                         if (sheet === this.parent.getActiveSheet()) {
                             this.parent.selectRange(getRangeAddress(rangeIndexes));
                         } else {
-                            sheet.selectedRange = range[1];
+                            sheet.selectedRange = selRange;
                             this.parent.activeSheetTab = sheetIdx + 1;
                             this.parent.dataBind();
                         }
                         if (this.parent.scrollSettings.enableVirtualization) {
-                            rangeIndexes[0] =
-                                rangeIndexes[0] >= this.parent.viewport.rowCount ? rangeIndexes[0] - this.parent.viewport.rowCount : 0;
-                            rangeIndexes[2] =
-                                rangeIndexes[2] >= this.parent.viewport.rowCount ? rangeIndexes[2] - this.parent.viewport.rowCount : 0;
-                            rangeIndexes[1] =
-                                rangeIndexes[1] >= this.parent.viewport.colCount ? rangeIndexes[1] - this.parent.viewport.colCount : 0;
-                            rangeIndexes[3] =
-                                rangeIndexes[3] >= this.parent.viewport.colCount ? rangeIndexes[3] - this.parent.viewport.colCount : 0;
-
+                            rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.rowCount ?
+                                rangeIndexes[0] - (this.parent.viewport.rowCount - 2) : 0;
+                            rangeIndexes[2] = rangeIndexes[2] >= this.parent.viewport.rowCount ?
+                                rangeIndexes[2] - (this.parent.viewport.rowCount - 2) : 0;
+                            rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.colCount ?
+                                rangeIndexes[1] - (this.parent.viewport.colCount - 2) : 0;
+                            rangeIndexes[3] = rangeIndexes[3] >= this.parent.viewport.colCount ?
+                                rangeIndexes[3] - (this.parent.viewport.colCount - 2) : 0;
                         }
                         let rangeAddr: string = getRangeAddress(rangeIndexes);
                         getUpdateUsingRaf((): void => { this.parent.goTo(rangeAddr); });
                     }
                 }
+            } else {
+                trgt.setAttribute('target', befArgs.target);
             }
             this.parent.trigger(afterHyperlinkClick, aftArgs);
         }
@@ -340,10 +364,11 @@ export class SpreadsheetHyperlink {
         if (!isNullOrUndefined(cell.hyperlink)) {
             let hyperlink: string | HyperlinkModel = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
-                if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('www.') !== -1) {
+                if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('https://') === -1 &&
+                    hyperlink.indexOf('ftp://') === -1 && hyperlink.indexOf('www.') !== -1) {
                     hyperlink = 'http://' + hyperlink;
                 }
-                if (hyperlink.indexOf('www.') !== -1) {
+                if (hyperlink.indexOf('http://') === 0 || hyperlink.indexOf('https://') === 0 || hyperlink.indexOf('ftp://') === 0) {
                     hyperEle.setAttribute('href', hyperlink as string);
                     hyperEle.setAttribute('target', '_blank');
                 } else if (hyperlink.includes('=') || hyperlink.includes('!')) {
@@ -354,10 +379,8 @@ export class SpreadsheetHyperlink {
                 td.innerText = '';
                 td.appendChild(hyperEle);
             } else if (typeof (hyperlink) === 'object') {
-                if (hyperlink.address.indexOf('http://') === -1 && hyperlink.address.indexOf('www.') !== -1) {
-                    hyperlink.address = 'http://' + hyperlink.address;
-                }
-                if (hyperlink.address.indexOf('www') !== -1) {
+                if (hyperlink.address.indexOf('http://') === 0 || hyperlink.address.indexOf('https://') === 0 ||
+                    hyperlink.address.indexOf('ftp://') === 0) {
                     hyperEle.setAttribute('href', hyperlink.address as string);
                     hyperEle.setAttribute('target', '_blank');
                 } else if (hyperlink.address.includes('=') || hyperlink.address.includes('!')) {
@@ -380,22 +403,19 @@ export class SpreadsheetHyperlink {
             indexes[0] = indexes[0] - this.parent.viewport.topIndex;
             indexes[1] = indexes[1] - this.parent.viewport.leftIndex;
         }
-        let td: Element =
-            this.parent.getMainContent().getElementsByClassName('e-row')[indexes[0]].getElementsByClassName('e-cell')[indexes[1]];
-        let hyperlinkEle: Element = td.getElementsByClassName('e-hyperlink')[0];
         let value: string = this.parent.getDisplayText(cell);
         let address: string;
         let hyperlink: string | HyperlinkModel = cell.hyperlink;
         if (typeof (hyperlink) === 'string') {
             address = hyperlink;
             value = value || address;
-            if (address.indexOf('www.') === -1) {
+            if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 isWeb = false;
             }
         } else if (typeof (hyperlink) === 'object') {
             address = hyperlink.address;
             value = value || address;
-            if (address.indexOf('www.') === -1) {
+            if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 isWeb = false;
             }
         }
@@ -404,7 +424,7 @@ export class SpreadsheetHyperlink {
             let webContElem: HTMLElement = item.querySelector('.e-webpage') as HTMLElement;
             webContElem.getElementsByClassName('e-cont')[0].getElementsByClassName('e-text')[0].setAttribute('value', value);
             if (typeof (hyperlink) === 'string') {
-                webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').innerHTML = hyperlink;
+                webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').setAttribute('value', hyperlink);
             } else {
                 let address: HTMLElement;
                 address = webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text') as HTMLElement;
@@ -470,6 +490,7 @@ export class SpreadsheetHyperlink {
 
     // tslint:disable-next-line:max-func-body-length
     private hyperlinkContent(): HTMLElement {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let idx: number = 0; let selIdx: number = 0;
         let isWeb: boolean = true;
         let isDefinedName: boolean;
@@ -489,12 +510,14 @@ export class SpreadsheetHyperlink {
             }
             let hyperlink: string | HyperlinkModel = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
-                if ((hyperlink as string).indexOf('www.') === -1) {
+                let hl: string = hyperlink;
+                if (hl.indexOf('http://') === -1 && hl.indexOf('https://') === -1 && hl.indexOf('ftp://') === -1) {
                     address = hyperlink;
                     isWeb = false;
                 }
             } else if (typeof (hyperlink) === 'object') {
-                if (((hyperlink as HyperlinkModel).address as string).indexOf('www.') === -1) {
+                let hl: string = hyperlink.address;
+                if (hl.indexOf('http://') === -1 && hl.indexOf('https://') === -1 && hl.indexOf('ftp://') === -1) {
                     address = hyperlink.address;
                     isWeb = false;
                 }
@@ -532,6 +555,11 @@ export class SpreadsheetHyperlink {
             ]
         });
         headerTabs.appendTo(dialogElem);
+        if (isWeb) {
+            dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator').setAttribute('style', 'left: 0; right: 136px');
+        } else {
+            dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator').setAttribute('style', 'left: 136px; right: 0');
+        }
         let textCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         let urlCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         let textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Display Text' });
@@ -558,16 +586,17 @@ export class SpreadsheetHyperlink {
         let definedName: object[] = [];
         let sheets: SheetModel[] = this.parent.sheets;
         for (idx; idx < this.parent.sheets.length; idx++) {
+            let sheetName: string = this.parent.sheets[idx].name;
             if (sheets[idx] === this.parent.getActiveSheet()) {
                 cellRef.push({
                     nodeId: 'sheet',
-                    nodeText: this.parent.sheets[idx].name,
+                    nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName,
                     selected: true
                 });
             } else {
                 cellRef.push({
                     nodeId: 'sheet',
-                    nodeText: this.parent.sheets[idx].name
+                    nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName
                 });
             }
         }

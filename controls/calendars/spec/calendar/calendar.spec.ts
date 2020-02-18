@@ -3484,7 +3484,7 @@ describe('Calendar', () => {
             expect(+calendarObj.values[3]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[0]));
             (<HTMLElement>calendarObj.tableBodyElement.querySelectorAll('tr td')[1]).click();
             expect(calendarObj.values.length).toBe(5);
-            expect(calendarObj.element.querySelectorAll('.e-selected').length).toBe(1);
+            expect(calendarObj.element.querySelectorAll('.e-selected').length).toBe(2);
         });
         it('next Icon Click behavior of multiSelection Property', () => {
             calendarObj = new Calendar({

@@ -6658,7 +6658,7 @@ export class Editor {
         let sections: BodyWidget[] = this.combineSection();
         this.documentHelper.clearContent();
         // this.documentHelper.layout.isRelayout = false;
-        this.documentHelper.layout.layoutItems(sections);
+        this.documentHelper.layout.layoutItems(sections, true);
         // this.documentHelper.layout.isRelayout = true;
         this.documentHelper.owner.isShiftingEnabled = false;
         this.setPositionForCurrentIndex(startPosition, startIndex);

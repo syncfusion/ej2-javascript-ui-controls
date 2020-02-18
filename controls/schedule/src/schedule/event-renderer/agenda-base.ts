@@ -332,8 +332,9 @@ export class AgendaBase {
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
             let templateId: string = scheduleId + viewName + 'dateHeaderTemplate';
-            let dateTemplate: NodeList = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false);
-            append([].slice.call(dateTemplate), dateHeader);
+            let dateTemplate: HTMLElement[] =
+                [].slice.call(this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false));
+            append(dateTemplate, dateHeader);
         } else {
             dateHeader = this.viewBase.getMobileDateElement(date, cls.AGENDA_HEADER_CLASS);
         }

@@ -316,6 +316,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * rightarrow<br/></td></tr> 
      * </table>
      * 
+     * {% codeBlock src='calendar/keyConfigs/index.md' %}{% endcodeBlock %}
      * @default null
      * @blazorType object
      * @deprecated
@@ -1028,7 +1029,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             // if (args.isDisabled && +this.value === +args.date) {
             //     this.setProperties({ value: null }, true);
             // }
-            if (multiSelection && !isNullOrUndefined(values) && !otherMnthBool && !disabledCls) {
+            if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < values.length; tempValue++) {
                     let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                     let formatOptions: object = { type: 'date', skeleton: 'short', calendar: type };
@@ -1044,7 +1045,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 if (values.length <= 0) {
                     this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
                 }
-            } else if (!otherMnthBool && !disabledCls && this.getDateVal(localDate, value)) {
+            } else if (!disabledCls && this.getDateVal(localDate, value)) {
                 addClass([tdEle], SELECTED);
             } else {
                 this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
@@ -1144,6 +1145,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
+                if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
+                    addClass([tdEle], SELECTED);
+                }
                 if (year < new Date(this.checkValue(this.min)).getFullYear() ||
                     year > new Date(this.checkValue(this.max)).getFullYear()) {
                     addClass([tdEle], DISABLED);
@@ -2115,6 +2119,7 @@ export class Calendar extends CalendarBase {
 
     /**
      * Gets or sets multiple selected dates of the calendar.
+     * {% codeBlock src='calendar/values/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)

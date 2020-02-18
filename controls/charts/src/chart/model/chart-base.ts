@@ -216,7 +216,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public start: number | Date;
+    public start: Object | number | Date;
 
     /**
      * End value of the strip line.
@@ -224,7 +224,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public end: number | Date;
+    public end: Object | number | Date;
 
     /**
      * Size of the strip line, when it starts from the origin.
@@ -270,7 +270,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public repeatEvery: number | Date;
+    public repeatEvery: Object | number | Date;
 
     /**
      * repeatUntil value of the strip line.
@@ -278,7 +278,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public repeatUntil: number | Date;
+    public repeatUntil: Object | number | Date;
 
     /**
      * isSegmented value of the strip line
@@ -294,7 +294,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public segmentStart: number | Date;
+    public segmentStart: Object | number | Date;
 
     /**
      * segmentEnd value of the strip line.
@@ -302,7 +302,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public segmentEnd: number | Date;
+    public segmentEnd: Object | number | Date;
 
     /**
      * segmentAxisName of the strip line.

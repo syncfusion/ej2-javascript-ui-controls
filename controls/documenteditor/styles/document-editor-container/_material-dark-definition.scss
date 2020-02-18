@@ -17,8 +17,8 @@ $de-spellcheck-tlbr-width: 91px !default;
 $de-spellcheck-tlbr-width-big: 111px !default;
 $de-spellcheck-tlbr-height: 34px !default;
 $de-spellcheck-tlbr-margin-left: 7.5px !default;
-$de-zoom-tlbr-margin-left: calc(100% - 292px) !default;
-$de-zoom-tlbr-margin-left-big: calc(100% - 325px) !default;
+$de-zoom-tlbr-margin-left: calc(100% - 362px) !default;
+$de-zoom-tlbr-margin-left-big: calc(100% - 395px) !default;
 $e-de-statusbar-seperator-color: #626161;
 // Subtract status bar height
 $de-ctnr-editor-height: calc(100% - 113px) !default;
@@ -80,5 +80,5 @@ $de-bullet-icon-line-height: 26px;
 $de-list-button-margin-right: 0;
 $de-list-button-margin-right-bigger: 0;
 $de-ctnr-padding: 12px;
-$de-pageweb-toggle-color: rgba($grey-700, .12) !default;
+$de-pageweb-toggle-color: $grey-700 !default;
 $de-pageweb-toggle-outline: #fafafa 0 solid !default;

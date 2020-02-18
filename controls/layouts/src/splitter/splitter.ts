@@ -418,8 +418,7 @@ export class Splitter extends Component<HTMLElement> {
                                     case 'size':
                                     let newValSize: string = Object(newProp.paneSettings[index])[property];
                                     if (newValSize !== '' && !isNullOrUndefined(newValSize)) {
-                                        this.allPanes[index].style.flexBasis = newValSize;
-                                        this.allPanes[index].classList.add(STATIC_PANE);
+                                        this.updatePaneSize(newValSize, index);
                                     }
                                     break;
                                 }
@@ -441,6 +440,29 @@ export class Splitter extends Component<HTMLElement> {
                     break;
             }
         }
+    }
+
+    private updatePaneSize(newValSize: string, index: number): void {
+        this.allPanes[index].style.flexBasis = newValSize;
+        let flexPaneIndexes: number[] = [];
+        let staticPaneWidth: number;
+        let flexCount: number = 0;
+        for (let i: number = 0; i < this.allPanes.length; i++) {
+            if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
+                flexPaneIndexes[flexCount] = i;
+                flexCount++;
+            } else if (this.paneSettings[i].size) {
+                staticPaneWidth = this.paneSettings[i].size && this.paneSettings[i].size.indexOf('%') > -1 ?
+                 (parseInt(newValSize , 10) / 100) * this.element.offsetWidth : this.allPanes[index].offsetWidth;
+            }
+        }
+        staticPaneWidth = (this.allBars[0].offsetWidth * this.allBars.length) + staticPaneWidth;
+        let flexPaneWidth: number = this.element.offsetWidth - staticPaneWidth;
+        let avgDiffWidth: number = flexPaneWidth / flexPaneIndexes.length;
+        for (let j: number = 0; j < flexPaneIndexes.length; j++) {
+            this.allPanes[flexPaneIndexes[j]].style.flexBasis = avgDiffWidth + 'px';
+        }
+        this.allPanes[index].classList.add(STATIC_PANE);
     }
 
     protected preRender(): void {
@@ -1181,9 +1203,15 @@ export class Splitter extends Component<HTMLElement> {
             removeClass([this.previousPane], collapseClass);
             addClass([this.previousPane], EXPAND_PANE);
             addClass([this.nextPane], collapseClass);
+            if (this.expandFlag) {
+            this.updatePaneSettings(this.nextPaneIndex, true);
+            }
         } else {
             removeClass([this.previousPane], collapseClass);
             removeClass([this.nextPane], EXPAND_PANE);
+            if (this.expandFlag) {
+            this.updatePaneSettings(this.prevPaneIndex, false);
+            }
         }
         this.updateIconsOnExpand(e);
         this.previousPane.setAttribute('aria-expanded', 'true');
@@ -1324,11 +1352,17 @@ export class Splitter extends Component<HTMLElement> {
         if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
             removeClass([this.previousPane], EXPAND_PANE);
             removeClass([this.nextPane], collapseClass);
+            if (!this.collapseFlag) {
+            this.updatePaneSettings(this.nextPaneIndex, false);
+            }
         } else {
             removeClass([this.previousPane], EXPAND_PANE);
             removeClass([this.nextPane], collapseClass);
             addClass([this.nextPane], EXPAND_PANE);
             addClass([this.previousPane], collapseClass);
+            if (!this.collapseFlag) {
+            this.updatePaneSettings(this.prevPaneIndex, true);
+            }
         }
         this.updateIconsOnCollapse(e);
         this.previousPane.setAttribute('aria-expanded', 'false');
@@ -1588,6 +1622,21 @@ export class Splitter extends Component<HTMLElement> {
         } else {
             return parseFloat(value);
         }
+    }
+
+    private updatePaneSettings(index : number , collapsed : boolean) : void {
+        let paneValue: PanePropertiesModel = {
+            size: this.paneSettings[index].size,
+            min: this.paneSettings[index].min,
+            max: this.paneSettings[index].max,
+            content: this.paneSettings[index].content,
+            resizable: this.paneSettings[index].resizable,
+            collapsed: collapsed,
+            collapsible: this.paneSettings[index].collapsible,
+            cssClass: this.paneSettings[index].size,
+        };
+        this.paneSettings.splice(index , 1 , paneValue);
+        this.setProperties({'paneSettings': this.paneSettings}, true);
     }
 
     private calcDragPosition (rectValue: number, offsetValue: number): number {
@@ -2069,6 +2118,7 @@ export class Splitter extends Component<HTMLElement> {
      */
     public expand(index: number): void {
         this.collapsedOnchange(index);
+        this.updatePaneSettings(index , false);
     }
 
     /**
@@ -2078,6 +2128,7 @@ export class Splitter extends Component<HTMLElement> {
      */
     public collapse(index: number): void {
         this.isCollapsed(index);
+        this.updatePaneSettings(index , true);
     }
 
     /**

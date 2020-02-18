@@ -154,7 +154,7 @@
         border-left: 0;
         border-right: $border-size $schedule-tbar-border-nav-type $schedule-tbar-border-nav;
 
-        &:not(.e-hor-nav.e-nav-active):hover {
+        &:not(.e-nav-active):hover {
           background-color: $schedule-tbar-hover-bg;
           color: $schedule-tbar-hover-font;
         }

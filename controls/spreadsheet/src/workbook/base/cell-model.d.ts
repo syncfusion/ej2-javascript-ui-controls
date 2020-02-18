@@ -54,7 +54,6 @@ export interface CellModel {
     /**
      * Specifies the hyperlink of the cell.
      * @default ''
-     * @aspType SpreadsheetHyperlink
      */
     hyperlink?: string | HyperlinkModel;
 

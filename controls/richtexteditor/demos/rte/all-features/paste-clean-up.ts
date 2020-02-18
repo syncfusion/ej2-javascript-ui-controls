@@ -22,9 +22,7 @@ let innerHTML: string = `<p><b>Description:</b></p>
 client side. Customer easy to edit the contents and get the HTML content for
 the displayed content. A rich text editor control provides users with a toolbar
 that helps them to apply rich text formats to the text entered in the text
-area. </p>
-<p>
-`;
+area. </p>`;
 let defaultRTE: RichTextEditor = new RichTextEditor({
   height: 400,
   toolbarSettings: {
@@ -70,6 +68,9 @@ let defaultRTE: RichTextEditor = new RichTextEditor({
   },
   pasteCleanupSettings: {
     prompt: true
+  },
+  insertImageSettings: {
+    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save'
   },
   value: innerHTML
 });

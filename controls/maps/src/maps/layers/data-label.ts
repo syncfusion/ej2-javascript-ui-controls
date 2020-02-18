@@ -145,7 +145,7 @@ export class DataLabel {
         }   
         let firstLevelMapLocation : object = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
-            if(zoomLabelsPosition && scaleZoomValue > 1) {
+            if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
                 if(layerIndex > 0){
                     for(let k : number =0;k<this.maps.zoomLabelPositions.length;k++){
                         if(this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
@@ -185,7 +185,7 @@ export class DataLabel {
                 }
                 let border: Object = { color: 'yellow' };
                 let position: MapLocation[] = [];
-                let width: number = zoomLabelsPosition && scaleZoomValue > 1
+                let width: number = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
                     ? this.maps.zoomShapeCollection[index]['width'] :
                     location['rightMax']['x'] - location['leftMax']['x'];
                 if(!isNullOrUndefined(this.maps.dataLabelShape)){
@@ -206,13 +206,13 @@ export class DataLabel {
                 if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     let location1: object = findMidPointOfPolygon(position, projectionType);
-                    if(zoomLabelsPosition && scaleZoomValue > 1) {
+                    if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
                             location1['x'] = ((this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
                             location1['y'] = ((this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
                     }
                     locationX = location1['x'];
                     location['x'] = location1['x'];
-                    width = zoomLabelsPosition && scaleZoomValue > 1 ?
+                    width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied ?
                     this.maps.zoomShapeCollection[index]['width'] :
                     location1['rightMax']['x'] - location1['leftMax']['x'];
                 }
@@ -302,7 +302,7 @@ export class DataLabel {
                             let rx: number = dataLabelSettings.rx;
                             let ry: number = dataLabelSettings.ry;
                             let x : number ; let y : number; let padding : number = 5;
-                            if (zoomLabelsPosition && scaleZoomValue > 1) {
+                            if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
                                 x = ((location['x'] ) ) - textSize['width'] / 2;
                                 y = ((location['y'] ) ) - textSize['height'] / 2 - padding;
                             } else {
@@ -318,7 +318,7 @@ export class DataLabel {
                         }
                     }
                     element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
-                    if(zoomLabelsPosition && scaleZoomValue > 1){
+                    if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied){
                       element.setAttribute('transform', 'translate( ' + ((location['x'] ) ) + ' '
                       + (((location['y'] ) )  ) + ' )');
                             location['x'] = locationX;

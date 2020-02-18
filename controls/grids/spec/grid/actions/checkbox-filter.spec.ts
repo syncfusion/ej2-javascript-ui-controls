@@ -15,6 +15,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Query } from '@syncfusion/ej2-data';
+import { FilterSearchBeginEventArgs } from '../../../src/grid/base/interface';
 
 Grid.Inject(Filter, Page,Toolbar, Selection, Group, Freeze, Edit);
 
@@ -2086,6 +2087,54 @@ describe('Checkbox Filter module => ', () => {
             gridObj.actionComplete = actionComplete;
             let searchElement: any = gridObj.element.querySelector('.e-searchinput');
             searchElement.value = '';
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13, searchElement));
+        });
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = checkBoxFilter = actionBegin = actionComplete = null;
+        });
+    });
+
+    describe('EJ2-36547- Adding value in filterSearchBegin event args ', function () {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let checkBoxFilter: Element;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: false,
+                    filterSettings: { type: 'CheckBox', showFilterBarStatus: true },
+                    columns: [{ field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string', filter: {type: 'CheckBox'} },
+                    { field: 'Freight', format: 'C2', type: 'number' }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });        
+        it('Filter OrderID dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+        it('search OrderID testing for search value in search begin event', function (done) {
+            actionBegin = (args?: FilterSearchBeginEventArgs): void => {
+                expect(args.value).toBe(10248);
+                gridObj.actionBegin = null;
+                done();
+            };
+            gridObj.actionBegin = actionBegin;
+            let searchElement: any = gridObj.element.querySelector('.e-searchinput');
+            searchElement.value = '10248';
             (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13, searchElement));
         });
         afterAll(function () {

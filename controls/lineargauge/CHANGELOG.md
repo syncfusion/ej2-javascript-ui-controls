@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 1.0 (2020-02-18)
+
+### LinearGauge
+
+#### Bug Fixes
+
+- Axis labels are rendering properly now in the cross position.
+
 ## 17.4.47 (2020-02-05)
 
 ### LinearGauge

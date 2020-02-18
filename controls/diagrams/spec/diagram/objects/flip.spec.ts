@@ -153,7 +153,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].flip= "Horizontal";
-            console.log((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath)
+           
             expect(diagram.connectors[0].sourcePoint.x === 200 && diagram.connectors[0].sourcePoint.y === 200 &&
                 diagram.connectors[0].targetPoint.x === 400 && diagram.connectors[0].targetPoint.y === 400).toBe(true);
             done();
@@ -163,7 +163,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].flip= "Vertical";
-            console.log((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath)
+           
 
             expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
             'M 0 0 L 0 20 L 200 20 L 200 199.5').toBe(true);
@@ -175,7 +175,7 @@ describe('Diagram Control', () => {
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].sourcePoint = { x: 100, y: 100 };
             diagram.connectors[0].flip= "Horizontal";
-            console.log((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath)
+           
             expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
             'M 0 0 L 0 20 L 200 20 L 200 199.5').toBe(true);
 
@@ -187,11 +187,7 @@ describe('Diagram Control', () => {
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].targetPoint = { x: 300, y: 350 };
             diagram.connectors[0].flip= "Horizontal";
-            console.log((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath)           
-            console.log(diagram.connectors[0].sourcePoint.x);
-            console.log(diagram.connectors[0].sourcePoint.y);
-            console.log(diagram.connectors[0].targetPoint.x);
-            console.log(diagram.connectors[0].targetPoint.y);
+           
             expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
             'M 0 0 L 0 20 L 300 20 L 300 299.5').toBe(true); 
             done();
@@ -202,7 +198,7 @@ describe('Diagram Control', () => {
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].targetPoint = { x: 300, y: 350 };
             diagram.connectors[0].flip= "Both";          
-            console.log((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath)
+           
             expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
             'M 200 0 L 200 20 L 0 20 L 0 249.5').toBe(true); 
             done();
@@ -374,11 +370,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, x + 20, y + 20);
             mouseEvents.mouseMoveEvent(diagramCanvas, x + 30, y + 30);
             mouseEvents.mouseUpEvent(diagramCanvas, x + 30, y + 30);
-            console.log('Drag the bpmn shapes with flip');
-            console.log(diagram.nodes[0].offsetX);
-            console.log(diagram.nodes[0].offsetY);
-            console.log(diagram.nodes[0].ports[0].offset.x);
-            console.log(diagram.nodes[0].ports[0].offset.y);
+           
             expect(diagram.nodes[0].offsetX === 130 && diagram.nodes[0].offsetY === 130 &&
                 diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
             done();

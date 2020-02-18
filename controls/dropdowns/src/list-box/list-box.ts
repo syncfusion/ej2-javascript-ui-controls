@@ -473,8 +473,8 @@ export class ListBox extends DropDownBase {
             this.element.style.display = 'none';
         }
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
-        if (this.list.getElementsByClassName(cssClass.li)[0]) {
-            this.list.getElementsByClassName(cssClass.li)[0].classList.remove(dropDownBaseClasses.focus);
+        if (this.list.getElementsByClassName('e-list-item')[0]) {
+            this.list.getElementsByClassName('e-list-item')[0].classList.remove(dropDownBaseClasses.focus);
         }
         removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
         this.validationAttribute(this.element as HTMLInputElement, hiddenSelect as HTMLSelectElement);
@@ -496,7 +496,7 @@ export class ListBox extends DropDownBase {
         if (this.allowDragAndDrop) {
             new Sortable(this.ulElement, {
                 scope: this.scope,
-                itemClass: cssClass.li,
+                itemClass: 'e-list-item',
                 dragStart: this.triggerDragStart.bind(this),
                 drag: this.triggerDrag.bind(this),
                 beforeDrop: this.beforeDragEnd.bind(this),
@@ -1264,7 +1264,7 @@ export class ListBox extends DropDownBase {
     private selectHandler(e: MouseEvent | { target: EventTarget, ctrlKey?: boolean, shiftKey?: boolean }, isKey?: boolean): void {
         let isSelect: boolean = true;
         let currSelIdx: number;
-        let li: Element = closest(e.target as Element, '.' + cssClass.li);
+        let li: Element = closest(e.target as Element, '.' + 'e-list-item');
         let selectedLi: Element[] = [li];
         if (li) {
             currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
@@ -1285,7 +1285,7 @@ export class ListBox extends DropDownBase {
             if (e.shiftKey && !this.selectionSettings.showCheckbox && this.selectionSettings.mode !== 'Single') {
                 selectedLi = [].slice.call(li.parentElement.children)
                     .slice(Math.min(currSelIdx, this.prevSelIdx), Math.max(currSelIdx, this.prevSelIdx) + 1)
-                    .filter((ele: Element) => { return ele.classList.contains(cssClass.li); });
+                    .filter((ele: Element) => { return ele.classList.contains('e-list-item'); });
             } else {
                 this.prevSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
             }
@@ -1664,7 +1664,7 @@ export class ListBox extends DropDownBase {
         let ele: Element[] = [];
         if (this.selectionSettings.showCheckbox) {
             [].slice.call(this.ulElement.getElementsByClassName('e-check')).forEach((cbox: Element) => {
-                ele.push(closest(cbox, '.' + cssClass.li));
+                ele.push(closest(cbox, '.' + 'e-list-item'));
             });
         } else {
             ele = [].slice.call(this.ulElement.getElementsByClassName(cssClass.selected));

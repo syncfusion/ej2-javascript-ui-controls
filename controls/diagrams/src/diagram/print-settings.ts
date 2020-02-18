@@ -10,6 +10,7 @@ import { Rect } from './primitives/rect';
 import { MarginModel } from './core/appearance-model';
 import { createSvgElement, getHTMLLayer } from './utility/dom-util';
 import { getDiagramLayerSvg } from './utility/dom-util';
+import { checkBrowserInfo } from './utility/diagram-util';
 import { Diagram } from './diagram';
 import { BackgroundModel } from './diagram/page-settings-model';
 import { IExportOptions } from './objects/interface/interfaces';
@@ -766,7 +767,9 @@ export class PrintAndExport {
             this.diagram.scroller.verticalOffset = oldVerticalOffset;
         }
         this.diagram.renderSelector(false);
-        return htmlData;
+        /* tslint:disable */
+        return checkBrowserInfo() ? htmlData.replace("url(" + location.href + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
+        /* tslint:enable */
     }
 
     /** @private */

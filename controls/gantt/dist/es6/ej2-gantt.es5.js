@@ -2994,10 +2994,11 @@ var GanttChart = /** @__PURE__ @class */ (function () {
      * @private
      */
     GanttChart.prototype.onTabAction = function (e) {
-        if (!this.parent.showActiveElement) {
+        var isInEditedState = this.parent.editModule.cellEditModule.isCellEdit;
+        if (!this.parent.showActiveElement && !isInEditedState) {
             return;
         }
-        var $target = e.target;
+        var $target = isInEditedState ? e.target.closest('.e-rowcell') : e.target;
         var isTab = (e.action === 'tab') ? true : false;
         var nextElement = this.getNextElement($target, isTab);
         if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell')) {
@@ -3006,26 +3007,28 @@ var GanttChart = /** @__PURE__ @class */ (function () {
         if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell'))) {
             this.parent.treeGrid.grid.notify('key-pressed', e);
         }
-        else if (nextElement) {
-            if ($target.classList.contains('e-rowcell')) {
-                this.manageFocus($target, 'remove', false);
-            }
-            else {
-                this.manageFocus($target, 'remove', true);
-            }
-            if (nextElement.classList.contains('e-rowcell')) {
-                if (!$target.classList.contains('e-rowcell')) {
-                    this.parent.treeGrid.grid.notify('key-pressed', e);
-                    var fmodule = getValue('focusModule', this.parent.treeGrid.grid);
-                    fmodule.currentInfo.element = nextElement;
-                    fmodule.currentInfo.elementToFocus = nextElement;
-                    /* tslint:disable-next-line:no-any */
-                    fmodule.content.matrix.current = [nextElement.parentElement.rowIndex, nextElement.cellIndex];
+        if (!isInEditedState) {
+            if (nextElement) {
+                if ($target.classList.contains('e-rowcell')) {
+                    this.manageFocus($target, 'remove', false);
                 }
-                this.manageFocus(nextElement, 'add', false);
-            }
-            else {
-                this.manageFocus(nextElement, 'add', true);
+                else {
+                    this.manageFocus($target, 'remove', true);
+                }
+                if (nextElement.classList.contains('e-rowcell')) {
+                    if (!$target.classList.contains('e-rowcell')) {
+                        this.parent.treeGrid.grid.notify('key-pressed', e);
+                        var fmodule = getValue('focusModule', this.parent.treeGrid.grid);
+                        fmodule.currentInfo.element = nextElement;
+                        fmodule.currentInfo.elementToFocus = nextElement;
+                        /* tslint:disable-next-line:no-any */
+                        fmodule.content.matrix.current = [nextElement.parentElement.rowIndex, nextElement.cellIndex];
+                    }
+                    this.manageFocus(nextElement, 'add', false);
+                }
+                else {
+                    this.manageFocus(nextElement, 'add', true);
+                }
             }
         }
     };

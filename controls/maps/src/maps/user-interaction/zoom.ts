@@ -42,6 +42,7 @@ export class Zoom {
     private pinchRect: Rect = new Rect(0, 0, 0, 0);
     public mouseDownPoints: Point;
     public mouseMovePoints: Point;
+    public isDragZoom: boolean;
     public currentLayer: LayerSettings;
     private panColor: string;
     public zoomColor: string;
@@ -157,8 +158,10 @@ export class Zoom {
     }
 
     public performRectZooming(): void {
+        this.isDragZoom = true;
         let map: Maps = this.maps;
         let size: Size = map.availableSize;
+        map.previousProjection = map.projectionType;
         let prevLevel: number = map.tileZoomLevel;
         let zoomRect: Rect = this.zoomingRect;
         if (zoomRect.height > 0 && zoomRect.width > 0) {
@@ -903,12 +906,13 @@ export class Zoom {
                     direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
                     direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
                     direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
-                    if (this.maps.zoomSettings.enablePanning) {
+                    if (this.maps.zoomSettings.enablePanning && !this.maps.zoomModule.isDragZoom) {
                         fillColor = fill;
                         strokeColor = this.maps.themeStyle.zoomFillColor;
-                    } else {
+                    }
+                    else {
                         fillColor = this.selectionColor;
-                        strokeColor = this.selectionColor;                       
+                        strokeColor = this.selectionColor;
                     }
                     this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
                         map.element.id + '_Zooming_ToolBar_' + toolbar, fillColor, 1, strokeColor, 1, null,
@@ -937,7 +941,9 @@ export class Zoom {
                     let color: string;
                     direction = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
                     direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
-                    if (!this.maps.zoomSettings.enablePanning) {
+                    if (this.maps.zoomSettings.enablePanning && this.maps.zoomModule.isDragZoom) {
+                        color = "#737373";
+                    } else if (!this.maps.zoomSettings.enablePanning) {
                         color = "#737373";
                         this.currentToolbarEle.setAttribute('class', '');
                     } else {
@@ -1310,6 +1316,7 @@ export class Zoom {
     }
 
     public mouseUpHandler(e: PointerEvent | TouchEvent): void {
+        let isDragZoom: boolean;
         let map: Maps = this.maps;
         this.rectZoomingStart = false;
         this.isPanning = false;
@@ -1325,6 +1332,7 @@ export class Zoom {
         }
         let zoomRectElement: HTMLElement = <HTMLElement>getElementByID(this.maps.element.id + '_Selection_Rect_Zooming');
         if (zoomRectElement && this.maps.zoomSettings.enable) {
+            isDragZoom = true;
             remove(zoomRectElement);
             this.performRectZooming();
         }

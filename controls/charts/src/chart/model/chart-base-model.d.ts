@@ -194,14 +194,14 @@ export interface StripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    start?: number | Date;
+    start?: Object | number | Date;
 
     /**
      * End value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
      */
-    end?: number | Date;
+    end?: Object | number | Date;
 
     /**
      * Size of the strip line, when it starts from the origin.
@@ -241,14 +241,14 @@ export interface StripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    repeatEvery?: number | Date;
+    repeatEvery?: Object | number | Date;
 
     /**
      * repeatUntil value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
      */
-    repeatUntil?: number | Date;
+    repeatUntil?: Object | number | Date;
 
     /**
      * isSegmented value of the strip line
@@ -262,14 +262,14 @@ export interface StripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    segmentStart?: number | Date;
+    segmentStart?: Object | number | Date;
 
     /**
      * segmentEnd value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
      */
-    segmentEnd?: number | Date;
+    segmentEnd?: Object | number | Date;
 
     /**
      * segmentAxisName of the strip line.

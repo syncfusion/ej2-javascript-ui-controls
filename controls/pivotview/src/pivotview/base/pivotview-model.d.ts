@@ -422,49 +422,41 @@ export interface PivotViewModel extends ComponentModel{
 
     /**
      * @hidden
-     * @blazorproperty 'QueryCellInfo'
      */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'HeaderCellInfo'
      */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'Resizing'
      */
     resizing?: EmitType<ResizeArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ResizeStopped'
      */
     resizeStop?: EmitType<ResizeArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'PdfHeaderQueryCellInfo'
      */
     pdfHeaderQueryCellInfo?: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'PdfQueryCellInfo'
      */
     pdfQueryCellInfo?: EmitType<PdfQueryCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ExcelHeaderQueryCellInfo'
      */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ExcelQueryCellInfo'
      */
     excelQueryCellInfo?: EmitType<ExcelQueryCellInfoEventArgs>;
 
@@ -485,43 +477,36 @@ export interface PivotViewModel extends ComponentModel{
 
     /**
      * @hidden
-     * @blazorproperty 'OnColumnsRender'
      */
     beforeColumnsRender?: EmitType<ColumnRenderEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'Selected'
      */
     selected?: EmitType<CellSelectEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'CellDeselected'
      */
     cellDeselected?: EmitType<CellDeselectEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'RowSelected'
      */
     rowSelected?: EmitType<RowSelectEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'RowDeselected'
      */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ChartTooltipRendered'
      */
     chartTooltipRender?: EmitType<ITooltipRenderEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ChartLoaded'
      */
     chartLoaded?: EmitType<ILoadedEventArgs>;
 
@@ -530,27 +515,23 @@ export interface PivotViewModel extends ComponentModel{
 
     /**
      * @hidden
-     * @blazorproperty 'ChartResized'
      */
     chartResized?: EmitType<IResizeEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ChartAxisLabelRender'
      * @deprecated
      */
     chartAxisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ContextMenuItemClicked'
      * @deprecated
      */
     contextMenuClick?: EmitType<ContextMenuClickEventArgs>;
 
     /**
      * @hidden
-     * @blazorproperty 'ContextMenuOpened'
      * @deprecated
      */
     contextMenuOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -646,7 +627,7 @@ export interface PivotViewModel extends ComponentModel{
     /**
      * Triggers when a field getting dropped into any axis.
      * @event
-     * @blazorproperty 'fieldDrop'
+     * @blazorproperty 'FieldDrop'
      */
     fieldDrop?: EmitType<FieldDropEventArgs>;
 
@@ -671,7 +652,6 @@ export interface PivotViewModel extends ComponentModel{
     /**
      * This allows to set properties for exporting.
      * @event
-     * @blazorproperty 'OnExport'
      * @deprecated
      */
     beforeExport?: EmitType<BeforeExportEventArgs>;
@@ -745,7 +725,6 @@ export interface PivotViewModel extends ComponentModel{
     /**
      * This allows to change the cell value.
      * @event
-     * @blazorproperty 'AggregateCellInfo'
      * @deprecated
      */
     aggregateCellInfo?: EmitType<AggregateEventArgs>;

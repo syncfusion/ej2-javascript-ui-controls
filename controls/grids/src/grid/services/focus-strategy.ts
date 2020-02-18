@@ -28,6 +28,9 @@ export class FocusStrategy {
     private focusedColumnUid: string;
     private refMatrix: Function = this.refreshMatrix(true);
     private rowModelGen: RowModelGenerator;
+    private activeKey: string;
+    private empty: string;
+    private actions: string[] = ['downArrow', 'upArrow'];
     constructor(parent: IGrid) {
         this.parent = parent;
         this.rowModelGen = new RowModelGenerator(this.parent);
@@ -83,8 +86,7 @@ export class FocusStrategy {
             (<Element>e.target).classList.contains('e-content') ||
             !isNullOrUndefined(closest(<HTMLElement>e.target, '.e-unboundcell'))) { return; }
         this.setActive(isContent, isFrozen);
-        if (!isContent && isNullOrUndefined(closest(<HTMLElement>e.target, '.e-gridheader')) ||
-            (<HTMLElement>e.target).classList.contains('e-filtermenudiv')) { this.clearOutline(); return; }
+        if (!isContent && isNullOrUndefined(closest(<HTMLElement>e.target, '.e-gridheader'))) { this.clearOutline(); return; }
         let beforeArgs: CellFocusArgs = { cancel: false, byKey: false, byClick: !isNullOrUndefined(e.target), clickArgs: <Event>e };
         this.parent.notify(event.beforeCellFocused, beforeArgs);
         if (beforeArgs.cancel || closest(<Element>e.target, '.e-inline-edit')) { return; }
@@ -100,6 +102,7 @@ export class FocusStrategy {
         if (this.skipOn(e)) {
             return;
         }
+        this.activeKey = e.action;
         let beforeArgs: CellFocusArgs = { cancel: false, byKey: true, byClick: false, keyArgs: e };
         this.parent.notify(event.beforeCellFocused, beforeArgs);
         if (beforeArgs.cancel) { return; }
@@ -162,8 +165,14 @@ export class FocusStrategy {
         setTimeout(
             () => {
                 if (!isNullOrUndefined(this.currentInfo.elementToFocus)) {
-                    this.parent.notify('virtaul-key-handler', e);
-                    this.currentInfo.elementToFocus.focus();
+                    if (this.parent.enableVirtualization && this.actions.some((value: string) => value === this.activeKey)) {
+                        this.activeKey = this.empty;
+                        this.parent.notify('virtaul-key-handler', e);
+                        // tslint:disable-next-line:no-any
+                        (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
+                    } else {
+                        this.currentInfo.elementToFocus.focus();
+                    }
                 }
             },
             0);
@@ -258,16 +267,11 @@ export class FocusStrategy {
             let matrix: number[][] = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             let frozenColumnsCount: number = this.parent.getFrozenColumns();
             if (e.name === 'batchAdd' && frozenColumnsCount) {
-                let newMovableRows: Row<Column>[] = rows.map((row: Row<Column>) => { return row.clone(); });
+                let mRows: Row<Column>[] = this.parent.getMovableRowsObject();
+                let newMovableRows: Row<Column>[] = mRows.map((row: Row<Column>) => { return row.clone(); });
                 let newFrozenRows: Row<Column>[] = rows.map((row: Row<Column>) => { return row.clone(); });
-                for (let i: number = 0; i < rows.length; i++) {
-                    if (rows[i].cells.length > frozenColumnsCount) {
-                        newFrozenRows[i].cells = rows[i].cells.slice(0, frozenColumnsCount);
-                        newMovableRows[i].cells = rows[i].cells.slice(frozenColumnsCount);
-                    }
-                }
                 this.fContent.matrix.generate(newFrozenRows, this.fContent.selector, isRowTemplate);
-                cFocus.matrix.generate(newMovableRows, cFocus.selector, isRowTemplate);
+                this.content.matrix.generate(newMovableRows, this.content.selector, isRowTemplate);
             } else {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }

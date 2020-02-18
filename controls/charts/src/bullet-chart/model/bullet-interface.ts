@@ -50,6 +50,22 @@ export interface IBulletResizeEventArgs {
 }
 
 /**
+ * interface for bar render event
+ */
+export interface IBarRenderEventArgs {
+    /** name of the event */
+    name: string;
+    /** bulletChart */
+    bulletChart: BulletChart;
+    /** Defines the actual value of the feature bar */
+    value: string | number;
+    /** Defines the target value of the comparative bar */
+    target: string | number[] | number;
+    /** Defines the category values */
+    category: string | number;
+}
+
+/**
  * Interface for Bullet chart scale calculations
  */
 export interface IBulletScaleBounds {

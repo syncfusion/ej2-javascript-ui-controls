@@ -62,9 +62,9 @@ export const beforeHyperlinkCreate: string = 'beforeHyperlinkCreate';
 /** @hidden */
 export const afterHyperlinkCreate: string = 'afterHyperlinkCreate';
 /** @hidden */
-export const beforeHyperlinkClick: string = 'beforeHyperlinkCreate';
+export const beforeHyperlinkClick: string = 'beforeHyperlinkClick';
 /** @hidden */
-export const afterHyperlinkClick: string = 'afterHyperlinkCreate';
+export const afterHyperlinkClick: string = 'afterHyperlinkClick';
 /** @hidden */
 export const addHyperlink: string = 'addHyperlink';
 /** @hidden */

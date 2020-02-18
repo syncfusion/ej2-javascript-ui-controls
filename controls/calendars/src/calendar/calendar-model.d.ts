@@ -225,6 +225,7 @@ export interface CalendarBaseModel extends ComponentModel{
      * rightarrow<br/></td></tr> 
      * </table>
      * 
+     * {% codeBlock src='calendar/keyConfigs/index.md' %}{% endcodeBlock %}
      * @default null
      * @blazorType object
      * @deprecated
@@ -284,6 +285,7 @@ export interface CalendarModel extends CalendarBaseModel{
 
     /**
      * Gets or sets multiple selected dates of the calendar.
+     * {% codeBlock src='calendar/values/index.md' %}{% endcodeBlock %}
      * @default null
      */
     values?: Date[];

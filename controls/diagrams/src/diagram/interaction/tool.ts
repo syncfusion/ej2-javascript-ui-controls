@@ -447,7 +447,7 @@ export class ConnectTool extends ToolBase {
                 this.commandHandler.updateConnectorValue(temparg);
             }
         }
-        if (this.isConnected) {
+        if (this.isConnected && (args.source as SelectorModel).connectors) {
             let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
             let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
             let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';

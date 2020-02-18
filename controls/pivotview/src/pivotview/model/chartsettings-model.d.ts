@@ -2924,7 +2924,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers after resizing of chart
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IResizeEventArgs
       * @deprecated
       */
     resized?: EmitType<IResizeEventArgs>;
@@ -2938,7 +2937,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers after chart load.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ILoadedEventArgs
       * @deprecated
       */
     loaded?: EmitType<ILoadedEventArgs>;
@@ -2946,7 +2944,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers before the prints gets started.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IPrintEventArgs
       * @deprecated
       */
     beforePrint?: EmitType<IPrintEventArgs>;
@@ -2954,7 +2951,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers after animation is completed for the series.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IAnimationCompleteEventArgs
       * @deprecated
       */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
@@ -2962,7 +2958,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers before chart load.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ILoadedEventArgs
       * @deprecated
       */
     load?: EmitType<ILoadedEventArgs>;
@@ -2970,7 +2965,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers before the data label for series is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ITextRenderEventArgs
       * @deprecated
       */
 
@@ -2979,7 +2973,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers before the legend is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ILegendRenderEventArgs
       * @deprecated
       */
     legendRender?: EmitType<ILegendRenderEventArgs>;
@@ -2987,7 +2980,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers before the series is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ISeriesRenderEventArgs
       * @deprecated
       */
     seriesRender?: EmitType<ISeriesRenderEventArgs>;
@@ -2995,7 +2987,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers before each points for the series is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IPointRenderEventArgs
       * @deprecated
       */
     pointRender?: EmitType<IPointRenderEventArgs>;
@@ -3003,7 +2994,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers before the tooltip for series is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ITooltipRenderEventArgs
       * @deprecated
       */
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -3011,7 +3001,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers before each axis label is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IAxisLabelRenderEventArgs
       * @deprecated
       */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
@@ -3019,7 +3008,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers on clicking the chart.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
     chartMouseClick?: EmitType<IMouseEventArgs>;
@@ -3027,7 +3015,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers on hovering the chart.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
     chartMouseMove?: EmitType<IMouseEventArgs>;
@@ -3035,7 +3022,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers on point move.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IPointEventArgs
       * @deprecated
       */
     pointMove?: EmitType<IPointEventArgs>;
@@ -3043,7 +3029,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers on point click.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IPointEventArgs
       * @deprecated
       */
     pointClick?: EmitType<IPointEventArgs>;
@@ -3051,7 +3036,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers on mouse down.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
     chartMouseDown?: EmitType<IMouseEventArgs>;
@@ -3059,7 +3043,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers when cursor leaves the chart.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
     chartMouseLeave?: EmitType<IMouseEventArgs>;
@@ -3067,7 +3050,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers after the drag selection is completed.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IDragCompleteEventArgs
       * @deprecated
       */
     dragComplete?: EmitType<IDragCompleteEventArgs>;
@@ -3075,7 +3057,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers on mouse up.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
     chartMouseUp?: EmitType<IMouseEventArgs>;
@@ -3083,7 +3064,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers when start the scroll.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IScrollEventArgs
       * @deprecated
       */
     scrollStart?: EmitType<IScrollEventArgs>;
@@ -3091,7 +3071,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers after the zoom selection is completed.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IZoomCompleteEventArgs
       * @deprecated
       */
     zoomComplete?: EmitType<IZoomCompleteEventArgs>;
@@ -3099,7 +3078,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers when change the scroll.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IScrollEventArgs
       * @deprecated
       */
     scrollChanged?: EmitType<IScrollEventArgs>;
@@ -3107,7 +3085,6 @@ export interface ChartSettingsModel {
     /**
       * Triggers after the scroll end.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IScrollEventArgs
       * @deprecated
       */
     scrollEnd?: EmitType<IScrollEventArgs>;

@@ -62,6 +62,8 @@ export class Columns extends ChildProperty<Columns> {
     public validation: Validation;
     /**
      * Specifies the date format for columns.
+     * @aspType string
+     * @blazorType string
      * @default null
      */
     @Property(null)

@@ -22158,7 +22158,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         if (target && !target.classList.contains('e-pdfviewer-formFields')
             && !target.classList.contains('e-pdfviewer-ListBox') && !target.classList.contains('e-pdfviewer-signatureformFields')
             && !((target).className === 'free-text-input' && (target).tagName === 'TEXTAREA')
-            && !isSkip) {
+            && !isSkip && !((target).className === 'e-pv-hyperlink')) {
             isSkipped = true;
         }
         return isSkipped;
@@ -26416,6 +26416,16 @@ var ThumbnailView = /** @__PURE__ @class */ (function () {
                 // tslint:disable-next-line:max-line-length
                 this.thumbnailImage = createElement('img', { id: this.pdfViewer.element.id + '_thumbnail_image_' + i, className: 'e-pv-thumbnail-image' });
                 this.thumbnailImage.src = data.thumbnailImage[i];
+                if (this.pdfViewerBase.pageSize[i].height < this.pdfViewerBase.pageSize[i].width) {
+                    this.thumbnailImage.style.height = '86px';
+                    this.thumbnailImage.style.width = '126px';
+                    thumbnail.style.height = '100px';
+                    thumbnail.style.width = '140px';
+                    pageLink.style.left = '-25px';
+                    pageLink.style.position = 'relative';
+                    thumbnailPageNumber.style.left = '18px';
+                    thumbnailPageNumber.style.position = 'relative';
+                }
                 this.thumbnailSelectionRing.appendChild(this.thumbnailImage);
                 pageLink.appendChild(thumbnail);
                 this.thumbnailView.appendChild(pageLink);

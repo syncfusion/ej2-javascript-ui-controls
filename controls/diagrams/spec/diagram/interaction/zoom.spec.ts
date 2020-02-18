@@ -92,8 +92,8 @@ describe('Diagram Control', () => {
             console.log('Math.round(diagram.scroller.currentZoom)' + Math.round(diagram.scroller.currentZoom));
             console.log('Math.round(diagram.scroller.horizontalOffset)' + (Math.round(diagram.scroller.horizontalOffset)) +
                 'Math.round(diagram.scroller.verticalOffset)' + Math.round(diagram.scroller.verticalOffset));
-            expect((Math.round(diagram.scroller.horizontalOffset) == -585 || Math.round(diagram.scroller.horizontalOffset) == -586)
-            && (Math.round(diagram.scroller.verticalOffset) == -986 || Math.round(diagram.scroller.verticalOffset) == -987 || Math.round(diagram.scroller.verticalOffset) == -856)).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) == -585 || Math.round(diagram.scroller.horizontalOffset) == -586 || Math.round(diagram.scroller.horizontalOffset) == -599 || Math.round(diagram.scroller.horizontalOffset) == -598)
+            && (Math.round(diagram.scroller.verticalOffset) == -986 || Math.round(diagram.scroller.verticalOffset) == -987 || Math.round(diagram.scroller.verticalOffset) == -856 || Math.round(diagram.scroller.verticalOffset) == -986)).toBe(true);
             diagram.scroller.updateScrollOffsets(0, 0);
             done();
         });

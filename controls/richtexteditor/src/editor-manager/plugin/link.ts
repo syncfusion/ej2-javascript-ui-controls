@@ -1,4 +1,4 @@
-﻿import { createElement, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+﻿import { createElement, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
@@ -41,17 +41,24 @@ export class LinkCommand {
     }
 
     private createLink(e: IHtmlItem): void {
-        let closestAnchor: Element = (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) &&
+        let closestAnchor: Element = (!isNOU(e.item.selectParent) && e.item.selectParent.length > 0) &&
             closest(e.item.selectParent[0], 'a');
-        closestAnchor = !isNullOrUndefined(closestAnchor) ? closestAnchor :
-            (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) as Element : null;
-        if (!isNullOrUndefined(closestAnchor) && (closestAnchor as HTMLElement).tagName === 'A') {
+        closestAnchor = !isNOU(closestAnchor) ? closestAnchor :
+            (!isNOU(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) as Element : null;
+        if (!isNOU(closestAnchor) && (closestAnchor as HTMLElement).tagName === 'A') {
             let anchorEle: HTMLElement = closestAnchor as HTMLElement;
-            anchorEle.setAttribute('href', e.item.url);
-            anchorEle.setAttribute('title', e.item.title);
-            let linkText: string = anchorEle.innerText;
-            anchorEle.innerText = e.item.text;
-            if (!isNullOrUndefined(e.item.target)) {
+            let linkText: string = '';
+            if (!isNOU(e.item.url)) {
+                anchorEle.setAttribute('href', e.item.url);
+            }
+            if (!isNOU(e.item.title)) {
+                anchorEle.setAttribute('title', e.item.title);
+            }
+            if (!isNOU(e.item.text)) {
+                linkText = anchorEle.innerText;
+                anchorEle.innerText = e.item.text;
+            }
+            if (!isNOU(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
             } else {
                 anchorEle.removeAttribute('target');
@@ -69,7 +76,7 @@ export class LinkCommand {
         } else {
             let domSelection: NodeSelection = new NodeSelection();
             let range: Range = domSelection.getRange(this.parent.currentDocument);
-            let  text : boolean = isNullOrUndefined(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()
+            let  text : boolean = isNOU(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()
             .replace(/\n/g, ' ').replace(/ /g, '')) < 0;
             if (e.event && (e.event as KeyboardEvent).type === 'keydown' && ((e.event as KeyboardEvent).keyCode === 32
                 || (e.event as KeyboardEvent).keyCode === 13) || e.item.action === 'Paste' || range.collapsed || text) {
@@ -203,10 +210,10 @@ export class LinkCommand {
             className: 'e-rte-anchor',
             attrs: {
                 href: e.item.url,
-                title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
+                title: isNOU(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
             }
         });
-        if (!isNullOrUndefined(e.item.target)) {
+        if (!isNOU(e.item.target)) {
             anchorEle.setAttribute('target', e.item.target);
         }
         return anchorEle;

@@ -7,7 +7,7 @@ import { AutoComplete, ComboBox, DropDownList, MultiSelect } from '@syncfusion/e
 import { DatePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { ContextMenu, Toolbar } from '@syncfusion/ej2-navigations';
 import { Workbook } from '@syncfusion/ej2-excel-export';
-import { PdfBitmap, PdfBorders, PdfColor, PdfCompositeField, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPaddings, PdfPageCountField, PdfPageNumberField, PdfPageOrientation, PdfPageSettings, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF, SizeF } from '@syncfusion/ej2-pdf-export';
+import { PdfBitmap, PdfBorders, PdfColor, PdfCompositeField, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPaddings, PdfPageCountField, PdfPageNumberField, PdfPageOrientation, PdfPageSettings, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfTrueTypeFont, PdfVerticalAlignment, PointF, RectangleF, SizeF } from '@syncfusion/ej2-pdf-export';
 
 /**
  * ValueFormatter class to globalize the value.
@@ -5415,6 +5415,7 @@ class FocusStrategy {
         this.focusByClick = false;
         this.prevIndexes = {};
         this.refMatrix = this.refreshMatrix(true);
+        this.actions = ['downArrow', 'upArrow'];
         this.parent = parent;
         this.rowModelGen = new RowModelGenerator(this.parent);
         this.addEventListener();
@@ -5472,8 +5473,7 @@ class FocusStrategy {
             return;
         }
         this.setActive(isContent, isFrozen);
-        if (!isContent && isNullOrUndefined(closest(e.target, '.e-gridheader')) ||
-            e.target.classList.contains('e-filtermenudiv')) {
+        if (!isContent && isNullOrUndefined(closest(e.target, '.e-gridheader'))) {
             this.clearOutline();
             return;
         }
@@ -5495,6 +5495,7 @@ class FocusStrategy {
         if (this.skipOn(e)) {
             return;
         }
+        this.activeKey = e.action;
         let beforeArgs = { cancel: false, byKey: true, byClick: false, keyArgs: e };
         this.parent.notify(beforeCellFocused, beforeArgs);
         if (beforeArgs.cancel) {
@@ -5565,8 +5566,15 @@ class FocusStrategy {
         this.currentInfo.elementToFocus = element;
         setTimeout(() => {
             if (!isNullOrUndefined(this.currentInfo.elementToFocus)) {
-                this.parent.notify('virtaul-key-handler', e);
-                this.currentInfo.elementToFocus.focus();
+                if (this.parent.enableVirtualization && this.actions.some((value) => value === this.activeKey)) {
+                    this.activeKey = this.empty;
+                    this.parent.notify('virtaul-key-handler', e);
+                    // tslint:disable-next-line:no-any
+                    this.currentInfo.elementToFocus.focus({ preventScroll: true });
+                }
+                else {
+                    this.currentInfo.elementToFocus.focus();
+                }
             }
         }, 0);
     }
@@ -5662,16 +5670,11 @@ class FocusStrategy {
             let matrix = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             let frozenColumnsCount = this.parent.getFrozenColumns();
             if (e.name === 'batchAdd' && frozenColumnsCount) {
-                let newMovableRows = rows.map((row) => { return row.clone(); });
+                let mRows = this.parent.getMovableRowsObject();
+                let newMovableRows = mRows.map((row) => { return row.clone(); });
                 let newFrozenRows = rows.map((row) => { return row.clone(); });
-                for (let i = 0; i < rows.length; i++) {
-                    if (rows[i].cells.length > frozenColumnsCount) {
-                        newFrozenRows[i].cells = rows[i].cells.slice(0, frozenColumnsCount);
-                        newMovableRows[i].cells = rows[i].cells.slice(frozenColumnsCount);
-                    }
-                }
                 this.fContent.matrix.generate(newFrozenRows, this.fContent.selector, isRowTemplate);
-                cFocus.matrix.generate(newMovableRows, cFocus.selector, isRowTemplate);
+                this.content.matrix.generate(newMovableRows, this.content.selector, isRowTemplate);
             }
             else {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
@@ -9853,8 +9856,10 @@ class Clipboard {
                     let args = {
                         column: col,
                         data: value,
+                        rowIndex: rIdx
                     };
                     this.parent.trigger(beforePaste, args);
+                    rIdx = args.rowIndex;
                     if (!args.cancel) {
                         if (grid.editModule) {
                             if (col.type === 'number') {
@@ -10205,8 +10210,9 @@ class BlazorAction {
         let offsetTime = 'offsetTime';
         let off = 'offset';
         this.parent[rowUid] = args[rowUid];
+        args[off] = Math.sign(args[off]) === 1 ? -Math.abs(args[off]) : Math.abs(args[off]);
         this.parent[offsetTime] = args[off];
-        if (this.parent[offsetTime] !== Math.abs(new Date().getTimezoneOffset() / 60)) {
+        if (this.parent[offsetTime] !== new Date().getTimezoneOffset() / 60) {
             if (this.parent.editSettings.mode !== 'Batch') {
                 let action = 'action';
                 let rowIndex = 'rowIndex';
@@ -11221,7 +11227,9 @@ let Grid = Grid_1 = class Grid extends Component {
         }
         if (requireGridRefresh) {
             if (freezeRefresh$$1 || this.frozenColumns || this.frozenRows) {
-                this.freezeRefresh();
+                if (!(isBlazor() && this.isServerRendered)) {
+                    this.freezeRefresh();
+                }
             }
             else {
                 this.refresh();
@@ -13772,6 +13780,53 @@ let Grid = Grid_1 = class Grid extends Component {
         }
         return cols;
     }
+    /**
+   *  calculatePageSizeByParentHeight
+   */
+    calculatePageSizeByParentHeight(containerHeight) {
+        if (this.allowPaging) {
+            if ((this.allowTextWrap && this.textWrapSettings.wrapMode == 'Header') || (!this.allowTextWrap)) {
+                var pagesize = 0;
+                if (containerHeight.indexOf('%') != -1) {
+                    containerHeight = parseInt(containerHeight) / 100 * this.element.clientHeight;
+                }
+                var nonContentHeight = this.getNoncontentHeight() + this.getRowHeight();
+                if (containerHeight > nonContentHeight) {
+                    var contentHeight = 0;
+                    contentHeight = containerHeight - this.getNoncontentHeight();
+                    pagesize = (contentHeight / this.getRowHeight());
+                }
+                if (pagesize > 0) {
+                    return Math.floor(pagesize);
+                }
+            }
+        }
+        return 0;
+    }
+    getNoncontentHeight() {
+        var height = 0;
+        if (!isNullOrUndefined(this.getHeaderContent().clientHeight)) {
+            height += this.getHeaderContent().clientHeight;
+        }
+        if (this.toolbar && !isNullOrUndefined(this.element.querySelector('.e-toolbar').clientHeight)) {
+            height += this.element.querySelector('.e-toolbar').clientHeight;
+        }
+        if (this.allowPaging && !isNullOrUndefined(this.element.querySelector('.e-gridpager').clientHeight)) {
+            height += this.element.querySelector('.e-gridpager').clientHeight;
+        }
+        if (this.showColumnChooser && !isNullOrUndefined(this.element.querySelector(".e-columnheader").clientHeight)) {
+            height += this.element.querySelector(".e-columnheader").clientHeight;
+        }
+        if (this.allowGrouping && this.groupSettings.showDropArea && !isNullOrUndefined(this.element.querySelector('.e-groupdroparea').clientHeight)) {
+            height += this.element.querySelector('.e-groupdroparea').clientHeight;
+        }
+        if (this.aggregates.length > 0 && !isNullOrUndefined(this.element.querySelector('.e-summaryrow').clientHeight)) {
+            for (let i = 0; i < this.element.querySelectorAll('.e-summaryrow').length; i++) {
+                height += this.element.querySelectorAll('.e-summaryrow')[i].clientHeight;
+            }
+        }
+        return height;
+    }
 };
 __decorate$1([
     Property([])
@@ -15698,13 +15753,16 @@ class CheckBoxFilterBase {
             }
             operator = 'equal';
         }
+        if (this.options.type === 'date' || this.options.type === 'datetime') {
+            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
+        }
         this.addDistinct(query);
         /* tslint:disable-next-line:max-line-length */
         let args = {
             requestType: filterSearchBegin,
             filterModel: this, columnName: field, column: column,
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
-            query: query
+            query: query, value: parsed
         };
         if (isBlazor() && !this.parent.isJsComponent) {
             let filterModel = 'filterModel';
@@ -15713,7 +15771,6 @@ class CheckBoxFilterBase {
         this.parent.notify(cBoxFltrBegin, args);
         predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
         if (this.options.type === 'date' || this.options.type === 'datetime') {
-            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
             operator = 'equal';
             if (isNullOrUndefined(parsed) && val.length) {
                 return;
@@ -19189,9 +19246,15 @@ class FilterMenuRenderer {
                 fltrValue = element.children[0].value;
             }
             else {
-                fltrValue = !isBlazor() && !isNullOrUndefined((element.children[0].ej2_instances)) ?
-                    element.children[0].ej2_instances[0].value
-                    : element.querySelector('.e-control').ej2_instances[0].value;
+                if (!isBlazor() && !isNullOrUndefined(element.children[0].ej2_instances)) {
+                    fltrValue = element.children[0].ej2_instances[0].value;
+                }
+                else {
+                    let eControl = element.querySelector('.e-control');
+                    fltrValue = !isNullOrUndefined(eControl.ej2_instances) ? eControl.ej2_instances[0].value : (col.type === 'boolean') ?
+                        (element.querySelector('.e-control').checked) :
+                        eControl.value;
+                }
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
         }
@@ -24069,7 +24132,7 @@ function summaryIterator(aggregates, callback) {
  * @hidden
  */
 class InterSectionObserver {
-    constructor(parent, element, options) {
+    constructor(element, options) {
         this.fromWheel = false;
         this.touchMove = false;
         this.options = {};
@@ -24105,38 +24168,8 @@ class InterSectionObserver {
                 }, axis: 'X'
             }
         };
-        this.parent = parent;
         this.element = element;
         this.options = options;
-        this.addEventListener();
-    }
-    virtualKeyHandler(args) {
-        if (args && (args.action === 'upArrow' || args.action === 'downArrow') && isNullOrUndefined(this.activeKey)) {
-            this.activeKey = args.action;
-        }
-    }
-    /**
-     * @hidden
-     */
-    addEventListener() {
-        this.parent.on('virtaul-key-handler', this.virtualKeyHandler, this);
-        this.parent.on('key-pressed', this.virtualKeyHandler, this);
-    }
-    /**
-     * @hidden
-     */
-    removeEventListener() {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.off('virtaul-key-handler', this.virtualKeyHandler);
-        this.parent.off('key-pressed', this.virtualKeyHandler);
-    }
-    /**
-     * @hidden
-     */
-    destroy() {
-        this.removeEventListener();
     }
     observe(callback, onEnterCallback) {
         this.containerRect = this.options.container.getBoundingClientRect();
@@ -24147,16 +24180,6 @@ class InterSectionObserver {
         let info = this.sentinelInfo[direction];
         return info.check(this.element.getBoundingClientRect(), info);
     }
-    ensureKeyFocus() {
-        if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
-            return false;
-        }
-        let row = document.activeElement.parentElement;
-        let rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
-        let blockSize = this.parent.contentModule.getBlockSize() - 1;
-        rowIndex = this.activeKey === 'upArrow' ? rowIndex - blockSize : rowIndex + blockSize;
-        return !isNullOrUndefined(this.parent.getRowByIndex(rowIndex));
-    }
     virtualScrollHandler(callback, onEnterCallback) {
         let delay = Browser.info.name === 'chrome' ? 200 : 100;
         let prevTop = 0;
@@ -24164,36 +24187,32 @@ class InterSectionObserver {
         let debounced100 = debounce(callback, delay);
         let debounced50 = debounce(callback, 50);
         return (e) => {
-            let isKeyDown = this.ensureKeyFocus();
-            if (!isKeyDown) {
-                let top = e.target.scrollTop;
-                let left = e.target.scrollLeft;
-                let direction = prevTop < top ? 'down' : 'up';
-                direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
-                prevTop = top;
-                prevLeft = left;
-                let current = this.sentinelInfo[direction];
-                if (this.options.axes.indexOf(current.axis) === -1) {
-                    return;
-                }
-                let check = this.check(direction);
-                if (current.entered) {
-                    onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
-                }
-                if (check) {
-                    let fn = debounced100;
-                    //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
-                    if (current.axis === 'X') {
-                        fn = debounced50;
-                    }
-                    fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement });
-                }
-                this.fromWheel = false;
+            let top = e.target.scrollTop;
+            let left = e.target.scrollLeft;
+            let direction = prevTop < top ? 'down' : 'up';
+            direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
+            prevTop = top;
+            prevLeft = left;
+            let current = this.sentinelInfo[direction];
+            if (this.options.axes.indexOf(current.axis) === -1) {
+                return;
             }
-            else {
-                this.activeKey = undefined;
+            let check = this.check(direction);
+            if (current.entered) {
+                onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
             }
+            if (check) {
+                let fn = debounced100;
+                //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
+                if (current.axis === 'X') {
+                    fn = debounced50;
+                }
+                fn({
+                    direction: direction, sentinel: current, offset: { top: top, left: left },
+                    focusElement: document.activeElement
+                });
+            }
+            this.fromWheel = false;
         };
     }
     setPageHeight(value) {
@@ -24419,6 +24438,7 @@ class VirtualContentRenderer extends ContentRender {
         this.isSelection = false;
         this.isBottom = false;
         this.rndrCount = 0;
+        this.empty = undefined;
         this.locator = locator;
         this.eventListener('on');
         this.parent.on(columnVisibilityChanged, this.setVisible, this);
@@ -24440,7 +24460,7 @@ class VirtualContentRenderer extends ContentRender {
             container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
-        this.observer = new InterSectionObserver(this.parent, this.virtualEle.wrapper, opt);
+        this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
     }
     renderEmpty(tbody) {
         this.getTable().appendChild(tbody);
@@ -24542,6 +24562,12 @@ class VirtualContentRenderer extends ContentRender {
         infoType.nextInfo = infoType.loadNext ? { page: Math.max(1, infoType.page + (direction === 'down' ? 1 : -1)) } : {};
         if (isBlockAdded) {
             infoType.blockIndexes = [infoType.blockIndexes[0] - 1, infoType.blockIndexes[0], infoType.blockIndexes[0] + 1];
+        }
+        if (this.activeKey === 'downArrow') {
+            let firstBlock = Math.ceil(this.rowIndex / this.getBlockSize());
+            if (firstBlock !== 1 && (infoType.blockIndexes[1] !== firstBlock || infoType.blockIndexes.length < 3)) {
+                infoType.blockIndexes = [firstBlock - 1, firstBlock, firstBlock + 1];
+            }
         }
         infoType.columnIndexes = info.axis === 'X' ? this.vgenerator.getColumnIndexes() : this.parent.getColumnIndexesInView();
         if (this.parent.enableColumnVirtualization && info.axis === 'X') {
@@ -24702,49 +24728,18 @@ class VirtualContentRenderer extends ContentRender {
             && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.refreshMvTbalTransform();
         }
-        this.focusCell(e, cOffset);
+        this.focusCell(e);
     }
-    focusCell(e, cOffset) {
+    focusCell(e) {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
             return;
         }
         let row = this.parent.getRowByIndex(this.rowIndex);
-        let firstRow;
-        let lastRow;
-        let rows = this.parent.getRows();
-        let rowHeight = this.parent.getRowHeight();
-        let scrollEleHeight = this.parent.getContent().firstElementChild.getBoundingClientRect().height;
-        setTimeout(() => {
-            this.resetTblTransform();
-        }, 50);
-        if (isNullOrUndefined(row)) {
-            for (let i = 0; i < rows.length; i++) {
-                if (this.isViewPortFirstRow(rows[i], rowHeight)) {
-                    firstRow = rows[i];
-                    break;
-                }
-            }
-            for (let i = rows.length - 1; i >= 0; i--) {
-                if (this.isViewPortLastRow(rows[i], scrollEleHeight)) {
-                    lastRow = rows[i];
-                    break;
-                }
-            }
-        }
-        let virtualRow = this.activeKey === 'downArrow' ? firstRow : lastRow;
-        let target = !isNullOrUndefined(row) ? row.cells[this.cellIndex]
-            : virtualRow.cells[this.cellIndex];
-        this.parent.focusModule.onClick({ target }, true);
-        this.parent.selectRow(parseInt(target.parentElement.getAttribute('aria-rowindex'), 10));
-        this.activeKey = this.parent.allowSelection ? this.activeKey : undefined;
-    }
-    resetTblTransform() {
-        let xAxis = this.currentInfo.sentinelInfo.axis === 'X';
-        let top = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
-        let height = this.content.getBoundingClientRect().height;
-        let x = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);
-        let y = this.getTranslateY(this.parent.getContent().firstElementChild.scrollTop, height, xAxis && top === this.parent.getContent().firstElementChild.scrollTop ? this.prevInfo : undefined, true);
-        this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
+        // tslint:disable-next-line:no-any
+        let cell = row.cells[this.cellIndex];
+        cell.focus({ preventScroll: true });
+        this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
+        this.activeKey = this.empty;
     }
     onDataReady(e) {
         if (!isNullOrUndefined(e.count)) {
@@ -24853,7 +24848,7 @@ class VirtualContentRenderer extends ContentRender {
             this.parent.selectRow(this.selectedRowIndex);
         }
         else {
-            this.activeKey = undefined;
+            this.activeKey = this.empty;
         }
     }
     eventListener(action) {
@@ -24861,8 +24856,6 @@ class VirtualContentRenderer extends ContentRender {
         this.parent.addEventListener(dataBound, this.dataBound.bind(this));
         this.parent[action](refreshVirtualBlock, this.refreshContentRows, this);
         this.parent[action](selectVirtualRow, this.selectVirtualRow, this);
-        this.parent[action](virtaulKeyHandler, this.virtualKeyHandler, this);
-        this.parent[action](keyPressed, this.virtualKeyHandler, this);
         this.parent[action](virtaulCellFocus, this.virtualCellFocus, this);
         let event = this.actions;
         for (let i = 0; i < event.length; i++) {
@@ -24891,26 +24884,38 @@ class VirtualContentRenderer extends ContentRender {
             && e && (e.action === 'upArrow' || e.action === 'downArrow')) {
             let rowIndex = parseInt(ele.parentElement.getAttribute('aria-rowindex'), 10);
             if (e && (e.action === 'downArrow' || e.action === 'upArrow')) {
+                let scrollEle = this.parent.getContent().firstElementChild;
                 e.action === 'downArrow' ? rowIndex += 1 : rowIndex -= 1;
                 this.rowIndex = rowIndex;
                 this.cellIndex = parseInt(ele.getAttribute('aria-colindex'), 10);
                 let row = this.parent.getRowByIndex(rowIndex);
-                let top = this.parent.getContent().firstElementChild.scrollTop;
+                let page = this.parent.pageSettings.currentPage;
+                let visibleRowCount = Math.floor(scrollEle.offsetHeight / this.parent.getRowHeight()) - 1;
+                let emptyRow = false;
                 if (isNullOrUndefined(row)) {
-                    this.parent.getContent().firstElementChild.scrollTop = e.action === 'downArrow' ?
-                        top + this.parent.getRowHeight() : top - this.parent.getRowHeight();
+                    emptyRow = true;
+                    if ((e.action === 'downArrow' && page === this.maxPage - 1) || (e.action === 'upArrow' && page === 1)) {
+                        emptyRow = false;
+                    }
+                }
+                if (emptyRow || this.ensureLastRow(row) || this.ensureFirstRow(row)) {
+                    this.activeKey = e.action;
+                    scrollEle.scrollTop = e.action === 'downArrow' ?
+                        (rowIndex - visibleRowCount) * this.parent.getRowHeight() : rowIndex * this.parent.getRowHeight();
                 }
                 else {
-                    this.parent.selectRow(rowIndex);
+                    this.activeKey = this.empty;
                 }
+                this.parent.selectRow(rowIndex);
             }
         }
     }
-    virtualKeyHandler(args) {
-        if (args && (args.action === 'upArrow' || args.action === 'downArrow')
-            && isNullOrUndefined(this.activeKey)) {
-            this.activeKey = args.action;
-        }
+    ensureLastRow(row) {
+        let cntOffset = this.parent.getContent().firstElementChild.offsetHeight;
+        return row && row.getBoundingClientRect().top > cntOffset;
+    }
+    ensureFirstRow(row) {
+        return row && row.getBoundingClientRect().top < this.parent.getRowHeight();
     }
     getBlockSize() {
         return this.parent.pageSettings.pageSize >> 1;
@@ -25066,16 +25071,10 @@ class VirtualContentRenderer extends ContentRender {
             let scrollTop = this.offsets[blockIndexes[0] - 1];
             let ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : this.parent.getContent().firstElementChild;
-            ele.scrollTop = scrollTop;
+            if (!isNullOrUndefined(scrollTop)) {
+                ele.scrollTop = scrollTop;
+            }
         }
-    }
-    isViewPortFirstRow(row, rowHeight) {
-        let top = row.getBoundingClientRect().top;
-        return top > rowHeight;
-    }
-    isViewPortLastRow(row, eleHeight) {
-        let top = row.getBoundingClientRect().top;
-        return top < eleHeight;
     }
 }
 /**
@@ -26072,7 +26071,8 @@ class NumericEditCell {
     }
     read(element) {
         let value = this.instances.getNumberParser({ format: 'n' })(element.value);
-        return value;
+        /* tslint:disable:no-string-literal */
+        return (this.obj['trimValue'])(value);
     }
     write(args) {
         let col = args.column;
@@ -26423,10 +26423,12 @@ class NormalEdit {
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection)) {
             if (this.parent.editSettings.mode !== 'Dialog') {
-                this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
                 if (isBlazor() && this.parent.isServerRendered) {
                     let rowIndex = 'editRowIndex';
                     editArgs[rowIndex] = this.rowIndex > -1 ? this.rowIndex : this.editRowIndex;
+                }
+                else {
+                    this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
                 }
             }
         }
@@ -27110,12 +27112,16 @@ class BatchEdit {
      */
     addRowObject(row) {
         let isTop = this.parent.editSettings.newRowPosition === 'Top';
+        let frozenColumnsCount = this.parent.getFrozenColumns();
+        if (frozenColumnsCount) {
+            let mRow = this.parent.getMovableRowsObject();
+            let mEle = row.clone();
+            mEle.cells = mEle.cells.slice(frozenColumnsCount);
+            row.cells = row.cells.slice(0, frozenColumnsCount);
+            isTop ? mRow.unshift(mEle) : mRow.push(mEle);
+        }
         isTop ? this.parent.getRowsObject().unshift(row) :
             this.parent.getRowsObject().push(row);
-        let mRow = this.parent.getMovableRowsObject();
-        if (this.parent.getFrozenColumns() && !mRow.length) {
-            isTop ? mRow.unshift(row) : mRow.push(row);
-        }
     }
     // tslint:disable-next-line:max-func-body-length
     bulkDelete(fieldname, data) {
@@ -27725,7 +27731,9 @@ class BatchEdit {
                 this.refreshTD(cellSaveArgs.cell, column, gObj.getMovableRowsObject()[this.cellDetails.rowIndex], cellSaveArgs.value);
             }
             else {
-                this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+                let rowObj = parentsUntil(cellSaveArgs.cell, 'e-movablecontent') ?
+                    gObj.getMovableRowsObject()[this.cellDetails.rowIndex] : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+                this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
             }
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
@@ -28930,20 +28938,10 @@ class ColumnChooser {
             this.hideOpenedDialog();
         }
         if (!this.dlgObj.visible) {
-            let args1 = {
-                requestType: 'beforeOpenColumnChooser', element: this.parent.element,
-                columns: this.getColumns(), cancel: false, searchOperator: this.searchOperator
-            };
-            if (isBlazor() && !this.parent.isJsComponent) {
-                args1 = {
-                    requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
-                };
-            }
-            this.parent.trigger(beforeOpenColumnChooser, args1);
-            if (args1.cancel) {
+            let args = this.beforeOpenColumnChooserEvent();
+            if (args.cancel) {
                 return;
             }
-            this.searchOperator = args1.searchOperator;
             if (target) {
                 this.targetdlg = target;
             }
@@ -28993,6 +28991,10 @@ class ColumnChooser {
         this.isCustomizeOpenCC = true;
         if (this.dlgObj.visible) {
             this.hideDialog();
+            return;
+        }
+        let args = this.beforeOpenColumnChooserEvent();
+        if (args.cancel) {
             return;
         }
         if (!this.isInitialOpen) {
@@ -29428,6 +29430,20 @@ class ColumnChooser {
                 openCC[i].ej2_instances[0].hide();
             }
         }
+    }
+    beforeOpenColumnChooserEvent() {
+        let args1 = {
+            requestType: 'beforeOpenColumnChooser', element: this.parent.element,
+            columns: this.getColumns(), cancel: false, searchOperator: this.searchOperator
+        };
+        if (isBlazor() && !this.parent.isJsComponent) {
+            args1 = {
+                requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
+            };
+        }
+        this.parent.trigger(beforeOpenColumnChooser, args1);
+        this.searchOperator = args1.searchOperator;
+        return args1;
     }
 }
 
@@ -30810,6 +30826,9 @@ class PdfExport {
         let allowHorizontalOverflow = true;
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
+            if (isBlazor()) {
+                this.getGridPdfFont(this.gridTheme);
+            }
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
                 true : pdfExportProperties.allowHorizontalOverflow;
         }
@@ -30899,6 +30918,55 @@ class PdfExport {
             //Material theme
             return { font: new PdfStandardFont(PdfFontFamily.Helvetica, 9.75), brush: new PdfSolidBrush(new PdfColor(0, 0, 0)),
                 backgroundBrush: new PdfSolidBrush(new PdfColor(246, 246, 246)) };
+        }
+    }
+    getGridPdfFont(args) {
+        let fontFamily = 'fontFamily';
+        let fontSize = 'fontSize';
+        let fontStyle = 'fontStyle';
+        let isTrueType = 'isTrueType';
+        let style = 0;
+        if (args.header && args.header.font) {
+            let headerFont = args.header.font[fontFamily];
+            let headerSize = args.header.font[fontSize];
+            let headerStyle = args.header.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[headerStyle]) ? 0 : PdfFontStyle[headerStyle]);
+            if (args.header.font[isTrueType]) {
+                args.header.font = new PdfTrueTypeFont(headerFont, headerSize, style);
+            }
+            else {
+                let fontFamily = !isNullOrUndefined(headerFont) ?
+                    this.getFontFamily(headerFont) : PdfFontFamily.Helvetica;
+                args.header.font = new PdfStandardFont(fontFamily, headerSize, style);
+            }
+        }
+        if (args.caption && args.caption.font) {
+            let captionFont = args.caption.font[fontFamily];
+            let captionSize = args.caption.font[fontSize];
+            let captionStyle = args.caption.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[captionStyle]) ? 0 : PdfFontStyle[captionStyle]);
+            if (args.caption.font[isTrueType]) {
+                args.caption.font = new PdfTrueTypeFont(captionFont, captionSize, style);
+            }
+            else {
+                let fontFamily = !isNullOrUndefined(captionFont) ?
+                    this.getFontFamily(captionFont) : PdfFontFamily.Helvetica;
+                args.caption.font = new PdfStandardFont(fontFamily, captionSize, style);
+            }
+        }
+        if (args.record && args.record.font) {
+            let recordFont = args.record.font[fontFamily];
+            let recordSize = args.record.font[fontSize];
+            let recordStyle = args.record.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[recordStyle]) ? 0 : PdfFontStyle[recordStyle]);
+            if (args.record.font[isTrueType]) {
+                args.record.font = new PdfTrueTypeFont(recordFont, recordSize, style);
+            }
+            else {
+                let fontFamily = !isNullOrUndefined(recordFont) ?
+                    this.getFontFamily(recordFont) : PdfFontFamily.Helvetica;
+                args.record.font = new PdfStandardFont(fontFamily, recordSize, style);
+            }
         }
     }
     getHeaderThemeStyle() {
@@ -33458,13 +33526,11 @@ class ColumnMenu {
         for (let item of args.items) {
             let key = this.getKeyFromId(item.id);
             let dItem = this.defaultItems[key];
-            if (this.getDefaultItems().indexOf(key) !== -1) {
-                if (this.ensureDisabledStatus(key) && !dItem.hide) {
-                    this.disableItems.push(item.text);
-                }
-                else if (item.hide) {
-                    this.hiddenItems.push(item.text);
-                }
+            if (this.getDefaultItems().indexOf(key) !== -1 && this.ensureDisabledStatus(key) && !dItem.hide) {
+                this.disableItems.push(item.text);
+            }
+            if (item.hide) {
+                this.hiddenItems.push(item.text);
             }
         }
         this.columnMenu.enableItems(this.disableItems, false);

@@ -3209,7 +3209,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers after resizing of chart
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IResizeEventArgs
       * @deprecated
       */
      @Event()
@@ -3225,7 +3224,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers after chart load.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ILoadedEventArgs
       * @deprecated
       */
      @Event()
@@ -3234,7 +3232,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers before the prints gets started.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IPrintEventArgs
       * @deprecated
       */
      @Event()
@@ -3243,7 +3240,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers after animation is completed for the series.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IAnimationCompleteEventArgs
       * @deprecated
       */
      @Event()
@@ -3252,7 +3248,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers before chart load.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ILoadedEventArgs
       * @deprecated
       */
      @Event()
@@ -3261,7 +3256,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers before the data label for series is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ITextRenderEventArgs
       * @deprecated
       */
 
@@ -3271,7 +3265,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers before the legend is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ILegendRenderEventArgs
       * @deprecated
       */
      @Event()
@@ -3280,7 +3273,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers before the series is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ISeriesRenderEventArgs
       * @deprecated
       */
      @Event()
@@ -3289,7 +3281,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers before each points for the series is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IPointRenderEventArgs
       * @deprecated
       */
      @Event()
@@ -3298,7 +3289,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers before the tooltip for series is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.ITooltipRenderEventArgs
       * @deprecated
       */
      @Event()
@@ -3307,7 +3297,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers before each axis label is rendered.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IAxisLabelRenderEventArgs
       * @deprecated
       */
      @Event()
@@ -3316,7 +3305,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers on clicking the chart.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
      @Event()
@@ -3325,7 +3313,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers on hovering the chart.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
      @Event()
@@ -3334,7 +3321,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers on point move.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IPointEventArgs
       * @deprecated
       */
      @Event()
@@ -3343,7 +3329,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers on point click.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IPointEventArgs
       * @deprecated
       */
      @Event()
@@ -3352,7 +3337,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers on mouse down.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
      @Event()
@@ -3361,7 +3345,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers when cursor leaves the chart.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
      @Event()
@@ -3370,7 +3353,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers after the drag selection is completed.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IDragCompleteEventArgs
       * @deprecated
       */
      @Event()
@@ -3379,7 +3361,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers on mouse up.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IMouseEventArgs
       * @deprecated
       */
      @Event()
@@ -3388,7 +3369,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers when start the scroll.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IScrollEventArgs
       * @deprecated
       */
      @Event()
@@ -3397,7 +3377,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers after the zoom selection is completed.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IZoomCompleteEventArgs
       * @deprecated
       */
      @Event()
@@ -3406,7 +3385,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers when change the scroll.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IScrollEventArgs
       * @deprecated
       */
      @Event()
@@ -3415,7 +3393,6 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      /**
       * Triggers after the scroll end.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Charts.IScrollEventArgs
       * @deprecated
       */
      @Event()

@@ -475,12 +475,16 @@ describe('Selection commands', () => {
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('#text');
     });
     it('Cursor pointer multiple style with empty node applied issue', () => {
+        let regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         let node1: Node = document.getElementById('format4');
         let text1: Text = node1.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 0, 0);
         SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        expect((node1 as HTMLElement).children[0].textContent.match(regEx)).not.toBe(null);
         SelectionCommands.applyFormat(document, 'italic', parentDiv);
+        expect((node1 as HTMLElement).children[0].children[0].textContent.match(regEx)).not.toBe(null);
         SelectionCommands.applyFormat(document, 'underline', parentDiv);
+        expect((node1 as HTMLElement).children[0].children[0].textContent.match(regEx)).not.toBe(null);
         SelectionCommands.applyFormat(document, 'bold', parentDiv);
         expect(node1.childNodes[2].nodeName.toLowerCase()).toEqual('em');
         expect(node1.childNodes[2].childNodes[1].nodeName.toLowerCase()).toEqual('span');

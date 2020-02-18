@@ -1930,7 +1930,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     break;
                 case 'hide':
                     this.preventAltUp = this.isPopupOpen;
-                    this.hidePopup();
+                    this.hidePopup(e);
                     this.focusDropDown(e);
                     break;
                 case 'enter':
@@ -1940,7 +1940,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 case 'tab':
                 case 'close':
                     if (this.isPopupOpen) {
-                        this.hidePopup();
+                        this.hidePopup(e);
                         this.focusDropDown(e);
                     }
                     break;
@@ -3939,7 +3939,7 @@ let ComboBox = class ComboBox extends DropDownList {
     onBlur(e) {
         let inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
         if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
-            this.customValue();
+            this.customValue(e);
         }
         super.onBlur(e);
     }
@@ -4478,10 +4478,10 @@ let ComboBox = class ComboBox extends DropDownList {
             let selected = this.list.querySelector('.' + dropDownListClasses.selected);
             if (dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {
-                    this.onChangeEvent(null);
+                    this.onChangeEvent(e);
                     this.isSelectCustom = false;
                 }
-                super.hidePopup();
+                super.hidePopup(e);
                 return;
             }
             if (this.getModuleName() === 'combobox' && this.inputElement.value.trim() !== '') {
@@ -9362,8 +9362,8 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             this.element.style.display = 'none';
         }
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
-        if (this.list.getElementsByClassName(cssClass.li)[0]) {
-            this.list.getElementsByClassName(cssClass.li)[0].classList.remove(dropDownBaseClasses.focus);
+        if (this.list.getElementsByClassName('e-list-item')[0]) {
+            this.list.getElementsByClassName('e-list-item')[0].classList.remove(dropDownBaseClasses.focus);
         }
         removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
         this.validationAttribute(this.element, hiddenSelect);
@@ -9383,7 +9383,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         if (this.allowDragAndDrop) {
             new Sortable(this.ulElement, {
                 scope: this.scope,
-                itemClass: cssClass.li,
+                itemClass: 'e-list-item',
                 dragStart: this.triggerDragStart.bind(this),
                 drag: this.triggerDrag.bind(this),
                 beforeDrop: this.beforeDragEnd.bind(this),
@@ -10150,7 +10150,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
     selectHandler(e, isKey) {
         let isSelect = true;
         let currSelIdx;
-        let li = closest(e.target, '.' + cssClass.li);
+        let li = closest(e.target, '.' + 'e-list-item');
         let selectedLi = [li];
         if (li) {
             currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
@@ -10173,7 +10173,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             if (e.shiftKey && !this.selectionSettings.showCheckbox && this.selectionSettings.mode !== 'Single') {
                 selectedLi = [].slice.call(li.parentElement.children)
                     .slice(Math.min(currSelIdx, this.prevSelIdx), Math.max(currSelIdx, this.prevSelIdx) + 1)
-                    .filter((ele) => { return ele.classList.contains(cssClass.li); });
+                    .filter((ele) => { return ele.classList.contains('e-list-item'); });
             }
             else {
                 this.prevSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
@@ -10563,7 +10563,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         let ele = [];
         if (this.selectionSettings.showCheckbox) {
             [].slice.call(this.ulElement.getElementsByClassName('e-check')).forEach((cbox) => {
-                ele.push(closest(cbox, '.' + cssClass.li));
+                ele.push(closest(cbox, '.' + 'e-list-item'));
             });
         }
         else {

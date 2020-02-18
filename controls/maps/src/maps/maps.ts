@@ -553,6 +553,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public markerCenterLongitude: number;
     /** @private */
+    public previousCenterLatitude: number;
+    /** @private */
+    public previousCenterLongitude: number;
+    /** @private */
+    public centerPositionChanged: boolean = false;
+    /** @private */
+    public previousZoomFactor: number;
+    /** @private */
     public isTileMapSubLayer: boolean = false;
     /** @private */
     public shouldZoomCurrentFactor: number;

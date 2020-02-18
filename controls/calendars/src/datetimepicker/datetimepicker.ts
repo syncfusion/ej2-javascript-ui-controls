@@ -103,6 +103,7 @@ export class DateTimePicker extends DatePicker {
     /**
      * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
      * the given value is not present in the timepicker popup list.
+     * {% codeBlock src='datetimepicker/scrollTo/index.md' %}{% endcodeBlock %}
      * @default null
      * @isBlazorNullableType true
      */
@@ -256,6 +257,7 @@ export class DateTimePicker extends DatePicker {
      * rightarrow<br/></td></tr> 
      * </table>
      * 
+     * {% codeBlock src='datetimepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      * @default null
      * @blazorType object 
      */
@@ -264,6 +266,7 @@ export class DateTimePicker extends DatePicker {
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * {% codeBlock src='datetimepicker/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})

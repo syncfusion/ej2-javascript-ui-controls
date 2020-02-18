@@ -3,7 +3,7 @@ import { PointModel } from '../primitives/point-model';
 import { Point } from '../primitives/point';
 import { IElement, IClickEventArgs, IDoubleClickEventArgs, IMouseEventArgs, StackEntryObject } from '../objects/interface/IElement';
 import { UserHandleEventsArgs } from '../objects/interface/IElement';
-import { ICommandExecuteEventArgs } from '../objects/interface/IElement';
+import { ICommandExecuteEventArgs, IKeyEventArgs } from '../objects/interface/IElement';
 import { IBlazorDoubleClickEventArgs, IBlazorClickEventArgs, IBlazorMouseEventArgs } from '../objects/interface/IElement';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { Container } from '../core/containers/container';
@@ -42,7 +42,7 @@ import { InputArgs } from '@syncfusion/ej2-inputs';
 import { Rect } from '../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from './../primitives/matrix';
 import { LayerModel } from '../diagram/layer-model';
-import { ITouches } from '../objects/interface/interfaces';
+import { ITouches, ActiveLabel } from '../objects/interface/interfaces';
 import { removeRulerMarkers, drawRulerMarkers, getRulerSize, updateRuler } from '../ruler/ruler';
 import { canContinuousDraw, canDrawOnce } from '../utility/constraints-util';
 import { SelectorModel } from '../objects/node-model';
@@ -298,7 +298,7 @@ export class DiagramEventHandler {
             bottomLeft = { x: (width - 17), y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop})) {
+            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
                 return true;
             }
         }
@@ -308,7 +308,7 @@ export class DiagramEventHandler {
             bottomLeft = { x: 0, y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({  x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop})) {
+            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
                 return true;
             }
         }
@@ -973,6 +973,7 @@ export class DiagramEventHandler {
         }
         this.diagram.blazorActions = this.diagram.blazorActions & ~BlazorAction.interaction;
     }
+    private keyArgs: IKeyEventArgs = {};
     /** @private */
     public keyDown(evt: KeyboardEvent): void {
         if (!(this.diagram.diagramActions & DiagramAction.TextEdit) &&
@@ -1053,6 +1054,60 @@ export class DiagramEventHandler {
                 }
             }
         }
+        let selectedObject: (NodeModel | ConnectorModel)[] = (this.diagram.selectedItems.nodes.length) ?
+            this.diagram.selectedItems.nodes : this.diagram.selectedItems.connectors;
+        this.keyArgs = {
+            element: this.diagram.selectedItems,
+            key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which,
+        };
+        this.getKeyModifier(this.keyArgs, evt);
+        if ((this.diagram.diagramActions & DiagramAction.TextEdit)) {
+            this.getlabel(this.keyArgs, evt);
+        }
+        this.diagram.triggerEvent(DiagramEvent.keyDown, this.keyArgs);
+
+    }
+
+    private getlabel(args: IKeyEventArgs, evt: KeyboardEvent): void {
+        let label: ActiveLabel = this.diagram.activeLabel;
+        args.target = this.diagram.element.id + '_editBox';
+        let node: NodeModel = this.diagram.nameTable[label.parentId];
+        args.text = (document.getElementById(this.diagram.element.id + '_editBox') as HTMLTextAreaElement).value;
+        for (let i: number = 0; i < node.annotations.length; i++) {
+            if (node.annotations[i].id === label.id) {
+                args.label = node.annotations[i];
+                break;
+            }
+        }
+    }
+
+    private getKeyModifier(args: IKeyEventArgs, evt: KeyboardEvent): void {
+        args.keyModifiers = KeyModifiers.None;
+        if (evt.ctrlKey) {
+            args.keyModifiers |= KeyModifiers.Control;
+        }
+        if (evt.shiftKey) {
+            args.keyModifiers |= KeyModifiers.Shift;
+        }
+        if (evt.altKey) {
+            args.keyModifiers |= KeyModifiers.Alt;
+        }
+        if (this.isMetaKey(evt)) {
+            args.keyModifiers |= KeyModifiers.Meta;
+        }
+    }
+
+    public keyUp(evt: KeyboardEvent): void {
+        this.keyArgs = {
+            element: this.diagram.selectedItems, key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which,
+        };
+        let selectedObject: (NodeModel | ConnectorModel)[] = (this.diagram.selectedItems.nodes.length) ?
+            this.diagram.selectedItems.nodes : this.diagram.selectedItems.connectors;
+        this.getKeyModifier(this.keyArgs, evt);
+        if ((this.diagram.diagramActions & DiagramAction.TextEdit)) {
+            this.getlabel(this.keyArgs, evt);
+        }
+        this.diagram.triggerEvent(DiagramEvent.keyUp, this.keyArgs);
     }
 
     private startAutoScroll(e: PointerEvent | TouchEvent): string {
@@ -1265,7 +1320,7 @@ export class DiagramEventHandler {
                         if (!(this.diagram.diagramActions & DiagramAction.TextEdit)) {
                             let id: string = '';
                             if (((obj as Node).shape as BpmnShapeModel).shape === 'TextAnnotation') {
-                                id =  obj.wrapper.children[1].id.split('_')[1];
+                                id = obj.wrapper.children[1].id.split('_')[1];
                             }
                             this.diagram.startTextEdit
                                 (obj, id || (annotation instanceof TextElement ?
@@ -1467,7 +1522,7 @@ export class DiagramEventHandler {
                 if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
                     return new TextDrawingTool(this.commandHandler);
                 } else if (type === 'Node' && (this.diagram.drawingObject.shape[shape] === 'Polygon' ||
-                (isBlazor() && this.diagram.drawingObject.shape[basicShape] === 'Polygon')) &&
+                    (isBlazor() && this.diagram.drawingObject.shape[basicShape] === 'Polygon')) &&
                     !((this.diagram.drawingObject.shape as BasicShapeModel).points)) {
                     return new PolygonDrawingTool(this.commandHandler);
                 } else if (type === 'Node' ||
@@ -1621,8 +1676,8 @@ export class DiagramEventHandler {
 
                                 (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
                                 if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                                    if (obj.shape.type !== 'Bpmn'  ||
-                                    (obj.shape.type === 'Bpmn' && (obj.shape as BpmnShapeModel).shape !== 'TextAnnotation')) {
+                                    if (obj.shape.type !== 'Bpmn' ||
+                                        (obj.shape.type === 'Bpmn' && (obj.shape as BpmnShapeModel).shape !== 'TextAnnotation')) {
                                         (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
                                     }
                                 }

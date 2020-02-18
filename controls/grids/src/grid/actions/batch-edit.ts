@@ -463,12 +463,16 @@ export class BatchEdit {
      */
     public addRowObject(row: Row<Column>): void {
         let isTop: Boolean = this.parent.editSettings.newRowPosition === 'Top';
+        let frozenColumnsCount: number = this.parent.getFrozenColumns();
+        if (frozenColumnsCount) {
+            let mRow: Row<Column>[] = this.parent.getMovableRowsObject() as Row<Column>[];
+            let mEle: Row<Column> = row.clone();
+            mEle.cells = mEle.cells.slice(frozenColumnsCount);
+            row.cells = row.cells.slice(0, frozenColumnsCount);
+            isTop ? mRow.unshift(mEle) : mRow.push(mEle);
+        }
         isTop ? this.parent.getRowsObject().unshift(row) :
             this.parent.getRowsObject().push(row);
-        let mRow: Row<Column>[] = this.parent.getMovableRowsObject() as Row<Column>[];
-        if (this.parent.getFrozenColumns() && !mRow.length) {
-            isTop ? mRow.unshift(row) : mRow.push(row);
-        }
     }
 
 
@@ -1080,7 +1084,9 @@ export class BatchEdit {
                 parentsUntil(cellSaveArgs.cell, 'e-movablecontent') )) {
                 this.refreshTD(cellSaveArgs.cell, column, gObj.getMovableRowsObject()[this.cellDetails.rowIndex], cellSaveArgs.value);
             } else {
-                this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+                let rowObj: Row<Column> = parentsUntil(cellSaveArgs.cell, 'e-movablecontent') ?
+                gObj.getMovableRowsObject()[this.cellDetails.rowIndex] : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+                this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
             }
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);

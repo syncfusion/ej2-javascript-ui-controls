@@ -10,8 +10,8 @@ import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
 import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs} from './interface';
-import { BeforeQuickToolbarOpenArgs } from './interface';
-import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, QuickToolbarEventArgs } from './interface';
+import { BeforeQuickToolbarOpenArgs, ChangeEventArgs } from './interface';
+import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -44,234 +44,8 @@ import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
-import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, FileInfo } from '@syncfusion/ej2-inputs';
+import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { Resize } from '../actions/resize';
-import { ItemModel } from '@syncfusion/ej2-navigations';
-import { XhtmlValidation } from '../actions/xhtml-validation';
-
-export interface ChangeEventArgs {
-    /**
-     * Returns value of RichTextEditor
-     */
-    value: string;
-    /** Defines the event name. */
-    name?: string;
-}
-
-export interface DialogOpenEventArgs {
-    /**
-     * Defines whether the current action can be prevented.
-     */
-    target: HTMLElement | String;
-    /**
-     * Returns the root container element of the dialog.
-     */
-    container: HTMLElement;
-    /**
-     * Returns the element of the dialog.
-     */
-    element: Element;
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-}
-
-export interface DialogCloseEventArgs {
-    /**
-     * Defines whether the current action can be prevented.
-     */
-    cancel: boolean;
-    /**
-     * Returns the root container element of the dialog.
-     */
-    container: HTMLElement;
-    /**
-     * Returns the element of the dialog.
-     */
-    element: Element;
-    /**
-     * Returns the original event arguments.
-     */
-    event: Event;
-    /**
-     * Determines whether the event is triggered by interaction.
-     */
-    isInteracted: boolean;
-    /**
-     * DEPRECATED-Determines whether the event is triggered by interaction.
-     */
-    isInteraction: boolean;
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-    /**
-     * Defines whether the current action can be prevented.
-     */
-    target: HTMLElement | String;
-}
-
-export interface ToolbarUpdateEventArgs {
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-    /**
-     * Specify the name of the event.
-     */
-    redo: boolean;
-    /**
-     * Specify the name of the event.
-     */
-    undo: boolean;
-}
-
-export interface ImageSuccessEventArgs {
-    /**
-     * Returns the original event arguments.
-     */
-    e?: object;
-    /**
-     * Returns the details about upload file.
-     * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
-     */
-    file: FileInfo;
-    /**
-     * Returns the upload status.
-     */
-    statusText?: string;
-    /**
-     * Returns the upload event operation.
-     */
-    operation: string;
-    /**
-     * Returns the upload event operation.
-     * @blazorType ResponseEventArgs
-     */
-    response?: ResponseEventArgs;
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-}
-
-export interface ImageFailedEventArgs {
-    /**
-     * Returns the original event arguments.
-     */
-    e?: object;
-    /**
-     * Returns the details about upload file.
-     * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
-     */
-    file: FileInfo;
-    /**
-     * Returns the upload status.
-     */
-    statusText?: string;
-    /**
-     * Returns the upload event operation.
-     */
-    operation: string;
-    /**
-     * Returns the upload event operation.
-     * @blazorType ResponseEventArgs
-     */
-    response?: ResponseEventArgs;
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-}
-
-export interface ResponseEventArgs {
-    /**
-     * Returns the headers information of the upload image.
-     */
-    headers?: string;
-    /**
-     * Returns the readyState information.
-     */
-    readyState?: object;
-    /**
-     * Returns the upload image statusCode.
-     */
-    statusCode?: object;
-    /**
-     * Returns the upload image statusText.
-     */
-    statusText?: string;
-    /**
-     * Returns the credentials status of the upload image.
-     */
-    withCredentials?: boolean;
-}
-
-export interface DestroyedEventArgs {
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-    /**
-     * Defines whether the current action can be prevented.
-     */
-    cancel: boolean;
-}
-
-export interface BlurEventArgs {
-    /**
-     * Returns the original event arguments.
-     */
-    event: Event;
-    /**
-     * Determines whether the event is triggered by interaction.
-     */
-    isInteracted: boolean;
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-}
-
-export interface ToolbarClickEventArgs {
-    /**
-     * Defines whether the current action can be prevented.
-     */
-    cancel: boolean;
-    /**
-     * Defines the current Toolbar Item Object.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
-     */
-    item: ItemModel;
-    /**
-     * Defines the current Event arguments
-     */
-    originalEvent: MouseEvent;
-    /**
-     * Specify the request type of the event.
-     */
-    requestType: string;
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-}
-
-export interface FocusEventArgs {
-    /**
-     * Returns the original event arguments.
-     */
-    event: FocusEvent;
-    /**
-     * Determines whether the event is triggered by interaction.
-     */
-    isInteracted: boolean;
-    /**
-     * Specify the name of the event.
-     */
-    name?: string;
-}
 
 /**
  * Represents the RichTextEditor component.
@@ -1272,8 +1046,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     }
                     break;
                 case 'insertTable':
-                    (value as { [key: string]: object }).width = { minWidth: this.tableSettings.minWidth,
-                    maxWidth: this.tableSettings.maxWidth, width: this.tableSettings.width };
+                    if (isNOU((value as { [key: string]: object }).width)) {
+                        (value as { [key: string]: object }).width = { minWidth: this.tableSettings.minWidth,
+                        maxWidth: this.tableSettings.maxWidth, width: this.tableSettings.width };
+                    }
                     break;
                 case 'insertImage':
                     let temp: HTMLElement = this.createElement('img', {
@@ -1287,6 +1063,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     }).firstElementChild).getAttribute('src')) || null;
                     url = !isNOU(url) ? url : '';
                     (value as IImageCommandsArgs).url = url;
+                    if (isNOU((value as { [key: string]: object }).width)) {
+                        (value as { [key: string]: object }).width = { minWidth: this.insertImageSettings.minWidth,
+                        maxWidth: this.insertImageSettings.maxWidth, width: this.insertImageSettings.width };
+                    }
+                    if (isNOU((value as { [key: string]: object }).height)) {
+                        (value as { [key: string]: object }).height = { minHeight: this.insertImageSettings.minHeight,
+                        maxHeight: this.insertImageSettings.maxHeight, height: this.insertImageSettings.height };
+                    }
                     break;
                 case 'createLink':
                     let tempNode: HTMLElement = this.createElement('a', {
@@ -1586,51 +1370,53 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @return {void}
      */
     public destroy(): void {
-        this.notify(events.destroy, {});
-        this.destroyDependentModules();
-        if (!isNOU(this.timeInterval)) {
-            clearInterval(this.timeInterval);
-            this.timeInterval = null;
-        }
-        this.unWireEvents();
-        if (this.originalElement.tagName === 'TEXTAREA') {
-            if (isBlazor()) {
-                detach(this.valueContainer);
-                this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
+        if (this.isRendered) {
+            this.notify(events.destroy, {});
+            this.destroyDependentModules();
+            if (!isNOU(this.timeInterval)) {
+                clearInterval(this.timeInterval);
+                this.timeInterval = null;
             }
-            this.element.parentElement.insertBefore(this.valueContainer, this.element);
-            this.valueContainer.id = this.getID();
-            this.valueContainer.removeAttribute('name');
-            detach(this.element);
-            if (this.originalElement.innerHTML.trim() !== '') {
-                this.valueContainer.value = this.originalElement.innerHTML.trim();
-                if (!isBlazor()) { this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true); }
+            this.unWireEvents();
+            if (this.originalElement.tagName === 'TEXTAREA') {
+                if (isBlazor()) {
+                    detach(this.valueContainer);
+                    this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
+                }
+                this.element.parentElement.insertBefore(this.valueContainer, this.element);
+                this.valueContainer.id = this.getID();
+                this.valueContainer.removeAttribute('name');
+                detach(this.element);
+                if (this.originalElement.innerHTML.trim() !== '') {
+                    this.valueContainer.value = this.originalElement.innerHTML.trim();
+                    if (!isBlazor()) { this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true); }
+                } else {
+                    this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
+                }
+                this.element = this.valueContainer;
+                for (let i: number = 0; i < this.originalElement.classList.length; i++) {
+                    addClass([this.element], this.originalElement.classList[i]);
+                }
+                removeClass([this.element], classes.CLS_RTE_HIDDEN);
             } else {
-                this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
+                if (this.originalElement.innerHTML.trim() !== '') {
+                    this.element.innerHTML = this.originalElement.innerHTML.trim();
+                    this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
+                } else {
+                    this.element.innerHTML = '';
+                }
             }
-            this.element = this.valueContainer;
-            for (let i: number = 0; i < this.originalElement.classList.length; i++) {
-                addClass([this.element], this.originalElement.classList[i]);
+            if (this.placeholder && this.placeHolderWrapper) {
+                this.placeHolderWrapper = null;
             }
-            removeClass([this.element], classes.CLS_RTE_HIDDEN);
-        } else {
-            if (this.originalElement.innerHTML.trim() !== '') {
-                this.element.innerHTML = this.originalElement.innerHTML.trim();
-                this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
-            } else {
-                this.element.innerHTML = '';
+            if (!isNOU(this.cssClass)) {
+                removeClass([this.element], this.cssClass);
             }
+            this.removeHtmlAttributes();
+            this.removeAttributes();
+            super.destroy();
+            if (this.enablePersistence) { window.localStorage.removeItem(this.getModuleName() + this.element.id); }
         }
-        if (this.placeholder && this.placeHolderWrapper) {
-            this.placeHolderWrapper = null;
-        }
-        if (!isNOU(this.cssClass)) {
-            removeClass([this.element], this.cssClass);
-        }
-        this.removeHtmlAttributes();
-        this.removeAttributes();
-        super.destroy();
-        if (this.enablePersistence) { window.localStorage.removeItem(this.getModuleName() + this.element.id); }
     }
 
     private removeHtmlAttributes(): void {
@@ -2380,7 +2166,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 trg = null;
             }
         }
-        if (this.isBlur && isNOU(trg)) {
+        if (this.isBlur && isNOU(trg) && !this.readonly) {
             removeClass([this.element], [classes.CLS_FOCUS]);
             this.notify(events.focusChange, {});
             let value: string = this.getUpdatedValue();

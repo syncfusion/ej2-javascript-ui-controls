@@ -1203,6 +1203,8 @@ export interface FilterSearchBeginEventArgs {
     filterChoiceCount: number;
     /** Defines the datasource for filter request */
     dataSource?: Object[];
+    /** Defines the value of the current search */
+    value?: Date | string | number | boolean;
 }
 
 export interface MultipleExport {
@@ -1744,6 +1746,7 @@ export interface BeforePasteEventArgs {
     column?: Column;
     data?: string | number | boolean | Date;
     cancel?: boolean;
+    rowIndex?: number;
 }
 
 export interface BeforeAutoFillEventArgs {
@@ -2080,14 +2083,29 @@ export interface PdfThemeStyle {
     bold?: boolean;
     /** Defines the borders of theme style. */
     border?: PdfBorder;
-    /** Defines the font of the theme. */
-    font?: PdfStandardFont | PdfTrueTypeFont;
+    /** Defines the font of the theme.
+     * @blazorType PdfGridFont
+     */
+    font?: PdfStandardFont | PdfTrueTypeFont ;
     /** Defines the italic of theme style. */
     italic?: boolean;
     /** Defines the underline of theme style. */
     underline?: boolean;
     /** Defines the strikeout of theme style. */
     strikeout?: boolean;
+}
+
+export interface PdfGridFont {
+    /** Defines the  fontFamily of font content. */
+    fontFamily?: object;
+    /** Defines the fontSize of font content. */
+    fontSize?: number;
+    /** Defines the trueTypeFont is enabled or not for font content. 
+     * @default false
+     */
+    isTrueType: boolean;
+    /** Defines the fontStyle of font content. */
+    fontStyle?: object;
 }
 
 export interface PdfHeader {

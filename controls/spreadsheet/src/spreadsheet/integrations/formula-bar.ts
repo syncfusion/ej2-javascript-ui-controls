@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { formulaBar, locale, selectionComplete } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
-import { getRangeIndexes, getRangeFromAddress } from './../../workbook/common/address';
+import { getRangeIndexes, getRangeFromAddress, getCellAddress } from './../../workbook/common/address';
 import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel } from '../../workbook/index';
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel } from '../../workbook/index';
 import { ComboBox, ChangeEventArgs, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
@@ -143,6 +143,22 @@ export class FormulaBar {
             let sheetIdx: number = getSheetIndex(this.parent, getSheetNameFromAddress(refersTo));
             let range: string = getRangeFromAddress(refersTo);
             let sheet: SheetModel = getSheet(this.parent, sheetIdx);
+            if (range.indexOf(':') !== -1) {
+                let colIndex: number = range.indexOf(':');
+                let left: string = range.substr(0, colIndex);
+                let right: string = range.substr(colIndex + 1, range.length);
+                left = left.replace('$', '');
+                right = right.replace('$', '');
+                if (right.match(/\D/g) && !right.match(/[0-9]/g) && left.match(/\D/g) && !left.match(/[0-9]/g)) {
+                    left = left + '1';
+                    right = right + sheet.rowCount;
+                    range = left + ':' + right;
+                } else if (!right.match(/\D/g) && right.match(/[0-9]/g) && !left.match(/\D/g) && left.match(/[0-9]/g)) {
+                    left = getCellAddress(parseInt(left, 10) - 1, 0);
+                    right = getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
+                    range = left + ':' + right;
+                }
+            }
             if ((sheetIdx + 1) === this.parent.activeSheetTab) {
                 this.parent.selectRange(range);
                 this.parent.element.focus();

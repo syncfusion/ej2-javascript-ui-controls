@@ -178,7 +178,7 @@ export class PasteCleanup {
 
   private imgUploading(elm: HTMLElement): void {
     let allImgElm: NodeListOf<HTMLImageElement> =
-      elm.querySelector('#' + this.parent.getID() + '_pasteContent').querySelectorAll('img');
+      elm.querySelectorAll('.pasteContent_Img');
     if (this.parent.insertImageSettings.saveUrl && allImgElm.length > 0) {
       let base64Src: string[] = [];
       let imgName: string[] = [];
@@ -204,7 +204,13 @@ export class PasteCleanup {
     } else if (this.parent.insertImageSettings.saveFormat === 'Blob') {
       this.getBlob(allImgElm);
     }
-    elm.querySelector('#' + this.parent.getID() + '_pasteContent').removeAttribute('id');
+    let allImgElmId: NodeListOf<Element> = elm.querySelectorAll('.pasteContent_Img');
+    for (let i: number = 0; i < allImgElmId.length; i++) {
+      allImgElmId[i].classList.remove('pasteContent_Img');
+      if (allImgElmId[i].getAttribute('class').trim() === '') {
+        allImgElm[i].removeAttribute('class');
+      }
+    }
   }
 
   private getBlob(allImgElm: NodeListOf<HTMLImageElement>): void {
@@ -464,7 +470,10 @@ export class PasteCleanup {
     }
     this.saveSelection.restore();
     clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
-    clipBoardElem.setAttribute('id', this.parent.getID() + '_pasteContent');
+    let allImg: NodeListOf<HTMLImageElement> = clipBoardElem.querySelectorAll('img');
+    for (let i: number = 0; i < allImg.length; i++) {
+      allImg[i].classList.add('pasteContent_Img');
+    }
     if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
     !isNOU(clipBoardElem.querySelector('table'))) {
       this.parent.formatter.editorManager.execCommand(

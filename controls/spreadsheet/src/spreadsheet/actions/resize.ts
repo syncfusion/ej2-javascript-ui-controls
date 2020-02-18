@@ -295,7 +295,9 @@ export class Resize {
         let threshold: number = parseInt(oldValue, 10) > autofitValue ?
             -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
         if (isCol) {
-            if (oldIdx >= this.parent.viewport.leftIndex && oldIdx <= this.parent.viewport.leftIndex + 62) {
+            let colThreshold: number = this.parent.getThreshold('col');
+            let lastIdx: number = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (colThreshold * 2);
+            if (oldIdx >= this.parent.viewport.leftIndex && oldIdx <= lastIdx) {
                 getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
                 this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
                 this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);

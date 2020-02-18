@@ -670,10 +670,11 @@ export class GanttChart {
      * @private
      */
     public onTabAction(e: KeyboardEventArgs): void {
-        if (!this.parent.showActiveElement) {
+        let isInEditedState: boolean = this.parent.editModule.cellEditModule.isCellEdit;
+        if (!this.parent.showActiveElement && !isInEditedState) {
             return;
         }
-        let $target: Element = e.target as Element;
+        let $target: Element = isInEditedState ? (e.target as Element).closest('.e-rowcell') : e.target as Element;
         let isTab: boolean = (e.action === 'tab') ? true : false;
         let nextElement: Element = this.getNextElement($target, isTab);
         if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell')) {
@@ -681,24 +682,27 @@ export class GanttChart {
         }
         if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell'))) {
             this.parent.treeGrid.grid.notify('key-pressed', e);
-        } else if (nextElement) {
-            if ($target.classList.contains('e-rowcell')) {
-                this.manageFocus($target as HTMLElement, 'remove', false);
-            } else {
-                this.manageFocus($target as HTMLElement, 'remove', true);
-            }
-            if (nextElement.classList.contains('e-rowcell')) {
-                if (!$target.classList.contains('e-rowcell')) {
-                    this.parent.treeGrid.grid.notify('key-pressed', e);
-                    let fmodule: FocusStrategy = getValue('focusModule', this.parent.treeGrid.grid);
-                    fmodule.currentInfo.element = nextElement as HTMLElement;
-                    fmodule.currentInfo.elementToFocus = nextElement as HTMLElement;
-                    /* tslint:disable-next-line:no-any */
-                    fmodule.content.matrix.current = [(nextElement.parentElement as any).rowIndex, (nextElement as any).cellIndex];
+        }
+        if (!isInEditedState) {
+            if (nextElement) {
+                if ($target.classList.contains('e-rowcell')) {
+                    this.manageFocus($target as HTMLElement, 'remove', false);
+                } else {
+                    this.manageFocus($target as HTMLElement, 'remove', true);
                 }
-                this.manageFocus(nextElement as HTMLElement, 'add', false);
-            } else {
-                this.manageFocus(nextElement as HTMLElement, 'add', true);
+                if (nextElement.classList.contains('e-rowcell')) {
+                    if (!$target.classList.contains('e-rowcell')) {
+                        this.parent.treeGrid.grid.notify('key-pressed', e);
+                        let fmodule: FocusStrategy = getValue('focusModule', this.parent.treeGrid.grid);
+                        fmodule.currentInfo.element = nextElement as HTMLElement;
+                        fmodule.currentInfo.elementToFocus = nextElement as HTMLElement;
+                        /* tslint:disable-next-line:no-any */
+                        fmodule.content.matrix.current = [(nextElement.parentElement as any).rowIndex, (nextElement as any).cellIndex];
+                    }
+                    this.manageFocus(nextElement as HTMLElement, 'add', false);
+                } else {
+                    this.manageFocus(nextElement as HTMLElement, 'add', true);
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import { TestHelper } from '../test-helper.spec';
 //import { EditorHistory } from '../../src/index';
 import { Editor } from '../../src/index';
 import { Selection } from '../../src/index';
+import { SearchResults } from '../../src/document-editor/implementation/search/search-results';
 /**
  * Replace Spec
  */
@@ -195,5 +196,9 @@ describe('Search module testing-replace', () => {
         results.innerList = undefined;
         let value: number = results.indexOf(undefined);
         expect(value).toBe(-1);
+    });
+    it("Search result module name testing", () => {
+        let result: SearchResults = new SearchResults(undefined);
+        expect((result as any).getModuleName()).toBe('SearchResults');
     });
 });

@@ -741,7 +741,7 @@ let CalendarBase = class CalendarBase extends Component {
             // if (args.isDisabled && +this.value === +args.date) {
             //     this.setProperties({ value: null }, true);
             // }
-            if (multiSelection && !isNullOrUndefined(values) && !otherMnthBool && !disabledCls) {
+            if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (let tempValue = 0; tempValue < values.length; tempValue++) {
                     let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                     let formatOptions = { type: 'date', skeleton: 'short', calendar: type };
@@ -759,7 +759,7 @@ let CalendarBase = class CalendarBase extends Component {
                     this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
                 }
             }
-            else if (!otherMnthBool && !disabledCls && this.getDateVal(localDate, value)) {
+            else if (!disabledCls && this.getDateVal(localDate, value)) {
                 addClass([tdEle], SELECTED);
             }
             else {
@@ -861,6 +861,9 @@ let CalendarBase = class CalendarBase extends Component {
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
+                if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
+                    addClass([tdEle], SELECTED);
+                }
                 if (year < new Date(this.checkValue(this.min)).getFullYear() ||
                     year > new Date(this.checkValue(this.max)).getFullYear()) {
                     addClass([tdEle], DISABLED);
@@ -10733,6 +10736,9 @@ let TimePicker = class TimePicker extends Component {
             };
             let eventArgs = this.openPopupEventArgs;
             this.trigger('open', eventArgs, (eventArgs) => {
+                if ((isBlazor() && this.isServerRendered)) {
+                    eventArgs.popup = this.popupObj || null;
+                }
                 this.openPopupEventArgs = eventArgs;
                 if (!this.openPopupEventArgs.cancel && !this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
                     this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);

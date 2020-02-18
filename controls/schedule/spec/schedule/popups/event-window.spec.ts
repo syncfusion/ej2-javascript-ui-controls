@@ -1148,7 +1148,7 @@ describe('Schedule event window initial load', () => {
                 expect(eventPopup).toBeTruthy();
                 (eventPopup.querySelector('.e-edit-icon') as HTMLElement).click();
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                expect(dialogElement.querySelector('.e-title-text').innerHTML).toEqual('This Event');
+                expect(dialogElement.querySelector('.e-title-text').innerHTML).toEqual('Edit Event');
                 let backIcon: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS);
                 backIcon.click();
             });

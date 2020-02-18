@@ -1332,13 +1332,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             cancel: 'Cancel',
             noTitle: '(No Title)',
             delete: 'Delete',
-            deleteEvent: 'This Event',
+            deleteEvent: 'Delete Event',
             deleteMultipleEvent: 'Delete Multiple Events',
             selectedItems: 'Items selected',
             deleteSeries: 'Entire Series',
             edit: 'Edit',
             editSeries: 'Entire Series',
-            editEvent: 'This Event',
+            editEvent: 'Edit Event',
             createEvent: 'Create',
             subject: 'Subject',
             addTitle: 'Add title',
@@ -1999,7 +1999,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             let cells: HTMLTableCellElement[] = this.getWorkHourCells(dates, start, end, groupIndex);
             removeClass(cells, cls.WORK_HOURS_CLASS);
         } else {
-            let workHourCells: NodeListOf<Element> = this.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS);
+            let workHourCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
             removeClass(workHourCells, cls.WORK_HOURS_CLASS);
         }
     }

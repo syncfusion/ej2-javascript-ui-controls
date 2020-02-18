@@ -1714,7 +1714,7 @@ export interface NodeModel extends NodeBaseModel{
     shape?: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel | DiagramShapeModel;
 
     /**
-     * Defines the size of the symbol preview
+     * Defines the node's preview size when dragging over from the palette.
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -1722,7 +1722,7 @@ export interface NodeModel extends NodeBaseModel{
     previewSize?: SymbolSizeModel;
 
     /**
-     * Defines the size of a drop symbol
+     * Defines the node's width and height when dragging a shape into the diagram from the palette.
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

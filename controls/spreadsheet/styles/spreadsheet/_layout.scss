@@ -977,29 +977,6 @@
       }
     }
 
-    & .e-filter-popup { //Need to remove this once separate style provided.
-      position: absolute;
-
-      & .e-contextmenu-wrapper ul {
-        border: 0;
-        box-shadow: none;
-        display: block;
-        max-width: 300px;
-        padding-bottom: 4px;
-        position: static;
-
-        & li,
-        & .e-caret {
-          height: 36px;
-          line-height: 36px;
-        }
-      }
-
-      & .e-dlg-content {
-        padding-top: 0;
-      }
-    }
-
     & .e-filter-icon {
       margin-bottom: $filter-icon-margin-bottom;
 

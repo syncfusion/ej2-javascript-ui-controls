@@ -415,8 +415,6 @@ export class Filter {
             };
             let excelFilter: ExcelFilterBase = new ExcelFilterBase(this.parent, this.getLocalizedCustomOperators());
             excelFilter.openDialog(options);
-            let filterPopup: HTMLElement = this.parent.element.querySelector('.e-filter-popup');
-            filterPopup.classList.add('e-grid'); //Need to remove this once separate style provided.
             this.parent.hideSpinner();
         });
     }

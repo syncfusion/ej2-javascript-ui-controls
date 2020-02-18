@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 1.0 (2020-02-18)
+
+### TreeView
+
+#### Breaking Changes
+
+- `#263334` - Standardized the right-click interaction in TreeView component. Now, the TreeView node will not be selected when you right-click it.
+
 ## 17.4.49 (2020-02-11)
 
 ### TreeView

@@ -4,7 +4,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import {
-    ConnectorModel, Node, TextModel, Connector,IExpandStateChangeEventArgs,
+    ConnectorModel, Node, TextModel, Connector, IExpandStateChangeEventArgs,
     DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -1888,8 +1888,8 @@ describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
         node.annotations[0].style.color = "white";
         node.width = 120;
         node.height = 50;
-        node.expandIcon = { shape: 'Minus' };
-        node.collapseIcon = { shape: 'Plus' };
+        node.expandIcon = { shape: 'Minus' , height:20, width:20};
+        node.collapseIcon = { shape: 'Plus' , height:20, width:20};
         return node;
     }
 
@@ -1958,16 +1958,20 @@ describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
         ele.remove();
     });
     it('OrgChart-Layout Expand collapse issue exception raise issue', (done: Function) => {
+        debugger
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, diagram.nodes[0].offsetX, diagram.nodes[0].offsetY);
-        mouseEvents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].wrapper.children[2].offsetX + diagram.element.offsetLeft, diagram.nodes[1].wrapper.children[2].offsetY);
-        mouseEvents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].wrapper.children[2].offsetX + diagram.element.offsetLeft + 2, diagram.nodes[1].wrapper.children[2].offsetY)
-        mouseEvents.clickEvent(diagramCanvas, diagram.nodes[1].wrapper.children[2].offsetX + diagram.element.offsetLeft, diagram.nodes[1].wrapper.children[2].offsetY);
-        diagram.animationComplete = () => {
+        var element = document.getElementById('General Manager_icon_content_rect');
+        let bounds: DOMRect | ClientRect = element.getBoundingClientRect();
+        diagram.animationComplete = function () {
+            console.log("animationComplete")
             expect(diagram.nodes[2].visible === false).toBe(true);
             done();
         };
+        mouseEvents.clickEvent(diagramCanvas, diagram.nodes[0].offsetX, diagram.nodes[0].offsetY);
+        mouseEvents.mouseMoveEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2)-12);
+    mouseEvents.mouseDownEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2)-12);
+    mouseEvents.mouseUpEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2)-12);
     });
 
 });
@@ -2122,8 +2126,8 @@ describe('Node and connector default for layout', () => {
         let node = diagram.nodes[0]
         let nodeElement: any = document.getElementById(node.id)
         expect(Math.round(nodeElement.getAttribute('x')) === 632).toBe(true)
-        nodeElement = document.getElementById(diagram.nodes[1].id) 
-       expect(Math.round(nodeElement.getAttribute('x')) === 579||Math.round(nodeElement.getAttribute('x')) === 580 || Math.round(nodeElement.getAttribute('x')) === 581).toBe(true)
+        nodeElement = document.getElementById(diagram.nodes[1].id)
+        expect(Math.round(nodeElement.getAttribute('x')) === 579 || Math.round(nodeElement.getAttribute('x')) === 580 || Math.round(nodeElement.getAttribute('x')) === 581).toBe(true)
         done();
     });
 
@@ -2254,19 +2258,19 @@ describe('layout-info assistant support', () => {
             { 'Id': '20', 'Role': 'Service Dept. Manager', 'Manager': '16', 'color': '#2E95D8' },
             { 'Id': '21', 'Role': 'Quality Department', 'Manager': '16', 'color': '#2E95D8' }
         ];
-        
+
         let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
         diagram = new Diagram({
             width: '4000px', height: '2000px',
             snapSettings: { constraints: 0 },
             layout: {
                 type: 'OrganizationalChart',
-                layoutInfo: { getAssistantDetails: { root: "General Manager", assistants: ["Assistant Manager","Assistant Manager1"] } },
+                layoutInfo: { getAssistantDetails: { root: "General Manager", assistants: ["Assistant Manager", "Assistant Manager1"] } },
             },
             dataSourceSettings: {
                 id: 'Id', parentId: 'Manager', dataSource: items
             },
-        
+
             getNodeDefaults: (obj: Node, diagram: Diagram) => {
                 obj.width = 150;
                 obj.height = 50;
@@ -2286,7 +2290,7 @@ describe('layout-info assistant support', () => {
         ele.remove();
     });
     it('layout-info assistant support', (done: Function) => {
-        expect(diagram.nodes[2].offsetY===235&&diagram.nodes[3].offsetY===235).toBe(true);
+        expect(diagram.nodes[2].offsetY === 235 && diagram.nodes[3].offsetY === 235).toBe(true);
         done();
     });
     describe('layout-Type as none', () => {
@@ -2300,7 +2304,7 @@ describe('layout-info assistant support', () => {
             node.collapseIcon = { shape: 'Plus' };
             return node;
         }
-    
+
         //The below method used to define the common settings for connectors.
         function connectorDefaults(connector: any) {
             connector.type = 'Orthogonal';
@@ -2332,19 +2336,19 @@ describe('layout-info assistant support', () => {
                 { 'Id': '20', 'Role': 'Service Dept. Manager', 'Manager': '16', 'color': '#2E95D8' },
                 { 'Id': '21', 'Role': 'Quality Department', 'Manager': '16', 'color': '#2E95D8' }
             ];
-            
+
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
             diagram = new Diagram({
                 width: '4000px', height: '2000px',
                 snapSettings: { constraints: 0 },
                 layout: {
                     type: 'HierarchicalTree',
-                    layoutInfo: { getAssistantDetails: { root: "General Manager", assistants: ["Assistant Manager","Assistant Manager1"] } },
+                    layoutInfo: { getAssistantDetails: { root: "General Manager", assistants: ["Assistant Manager", "Assistant Manager1"] } },
                 },
                 dataSourceSettings: {
                     id: 'Id', parentId: 'Manager', dataSource: items
                 },
-            
+
                 getNodeDefaults: (obj: Node, diagram: Diagram) => {
                     obj.width = 150;
                     obj.height = 50;
@@ -2363,16 +2367,16 @@ describe('layout-info assistant support', () => {
             diagram.destroy();
             ele.remove();
         });
-       
+
         it('Checking hierarchical chart - save and load with layout type as none', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let obj: NodeModel = diagram.nodes[0];
             diagram.drag(obj, 50, 50);
             expect(diagram.nodes[0].offsetX === 1915 && diagram.nodes[0].offsetY === 125).toBe(true)
             let saveloaddata: any = diagram.saveDiagram();
-            saveloaddata=  JSON.parse(saveloaddata);
+            saveloaddata = JSON.parse(saveloaddata);
             saveloaddata.layout.type = "None";
-            saveloaddata= JSON.stringify(saveloaddata)
+            saveloaddata = JSON.stringify(saveloaddata)
             diagram.loadDiagram(saveloaddata);
             expect(diagram.nodes[0].width == 150 && diagram.nodes[0].height == 50).toBe(true);
             expect(diagram.nodes[0].offsetX === 1915 && diagram.nodes[0].offsetY === 125).toBe(true)
@@ -2392,8 +2396,8 @@ describe('layout-info assistant support', () => {
                 NodeType: string,
                 Speed: string,
                 Allocation: number,
-             }
-            let data: object[] =[
+            }
+            let data: object[] = [
                 {
                     "Id": "L1",
                     "Code": "WBD",
@@ -2408,18 +2412,18 @@ describe('layout-info assistant support', () => {
                     "Description": "Carcass A Drop Bulk",
                     "NodeType": "Equipment",
                     "Speed": "12.2k",
-                    "Allocation": "0",         
+                    "Allocation": "0",
                     "ParentList": [
                         "L1"
                     ]
-                },   
+                },
                 {
                     "Id": "L1-377",
                     "Code": "377",
                     "Description": "Shrink Pack Machine",
                     "NodeType": "Equipment",
                     "Speed": "4.9k",
-                    "Allocation": "19",         
+                    "Allocation": "19",
                     "ParentList": [
                         "L1-373", "L1-353"
                     ]
@@ -2430,7 +2434,7 @@ describe('layout-info assistant support', () => {
                     "Description": "Product Crating",
                     "NodeType": "Manpower",
                     "Speed": "4.9k",
-                    "Allocation": "19",         
+                    "Allocation": "19",
                     "ParentList": [
                         "L1-377"
                     ]
@@ -2441,29 +2445,29 @@ describe('layout-info assistant support', () => {
                     "Description": "Product Labeling",
                     "NodeType": "Manpower",
                     "Speed": "4.9k",
-                    "Allocation": "19",         
+                    "Allocation": "19",
                     "ParentList": [
                         "L1-10911", "L1-367"
                     ]
-                },    
+                },
                 {
                     "Id": "L1-367",
                     "Code": "367",
                     "Description": "Cartoon Freezer",
                     "NodeType": "Equipment",
                     "Speed": "0.2k",
-                    "Allocation": "98",         
+                    "Allocation": "98",
                     "ParentList": [
                         "L1-10911"
                     ]
-                }, 
+                },
                 {
                     "Id": "L1-353",
                     "Code": "353",
                     "Description": "Carcass B Drop Bulk",
                     "NodeType": "Equipment",
                     "Speed": "12.2k",
-                    "Allocation": "0",         
+                    "Allocation": "0",
                     "ParentList": [
                         "L1"
                     ]
@@ -2475,14 +2479,14 @@ describe('layout-info assistant support', () => {
                     "NodeType": "Line",
                     "Speed": "3.8k",
                     "Allocation": "0"
-                },        
+                },
                 {
                     "Id": "L2-10930",
                     "Code": "10930",
                     "Description": "Drop Off Bulk Wings",
                     "NodeType": "Equipment",
                     "Speed": "1.0k",
-                    "Allocation": "0",         
+                    "Allocation": "0",
                     "ParentList": [
                         "L2"
                     ]
@@ -2493,7 +2497,7 @@ describe('layout-info assistant support', () => {
                     "Description": "Manual Product Grading",
                     "NodeType": "Manpower",
                     "Speed": "1.0k",
-                    "Allocation": "0",         
+                    "Allocation": "0",
                     "ParentList": [
                         "L2-10930"
                     ]
@@ -2504,7 +2508,7 @@ describe('layout-info assistant support', () => {
                     "Description": "Product Weighing",
                     "NodeType": "Equipment",
                     "Speed": "8.1k",
-                    "Allocation": "29",         
+                    "Allocation": "29",
                     "ParentList": [
                         "L2-398", "L2-10574"
                     ]
@@ -2515,7 +2519,7 @@ describe('layout-info assistant support', () => {
                     "Description": "Product Packing",
                     "NodeType": "Equipment",
                     "Speed": "1.0k",
-                    "Allocation": "100",         
+                    "Allocation": "100",
                     "ParentList": [
                         "L2-10935"
                     ]
@@ -2526,7 +2530,7 @@ describe('layout-info assistant support', () => {
                     "Description": "Breast Fillet Deboning",
                     "NodeType": "Manpower",
                     "Speed": "7.5k",
-                    "Allocation": "0",         
+                    "Allocation": "0",
                     "ParentList": [
                         "L2"
                     ]
@@ -2537,7 +2541,7 @@ describe('layout-info assistant support', () => {
                     "Description": "Breast Skinner",
                     "NodeType": "Equipment",
                     "Speed": "7.5k",
-                    "Allocation": "26",         
+                    "Allocation": "26",
                     "ParentList": [
                         "L2-466"
                     ]
@@ -2548,38 +2552,38 @@ describe('layout-info assistant support', () => {
                     "Description": "Drop Off Bulk IQF",
                     "NodeType": "Equipment",
                     "Speed": "1.0k",
-                    "Allocation": "0",         
+                    "Allocation": "0",
                     "ParentList": [
                         "L2"
                     ]
-                }, 
+                },
                 {
                     "Id": "L2-10592",
                     "Code": "10592",
                     "Description": "Spiral Freezer",
                     "NodeType": "Equipment",
                     "Speed": "1.0k",
-                    "Allocation": "93",         
+                    "Allocation": "93",
                     "ParentList": [
                         "L2-485"
                     ]
-                }, 
+                },
                 {
                     "Id": "L2-490",
                     "Code": "490",
                     "Description": "Product Boxing",
                     "NodeType": "Manpower",
                     "Speed": "1.0k",
-                    "Allocation": "100",         
+                    "Allocation": "100",
                     "ParentList": [
                         "L2-10592"
                     ]
                 }
             ]
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
-            
+
             diagram = new Diagram({
-                width: '100%', height: '580px',backgroundColor:"#F9FAFD",
+                width: '100%', height: '580px', backgroundColor: "#F9FAFD",
                 layout: {
                     type: 'ComplexHierarchicalTree',
                     horizontalSpacing: 40, verticalSpacing: 80, orientation: 'LeftToRight',
@@ -2588,15 +2592,15 @@ describe('layout-info assistant support', () => {
                 },
                 dataSourceSettings: {
                     id: 'Id',
-                  parentId: 'ParentList',
-                  Code: 'Code',
-                  Description: 'Description',
-                  NodeType: 'NodeType',
-                  Speed: 'Speed',
-                  Allocation: 'Allocation',
-                  dataSource: new DataManager(data)
+                    parentId: 'ParentList',
+                    Code: 'Code',
+                    Description: 'Description',
+                    NodeType: 'NodeType',
+                    Speed: 'Speed',
+                    Allocation: 'Allocation',
+                    dataSource: new DataManager(data)
                 } as any,
-            
+
                 getNodeDefaults: (obj: Node, diagram: Diagram) => {
                     obj.shape = { type: 'Basic', shape: 'Rectangle' };
                     obj.expandIcon.height = 10;
@@ -2608,7 +2612,7 @@ describe('layout-info assistant support', () => {
                     obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
                     obj.expandIcon.borderColor = '#ABB8E7';
                     obj.expandIcon.cornerRadius = 1;
-                      obj.collapseIcon.height = 10;
+                    obj.collapseIcon.height = 10;
                     obj.collapseIcon.width = 10;
                     obj.collapseIcon.shape = 'Plus';
                     obj.collapseIcon.fill = '#fff';
@@ -2628,188 +2632,188 @@ describe('layout-info assistant support', () => {
                     connector.style.strokeColor = '#ABB8E7';
                     return connector;
                 },
-            
+
                 setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
                     var nodePanel: StackPanel = new StackPanel();
-                  nodePanel.id = obj.id + '_nodePanel';
-                  nodePanel.orientation = 'Horizontal';
-                  nodePanel.style.strokeColor = 'none';
-                  nodePanel.height = 96;
-                  nodePanel.width = 196;
-                  nodePanel.style.fill = 'White';
-            
-                  // Content Panel
-                  var contentPanel: StackPanel = new StackPanel();
-                  contentPanel.id = obj.id + '_contentPanel';
-                  contentPanel.orientation = 'Vertical';
-                  contentPanel.style.fill = 'none';
-                  contentPanel.style.strokeColor = 'none';
-                  contentPanel.width = 148;
-                  contentPanel.height = 96;
-            
-                  // Sets panel for the alert, which indicates bottlenecks (i.e. green, yellow, red)
-                  var statusPanel: StackPanel = new StackPanel();
-                  statusPanel.orientation = 'Horizontal';
-                  statusPanel.style.strokeColor = 'none';
-                  statusPanel.id = obj.id + '_alert';
-                  statusPanel.width = 48;
-                  statusPanel.height = 96;
-            
-                  // Header Panel
-                  var headerPanel: StackPanel = new StackPanel();
-                  headerPanel.id = obj.id + '_headerPanel';
-                  headerPanel.orientation = 'Vertical';
-                  headerPanel.style.fill = 'none';
-                  headerPanel.style.strokeColor = 'none';
-                  headerPanel.height = 40;
-                  headerPanel.width = 148;
-                  headerPanel.verticalAlignment = 'Top';
-                  headerPanel.horizontalAlignment = 'Left';
-            
-                  // Sets panel for the header first line (code)
-                  var code: TextElement = new TextElement();
-                  code.margin = { left: 8, right: 0, top: 8, bottom: 0 };
-                  code.content = (obj.data as Activity).Code;
-                  code.style.fontFamily = '"Fira Sans", sans-serif';
-                  code.style.fontSize = 10;
-                  code.style.color = 'rgba(0,0,0,0.60)';
-                  code.style.textWrapping = 'Wrap';
-                  code.style.textAlign = 'Left';
-                  code.style.strokeColor = 'none';
-                  code.horizontalAlignment = 'Left';
-                  code.verticalAlignment = 'Top';
-                  code.style.fill = 'none';
-                  code.id = obj.id + '_code';
-            
-                  // Sets panel for the header second line (description)
-                  var description: TextElement = new TextElement();
-                  description.margin = { left: 8, right: 0, top: 0, bottom: 0 };
-                  description.content = (obj.data as Activity).Description;
-                  description.style.fontFamily = '"Fira Sans", sans-serif';
-                  description.style.color = 'rgba(0,0,0,0.60)';
-                  description.style.fontSize = 10;
-                  description.style.textAlign = 'Left';
-                  description.style.textWrapping = 'Wrap';
-                  description.style.strokeColor = 'none';
-                  description.horizontalAlignment = 'Left';
-                  description.verticalAlignment = 'Bottom';
-                  description.style.strokeColor = 'none';
-                  description.style.textWrapping = 'Wrap';
-                  description.style.fill = 'none';
-                  description.id = obj.id + '_description';
-            
-                  // Sets fake panel to help spliting speed and capacity into different lines
-                  var detailPanel: StackPanel = new StackPanel();
-                  detailPanel.style.fill = 'none';
-                  detailPanel.style.strokeColor = 'none';
-                  detailPanel.orientation = 'Vertical';
-                  detailPanel.id = obj.id + '_detailPanel';
-                  detailPanel.horizontalAlignment = 'Left';
-                  detailPanel.width = 148;
-                  detailPanel.height = 56;
-            
-                  // Sets panel for the details first line (speed)
-                  var speed: TextElement = new TextElement();
-                  speed.margin = { left: 8, right: 0, top: 18, bottom: 0 };
-                  speed.content = 'Speed: ' + (obj.data as Activity).Speed;
-                  speed.style.fontFamily = '"Fira Sans", sans-serif';
-                  speed.style.color = 'rgba(0,0,0,0.87)';
-                  speed.style.fontSize = 12;
-                  speed.style.strokeColor = 'none';
-                  speed.horizontalAlignment = 'Left';
-                  speed.style.textWrapping = 'Wrap';
-                  speed.style.fill = 'none';
-                  speed.id = obj.id + '_speed';
-            
-                  var icon: ImageElement = new ImageElement();
-                  icon.id = obj.id + '_icon';
-                  icon.style.strokeColor = 'None';
-                  icon.margin = { left: 12, right: 0, top: 39, bottom: 0 };
-                  icon.style.fill = 'none';
-                  icon.width = 24;
-                  icon.height = 24;
-            
-                  // Sets panel for the details second line (allocation)
-                  var allocation: TextElement = new TextElement();
-                  allocation.margin = { left: 8, right: 0, top: 3, bottom: 0 };
-                  allocation.style.fontFamily = '"Fira Sans", sans-serif';
-                  allocation.style.color = 'rgba(0,0,0,0.87)';
-                  allocation.style.fontSize = 12;
-                  // When allocation percent is zero, then it is showed as Non-Aplicable
-                  if ((obj.data as Activity).Allocation === 0) {
-                     allocation.content = 'Allocation: N/A';
-                  } else {
-                     allocation.content = 'Allocation: ' + (obj.data as Activity).Allocation + '%';
-                  }
-                  allocation.style.strokeColor = 'none';
-                  allocation.horizontalAlignment = 'Left';
-                  allocation.style.textWrapping = 'Wrap';
-                  allocation.style.fill = 'none';
-                  allocation.id = obj.id + '_allocation';
-            
-                  // When the node is a line, no alerts will be visible and font will be slightly different
-                  if ((obj.data as Activity).NodeType === 'Line') {
-                     // Composes the whole header panel
-                     nodePanel.style.fill = '#252E4E';
-                     contentPanel.style.fill = '#252E4E';
-                     statusPanel.style.fill = '#4A5C9B';
-                     description.style.color = 'rgba(255,255,255,0.60)';
-                     code.style.color = 'rgba(255,255,255,0.60)';
-                     speed.style.color = 'rgba(255,255,255, 1)';
-                     allocation.style.color = 'rgba(255,255,255, 1)';
-                     icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3Espeedometer%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cg id='speedometer' fill='%2300EACE' fill-rule='nonzero'%3E%3Cpath d='M10.35,13.4841078 C8.63515585,13.4841078 7.245,12.0909446 7.245,10.3723906 C7.245,9.21068287 7.87635,8.19418859 8.7975,7.66519667 L18.84735,1.83591314 L13.1238,11.7726634 C12.6063,12.7891576 11.56095,13.4841078 10.35,13.4841078 M10.35,0 C12.22335,0 13.9725,0.518619531 15.49395,1.36915556 L13.32045,2.62421483 C12.42,2.27155355 11.385,2.07447812 10.35,2.07447812 C5.77708227,2.07447812 2.07,5.78958009 2.07,10.3723906 C2.07,12.6646889 2.99115,14.7391671 4.4919,16.2327913 L4.50225,16.2327913 C4.9059,16.6373146 4.9059,17.2907752 4.50225,17.6952984 C4.0986,18.0998216 3.4362,18.0998216 3.03255,17.7056708 L3.03255,17.7056708 C1.1592,15.8282681 0,13.2351704 0,10.3723906 C0,4.64387746 4.63385284,0 10.35,0 M20.7,10.3723906 C20.7,13.2351704 19.5408,15.8282681 17.66745,17.7056708 L17.66745,17.7056708 C17.2638,18.0998216 16.61175,18.0998216 16.2081,17.6952984 C15.80445,17.2907752 15.80445,16.6373146 16.2081,16.2327913 L16.2081,16.2327913 C17.70885,14.7287947 18.63,12.6646889 18.63,10.3723906 C18.63,9.33515156 18.43335,8.2979125 18.0711,7.36439734 L19.32345,5.18619531 C20.1825,6.7420539 20.7,8.48461553 20.7,10.3723906 Z' id='Shape'%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E";
-                  } else { // When the node is an activity
-                     // Alert will show the respective color based on bottlenecks
-                     if ((obj.data as Activity).Allocation < 90) {
-                        // Green
-                        statusPanel.style.fill = '#C8F0AA';
-                        switch ((obj.data as Activity).NodeType) {
-                           case 'Manpower':
-                              icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cg id='worker' fill='%237FBC52' fill-rule='nonzero'%3E%3Cpath d='M10.1052632,16.4210526 C4.52210526,16.4210526 0,18.6821053 0,21.4736842 L0,24 L20.2105263,24 L20.2105263,21.4736842 C20.2105263,18.6821053 15.6884211,16.4210526 10.1052632,16.4210526 M5.05263158,8.84210526 C5.05263158,11.6325966 7.31477179,13.8947368 10.1052632,13.8947368 C12.8957545,13.8947368 15.1578947,11.6325966 15.1578947,8.84210526 M9.47368421,0 C9.09473684,0 8.84210526,0.265263158 8.84210526,0.631578947 L8.84210526,4.42105263 L7.57894737,4.42105263 L7.57894737,1.26315789 C7.57894737,1.26315789 4.73684211,2.34947368 4.73684211,6 C4.73684211,6 3.78947368,6.17684211 3.78947368,7.57894737 L16.4210526,7.57894737 C16.3578947,6.17684211 15.4736842,6 15.4736842,6 C15.4736842,2.34947368 12.6315789,1.26315789 12.6315789,1.26315789 L12.6315789,4.42105263 L11.3684211,4.42105263 L11.3684211,0.631578947 C11.3684211,0.265263158 11.1284211,0 10.7368421,0 L9.47368421,0 Z' id='Shape'%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E";
-                              break;
-                           case 'Equipment':
-                              icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M18.8971429,3.42857143 L16.1428571,6.18285714 L16.1428571,6.38857143 L18.8971429,9.14285714 L23,9.14285714 L23,11.4285714 L17.96,11.4285714 L16.1428571,9.61142857 L16.1428571,12.5714286 L15,12.5714286 C13.7376349,12.5714286 12.7142857,11.5480794 12.7142857,10.2857143 L12.7142857,7.42857143 L9.12571429,7.42857143 C9.02285714,7.85142857 8.85142857,8.25142857 8.62285714,8.62857143 L15.2057143,20.5714286 L20.7142857,20.5714286 C21.9766509,20.5714286 23,21.5947777 23,22.8571429 L23,24 L0.142857143,24 L0.142857143,22.8571429 C0.142857143,21.5947777 1.16620629,20.5714286 2.42857143,20.5714286 L9.98285714,20.5714286 L4.62285714,10.8571429 C2.56571429,10.8228571 0.782857143,9.41714286 0.268571429,7.42857143 C-0.36,4.98285714 1.11428571,2.49142857 3.57142857,1.86285714 C6.00571429,1.23428571 8.49714286,2.69714286 9.12571429,5.14285714 L12.7142857,5.14285714 L12.7142857,2.28571429 C12.7142857,1.02334914 13.7376349,0 15,0 L16.1428571,0 L16.1428571,2.96 L17.96,1.14285714 L23,1.14285714 L23,3.42857143 L18.8971429,3.42857143 M4.71428571,4 C3.45192057,4 2.42857143,5.02334914 2.42857143,6.28571429 C2.42857143,7.54807943 3.45192057,8.57142857 4.71428571,8.57142857 C5.97665086,8.57142857 7,7.54807943 7,6.28571429 C7,5.02334914 5.97665086,4 4.71428571,4 Z' id='Shape' fill='%237ABD12' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
+                    nodePanel.id = obj.id + '_nodePanel';
+                    nodePanel.orientation = 'Horizontal';
+                    nodePanel.style.strokeColor = 'none';
+                    nodePanel.height = 96;
+                    nodePanel.width = 196;
+                    nodePanel.style.fill = 'White';
+
+                    // Content Panel
+                    var contentPanel: StackPanel = new StackPanel();
+                    contentPanel.id = obj.id + '_contentPanel';
+                    contentPanel.orientation = 'Vertical';
+                    contentPanel.style.fill = 'none';
+                    contentPanel.style.strokeColor = 'none';
+                    contentPanel.width = 148;
+                    contentPanel.height = 96;
+
+                    // Sets panel for the alert, which indicates bottlenecks (i.e. green, yellow, red)
+                    var statusPanel: StackPanel = new StackPanel();
+                    statusPanel.orientation = 'Horizontal';
+                    statusPanel.style.strokeColor = 'none';
+                    statusPanel.id = obj.id + '_alert';
+                    statusPanel.width = 48;
+                    statusPanel.height = 96;
+
+                    // Header Panel
+                    var headerPanel: StackPanel = new StackPanel();
+                    headerPanel.id = obj.id + '_headerPanel';
+                    headerPanel.orientation = 'Vertical';
+                    headerPanel.style.fill = 'none';
+                    headerPanel.style.strokeColor = 'none';
+                    headerPanel.height = 40;
+                    headerPanel.width = 148;
+                    headerPanel.verticalAlignment = 'Top';
+                    headerPanel.horizontalAlignment = 'Left';
+
+                    // Sets panel for the header first line (code)
+                    var code: TextElement = new TextElement();
+                    code.margin = { left: 8, right: 0, top: 8, bottom: 0 };
+                    code.content = (obj.data as Activity).Code;
+                    code.style.fontFamily = '"Fira Sans", sans-serif';
+                    code.style.fontSize = 10;
+                    code.style.color = 'rgba(0,0,0,0.60)';
+                    code.style.textWrapping = 'Wrap';
+                    code.style.textAlign = 'Left';
+                    code.style.strokeColor = 'none';
+                    code.horizontalAlignment = 'Left';
+                    code.verticalAlignment = 'Top';
+                    code.style.fill = 'none';
+                    code.id = obj.id + '_code';
+
+                    // Sets panel for the header second line (description)
+                    var description: TextElement = new TextElement();
+                    description.margin = { left: 8, right: 0, top: 0, bottom: 0 };
+                    description.content = (obj.data as Activity).Description;
+                    description.style.fontFamily = '"Fira Sans", sans-serif';
+                    description.style.color = 'rgba(0,0,0,0.60)';
+                    description.style.fontSize = 10;
+                    description.style.textAlign = 'Left';
+                    description.style.textWrapping = 'Wrap';
+                    description.style.strokeColor = 'none';
+                    description.horizontalAlignment = 'Left';
+                    description.verticalAlignment = 'Bottom';
+                    description.style.strokeColor = 'none';
+                    description.style.textWrapping = 'Wrap';
+                    description.style.fill = 'none';
+                    description.id = obj.id + '_description';
+
+                    // Sets fake panel to help spliting speed and capacity into different lines
+                    var detailPanel: StackPanel = new StackPanel();
+                    detailPanel.style.fill = 'none';
+                    detailPanel.style.strokeColor = 'none';
+                    detailPanel.orientation = 'Vertical';
+                    detailPanel.id = obj.id + '_detailPanel';
+                    detailPanel.horizontalAlignment = 'Left';
+                    detailPanel.width = 148;
+                    detailPanel.height = 56;
+
+                    // Sets panel for the details first line (speed)
+                    var speed: TextElement = new TextElement();
+                    speed.margin = { left: 8, right: 0, top: 18, bottom: 0 };
+                    speed.content = 'Speed: ' + (obj.data as Activity).Speed;
+                    speed.style.fontFamily = '"Fira Sans", sans-serif';
+                    speed.style.color = 'rgba(0,0,0,0.87)';
+                    speed.style.fontSize = 12;
+                    speed.style.strokeColor = 'none';
+                    speed.horizontalAlignment = 'Left';
+                    speed.style.textWrapping = 'Wrap';
+                    speed.style.fill = 'none';
+                    speed.id = obj.id + '_speed';
+
+                    var icon: ImageElement = new ImageElement();
+                    icon.id = obj.id + '_icon';
+                    icon.style.strokeColor = 'None';
+                    icon.margin = { left: 12, right: 0, top: 39, bottom: 0 };
+                    icon.style.fill = 'none';
+                    icon.width = 24;
+                    icon.height = 24;
+
+                    // Sets panel for the details second line (allocation)
+                    var allocation: TextElement = new TextElement();
+                    allocation.margin = { left: 8, right: 0, top: 3, bottom: 0 };
+                    allocation.style.fontFamily = '"Fira Sans", sans-serif';
+                    allocation.style.color = 'rgba(0,0,0,0.87)';
+                    allocation.style.fontSize = 12;
+                    // When allocation percent is zero, then it is showed as Non-Aplicable
+                    if ((obj.data as Activity).Allocation === 0) {
+                        allocation.content = 'Allocation: N/A';
+                    } else {
+                        allocation.content = 'Allocation: ' + (obj.data as Activity).Allocation + '%';
+                    }
+                    allocation.style.strokeColor = 'none';
+                    allocation.horizontalAlignment = 'Left';
+                    allocation.style.textWrapping = 'Wrap';
+                    allocation.style.fill = 'none';
+                    allocation.id = obj.id + '_allocation';
+
+                    // When the node is a line, no alerts will be visible and font will be slightly different
+                    if ((obj.data as Activity).NodeType === 'Line') {
+                        // Composes the whole header panel
+                        nodePanel.style.fill = '#252E4E';
+                        contentPanel.style.fill = '#252E4E';
+                        statusPanel.style.fill = '#4A5C9B';
+                        description.style.color = 'rgba(255,255,255,0.60)';
+                        code.style.color = 'rgba(255,255,255,0.60)';
+                        speed.style.color = 'rgba(255,255,255, 1)';
+                        allocation.style.color = 'rgba(255,255,255, 1)';
+                        icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3Espeedometer%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cg id='speedometer' fill='%2300EACE' fill-rule='nonzero'%3E%3Cpath d='M10.35,13.4841078 C8.63515585,13.4841078 7.245,12.0909446 7.245,10.3723906 C7.245,9.21068287 7.87635,8.19418859 8.7975,7.66519667 L18.84735,1.83591314 L13.1238,11.7726634 C12.6063,12.7891576 11.56095,13.4841078 10.35,13.4841078 M10.35,0 C12.22335,0 13.9725,0.518619531 15.49395,1.36915556 L13.32045,2.62421483 C12.42,2.27155355 11.385,2.07447812 10.35,2.07447812 C5.77708227,2.07447812 2.07,5.78958009 2.07,10.3723906 C2.07,12.6646889 2.99115,14.7391671 4.4919,16.2327913 L4.50225,16.2327913 C4.9059,16.6373146 4.9059,17.2907752 4.50225,17.6952984 C4.0986,18.0998216 3.4362,18.0998216 3.03255,17.7056708 L3.03255,17.7056708 C1.1592,15.8282681 0,13.2351704 0,10.3723906 C0,4.64387746 4.63385284,0 10.35,0 M20.7,10.3723906 C20.7,13.2351704 19.5408,15.8282681 17.66745,17.7056708 L17.66745,17.7056708 C17.2638,18.0998216 16.61175,18.0998216 16.2081,17.6952984 C15.80445,17.2907752 15.80445,16.6373146 16.2081,16.2327913 L16.2081,16.2327913 C17.70885,14.7287947 18.63,12.6646889 18.63,10.3723906 C18.63,9.33515156 18.43335,8.2979125 18.0711,7.36439734 L19.32345,5.18619531 C20.1825,6.7420539 20.7,8.48461553 20.7,10.3723906 Z' id='Shape'%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E";
+                    } else { // When the node is an activity
+                        // Alert will show the respective color based on bottlenecks
+                        if ((obj.data as Activity).Allocation < 90) {
+                            // Green
+                            statusPanel.style.fill = '#C8F0AA';
+                            switch ((obj.data as Activity).NodeType) {
+                                case 'Manpower':
+                                    icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cg id='worker' fill='%237FBC52' fill-rule='nonzero'%3E%3Cpath d='M10.1052632,16.4210526 C4.52210526,16.4210526 0,18.6821053 0,21.4736842 L0,24 L20.2105263,24 L20.2105263,21.4736842 C20.2105263,18.6821053 15.6884211,16.4210526 10.1052632,16.4210526 M5.05263158,8.84210526 C5.05263158,11.6325966 7.31477179,13.8947368 10.1052632,13.8947368 C12.8957545,13.8947368 15.1578947,11.6325966 15.1578947,8.84210526 M9.47368421,0 C9.09473684,0 8.84210526,0.265263158 8.84210526,0.631578947 L8.84210526,4.42105263 L7.57894737,4.42105263 L7.57894737,1.26315789 C7.57894737,1.26315789 4.73684211,2.34947368 4.73684211,6 C4.73684211,6 3.78947368,6.17684211 3.78947368,7.57894737 L16.4210526,7.57894737 C16.3578947,6.17684211 15.4736842,6 15.4736842,6 C15.4736842,2.34947368 12.6315789,1.26315789 12.6315789,1.26315789 L12.6315789,4.42105263 L11.3684211,4.42105263 L11.3684211,0.631578947 C11.3684211,0.265263158 11.1284211,0 10.7368421,0 L9.47368421,0 Z' id='Shape'%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E";
+                                    break;
+                                case 'Equipment':
+                                    icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M18.8971429,3.42857143 L16.1428571,6.18285714 L16.1428571,6.38857143 L18.8971429,9.14285714 L23,9.14285714 L23,11.4285714 L17.96,11.4285714 L16.1428571,9.61142857 L16.1428571,12.5714286 L15,12.5714286 C13.7376349,12.5714286 12.7142857,11.5480794 12.7142857,10.2857143 L12.7142857,7.42857143 L9.12571429,7.42857143 C9.02285714,7.85142857 8.85142857,8.25142857 8.62285714,8.62857143 L15.2057143,20.5714286 L20.7142857,20.5714286 C21.9766509,20.5714286 23,21.5947777 23,22.8571429 L23,24 L0.142857143,24 L0.142857143,22.8571429 C0.142857143,21.5947777 1.16620629,20.5714286 2.42857143,20.5714286 L9.98285714,20.5714286 L4.62285714,10.8571429 C2.56571429,10.8228571 0.782857143,9.41714286 0.268571429,7.42857143 C-0.36,4.98285714 1.11428571,2.49142857 3.57142857,1.86285714 C6.00571429,1.23428571 8.49714286,2.69714286 9.12571429,5.14285714 L12.7142857,5.14285714 L12.7142857,2.28571429 C12.7142857,1.02334914 13.7376349,0 15,0 L16.1428571,0 L16.1428571,2.96 L17.96,1.14285714 L23,1.14285714 L23,3.42857143 L18.8971429,3.42857143 M4.71428571,4 C3.45192057,4 2.42857143,5.02334914 2.42857143,6.28571429 C2.42857143,7.54807943 3.45192057,8.57142857 4.71428571,8.57142857 C5.97665086,8.57142857 7,7.54807943 7,6.28571429 C7,5.02334914 5.97665086,4 4.71428571,4 Z' id='Shape' fill='%237ABD12' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
+                            }
+                        } else if ((obj.data as Activity).Allocation < 97) {
+                            // Red
+                            statusPanel.style.fill = '#F2B7BF';
+                            switch ((obj.data as Activity).NodeType) {
+                                case 'Manpower':
+                                    icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M10.1052632,16.4210526 C4.52210526,16.4210526 0,18.6821053 0,21.4736842 L0,24 L20.2105263,24 L20.2105263,21.4736842 C20.2105263,18.6821053 15.6884211,16.4210526 10.1052632,16.4210526 M5.05263158,8.84210526 C5.05263158,11.6325966 7.31477179,13.8947368 10.1052632,13.8947368 C12.8957545,13.8947368 15.1578947,11.6325966 15.1578947,8.84210526 M9.47368421,0 C9.09473684,0 8.84210526,0.265263158 8.84210526,0.631578947 L8.84210526,4.42105263 L7.57894737,4.42105263 L7.57894737,1.26315789 C7.57894737,1.26315789 4.73684211,2.34947368 4.73684211,6 C4.73684211,6 3.78947368,6.17684211 3.78947368,7.57894737 L16.4210526,7.57894737 C16.3578947,6.17684211 15.4736842,6 15.4736842,6 C15.4736842,2.34947368 12.6315789,1.26315789 12.6315789,1.26315789 L12.6315789,4.42105263 L11.3684211,4.42105263 L11.3684211,0.631578947 C11.3684211,0.265263158 11.1284211,0 10.7368421,0 L9.47368421,0 Z' id='Shape' fill='%23B02032' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
+                                    break;
+                                case 'Equipment':
+                                    icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M18.8971429,3.42857143 L16.1428571,6.18285714 L16.1428571,6.38857143 L18.8971429,9.14285714 L23,9.14285714 L23,11.4285714 L17.96,11.4285714 L16.1428571,9.61142857 L16.1428571,12.5714286 L15,12.5714286 C13.7376349,12.5714286 12.7142857,11.5480794 12.7142857,10.2857143 L12.7142857,7.42857143 L9.12571429,7.42857143 C9.02285714,7.85142857 8.85142857,8.25142857 8.62285714,8.62857143 L15.2057143,20.5714286 L20.7142857,20.5714286 C21.9766509,20.5714286 23,21.5947777 23,22.8571429 L23,24 L0.142857143,24 L0.142857143,22.8571429 C0.142857143,21.5947777 1.16620629,20.5714286 2.42857143,20.5714286 L9.98285714,20.5714286 L4.62285714,10.8571429 C2.56571429,10.8228571 0.782857143,9.41714286 0.268571429,7.42857143 C-0.36,4.98285714 1.11428571,2.49142857 3.57142857,1.86285714 C6.00571429,1.23428571 8.49714286,2.69714286 9.12571429,5.14285714 L12.7142857,5.14285714 L12.7142857,2.28571429 C12.7142857,1.02334914 13.7376349,0 15,0 L16.1428571,0 L16.1428571,2.96 L17.96,1.14285714 L23,1.14285714 L23,3.42857143 L18.8971429,3.42857143 M4.71428571,4 C3.45192057,4 2.42857143,5.02334914 2.42857143,6.28571429 C2.42857143,7.54807943 3.45192057,8.57142857 4.71428571,8.57142857 C5.97665086,8.57142857 7,7.54807943 7,6.28571429 C7,5.02334914 5.97665086,4 4.71428571,4 Z' id='Shape' fill='%23B02032' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
+                                    break;
+                            }
+                        } else {
+                            // Yellow
+                            statusPanel.style.fill = '#FCE0A6';
+                            switch ((obj.data as Activity).NodeType) {
+                                case 'Manpower':
+                                    icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M10.1052632,16.4210526 C4.52210526,16.4210526 0,18.6821053 0,21.4736842 L0,24 L20.2105263,24 L20.2105263,21.4736842 C20.2105263,18.6821053 15.6884211,16.4210526 10.1052632,16.4210526 M5.05263158,8.84210526 C5.05263158,11.6325966 7.31477179,13.8947368 10.1052632,13.8947368 C12.8957545,13.8947368 15.1578947,11.6325966 15.1578947,8.84210526 M9.47368421,0 C9.09473684,0 8.84210526,0.265263158 8.84210526,0.631578947 L8.84210526,4.42105263 L7.57894737,4.42105263 L7.57894737,1.26315789 C7.57894737,1.26315789 4.73684211,2.34947368 4.73684211,6 C4.73684211,6 3.78947368,6.17684211 3.78947368,7.57894737 L16.4210526,7.57894737 C16.3578947,6.17684211 15.4736842,6 15.4736842,6 C15.4736842,2.34947368 12.6315789,1.26315789 12.6315789,1.26315789 L12.6315789,4.42105263 L11.3684211,4.42105263 L11.3684211,0.631578947 C11.3684211,0.265263158 11.1284211,0 10.7368421,0 L9.47368421,0 Z' id='Shape' fill='%23CD9A32' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
+                                    break;
+                                case 'Equipment':
+                                    icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M18.8971429,3.42857143 L16.1428571,6.18285714 L16.1428571,6.38857143 L18.8971429,9.14285714 L23,9.14285714 L23,11.4285714 L17.96,11.4285714 L16.1428571,9.61142857 L16.1428571,12.5714286 L15,12.5714286 C13.7376349,12.5714286 12.7142857,11.5480794 12.7142857,10.2857143 L12.7142857,7.42857143 L9.12571429,7.42857143 C9.02285714,7.85142857 8.85142857,8.25142857 8.62285714,8.62857143 L15.2057143,20.5714286 L20.7142857,20.5714286 C21.9766509,20.5714286 23,21.5947777 23,22.8571429 L23,24 L0.142857143,24 L0.142857143,22.8571429 C0.142857143,21.5947777 1.16620629,20.5714286 2.42857143,20.5714286 L9.98285714,20.5714286 L4.62285714,10.8571429 C2.56571429,10.8228571 0.782857143,9.41714286 0.268571429,7.42857143 C-0.36,4.98285714 1.11428571,2.49142857 3.57142857,1.86285714 C6.00571429,1.23428571 8.49714286,2.69714286 9.12571429,5.14285714 L12.7142857,5.14285714 L12.7142857,2.28571429 C12.7142857,1.02334914 13.7376349,0 15,0 L16.1428571,0 L16.1428571,2.96 L17.96,1.14285714 L23,1.14285714 L23,3.42857143 L18.8971429,3.42857143 M4.71428571,4 C3.45192057,4 2.42857143,5.02334914 2.42857143,6.28571429 C2.42857143,7.54807943 3.45192057,8.57142857 4.71428571,8.57142857 C5.97665086,8.57142857 7,7.54807943 7,6.28571429 C7,5.02334914 5.97665086,4 4.71428571,4 Z' id='Shape' fill='%23CD9A32' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
+                                    break;
+                            }
                         }
-                     } else if ((obj.data as Activity).Allocation < 97) {
-                        // Red
-                        statusPanel.style.fill = '#F2B7BF';
-                        switch ((obj.data as Activity).NodeType) {
-                           case 'Manpower':
-                              icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M10.1052632,16.4210526 C4.52210526,16.4210526 0,18.6821053 0,21.4736842 L0,24 L20.2105263,24 L20.2105263,21.4736842 C20.2105263,18.6821053 15.6884211,16.4210526 10.1052632,16.4210526 M5.05263158,8.84210526 C5.05263158,11.6325966 7.31477179,13.8947368 10.1052632,13.8947368 C12.8957545,13.8947368 15.1578947,11.6325966 15.1578947,8.84210526 M9.47368421,0 C9.09473684,0 8.84210526,0.265263158 8.84210526,0.631578947 L8.84210526,4.42105263 L7.57894737,4.42105263 L7.57894737,1.26315789 C7.57894737,1.26315789 4.73684211,2.34947368 4.73684211,6 C4.73684211,6 3.78947368,6.17684211 3.78947368,7.57894737 L16.4210526,7.57894737 C16.3578947,6.17684211 15.4736842,6 15.4736842,6 C15.4736842,2.34947368 12.6315789,1.26315789 12.6315789,1.26315789 L12.6315789,4.42105263 L11.3684211,4.42105263 L11.3684211,0.631578947 C11.3684211,0.265263158 11.1284211,0 10.7368421,0 L9.47368421,0 Z' id='Shape' fill='%23B02032' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
-                              break;
-                           case 'Equipment':
-                              icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M18.8971429,3.42857143 L16.1428571,6.18285714 L16.1428571,6.38857143 L18.8971429,9.14285714 L23,9.14285714 L23,11.4285714 L17.96,11.4285714 L16.1428571,9.61142857 L16.1428571,12.5714286 L15,12.5714286 C13.7376349,12.5714286 12.7142857,11.5480794 12.7142857,10.2857143 L12.7142857,7.42857143 L9.12571429,7.42857143 C9.02285714,7.85142857 8.85142857,8.25142857 8.62285714,8.62857143 L15.2057143,20.5714286 L20.7142857,20.5714286 C21.9766509,20.5714286 23,21.5947777 23,22.8571429 L23,24 L0.142857143,24 L0.142857143,22.8571429 C0.142857143,21.5947777 1.16620629,20.5714286 2.42857143,20.5714286 L9.98285714,20.5714286 L4.62285714,10.8571429 C2.56571429,10.8228571 0.782857143,9.41714286 0.268571429,7.42857143 C-0.36,4.98285714 1.11428571,2.49142857 3.57142857,1.86285714 C6.00571429,1.23428571 8.49714286,2.69714286 9.12571429,5.14285714 L12.7142857,5.14285714 L12.7142857,2.28571429 C12.7142857,1.02334914 13.7376349,0 15,0 L16.1428571,0 L16.1428571,2.96 L17.96,1.14285714 L23,1.14285714 L23,3.42857143 L18.8971429,3.42857143 M4.71428571,4 C3.45192057,4 2.42857143,5.02334914 2.42857143,6.28571429 C2.42857143,7.54807943 3.45192057,8.57142857 4.71428571,8.57142857 C5.97665086,8.57142857 7,7.54807943 7,6.28571429 C7,5.02334914 5.97665086,4 4.71428571,4 Z' id='Shape' fill='%23B02032' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
-                              break;
-                        }
-                     } else {
-                        // Yellow
-                        statusPanel.style.fill = '#FCE0A6';
-                        switch ((obj.data as Activity).NodeType) {
-                           case 'Manpower':
-                              icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M10.1052632,16.4210526 C4.52210526,16.4210526 0,18.6821053 0,21.4736842 L0,24 L20.2105263,24 L20.2105263,21.4736842 C20.2105263,18.6821053 15.6884211,16.4210526 10.1052632,16.4210526 M5.05263158,8.84210526 C5.05263158,11.6325966 7.31477179,13.8947368 10.1052632,13.8947368 C12.8957545,13.8947368 15.1578947,11.6325966 15.1578947,8.84210526 M9.47368421,0 C9.09473684,0 8.84210526,0.265263158 8.84210526,0.631578947 L8.84210526,4.42105263 L7.57894737,4.42105263 L7.57894737,1.26315789 C7.57894737,1.26315789 4.73684211,2.34947368 4.73684211,6 C4.73684211,6 3.78947368,6.17684211 3.78947368,7.57894737 L16.4210526,7.57894737 C16.3578947,6.17684211 15.4736842,6 15.4736842,6 C15.4736842,2.34947368 12.6315789,1.26315789 12.6315789,1.26315789 L12.6315789,4.42105263 L11.3684211,4.42105263 L11.3684211,0.631578947 C11.3684211,0.265263158 11.1284211,0 10.7368421,0 L9.47368421,0 Z' id='Shape' fill='%23CD9A32' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
-                              break;
-                           case 'Equipment':
-                              icon.source = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3C!-- Generator: Sketch 61 (89581) - https://sketch.com --%3E%3Ctitle%3EShape%3C/title%3E%3Cdesc%3ECreated with Sketch.%3C/desc%3E%3Cg id='Projection-Analytics' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpath d='M18.8971429,3.42857143 L16.1428571,6.18285714 L16.1428571,6.38857143 L18.8971429,9.14285714 L23,9.14285714 L23,11.4285714 L17.96,11.4285714 L16.1428571,9.61142857 L16.1428571,12.5714286 L15,12.5714286 C13.7376349,12.5714286 12.7142857,11.5480794 12.7142857,10.2857143 L12.7142857,7.42857143 L9.12571429,7.42857143 C9.02285714,7.85142857 8.85142857,8.25142857 8.62285714,8.62857143 L15.2057143,20.5714286 L20.7142857,20.5714286 C21.9766509,20.5714286 23,21.5947777 23,22.8571429 L23,24 L0.142857143,24 L0.142857143,22.8571429 C0.142857143,21.5947777 1.16620629,20.5714286 2.42857143,20.5714286 L9.98285714,20.5714286 L4.62285714,10.8571429 C2.56571429,10.8228571 0.782857143,9.41714286 0.268571429,7.42857143 C-0.36,4.98285714 1.11428571,2.49142857 3.57142857,1.86285714 C6.00571429,1.23428571 8.49714286,2.69714286 9.12571429,5.14285714 L12.7142857,5.14285714 L12.7142857,2.28571429 C12.7142857,1.02334914 13.7376349,0 15,0 L16.1428571,0 L16.1428571,2.96 L17.96,1.14285714 L23,1.14285714 L23,3.42857143 L18.8971429,3.42857143 M4.71428571,4 C3.45192057,4 2.42857143,5.02334914 2.42857143,6.28571429 C2.42857143,7.54807943 3.45192057,8.57142857 4.71428571,8.57142857 C5.97665086,8.57142857 7,7.54807943 7,6.28571429 C7,5.02334914 5.97665086,4 4.71428571,4 Z' id='Shape' fill='%23CD9A32' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E";
-                              break;
-                        }
-                     }
-                  }
-            
-                  // Sets the respective icon for line nodes, without showing the allocation as it doesn't make sense
-                  if ((obj.data as Activity).NodeType === 'Line') {
-                     speed.style.fontSize = 13;
-                     detailPanel.children = [speed];
-                  } else if ((obj.data as Activity).NodeType === 'Manpower') { // Sets the respective icon for manpower nodes
-                     detailPanel.children = [speed, allocation];
-                  } else if ((obj.data as Activity).NodeType === 'Equipment') {  // Sets the respective icon for equipment nodes
-                     detailPanel.children = [speed, allocation];
-                  }
-                  headerPanel.children = [code, description];
-                  statusPanel.children = [icon];
-                  contentPanel.children = [headerPanel, detailPanel];
-                  nodePanel.children = [contentPanel, statusPanel];
-                  return nodePanel;
-               
+                    }
+
+                    // Sets the respective icon for line nodes, without showing the allocation as it doesn't make sense
+                    if ((obj.data as Activity).NodeType === 'Line') {
+                        speed.style.fontSize = 13;
+                        detailPanel.children = [speed];
+                    } else if ((obj.data as Activity).NodeType === 'Manpower') { // Sets the respective icon for manpower nodes
+                        detailPanel.children = [speed, allocation];
+                    } else if ((obj.data as Activity).NodeType === 'Equipment') {  // Sets the respective icon for equipment nodes
+                        detailPanel.children = [speed, allocation];
+                    }
+                    headerPanel.children = [code, description];
+                    statusPanel.children = [icon];
+                    contentPanel.children = [headerPanel, detailPanel];
+                    nodePanel.children = [contentPanel, statusPanel];
+                    return nodePanel;
+
                 }
             });
             diagram.appendTo('#diagramdataMaps');
@@ -2818,13 +2822,13 @@ describe('layout-info assistant support', () => {
             diagram.destroy();
             ele.remove();
         });
-       
+
         it('Checking collpase icon is working', (done: Function) => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 716, 446);
-               expect(diagram.selectedItems.nodes.length ===1).toBe(true);
-                done();
+            expect(diagram.selectedItems.nodes.length === 1).toBe(true);
+            done();
         });
     });
 });

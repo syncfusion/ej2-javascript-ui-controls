@@ -528,7 +528,11 @@ export class Legend {
         }
         if (interactProcess) {
             for (let i: number = 0; i < collection.length; i++) {
-                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0) {
+                let idIndex: number = this.maps.legendSettings.mode === 'Interactive' ?
+                    parseFloat(targetElement.id.split('_Legend_Index_')[1]) :
+                    parseFloat(targetElement.id.split('_Legend_Shape_Index_')[1]);
+                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0
+                && idIndex === i) {
                     let layer: LayerSettingsModel = this.maps.layers[collection[i]['data'][0]['layerIndex']];
                     let enable: boolean; let module: HighlightSettingsModel | SelectionSettingsModel;
                     let data: object[];

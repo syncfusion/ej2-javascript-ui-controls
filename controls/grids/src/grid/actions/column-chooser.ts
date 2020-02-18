@@ -178,20 +178,10 @@ export class ColumnChooser implements IAction {
         }
         if (!this.dlgObj.visible) {
             let pos: { X: number, Y: number } = { X: null, Y: null };
-            let args1: { requestType: string, element?: Element, columns?: Column[], cancel: boolean, searchOperator: string } = {
-                requestType: 'beforeOpenColumnChooser', element: this.parent.element,
-                columns: this.getColumns() as Column[], cancel: false, searchOperator: this.searchOperator
-            };
-            if (isBlazor() && !this.parent.isJsComponent) {
-                args1 = {
-                    requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
-                };
-            }
-            this.parent.trigger(events.beforeOpenColumnChooser, args1);
-            if (args1.cancel) {
+            let args: object = this.beforeOpenColumnChooserEvent();
+            if ((<{ cancel?: boolean }>args).cancel) {
                 return;
             }
-            this.searchOperator = args1.searchOperator;
             if (target) { this.targetdlg = target; }
             this.refreshCheckboxState();
             this.dlgObj.dataBind();
@@ -241,6 +231,10 @@ export class ColumnChooser implements IAction {
         this.isCustomizeOpenCC = true;
         if (this.dlgObj.visible) {
             this.hideDialog();
+            return;
+        }
+        let args: object = this.beforeOpenColumnChooserEvent();
+        if ((<{ cancel?: boolean }>args).cancel) {
             return;
         }
         if (!this.isInitialOpen) {
@@ -695,5 +689,20 @@ export class ColumnChooser implements IAction {
                 (openCC[i] as EJ2Intance).ej2_instances[0].hide();
             }
         }
+    }
+
+    private beforeOpenColumnChooserEvent(): object {
+        let args1: { requestType: string, element?: Element, columns?: Column[], cancel: boolean, searchOperator: string } = {
+            requestType: 'beforeOpenColumnChooser', element: this.parent.element,
+            columns: this.getColumns() as Column[], cancel: false, searchOperator: this.searchOperator
+        };
+        if (isBlazor() && !this.parent.isJsComponent) {
+            args1 = {
+                requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
+            };
+        }
+        this.parent.trigger(events.beforeOpenColumnChooser, args1);
+        this.searchOperator = args1.searchOperator;
+        return args1;
     }
 }

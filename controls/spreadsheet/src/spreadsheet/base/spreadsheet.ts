@@ -5,8 +5,8 @@ import { detach, select } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
 import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, hideShowRow, performUndoRedo } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
-import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown, enableFileMenuItems } from '../common/index';
-import { getSiblingsHeight, ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs } from '../common/index';
+import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems } from '../common/index';
+import { getSiblingsHeight, ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems } from '../common/index';
 import { defaultLocale, locale, setAriaOptions, setResize, updateToggleItem, initiateFilterUI, clearFilter } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
@@ -14,7 +14,7 @@ import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetC
 import { Render } from '../renderer/render';
 import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation, KeyboardShortcut } from '../actions/index';
 import { Clipboard, ShowHide, UndoRedo, SpreadsheetHyperlink } from '../actions/index';
-import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectArgs, click } from '../common/index';
+import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectArgs, click, hideFileMenuItems } from '../common/index';
 import { Dialog, ActionEvents } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
@@ -28,8 +28,8 @@ import { FilterOptions, FilterEventArgs } from './../../workbook/index';
 import { Workbook } from '../../workbook/base/workbook';
 import { SpreadsheetModel } from './spreadsheet-model';
 import { Resize } from '../actions/index';
-import { getRequiredModules, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel } from '../common/index';
-import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent } from '../common/index';
+import { getRequiredModules, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel, enableToolbarItems } from '../common/index';
+import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent, enableRibbonTabs } from '../common/index';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { setRowHeight, getRowsHeight, isHiddenRow, getColumnWidth, getRowHeight } from './../../workbook/base/index';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
@@ -1035,7 +1035,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         let sheetIdx: number;
         if (range && range.indexOf('!') !== -1) {
             rangeArr = range.split('!');
-            sheetIdx = parseInt(rangeArr[0].replace(/\D/g, ''), 10) - 1;
+            let sheets: SheetModel[] = this.sheets;
+            for (let idx: number = 0; idx < sheets.length; idx++) {
+                if (sheets[idx].name === rangeArr[0]) {
+                    sheetIdx = idx;
+                }
+            }
             sheet = this.sheets[sheetIdx];
             range = rangeArr[1];
         }
@@ -1091,7 +1096,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 super.addHyperlink(hyperlink, address);
                 if (address && address.indexOf('!') !== -1) {
                     addrRange = address.split('!');
-                    sheetIdx = parseInt(addrRange[0].replace(/\D/g, ''), 10) - 1;
+                    let sheets: SheetModel[] = this.sheets;
+                    for (let idx: number = 0; idx < sheets.length; idx++) {
+                        if (sheets[idx].name === addrRange[0]) {
+                            sheetIdx = idx;
+                        }
+                    }
                     sheet = this.sheets[sheetIdx];
                     address = addrRange[1];
                 }
@@ -1484,38 +1494,99 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To enable / disable file menu items.
      * @param {string[]} items - Items that needs to be enabled / disabled.
-     * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
-     * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     * @param {boolean} enable? - Set `true` / `false` to enable / disable the menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @returns void.
      */
-    public enableFileMenuItems(items: string[], enable: boolean = true): void {
-        this.notify(enableFileMenuItems, { items: items, enable: enable });
+    public enableFileMenuItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
+        this.notify(enableFileMenuItems, { items: items, enable: enable, isUniqueId: isUniqueId });
+    }
+
+    /**
+     * To show/hide the file menu items in Spreadsheet ribbon.
+     * @param {string[]} items - Specifies the file menu items text which is to be show/hide.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the file menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @returns void.
+     */
+    public hideFileMenuItems(items: string[], hide: boolean = true, isUniqueId?: boolean): void {
+        this.notify(hideFileMenuItems, { items: items, hide: hide, isUniqueId: isUniqueId });
+    }
+
+    /**
+     * To add custom file menu items.
+     * @param {MenuItemModel[]} items - Specifies the ribbon file menu items to be inserted.
+     * @param {string} text - Specifies the existing file menu item text before / after which the new file menu items to be inserted.
+     * @param {boolean} insertAfter? - Set `false` if the `items` need to be inserted before the `text`.
+     * By default, `items` are added after the `text`.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @returns void.
+     */
+    public addFileMenuItems(items: MenuItemModel[], text: string, insertAfter: boolean = true, isUniqueId?: boolean): void {
+        this.notify(addFileMenuItems, { items: items, text: text, insertAfter: insertAfter, isUniqueId: isUniqueId });
     }
 
     /**
      * To show/hide the existing ribbon tabs.
-     * @param {string[]} tabs - Specifies the tab header text which is to be show/hide.
-     * @param {boolean} hide - Set `true` / `false` to hide / show the ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
+     * @returns void.
      */
     public hideRibbonTabs(tabs: string[], hide: boolean = true): void {
         this.notify(hideRibbonTabs, { tabs: tabs, hide: hide });
     }
 
     /**
+     * To enable / disable the existing ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
+     * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
+     * @returns void.
+     */
+    public enableRibbonTabs(tabs: string[], enable: boolean = true): void {
+        this.notify(enableRibbonTabs, { tabs: tabs, enable: enable });
+    }
+
+    /**
      * To add custom ribbon tabs.
      * @param {RibbonItemModel[]} items - Specifies the ribbon tab items to be inserted.
-     * @param {string} insertBefore? - specifies the existing ribbon header text before which the new tabs will be inserted.
+     * @param {string} insertBefore? - Specifies the existing ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
+     * @returns void.
      */
     public addRibbonTabs(items: RibbonItemModel[], insertBefore?: string): void {
         this.notify(addRibbonTabs, { items: items, insertBefore: insertBefore });
     }
 
     /**
+     * Enables or disables the specified ribbon toolbar items or all ribbon items.
+     * @param {string} tab - Specifies the ribbon tab header text under which the toolbar items need to be enabled / disabled.
+     * @param {string[]} items? - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
+     * If it is not specified the entire toolbar items will be enabled / disabled.
+     * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
+     * @returns void.
+     */
+    public enableToolbarItems(tab: string, items?: number[] | string[], enable?: boolean): void {
+        this.notify(enableToolbarItems, [{ tab: tab, items: items, enable: enable === undefined ? true : enable }]);
+    }
+
+    /**
+     * To show/hide the existing Spreadsheet ribbon toolbar items.
+     * @param {string} tab - Specifies the ribbon tab header text under which the specified items needs to be hidden / shown.
+     * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
+     * @returns void.
+     */
+    public hideToolbarItems(tab: string, indexes: number[], hide: boolean = true): void {
+        this.notify(hideToolbarItems, { tab: tab, indexes: indexes, hide: hide });
+    }
+
+    /**
      * To add the custom items in Spreadsheet ribbon toolbar.
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted.
-     * @param {ItemModel[]} items - specifies the ribbon toolbar items that needs to be inserted.
-     * @param {number} index? - specifies the index text before which the new items will be inserted.
+     * @param {ItemModel[]} items - Specifies the ribbon toolbar items that needs to be inserted.
+     * @param {number} index? - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
+     * @returns void.
      */
     public addToolbarItems(tab: string, items: ItemModel[], index?: number): void {
         this.notify(addToolbarItems, { tab: tab, items: items, index: index });

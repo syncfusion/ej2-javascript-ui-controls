@@ -3,7 +3,7 @@ import { Diagram } from '../../diagram';
 import { ConnectorModel } from '../connector-model';
 import { NodeModel } from '../node-model';
 import { PointModel } from '../../primitives/point-model';
-import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction } from '../../enum/enum';
+import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction, KeyModifiers } from '../../enum/enum';
 import { SelectorModel } from '../../objects/node-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
@@ -798,4 +798,25 @@ export interface IImageLoadEventArgs {
     element: NodeModel;
     /** returns the size of image element */
     size: Size;
+}
+
+/**
+ * IKeyEventArgs notifies while perform the key actions.
+ * 
+ */
+export interface IKeyEventArgs {
+    /** Returns the selected element of the diagram */
+    element?: SelectorModel;
+    /** Returns the text content of the label currently editing */
+    text?: string;
+    /** Returns the id of the text box element in editing mode. */
+    target?: string;
+    /** Returns the label which is currently editing */
+    label?: object;
+    /** Returns value of the key action */
+    key?: string;
+    /** Returns a number which represents an actual key pressed */
+    keyCode?: number;
+    /** Returns any, modifier keys were pressed when the flick gesture occurred */
+    keyModifiers?: KeyModifiers;
 }

@@ -98,6 +98,19 @@ export class LayerPanel {
      */
     public renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap): void {
         panel.currentFactor = panel.calculateFactor(layer);
+        if (isNullOrUndefined(panel.mapObject.previousCenterLatitude) &&
+            isNullOrUndefined(panel.mapObject.previousCenterLongitude)) {
+            panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
+            panel.mapObject.previousCenterLongitude = panel.mapObject.centerPosition.longitude;
+        } else if (panel.mapObject.previousCenterLatitude !==
+            panel.mapObject.centerPosition.latitude && panel.mapObject.previousCenterLongitude !==
+            panel.mapObject.centerPosition.longitude) {
+            panel.mapObject.centerPositionChanged = true;
+            panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
+            panel.mapObject.previousCenterLongitude = panel.mapObject.centerPosition.longitude;
+        } else {
+            panel.mapObject.centerPositionChanged = false;
+        }
         let center: Point = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         let centerTileMap : Point = center;
         if ((this.mapObject.isTileMap && panel.mapObject.markerModule) && panel.mapObject.zoomSettings.enable) {
@@ -115,10 +128,15 @@ export class LayerPanel {
         zoomFactorValue = panel.mapObject.zoomSettings.enable ? zoomFactorValue : panel.mapObject.zoomSettings.zoomFactor;
         if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
             panel.mapObject.tileZoomLevel = zoomFactorValue;
+            panel.mapObject.previousZoomFactor = zoomFactorValue;
         } else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
-            panel.mapObject.tileZoomLevel = zoomFactorValue;
+            panel.mapObject.tileZoomLevel = !panel.mapObject.zoomSettings.shouldZoomInitially
+                && !panel.mapObject.centerPositionChanged ?
+                panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
+                    panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
-            panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue) {
+                panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue
+                && panel.mapObject.zoomSettings.zoomFactor <= 1) {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
@@ -919,10 +937,12 @@ export class LayerPanel {
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
         if (!isNullOrUndefined(this.mapObject.tileTranslatePoint) && !this.mapObject.zoomNotApplied) {
-            if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x) {
+            if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x
+                && !this.mapObject.centerPositionChanged) {
                 x = this.mapObject.tileTranslatePoint.x;
             }
-            if (this.mapObject.tileTranslatePoint.y !== 0 && this.mapObject.tileTranslatePoint.y !== y) {
+            if (this.mapObject.tileTranslatePoint.y !== 0 && this.mapObject.tileTranslatePoint.y !== y
+                && !this.mapObject.centerPositionChanged) {
                 y = this.mapObject.tileTranslatePoint.y;
             }
         }

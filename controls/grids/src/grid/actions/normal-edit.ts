@@ -325,10 +325,11 @@ export class NormalEdit {
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection)) {
             if (this.parent.editSettings.mode !== 'Dialog') {
-                this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
                 if (isBlazor() && this.parent.isServerRendered) {
                     let rowIndex: string = 'editRowIndex';
                     editArgs[rowIndex] = this.rowIndex > -1 ? this.rowIndex : this.editRowIndex;
+                } else {
+                    this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
                 }
             }
         }

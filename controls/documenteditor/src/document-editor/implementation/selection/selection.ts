@@ -7229,7 +7229,12 @@ export class Selection {
             return;
         }
         let left: number = page.boundingRectangle.x;
-        let right: number = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
+        let right: number;
+        if (this.viewer instanceof PageLayoutViewer) {
+            right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
+        } else {
+            right = page.boundingRectangle.width + left;
+        }
         if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
             if (this.isHideSelection(this.start.paragraph)) {
                 this.caret.style.display = 'none';
@@ -7693,7 +7698,11 @@ export class Selection {
     public isCursorInsidePageRect(point: Point, page: Page): boolean {
         // tslint:disable-next-line:max-line-length
         if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
-            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor))) {
+            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor)) && this.viewer instanceof PageLayoutViewer) {
+            return true;
+        // tslint:disable-next-line:max-line-length
+        } else if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
+            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + page.boundingRectangle.width)) {
             return true;
         }
         return false;

@@ -118,7 +118,7 @@ describe('Diagram Control', () => {
                 nodes: [node]
             });
             diagram.appendTo('#diagram12');
-
+            
         });
 
         afterAll((): void => {
@@ -126,9 +126,11 @@ describe('Diagram Control', () => {
             ele.remove();
         });
 
+        
+
         it('Checking node selection with ruler', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.clickEvent(diagramCanvas, 90, 90);
+            mouseEvents.clickEvent(diagramCanvas, 50, 50);
             expect(diagram.selectedItems.nodes.length == 0).toBe(true);
             done();
         });

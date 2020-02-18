@@ -1370,7 +1370,7 @@ function getTranslate(mapObject, layer, animate) {
                         + ((size.width / 2) - (mapWidth / 2)));
                 }
                 else {
-                    if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1) {
+                    if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1 && !mapObject.zoomModule.isDragZoom) {
                         scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
                         mapWidth *= scaleFactor;
                         x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
@@ -1380,6 +1380,7 @@ function getTranslate(mapObject, layer, animate) {
                     else {
                         x = mapObject.zoomTranslatePoint.x;
                         y = mapObject.zoomTranslatePoint.y;
+                        scaleFactor = mapObject.scale;
                     }
                 }
             }
@@ -1401,9 +1402,28 @@ function getZoomTranslate(mapObject, layer, animate) {
     let center = mapObject.centerPosition;
     let latitude = center.latitude;
     let longitude = center.longitude;
+    if (isNullOrUndefined(mapObject.previousCenterLatitude) &&
+        isNullOrUndefined(mapObject.previousCenterLongitude)) {
+        mapObject.previousCenterLatitude = mapObject.centerPosition.latitude;
+        mapObject.previousCenterLongitude = mapObject.centerPosition.longitude;
+    }
+    else if (mapObject.previousCenterLatitude !==
+        mapObject.centerPosition.latitude && mapObject.previousCenterLongitude !==
+        mapObject.centerPosition.longitude) {
+        mapObject.centerPositionChanged = true;
+        mapObject.previousCenterLatitude = mapObject.centerPosition.latitude;
+        mapObject.previousCenterLongitude = mapObject.centerPosition.longitude;
+    }
+    else {
+        mapObject.centerPositionChanged = false;
+    }
     if (isNullOrUndefined(mapObject.mapScaleValue) || (zoomFactorValue > mapObject.mapScaleValue)) {
         mapObject.mapScaleValue = zoomFactorValue;
     }
+    mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor !== 1 &&
+        mapObject.zoomSettings.zoomFactor ===
+            mapObject.mapScaleValue ? mapObject.zoomSettings.zoomFactor :
+        mapObject.zoomSettings.zoomFactor !== mapObject.mapScaleValue && !mapObject.centerPositionChanged ? mapObject.mapScaleValue : mapObject.zoomSettings.zoomFactor;
     if (mapObject.zoomSettings.shouldZoomInitially) {
         mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale == 1)
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
@@ -4241,6 +4261,21 @@ class LayerPanel {
      */
     renderTileLayer(panel, layer, layerIndex, bing) {
         panel.currentFactor = panel.calculateFactor(layer);
+        if (isNullOrUndefined(panel.mapObject.previousCenterLatitude) &&
+            isNullOrUndefined(panel.mapObject.previousCenterLongitude)) {
+            panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
+            panel.mapObject.previousCenterLongitude = panel.mapObject.centerPosition.longitude;
+        }
+        else if (panel.mapObject.previousCenterLatitude !==
+            panel.mapObject.centerPosition.latitude && panel.mapObject.previousCenterLongitude !==
+            panel.mapObject.centerPosition.longitude) {
+            panel.mapObject.centerPositionChanged = true;
+            panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
+            panel.mapObject.previousCenterLongitude = panel.mapObject.centerPosition.longitude;
+        }
+        else {
+            panel.mapObject.centerPositionChanged = false;
+        }
         let center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         let centerTileMap = center;
         if ((this.mapObject.isTileMap && panel.mapObject.markerModule) && panel.mapObject.zoomSettings.enable) {
@@ -4258,11 +4293,16 @@ class LayerPanel {
         zoomFactorValue = panel.mapObject.zoomSettings.enable ? zoomFactorValue : panel.mapObject.zoomSettings.zoomFactor;
         if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
             panel.mapObject.tileZoomLevel = zoomFactorValue;
+            panel.mapObject.previousZoomFactor = zoomFactorValue;
         }
         else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
-            panel.mapObject.tileZoomLevel = zoomFactorValue;
+            panel.mapObject.tileZoomLevel = !panel.mapObject.zoomSettings.shouldZoomInitially
+                && !panel.mapObject.centerPositionChanged ?
+                panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
+                    panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
-                panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue) {
+                panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue
+                && panel.mapObject.zoomSettings.zoomFactor <= 1) {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
@@ -5036,10 +5076,12 @@ class LayerPanel {
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
         if (!isNullOrUndefined(this.mapObject.tileTranslatePoint) && !this.mapObject.zoomNotApplied) {
-            if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x) {
+            if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x
+                && !this.mapObject.centerPositionChanged) {
                 x = this.mapObject.tileTranslatePoint.x;
             }
-            if (this.mapObject.tileTranslatePoint.y !== 0 && this.mapObject.tileTranslatePoint.y !== y) {
+            if (this.mapObject.tileTranslatePoint.y !== 0 && this.mapObject.tileTranslatePoint.y !== y
+                && !this.mapObject.centerPositionChanged) {
                 y = this.mapObject.tileTranslatePoint.y;
             }
         }
@@ -5337,6 +5379,8 @@ let Maps = class Maps extends Component {
         this.baseTranslatePoint = new Point(0, 0);
         /** @public */
         this.zoomTranslatePoint = new Point(0, 0);
+        /** @private */
+        this.centerPositionChanged = false;
         /** @private */
         this.isTileMapSubLayer = false;
         /** @private */
@@ -7225,7 +7269,7 @@ class DataLabel {
         }
         let firstLevelMapLocation = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
-            if (zoomLabelsPosition && scaleZoomValue > 1) {
+            if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
                 if (layerIndex > 0) {
                     for (let k = 0; k < this.maps.zoomLabelPositions.length; k++) {
                         if (this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
@@ -7263,7 +7307,7 @@ class DataLabel {
                     return;
                 }
                 let position = [];
-                let width = zoomLabelsPosition && scaleZoomValue > 1
+                let width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
                     ? this.maps.zoomShapeCollection[index]['width'] :
                     location['rightMax']['x'] - location['leftMax']['x'];
                 if (!isNullOrUndefined(this.maps.dataLabelShape)) {
@@ -7284,13 +7328,13 @@ class DataLabel {
                 if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     let location1 = findMidPointOfPolygon(position, projectionType);
-                    if (zoomLabelsPosition && scaleZoomValue > 1) {
+                    if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
                         location1['x'] = ((this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
                         location1['y'] = ((this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
                     }
                     locationX = location1['x'];
                     location['x'] = location1['x'];
-                    width = zoomLabelsPosition && scaleZoomValue > 1 ?
+                    width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied ?
                         this.maps.zoomShapeCollection[index]['width'] :
                         location1['rightMax']['x'] - location1['leftMax']['x'];
                 }
@@ -7384,7 +7428,7 @@ class DataLabel {
                             let x;
                             let y;
                             let padding = 5;
-                            if (zoomLabelsPosition && scaleZoomValue > 1) {
+                            if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
                                 x = ((location['x'])) - textSize['width'] / 2;
                                 y = ((location['y'])) - textSize['height'] / 2 - padding;
                             }
@@ -7398,7 +7442,7 @@ class DataLabel {
                         }
                     }
                     element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
-                    if (zoomLabelsPosition && scaleZoomValue > 1) {
+                    if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
                         element.setAttribute('transform', 'translate( ' + ((location['x'])) + ' '
                             + (((location['y']))) + ' )');
                         location['x'] = locationX;
@@ -8108,7 +8152,11 @@ class Legend {
         }
         if (interactProcess) {
             for (let i = 0; i < collection.length; i++) {
-                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0) {
+                let idIndex = this.maps.legendSettings.mode === 'Interactive' ?
+                    parseFloat(targetElement.id.split('_Legend_Index_')[1]) :
+                    parseFloat(targetElement.id.split('_Legend_Shape_Index_')[1]);
+                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0
+                    && idIndex === i) {
                     let layer = this.maps.layers[collection[i]['data'][0]['layerIndex']];
                     let enable;
                     let module;
@@ -10224,8 +10272,10 @@ class Zoom {
             position.y - ((y * totalSize) / 100);
     }
     performRectZooming() {
+        this.isDragZoom = true;
         let map = this.maps;
         let size = map.availableSize;
+        map.previousProjection = map.projectionType;
         let prevLevel = map.tileZoomLevel;
         let zoomRect = this.zoomingRect;
         if (zoomRect.height > 0 && zoomRect.width > 0) {
@@ -10969,7 +11019,7 @@ class Zoom {
                     direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
                     direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
                     direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
-                    if (this.maps.zoomSettings.enablePanning) {
+                    if (this.maps.zoomSettings.enablePanning && !this.maps.zoomModule.isDragZoom) {
                         fillColor = fill;
                         strokeColor = this.maps.themeStyle.zoomFillColor;
                     }
@@ -10997,7 +11047,10 @@ class Zoom {
                     let color;
                     direction = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
                     direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
-                    if (!this.maps.zoomSettings.enablePanning) {
+                    if (this.maps.zoomSettings.enablePanning && this.maps.zoomModule.isDragZoom) {
+                        color = "#737373";
+                    }
+                    else if (!this.maps.zoomSettings.enablePanning) {
                         color = "#737373";
                         this.currentToolbarEle.setAttribute('class', '');
                     }

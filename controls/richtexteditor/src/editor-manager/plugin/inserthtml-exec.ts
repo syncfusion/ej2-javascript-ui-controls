@@ -25,7 +25,7 @@ export class InsertHtmlExec {
     private applyHtml(e: IHtmlSubCommands): void {
         InsertHtml.Insert(
             this.parent.currentDocument,
-            e.value as Node, this.parent.editableElement );
+            e.value as Node, this.parent.editableElement, true);
         if (e.subCommand === 'pasteCleanup') {
             e.callBack({
                 requestType: e.subCommand,

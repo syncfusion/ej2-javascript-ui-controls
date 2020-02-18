@@ -9,6 +9,7 @@
 #### Bug Fixes
 
 - `#263236` - Issue on multi-level dragged parent dropped into last index has been fixed.
+- `#264099` - Issue in tab key action in edited state is fixed.
 
 ## 17.4.46 (2020-01-30)
 

@@ -138,6 +138,8 @@ export interface BeforeHyperlinkArgs {
 
     cell?: string;
 
+    target?: string;
+
     cancel?: boolean;
 }
 

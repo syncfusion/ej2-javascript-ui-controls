@@ -253,6 +253,7 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Gets or sets the start and end date of the Calendar.
      * @default null
+     * {% codeBlock src='daterangepicker/value/index.md' %}{% endcodeBlock %}
      */
     @Property(null)
     public value: Date[] | DateRange;
@@ -373,6 +374,7 @@ export class DateRangePicker extends CalendarBase {
      * > For more details refer to 
      * [`Preset Ranges`](../../daterangepicker/customization#preset-ranges) documentation.
      * @default null
+     * {% codeBlock src='daterangepicker/presets/index.md' %}{% endcodeBlock %}
      */
     @Collection<PresetsModel>([{}], Presets)
     public presets: PresetsModel[];
@@ -574,6 +576,7 @@ export class DateRangePicker extends CalendarBase {
      * alt+leftarrow<br/></td></tr> 
      * </table>
      * 
+     * {% codeBlock src='daterangepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      * @default null
      * @blazorType object 
      */
@@ -584,6 +587,7 @@ export class DateRangePicker extends CalendarBase {
      * > For more details refer to 
      * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
      * @aspType string
+     * {% codeBlock src='daterangepicker/format/index.md' %}{% endcodeBlock %}
      * @default null
      * @blazorType string
      */
@@ -635,6 +639,7 @@ export class DateRangePicker extends CalendarBase {
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * {% codeBlock src='daterangepicker/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})

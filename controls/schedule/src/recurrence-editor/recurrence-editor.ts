@@ -805,7 +805,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     private getSelectedDaysData(): string {
         let ruleData: string = RULEBYDAY + EQUAL;
-        let elements: NodeListOf<Element> = this.element.querySelectorAll('.' + DAYWRAPPER + ' button.' + PRIMARY);
+        let elements: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button.' + PRIMARY));
         let weekday: string[] = [RULESUNDAY, RULEMONDAY, RULETUESDAY, RULEWEDNESDAY, RULETHURSDAY, RULEFRIDAY, RULESATURDAY];
         this.rotateArray(weekday, this.firstDayOfWeek);
         for (let index: number = 0; index < elements.length; index++) {

@@ -87,8 +87,8 @@ export class EventTooltip {
             };
             let contentContainer: HTMLElement = createElement('div');
             let templateId: string = this.parent.element.id + '_headerTooltipTemplate';
-            let tooltipTemplate: NodeList =
-                this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false);
+            let tooltipTemplate: HTMLElement[] =
+                [].slice.call(this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false));
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
             return;
@@ -99,8 +99,8 @@ export class EventTooltip {
             let contentContainer: HTMLElement = createElement('div');
             let templateId: string = this.parent.element.id + '_tooltipTemplate';
             let templateArgs: Object = util.addLocalOffsetToEvent(record, this.parent.eventFields);
-            let tooltipTemplate: NodeList =
-                this.parent.getEventTooltipTemplate()(templateArgs, this.parent, 'tooltipTemplate', templateId, false);
+            let tooltipTemplate: HTMLElement[] =
+                [].slice.call(this.parent.getEventTooltipTemplate()(templateArgs, this.parent, 'tooltipTemplate', templateId, false));
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         } else {

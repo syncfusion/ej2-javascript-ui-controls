@@ -44,8 +44,14 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     },
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
+    created: (): void => {
+        spreadsheet.enableRibbonTabs(['Insert', 'View'], false);
+        spreadsheet.enableToolbarItems('Home', ['spreadsheet_line-through', 'spreadsheet_underline', 'spreadsheet_vertical_align'], false);
+        spreadsheet.enableToolbarItems('Formulas', [0], false);
+    },
     fileMenuBeforeOpen: (): void => {
-        spreadsheet.enableFileMenuItems(['New', 'Comma-separated values'], false);
+        spreadsheet.enableFileMenuItems(['New', 'Comma-separated values', 'Microsoft Excel 97-2003'], false);
+        spreadsheet.enableFileMenuItems([`${spreadsheet.element.id}_Open`], false, true);
     }
 });
 

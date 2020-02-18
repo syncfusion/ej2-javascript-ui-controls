@@ -868,4 +868,35 @@ Tabs and shift-tabs work too`;
             destroy(rteObj);
         });
     });
+
+    describe('RequestType check for FontFamily', () => {
+        let rteEle: Element;
+        let selectNode: Element;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
+                        'FontName', '|', 'InsertCode']
+                },
+                actionBegin: function (e) {
+                    expect(e.requestType).toBe('FontName');
+                },
+                value: "RichTextEditor",
+            });
+            rteEle = rteObj.element;
+        });
+        it("Check actionBegin Event args", () => {
+            rteObj.inputElement.focus();          
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[11];
+            (trgEle.childNodes[0] as HTMLElement).click();
+            let popupElement: Element = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
+            mouseEventArgs = {
+                target: (popupElement.childNodes[0].childNodes[1] as HTMLElement)
+            };
+            (rteObj.toolbarModule as any).dropDownModule.fontNameDropDown.clickHandler(mouseEventArgs);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

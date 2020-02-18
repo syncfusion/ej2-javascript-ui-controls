@@ -1176,10 +1176,15 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
             x = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - width - padding) :
                 (bounds.x + bounds.width + padding)) + offset) : x;
             var boundx = bounds.x;
+            var offsetForCross = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
+                (bounds.width > axis.lineBounds.width ? bounds.width / 2 : axis.lineBounds.width / 2) : axis.lineBounds.width / 2;
             boundx = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
                 axis.labelStyle.position !== axis.majorTicks.position) ?
-                (axis.labelStyle.position === 'Inside' ? bounds.x - axis.lineBounds.width : axis.labelStyle.position === 'Outside' ?
-                    bounds.x + axis.lineBounds.width : bounds.x) : bounds.x) : bounds.x;
+                (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ? (axis.labelStyle.position === 'Inside' ?
+                    bounds.x - axis.lineBounds.width : axis.labelStyle.position === 'Outside' ?
+                    bounds.x + axis.lineBounds.width : bounds.x) : (axis.labelStyle.position === 'Inside' ?
+                    axis.lineBounds.x - offsetForCross : axis.labelStyle.position === 'Outside' ?
+                    axis.lineBounds.x - bounds.width + offsetForCross : bounds.x)) : bounds.x) : bounds.x;
             x = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.x -
                 axis.maxLabelSize.width / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
                 (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
@@ -1190,10 +1195,15 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
             y = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ?
                 (bounds.y - padding) : ((bounds.y + bounds.height + padding) + height)) + offset) : y;
             var boundy = bounds.y;
+            var offsetForCross = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
+                (bounds.height > axis.lineBounds.height ? bounds.height / 2 : axis.lineBounds.height / 2) : axis.lineBounds.height / 2;
             boundy = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
                 axis.labelStyle.position !== axis.majorTicks.position) ?
-                (axis.labelStyle.position === 'Inside' ? bounds.y - axis.lineBounds.height : axis.labelStyle.position === 'Outside' ?
-                    bounds.y + axis.lineBounds.height : bounds.y) : bounds.y) : bounds.y;
+                (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ?
+                    (axis.labelStyle.position === 'Inside' ? bounds.y - axis.lineBounds.height : axis.labelStyle.position === 'Outside' ?
+                        bounds.y + axis.lineBounds.height : bounds.y) : (axis.labelStyle.position === 'Inside' ?
+                    axis.lineBounds.y - offsetForCross : axis.labelStyle.position === 'Outside' ?
+                    axis.lineBounds.y - bounds.height + offsetForCross : bounds.y)) : bounds.y) : bounds.y;
             y = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.y +
                 axis.maxLabelSize.height / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
                 (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?

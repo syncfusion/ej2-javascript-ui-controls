@@ -5,7 +5,7 @@ import { workbookFormulaOperation } from '../../workbook/common/event';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { KeyboardEventArgs, L10n, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel } from '../../workbook/index';
+import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes } from '../../workbook/index';
 import { Dialog } from '../services/index';
 import { dialog, locale } from '../common/index';
 
@@ -385,7 +385,7 @@ export class Formula {
 
     private getNames(sheetName?: string): DefineNameModel[] {
         let names: DefineNameModel[] = this.parent.definedNames.filter(
-            (name: DefineNameModel) => name.scope === '' || name.scope === sheetName);
+            (name: DefineNameModel) => name.scope === 'Workbook' || name.scope === '' || name.scope === sheetName);
         return names;
     }
 
@@ -406,14 +406,27 @@ export class Formula {
     private addDefinedName(definedName: DefineNameModel): boolean {
         if (!definedName.refersTo) {
             let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetTab - 1);
+            let sheetName: string = getSheetName(this.parent);
+            sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
             let selectRange: string = sheet.selectedRange;
             if (!isNullOrUndefined(selectRange)) {
                 let colIndex: number = selectRange.indexOf(':');
                 let left: string = selectRange.substr(0, colIndex);
                 let right: string = selectRange.substr(colIndex + 1, selectRange.length);
-                selectRange = left === right ? left : selectRange;
+                if (parseInt(right.replace(/\D/g, ''), 10) === sheet.rowCount && parseInt(left.replace(/\D/g, ''), 10) === 1) {
+                    right = right.replace(/[0-9]/g, '');
+                    left = left.replace(/[0-9]/g, '');
+                    selectRange = '$' + left + ':$' + right;
+                } else if (getCellIndexes(right)[1] === sheet.colCount - 1 && getCellIndexes(left)[1] === 0) {
+                    right = right.replace(/\D/g, '');
+                    left = left.replace(/\D/g, '');
+                    selectRange = '$' + left + ':$' + right;
+                } else {
+                    selectRange = left === right ? left : selectRange;
+                }
             }
-            definedName.refersTo = getSheetName(this.parent) + '!' + selectRange;
+            definedName.refersTo = sheetName + '!' + selectRange;
+            definedName.scope = 'Workbook';
         }
         let eventArgs: { [key: string]: Object } = {
             action: 'addDefinedName', definedName: definedName, isAdded: false

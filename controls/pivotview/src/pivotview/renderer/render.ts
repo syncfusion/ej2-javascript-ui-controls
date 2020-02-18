@@ -1530,7 +1530,6 @@ export class Render {
         this.parent.trigger(events.excelHeaderQueryCellInfo, args);
     }
     private pdfColumnEvent(args: PdfHeaderQueryCellInfoEventArgs): void {
-        args = this.exportHeaderEvent(args);
         this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
     }
     private excelRowEvent(args: ExcelQueryCellInfoEventArgs): void {

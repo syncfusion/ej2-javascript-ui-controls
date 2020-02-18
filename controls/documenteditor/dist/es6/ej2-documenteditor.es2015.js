@@ -5199,7 +5199,7 @@ class Layout {
      * Layouts the items
      * @private
      */
-    layoutItems(sections) {
+    layoutItems(sections, isReLayout) {
         let page;
         for (let i = 0; i < sections.length; i++) {
             let section = sections[i];
@@ -5222,7 +5222,9 @@ class Layout {
             }
             this.layoutSection(section, 0, this.viewer);
         }
-        this.layoutComments(this.documentHelper.comments);
+        if (!isReLayout) {
+            this.layoutComments(this.documentHelper.comments);
+        }
         this.updateFieldElements();
         /* tslint:disable:align */
         setTimeout(() => {
@@ -10540,8 +10542,12 @@ class Renderer {
         this.pageContext.beginPath();
         if (this.viewer instanceof WebLayoutViewer) {
             height = height > this.documentHelper.visibleBounds.height ? height : this.documentHelper.visibleBounds.height;
+            let marginTop = top;
+            if (page.index === 0) {
+                marginTop = top - this.viewer.padding.top;
+            }
             // tslint:disable-next-line:max-line-length
-            this.pageContext.fillRect(left - this.viewer.padding.left, top - this.viewer.padding.top, width + this.viewer.padding.left, height + this.viewer.padding.top);
+            this.pageContext.fillRect(left - this.viewer.padding.left, marginTop, width + this.viewer.padding.left, height + this.viewer.padding.top);
         }
         else {
             this.pageContext.fillRect(left, top, width, height);
@@ -10921,7 +10927,7 @@ class Renderer {
                     let leftPosition = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
                     if (this.viewer instanceof WebLayoutViewer) {
                         // tslint:disable-next-line:max-line-length
-                        leftPosition = (this.documentHelper.visibleBounds.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
+                        leftPosition = (page.boundingRectangle.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
                     }
                     let topPosition = this.getScaledValue(top + (page.boundingRectangle.y -
                         (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
@@ -12745,6 +12751,10 @@ class DocumentHelper {
         /**
          * @private
          */
+        this.isWebPrinting = false;
+        /**
+         * @private
+         */
         this.currentPage = undefined;
         this.selectionStartPageIn = undefined;
         this.selectionEndPageIn = undefined;
@@ -14339,7 +14349,7 @@ class DocumentHelper {
         }
         this.owner.isDocumentLoaded = true;
         this.layout.isInitialLoad = true;
-        this.layout.layoutItems(sections);
+        this.layout.layoutItems(sections, false);
         if (this.owner.selection) {
             this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
@@ -14718,7 +14728,7 @@ class DocumentHelper {
      * @private
      */
     scrollToPosition(startPosition, endPosition, skipCursorUpdate) {
-        if (this.skipScrollToPosition) {
+        if (this.skipScrollToPosition || this.isWebPrinting) {
             this.skipScrollToPosition = false;
             return;
         }
@@ -15489,7 +15499,13 @@ class LayoutViewer {
             let pageTop = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.documentHelper.zoomFactor + this.pageGap * (i + 1);
             let pageHeight = (page.boundingRectangle.height * this.documentHelper.zoomFactor) + this.pageGap;
             let pageLeft = page.boundingRectangle.x;
-            let pageRight = ((page.boundingRectangle.right - pageLeft) * this.documentHelper.zoomFactor) + pageLeft;
+            let pageRight;
+            if (this instanceof PageLayoutViewer) {
+                pageRight = ((page.boundingRectangle.right - pageLeft) * this.documentHelper.zoomFactor) + pageLeft;
+            }
+            else {
+                pageRight = page.boundingRectangle.right + pageLeft;
+            }
             if (pageTop <= point.y && pageTop + pageHeight >= point.y) {
                 if (updateCurrentPage) {
                     this.documentHelper.currentPage = page;
@@ -15509,6 +15525,9 @@ class LayoutViewer {
         }
         return point;
     }
+    /**
+     * @private
+     */
     getPageHeightAndWidth(height, width, viewerWidth, viewerHeight) {
         height = 0;
         for (let i = 0; i < this.documentHelper.pages.length; i++) {
@@ -15653,6 +15672,9 @@ class LayoutViewer {
             this.owner.editorModule.layoutWholeDocument();
         }
     }
+    /**
+     * @private
+     */
     // tslint:disable-next-line:max-line-length
     updateCanvasWidthAndHeight(viewerWidth, viewerHeight, containerHeight, containerWidth, width, height) {
         if (this instanceof PageLayoutViewer) {
@@ -15670,7 +15692,7 @@ class LayoutViewer {
             }
         }
         if (containerWidth > viewerWidth) {
-            viewerHeight -= (this.documentHelper.visibleBounds.height - this.documentHelper.viewerContainer.clientHeight);
+            viewerHeight -= this.documentHelper.scrollbarWidth;
         }
         width = containerWidth > viewerWidth ? containerWidth : viewerWidth;
         height = containerHeight > viewerHeight ? containerHeight : viewerHeight;
@@ -15704,6 +15726,9 @@ class LayoutViewer {
             'containerWidth': containerWidth
         };
     }
+    /**
+     * @private
+     */
     // tslint:disable-next-line:max-line-length
     updateScrollBarPosition(containerWidth, containerHeight, viewerWidth, viewerHeight, width, height) {
         this.owner.viewer.containerTop = this.documentHelper.viewerContainer.scrollTop;
@@ -16116,6 +16141,9 @@ class WebLayoutViewer extends LayoutViewer {
         }
         return height;
     }
+    /**
+     * @private
+     */
     getContentWidth() {
         let width = this.documentHelper.visibleBounds.width;
         let currentWidth = width;
@@ -16159,10 +16187,19 @@ class WebLayoutViewer extends LayoutViewer {
         this.visiblePages = [];
         let page;
         let y;
+        let height = this.documentHelper.visibleBounds.height;
+        let vertical = this.documentHelper.viewerContainer.scrollTop;
         for (let i = 0; i < this.documentHelper.pages.length; i++) {
             page = this.documentHelper.pages[i];
             y = (page.boundingRectangle.y) * this.documentHelper.zoomFactor;
-            this.addVisiblePage(page, 10, y);
+            let pageH = page.boundingRectangle.height * this.documentHelper.zoomFactor;
+            let isTopFit = y >= vertical && y <= vertical + height;
+            let isBottomFit = y + pageH >= vertical && y + pageH <= vertical + height;
+            let isMiddleFit = y <= vertical && y + pageH >= vertical + height;
+            //UI Virtualization
+            if (isTopFit || isBottomFit || isMiddleFit) {
+                this.addVisiblePage(page, this.padding.left, y);
+            }
         }
     }
     addVisiblePage(page, x, y) {
@@ -16173,7 +16210,32 @@ class WebLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        this.renderPage(page, x, y, width, height);
+        // tslint:disable-next-line:max-line-length
+        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
+            page.allowNextPageRendering = false;
+            this.owner.documentHelper.cachedPages.push(page.index);
+            let contentlen = this.documentHelper.owner.spellChecker.getPageContent(page);
+            if (contentlen.trim().length > 0) {
+                // tslint:disable-next-line:max-line-length
+                /* tslint:disable:no-any */
+                this.owner.spellChecker.CallSpellChecker(this.owner.spellChecker.languageID, contentlen, true, false, false, true).then((data) => {
+                    /* tslint:disable:no-any */
+                    let jsonObj = JSON.parse(data);
+                    this.owner.spellChecker.updateUniqueWords(jsonObj.SpellCollection);
+                    page.allowNextPageRendering = true;
+                    this.owner.documentHelper.triggerSpellCheck = true;
+                    this.renderPage(page, x, y, width, height);
+                    this.owner.documentHelper.triggerSpellCheck = false;
+                    this.owner.documentHelper.triggerElementsOnLoading = false;
+                });
+            }
+            else {
+                this.renderPage(page, x, y, width, height);
+            }
+        }
+        else {
+            this.renderPage(page, x, y, width, height);
+        }
     }
     /**
      * @private
@@ -37412,7 +37474,13 @@ class Selection {
             return;
         }
         let left = page.boundingRectangle.x;
-        let right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
+        let right;
+        if (this.viewer instanceof PageLayoutViewer) {
+            right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
+        }
+        else {
+            right = page.boundingRectangle.width + left;
+        }
         if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
             if (this.isHideSelection(this.start.paragraph)) {
                 this.caret.style.display = 'none';
@@ -37874,7 +37942,12 @@ class Selection {
     isCursorInsidePageRect(point, page) {
         // tslint:disable-next-line:max-line-length
         if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
-            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor))) {
+            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor)) && this.viewer instanceof PageLayoutViewer) {
+            return true;
+            // tslint:disable-next-line:max-line-length
+        }
+        else if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
+            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + page.boundingRectangle.width)) {
             return true;
         }
         return false;
@@ -38880,6 +38953,12 @@ class SearchResults {
      */
     constructor(search) {
         this.searchModule = search;
+    }
+    /**
+     * Get the module name.
+     */
+    getModuleName() {
+        return 'SearchResults';
     }
     /**
      * Replace text in current search result.
@@ -48426,7 +48505,7 @@ class Editor {
         let sections = this.combineSection();
         this.documentHelper.clearContent();
         // this.documentHelper.layout.isRelayout = false;
-        this.documentHelper.layout.layoutItems(sections);
+        this.documentHelper.layout.layoutItems(sections, true);
         // this.documentHelper.layout.isRelayout = true;
         this.documentHelper.owner.isShiftingEnabled = false;
         this.setPositionForCurrentIndex(startPosition, startIndex);
@@ -74817,11 +74896,13 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
         }
         if (this.printModule) {
             if (this.layoutType === 'Continuous') {
+                this.documentHelper.isWebPrinting = true;
                 this.viewer = new PageLayoutViewer(this);
                 this.editor.layoutWholeDocument();
                 this.printModule.print(this.documentHelper, printWindow);
                 this.viewer = new WebLayoutViewer(this);
                 this.editor.layoutWholeDocument();
+                this.documentHelper.isWebPrinting = false;
             }
             else {
                 this.printModule.print(this.documentHelper, printWindow);
@@ -78765,9 +78846,9 @@ class StatusBar {
                 this.spellCheckButton.appendTo(spellCheckBtn);
             }
             // tslint:disable-next-line:max-line-length   
-            this.pageButton = this.createButtonTemplate((this.documentEditor.layoutType === 'Pages') ? 'e-de-statusbar-pageweb e-btn-pageweb-toggle' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', this.localObj.getConstant('Print layout'), this.statusBarDiv, this.pageButton);
+            this.pageButton = this.createButtonTemplate((this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', this.localObj.getConstant('Print layout'), this.statusBarDiv, this.pageButton, (this.documentEditor.layoutType === 'Pages') ? true : false);
             // tslint:disable-next-line:max-line-length   
-            this.webButton = this.createButtonTemplate((this.documentEditor.layoutType === 'Continuous') ? 'e-de-statusbar-pageweb e-btn-pageweb-toggle' : 'e-de-statusbar-pageweb', 'e-de-weblayout e icons', this.localObj.getConstant('Web layout'), this.statusBarDiv, this.webButton);
+            this.webButton = this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e icons', this.localObj.getConstant('Web layout'), this.statusBarDiv, this.webButton, (this.documentEditor.layoutType === 'Continuous') ? true : false);
             this.pageButton.addEventListener('click', () => {
                 this.documentEditor.layoutType = 'Pages';
                 this.addRemoveClass(this.pageButton, this.webButton);
@@ -78778,7 +78859,7 @@ class StatusBar {
             });
             let zoomBtn = createElement('button', {
                 // tslint:disable-next-line:max-line-length
-                className: (this.container.enableSpellCheck) ? 'e-de-statusbar-zoom-spell' : 'e-de-statusbar-zoom', attrs: { type: 'button' }
+                className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
             });
             this.statusBarDiv.appendChild(zoomBtn);
             zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
@@ -79004,12 +79085,15 @@ class StatusBar {
         this.addRemoveClass(this.pageButton, this.webButton);
     }
     // tslint:disable-next-line:max-line-length
-    createButtonTemplate(className, iconcss, toolTipText, div, appendDiv) {
+    createButtonTemplate(className, iconcss, toolTipText, div, appendDiv, toggle) {
         appendDiv = createElement('Button', { className: className, attrs: { type: 'button' } });
         div.appendChild(appendDiv);
         let btn = new Button({
             cssClass: className, iconCss: iconcss, enableRtl: this.container.enableRtl
         });
+        if (toggle === true) {
+            appendDiv.classList.add('e-btn-pageweb-toggle');
+        }
         btn.appendTo(appendDiv);
         appendDiv.setAttribute('title', toolTipText);
         return appendDiv;
@@ -79421,10 +79505,10 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
             layoutType: this.layoutType,
-            enableComment: this.enableComment,
             pageOutline: '#E0E0E0'
         });
         this.documentEditor.enableAllModules();
+        this.documentEditor.enableComment = this.enableComment;
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);

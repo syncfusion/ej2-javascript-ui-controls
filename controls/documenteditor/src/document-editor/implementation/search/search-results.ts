@@ -39,6 +39,12 @@ export class SearchResults {
         this.searchModule = search;
     }
     /**
+     * Get the module name.
+     */
+    private getModuleName(): string {
+        return 'SearchResults';
+    }
+    /**
      * Replace text in current search result.
      * @param textToReplace text to replace 
      * @private

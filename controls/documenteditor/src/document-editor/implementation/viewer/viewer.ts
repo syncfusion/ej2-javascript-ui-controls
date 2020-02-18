@@ -41,6 +41,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public isWebPrinting: boolean = false;
+    /**
+     * @private
+     */
     public owner: DocumentEditor;
     public viewer: LayoutViewer;
     /**
@@ -1203,7 +1207,7 @@ export class DocumentHelper {
         }
         this.owner.isDocumentLoaded = true;
         this.layout.isInitialLoad = true;
-        this.layout.layoutItems(sections);
+        this.layout.layoutItems(sections, false);
         if (this.owner.selection) {
             this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
@@ -2126,7 +2130,7 @@ export class DocumentHelper {
      * @private
      */
     public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition, skipCursorUpdate?: boolean): void {
-        if (this.skipScrollToPosition) {
+        if (this.skipScrollToPosition || this.isWebPrinting) {
             this.skipScrollToPosition = false;
             return;
         }
@@ -2944,7 +2948,12 @@ export abstract class LayoutViewer {
             let pageTop: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.documentHelper.zoomFactor + this.pageGap * (i + 1);
             let pageHeight: number = (page.boundingRectangle.height * this.documentHelper.zoomFactor) + this.pageGap;
             let pageLeft: number = page.boundingRectangle.x;
-            let pageRight: number = ((page.boundingRectangle.right - pageLeft) * this.documentHelper.zoomFactor) + pageLeft;
+            let pageRight: number;
+            if (this instanceof PageLayoutViewer) {
+                pageRight = ((page.boundingRectangle.right - pageLeft) * this.documentHelper.zoomFactor) + pageLeft;
+            } else {
+                pageRight = page.boundingRectangle.right + pageLeft;
+            }
             if (pageTop <= point.y && pageTop + pageHeight >= point.y) {
                 if (updateCurrentPage) {
                     this.documentHelper.currentPage = page;
@@ -2962,6 +2971,9 @@ export abstract class LayoutViewer {
         }
         return point;
     }
+    /**
+     * @private
+     */
     public getPageHeightAndWidth(height: number, width: number, viewerWidth: number, viewerHeight: number): PageInfo {
         height = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
@@ -3104,6 +3116,9 @@ export abstract class LayoutViewer {
             this.owner.editorModule.layoutWholeDocument();
         }
     }
+    /**
+     * @private
+     */
     // tslint:disable-next-line:max-line-length
     public updateCanvasWidthAndHeight(viewerWidth: number, viewerHeight: number, containerHeight: number, containerWidth: number, width: number, height: number): CanvasInfo {
         if (this instanceof PageLayoutViewer) {
@@ -3119,7 +3134,7 @@ export abstract class LayoutViewer {
             }
         }
         if (containerWidth > viewerWidth) {
-            viewerHeight -= (this.documentHelper.visibleBounds.height - this.documentHelper.viewerContainer.clientHeight);
+            viewerHeight -= this.documentHelper.scrollbarWidth;
         }
         width = containerWidth > viewerWidth ? containerWidth : viewerWidth;
         height = containerHeight > viewerHeight ? containerHeight : viewerHeight;
@@ -3153,6 +3168,9 @@ export abstract class LayoutViewer {
             'containerWidth': containerWidth
         };
     }
+    /**
+     * @private
+     */
     // tslint:disable-next-line:max-line-length
     public updateScrollBarPosition(containerWidth: number, containerHeight: number, viewerWidth: number, viewerHeight: number, width: number, height: number): void {
         this.owner.viewer.containerTop = this.documentHelper.viewerContainer.scrollTop;
@@ -3586,6 +3604,9 @@ export class WebLayoutViewer extends LayoutViewer {
         }
         return height;
     }
+    /**
+     * @private
+     */
     public getContentWidth(): number {
         let width: number = this.documentHelper.visibleBounds.width;
         let currentWidth: number = width;
@@ -3629,11 +3650,21 @@ export class WebLayoutViewer extends LayoutViewer {
         this.visiblePages = [];
         let page: Page;
         let y: number;
+        let height: number = this.documentHelper.visibleBounds.height;
+        let vertical: number = this.documentHelper.viewerContainer.scrollTop;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
             page = this.documentHelper.pages[i];
             y = (page.boundingRectangle.y) * this.documentHelper.zoomFactor;
-            this.addVisiblePage(page, 10, y);
+            let pageH: number = page.boundingRectangle.height * this.documentHelper.zoomFactor;
+            let isTopFit: boolean = y >= vertical && y <= vertical + height;
+            let isBottomFit: boolean = y + pageH >= vertical && y + pageH <= vertical + height;
+            let isMiddleFit: boolean = y <= vertical && y + pageH >= vertical + height;
+            //UI Virtualization
+            if (isTopFit || isBottomFit || isMiddleFit) {
+                this.addVisiblePage(page, this.padding.left, y);
+            }
         }
+
     }
     public addVisiblePage(page: Page, x: number, y: number): void {
         let width: number = this.getContentWidth();
@@ -3643,7 +3674,33 @@ export class WebLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        this.renderPage(page, x, y, width, height);
+        // tslint:disable-next-line:max-line-length
+        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
+            page.allowNextPageRendering = false;
+            this.owner.documentHelper.cachedPages.push(page.index);
+            let contentlen: string = this.documentHelper.owner.spellChecker.getPageContent(page);
+            if (contentlen.trim().length > 0) {
+                // tslint:disable-next-line:max-line-length
+                /* tslint:disable:no-any */
+                this.owner.spellChecker.CallSpellChecker(this.owner.spellChecker.languageID, contentlen, true, false, false, true).then((data: any) => {
+                    /* tslint:disable:no-any */
+                    let jsonObj: any = JSON.parse(data);
+                    this.owner.spellChecker.updateUniqueWords(jsonObj.SpellCollection);
+                    page.allowNextPageRendering = true;
+                    this.owner.documentHelper.triggerSpellCheck = true;
+                    this.renderPage(page, x, y, width, height);
+                    this.owner.documentHelper.triggerSpellCheck = false;
+                    this.owner.documentHelper.triggerElementsOnLoading = false;
+                });
+            } else {
+                this.renderPage(page, x, y, width, height);
+            }
+        } else {
+            this.renderPage(page, x, y, width, height);
+        }
+
+
+
     }
     /**
      * @private

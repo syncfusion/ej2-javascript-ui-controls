@@ -202,7 +202,7 @@ export class DropDownButtons {
                                     break;
                                 case 'items':
                                     this.fontNameDropDown.setProperties({
-                                        items: this.getUpdateItems(newProp.fontFamily.items, 'FontSize')
+                                        items: this.getUpdateItems(newProp.fontFamily.items, 'FontName')
                                     });
                                     break;
                             }

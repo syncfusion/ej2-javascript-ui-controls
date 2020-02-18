@@ -180,7 +180,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before Grid copy action.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.BeforeCopyEventArgs
       * @deprecated
       */
     beforeCopy?: EmitType<BeforeCopyEventArgs>;
@@ -188,7 +187,6 @@ export interface GridSettingsModel {
     /**
       * Triggers after print action is completed.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintEventArgs
       * @deprecated
       */
     printComplete?: EmitType<PrintEventArgs>;
@@ -196,7 +194,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before the print action starts.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintEventArgs
       * @deprecated
       */
     beforePrint?: EmitType<PrintEventArgs>;
@@ -218,7 +215,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before context menu opens.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Navigations.BeforeOpenCloseMenuEventArgs
       * @deprecated
       */
     contextMenuOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -226,8 +222,6 @@ export interface GridSettingsModel {
     /**
       * Triggers when click on context menu.
       * @event
-      * @blazorProperty 'ContextMenuItemClicked'
-      * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
       * @deprecated
       */
     contextMenuClick?: EmitType<MenuEventArgs>;
@@ -236,7 +230,6 @@ export interface GridSettingsModel {
       * Triggered every time a request is made to access cell information, element, or data.
       * This will be triggered before the cell element is appended to the Grid element.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.QueryCellInfoEventArgs<TValue>
       * @deprecated
       */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
@@ -245,7 +238,6 @@ export interface GridSettingsModel {
       * Triggered for column header.
       * This will be triggered before the cell element is appended to the Grid element.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.HeaderCellInfoEventArgs
       * @deprecated
       */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
@@ -253,7 +245,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before row selection occurs.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs<TValue>
       * @deprecated
       */
     rowSelecting?: EmitType<RowSelectEventArgs>;
@@ -261,7 +252,6 @@ export interface GridSettingsModel {
     /**
       * Triggers after a row is selected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs<TValue>
       * @deprecated
       */
     rowSelected?: EmitType<RowSelectEventArgs>;
@@ -269,7 +259,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before deselecting the selected row.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
       * @deprecated
       */
     rowDeselecting?: EmitType<RowDeselectEventArgs>;
@@ -277,7 +266,6 @@ export interface GridSettingsModel {
     /**
       * Triggers when a selected row is deselected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
       * @deprecated
       */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
@@ -285,7 +273,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before any cell selection occurs.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs<TValue>
       * @deprecated
       */
     cellSelecting?: EmitType<CellSelectingEventArgs>;
@@ -293,7 +280,6 @@ export interface GridSettingsModel {
     /**
       * Triggers after a cell is selected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs<TValue>
       * @deprecated
       */
     cellSelected?: EmitType<CellSelectEventArgs>;
@@ -301,7 +287,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before the selected cell is deselecting.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellDeselectEventArgs<TValue>
       * @deprecated
       */
     cellDeselecting?: EmitType<CellDeselectEventArgs>;
@@ -309,7 +294,6 @@ export interface GridSettingsModel {
     /**
       * Triggers when a particular selected cell is deselected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellDeselectEventArgs<TValue>
       * @deprecated
       */
     cellDeselected?: EmitType<CellDeselectEventArgs>;
@@ -317,7 +301,6 @@ export interface GridSettingsModel {
     /**
       * Triggers when column resize starts.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
       * @deprecated
       */
     resizeStart?: EmitType<ResizeArgs>;
@@ -325,7 +308,6 @@ export interface GridSettingsModel {
     /**
       * Triggers on column resizing.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
       * @deprecated
       */
     resizing?: EmitType<ResizeArgs>;
@@ -333,7 +315,6 @@ export interface GridSettingsModel {
     /**
       * Triggers when column resize ends.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
       * @deprecated
       */
     resizeStop?: EmitType<ResizeArgs>;
@@ -341,7 +322,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfHeaderQueryCellInfoEventArgs
       * @deprecated
       */
     pdfHeaderQueryCellInfo?: EmitType<PdfHeaderQueryCellInfoEventArgs>;
@@ -349,7 +329,6 @@ export interface GridSettingsModel {
     /**
       * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfQueryCellInfoEventArgs
       * @deprecated
       */
     pdfQueryCellInfo?: EmitType<PdfQueryCellInfoEventArgs>;
@@ -358,7 +337,6 @@ export interface GridSettingsModel {
       * Triggers before exporting each header cell to Excel file.
       * You can also customize the Excel cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelHeaderQueryCellInfoEventArgs
       * @deprecated
       */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -367,7 +345,6 @@ export interface GridSettingsModel {
       * Triggers before exporting each cell to Excel file.
       * You can also customize the Excel cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelQueryCellInfoEventArgs
       * @deprecated
       */
     excelQueryCellInfo?: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -375,7 +352,6 @@ export interface GridSettingsModel {
     /**
       * Triggers when column header element drag (move) starts. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
       * @deprecated
       */
     columnDragStart?: EmitType<ColumnDragEventArgs>;
@@ -383,7 +359,6 @@ export interface GridSettingsModel {
     /**
       * Triggers when column header element is dragged (moved) continuously. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
       * @deprecated
       */
     columnDrag?: EmitType<ColumnDragEventArgs>;
@@ -391,7 +366,6 @@ export interface GridSettingsModel {
     /**
       * Triggers when a column header element is dropped on the target column. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
       * @deprecated
       */
     columnDrop?: EmitType<ColumnDragEventArgs>;

@@ -234,7 +234,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         let topInPx: string = formatUnit(top);
         let rowIndex: number = Math.floor(top / firstRow.cells[0].offsetHeight);
         if (isNullOrUndefined(rowIndex) || isNaN(rowIndex)) { return; }
-        let curTimeWrap: NodeListOf<Element> = this.element.querySelectorAll('.' + cls.TIMELINE_WRAPPER_CLASS);
+        let curTimeWrap: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.TIMELINE_WRAPPER_CLASS));
         for (let i: number = 0, length: number = currentDateIndex[0]; i < length; i++) {
             curTimeWrap[i].appendChild(createElement('div', { className: cls.PREVIOUS_TIMELINE_CLASS, styles: 'top:' + topInPx }));
         }
@@ -261,8 +261,8 @@ export class VerticalView extends ViewBase implements IRenderer {
     private getWorkCellHeight(): number {
         return (this.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement).offsetHeight;
     }
-    private getTdContent(date: Date, type: string, groupIndex?: number): NodeList {
-        let cntEle: NodeList;
+    private getTdContent(date: Date, type: string, groupIndex?: number): HTMLElement[] {
+        let cntEle: HTMLElement[];
         let wrapper: HTMLElement = createElement('div');
         let templateName: string = '';
         let templateId: string = this.parent.element.id + '_';
@@ -273,36 +273,36 @@ export class VerticalView extends ViewBase implements IRenderer {
                     templateName = 'dateHeaderTemplate';
                     let args: CellTemplateArgs = { date: dateValue, type: type };
                     let viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
-                    cntEle =
-                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
+                    cntEle = [].slice.call(
+                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false));
                 } else {
                     wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
                         `<span class="e-header-date e-navigate">${ViewHelper.getTimelineDate(this.parent, date)}</span>` :
                         `<div class="e-header-day">${util.capitalizeFirstWord(ViewHelper.getDayName(this.parent, date), 'single')}</div>` +
                         `<div class="e-header-date e-navigate" role="link">${ViewHelper.getDate(this.parent, date)}</div>`;
-                    cntEle = wrapper.childNodes;
+                    cntEle = [].slice.call(wrapper.childNodes);
                 }
                 break;
             case 'majorSlot':
                 if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
                     templateName = 'majorSlotTemplate';
                     let args: CellTemplateArgs = { date: dateValue, type: type };
-                    cntEle =
-                        this.parent.getMajorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
+                    cntEle = [].slice.call(
+                        this.parent.getMajorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false));
                 } else {
                     wrapper.innerHTML = `<span>${ViewHelper.getTime(this.parent, date)}</span>`;
-                    cntEle = wrapper.childNodes;
+                    cntEle = [].slice.call(wrapper.childNodes);
                 }
                 break;
             case 'minorSlot':
                 if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
                     templateName = 'minorSlotTemplate';
                     let args: CellTemplateArgs = { date: dateValue, type: type };
-                    cntEle =
-                        this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
+                    cntEle = [].slice.call(
+                        this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false));
                 } else {
                     wrapper.innerHTML = '&nbsp;';
-                    cntEle = wrapper.childNodes;
+                    cntEle = [].slice.call(wrapper.childNodes);
                 }
                 break;
             case 'alldayCells':
@@ -310,8 +310,8 @@ export class VerticalView extends ViewBase implements IRenderer {
                     let viewName: string = this.parent.activeViewOptions.cellTemplateName;
                     templateName = 'cellTemplate';
                     let args: CellTemplateArgs = { date: dateValue, type: type, groupIndex: groupIndex };
-                    cntEle =
-                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
+                    cntEle = [].slice.call(
+                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false));
                 }
                 break;
         }
@@ -499,9 +499,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         let tdEle: Element = createElement('td');
         this.addAttributes(td, tdEle);
         if (td.date && td.type) {
-            let ele: NodeList = this.getTdContent(td.date, td.type, td.groupIndex);
+            let ele: HTMLElement[] = this.getTdContent(td.date, td.type, td.groupIndex);
             if (ele && ele.length) {
-                append([].slice.call(ele), tdEle);
+                append(ele, tdEle);
             }
         }
         if (!this.parent.isMinMaxDate(util.resetTime(new Date('' + td.date)))) {
@@ -602,8 +602,9 @@ export class VerticalView extends ViewBase implements IRenderer {
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.cellTemplateName;
             let templateId: string = scheduleId + viewName + 'cellTemplate';
-            let tooltipTemplate: NodeList = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
-            append([].slice.call(tooltipTemplate), ntd);
+            let tooltipTemplate: HTMLElement[] =
+                [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false));
+            append(tooltipTemplate, ntd);
         }
         ntd.setAttribute('data-date', cellDate.getTime().toString());
         if (!isNullOrUndefined(tdData.groupIndex) || this.parent.uiStateValues.isGroupAdaptive) {

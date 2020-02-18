@@ -39,7 +39,10 @@ export interface DatePickerModel extends CalendarModel{
     strictMode?: boolean;
 
     /**
-     * Specifies the format of the value that to be displayed in component. By default, the format is based on the culture.
+     * Specifies the format of the value that to be displayed in component. By default, the format is based on the culture. You can set 
+     * the format to "format:'dd/MM/yyyy hh:mm'" or "format:{skeleton:'medium'}" either in string or object.
+     * > To know more about the date format standards, refer to the Internationalization Date Format 
+     * [`Internationalization`](../../common/internationalization/#custom-formats) section.
      * @default null
      * @aspType string
      * @blazorType string
@@ -55,7 +58,8 @@ export interface DatePickerModel extends CalendarModel{
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
-     * @default {}
+     * {% codeBlock src='datepicker/htmlAttributes/index.md' %}{% endcodeBlock %}
+     * @default {} 
      */
     htmlAttributes?: { [key: string]: string; };
 
@@ -198,6 +202,7 @@ export interface DatePickerModel extends CalendarModel{
      * alt+leftarrow<br/></td></tr> 
      * </table>
      * 
+     * {% codeBlock src='datepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      * @default null
      * @blazorType object 
      * @deprecated

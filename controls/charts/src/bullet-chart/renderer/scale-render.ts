@@ -4,11 +4,12 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, measureText, textElement, TextOption, Size, PathOption } from '@syncfusion/ej2-svg-base';
 import { RectOption, CircleOption } from '../../chart/index';
 import { RangeModel } from '../model/bullet-base-model';
-import { IFeatureBarBounds } from '../model/bullet-interface';
+import { IFeatureBarBounds, IBarRenderEventArgs  } from '../model/bullet-interface';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { AnimationModel } from '../../common/model/base-model';
 import { getAnimationFunction,  } from '../../common/utils/helper';
 import { TargetType } from '../utils/enum';
+import { barRender } from '../../common/model/constants';
 
 interface IFeatureMeasureType {
     pointX: number;
@@ -143,15 +144,21 @@ export class ScaleGroup {
         let bounds: IFeatureMeasureType;
         for (let i: number = 0; i < dataCount; i++) {
             data = bulletChart.dataSource[i];
-            categoryValue = data[bulletChart.categoryField];
+            let argsData: IBarRenderEventArgs;
+            argsData = {
+                name: barRender, bulletChart: bulletChart, value: data[bulletChart.valueField], target: data[bulletChart.targetField],
+                category: data[bulletChart.categoryField]
+            };
+            bulletChart.trigger(barRender, argsData);
+            categoryValue = <string>argsData.category;
             if (isHorizontal) {
                 lPoint = initialBoundsStart - (featureBarSize * i) - (featureBarSize + bulletChart.valueHeight) / 2;
             } else {
                 lPoint = initialBoundsStart + (featureBarSize * i) + (featureBarSize / 2) - bulletChart.valueHeight / 2;
             }
-            bounds = this.calculateFeatureMeasureBounds(data[bulletChart.valueField], categoryValue, isHorizontal);
+            bounds = this.calculateFeatureMeasureBounds(+argsData.value, categoryValue, isHorizontal);
             if (data && bulletChart.type === 'Dot') {
-                let value: number = data[bulletChart.valueField];
+                let value: number = +argsData.value;
                 if (isHorizontal) {
                     bounds.pointX = bounds.pointX + (((value > 0) && !bulletChart.enableRtl) ||
                         ((value < 0) && bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
@@ -273,8 +280,14 @@ export class ScaleGroup {
         let compareMeasureOptions: object;
         let svgElement: Element;
         for (let k: number = 0; k < dataCount; k++) {
-            value = bulletChart.dataSource[k][bulletChart.targetField];
-            values = values.concat(value);
+            let argsData: IBarRenderEventArgs;
+            argsData = {
+                // tslint:disable-next-line:max-line-length
+                name: barRender, bulletChart: bulletChart, value: bulletChart.dataSource[k][bulletChart.valueField], target: bulletChart.dataSource[k][bulletChart.targetField],
+                category: bulletChart.dataSource[k][bulletChart.categoryField]
+            };
+            bulletChart.trigger(barRender, argsData);
+            values = values.concat(<number>argsData.target);
             for (let i: number = 0; i < values.length; i++) {
                 targetType = targetTypes[i % targetTypeLength];
                 if (values[i] >= minimum && values[i] <= maximum) {

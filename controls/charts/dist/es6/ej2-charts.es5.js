@@ -1086,6 +1086,8 @@ var regSup = /\^\d+\^/g;
 var beforeExport = 'beforeExport';
 /** @private */
 var afterExport = 'afterExport';
+/** @private */
+var barRender = 'barRender';
 
 var __extends$4 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11073,7 +11075,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
      * @param startValue
      * @param segmentAxis
      */
-    StripLine.prototype.measureStripLine = function (axis, stripline, seriesClipRect, startValue, segmentAxis) {
+    StripLine.prototype.measureStripLine = function (axis, stripline, seriesClipRect, startValue, segmentAxis, chart) {
         var actualStart;
         var actualEnd;
         var orientation = axis.orientation;
@@ -11085,13 +11087,16 @@ var StripLine = /** @__PURE__ @class */ (function () {
             if (axis.valueType === 'DateTimeCategory') {
                 var start = stripline.start;
                 var end = stripline.end;
-                actualStart = (start != null && typeof start !== 'number') ? axis.labels.indexOf((start).getTime().toString()) :
-                    start;
-                actualEnd = (end != null && typeof end !== 'number') ? axis.labels.indexOf((end).getTime().toString()) : end;
+                actualStart = (start != null && typeof start !== 'number') ?
+                    axis.labels.indexOf(this.dateToMilliSeconds(start, chart).toString()) : start;
+                actualEnd = (end != null && typeof end !== 'number') ?
+                    axis.labels.indexOf(this.dateToMilliSeconds(end, chart).toString()) : end;
             }
             else {
-                actualStart = stripline.start === null ? null : +stripline.start;
-                actualEnd = stripline.end === null ? null : +stripline.end;
+                actualStart = stripline.start === null ? null : this.isCoreDate(stripline.start) ?
+                    this.dateToMilliSeconds(stripline.start, chart) : +stripline.start;
+                actualEnd = stripline.end === null ? null : this.isCoreDate(stripline.start) ?
+                    this.dateToMilliSeconds(stripline.end, chart) : +stripline.end;
             }
         }
         var rect = this.getFromTovalue(actualStart, actualEnd, stripline.size, stripline.startFromAxis, axis, stripline);
@@ -11101,7 +11106,8 @@ var StripLine = /** @__PURE__ @class */ (function () {
         var y = (orientation === 'Horizontal') ? seriesClipRect.y : (axis.rect.y + axis.rect.height -
             ((stripline.sizeType === 'Pixel' ? rect.from : rect.to) * axis.rect.height));
         if (stripline.isSegmented && stripline.segmentStart != null && stripline.segmentEnd != null && stripline.sizeType !== 'Pixel') {
-            var segRect = this.getFromTovalue(+stripline.segmentStart, +stripline.segmentEnd, null, null, segmentAxis, stripline);
+            var segRect = this.getFromTovalue(this.isCoreDate(stripline.segmentStart) ? this.dateToMilliSeconds(stripline.segmentStart, chart) :
+                +stripline.segmentStart, this.isCoreDate(stripline.segmentEnd) ? this.dateToMilliSeconds(stripline.segmentEnd, chart) : +stripline.segmentEnd, null, null, segmentAxis, stripline);
             if (segmentAxis.orientation === 'Vertical') {
                 y = (segmentAxis.rect.y + segmentAxis.rect.height -
                     (segRect.to * segmentAxis.rect.height));
@@ -11186,6 +11192,11 @@ var StripLine = /** @__PURE__ @class */ (function () {
         }
         return value;
     };
+    StripLine.prototype.dateParse = function (value, chart) {
+        var dateParser = chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+        var dateFormatter = chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+        return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
+    };
     /**
      * To render strip lines based start and end.
      * @private
@@ -11223,8 +11234,9 @@ var StripLine = /** @__PURE__ @class */ (function () {
                     }
                     if (stripline.isRepeat && stripline.repeatEvery != null && stripline.size !== null && stripline.sizeType !== 'Pixel') {
                         limit = (stripline.repeatUntil != null) ? ((axis.valueType === 'DateTime') ?
-                            stripline.repeatUntil.getTime() : +stripline.repeatUntil) : axis.actualRange.max;
-                        startValue = stripline.start;
+                            this.dateToMilliSeconds(stripline.repeatUntil, chart) : +stripline.repeatUntil) : axis.actualRange.max;
+                        startValue = this.isCoreDate(stripline.start) ? this.dateToMilliSeconds(stripline.start, chart) :
+                            stripline.start;
                         if ((stripline.startFromAxis && axis.valueType === 'DateTime' && stripline.sizeType === 'Auto') ||
                             (stripline.start < axis.visibleRange.min)) {
                             startValue = axis.visibleLabels[0].value === axis.visibleRange.min ? axis.visibleRange.min :
@@ -11239,7 +11251,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
                                 this.renderStripLineElement(axis, stripline, seriesClipRect, id, striplineGroup, chart, startValue, segmentAxis, count);
                             }
                             count++;
-                            startValue = this.getStartValue(axis, stripline, startValue);
+                            startValue = this.getStartValue(axis, stripline, startValue, chart);
                         }
                     }
                     else {
@@ -11250,6 +11262,22 @@ var StripLine = /** @__PURE__ @class */ (function () {
             }
         }
         appendChildElement(chart.enableCanvas, chart.svgObject, striplineGroup, chart.redraw);
+    };
+    /**
+     * To convert the C# date to js date
+     * @param value
+     * @param axis
+     */
+    StripLine.prototype.isCoreDate = function (value) {
+        return typeof value === 'string' ? true : false;
+    };
+    /**
+     * To get the total milli seconds
+     * @param value
+     * @param chart
+     */
+    StripLine.prototype.dateToMilliSeconds = function (value, chart) {
+        return this.dateParse(value, chart).getTime();
     };
     /**
      * To draw the single line strip line
@@ -11328,9 +11356,11 @@ var StripLine = /** @__PURE__ @class */ (function () {
      * @param stripline
      * @param startValue
      */
-    StripLine.prototype.getStartValue = function (axis, stripline, startValue) {
+    StripLine.prototype.getStartValue = function (axis, stripline, startValue, chart) {
         if (axis.valueType === 'DateTime') {
-            return this.getToValue(null, startValue, +stripline.repeatEvery, axis, null, stripline);
+            return (this.getToValue(null, startValue, 
+            // tslint:disable-next-line:max-line-length
+            this.isCoreDate(stripline.repeatEvery) ? this.dateToMilliSeconds(stripline.repeatEvery, chart) : +stripline.repeatEvery, axis, null, stripline));
         }
         else {
             return startValue + (+stripline.repeatEvery);
@@ -11369,7 +11399,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
      * @param count
      */
     StripLine.prototype.renderStripLineElement = function (axis, stripline, seriesClipRect, id, striplineGroup, chart, startValue, segmentAxis, count) {
-        var rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis);
+        var rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis, chart);
         if (stripline.sizeType === 'Pixel') {
             this.renderPath(stripline, rect, id + 'path_' + axis.name + '_' + count, striplineGroup, chart, axis);
         }
@@ -21539,7 +21569,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         this.markerHeight = ((series.type === 'Scatter' || marker.visible)) ? (marker.height / 2) : 0;
         this.commonId = this.chart.element.id + '_Series_' + index + '_Point_';
         this.calculateErrorHeight(series, series.marker.dataLabel.position);
-        this.chartBackground = this.chart.chartArea.background === 'trasparent' ?
+        this.chartBackground = this.chart.chartArea.background === 'transparent' ?
             this.chart.background || this.chart.themeStyle.background : this.chart.chartArea.background;
     };
     DataLabel.prototype.calculateErrorHeight = function (series, position) {
@@ -22732,7 +22762,10 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
             chart.refreshAxis();
-            series.refreshAxisLabel();
+            // No need to refresh the trendline series in legend click.
+            if (!(series.category === 'TrendLine')) {
+                series.refreshAxisLabel();
+            }
             this.refreshSeries(chart.visibleSeries);
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });
@@ -35522,16 +35555,22 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
         var bounds;
         for (var i = 0; i < dataCount; i++) {
             data = bulletChart.dataSource[i];
-            categoryValue = data[bulletChart.categoryField];
+            var argsData = void 0;
+            argsData = {
+                name: barRender, bulletChart: bulletChart, value: data[bulletChart.valueField], target: data[bulletChart.targetField],
+                category: data[bulletChart.categoryField]
+            };
+            bulletChart.trigger(barRender, argsData);
+            categoryValue = argsData.category;
             if (isHorizontal) {
                 lPoint = initialBoundsStart - (featureBarSize * i) - (featureBarSize + bulletChart.valueHeight) / 2;
             }
             else {
                 lPoint = initialBoundsStart + (featureBarSize * i) + (featureBarSize / 2) - bulletChart.valueHeight / 2;
             }
-            bounds = this.calculateFeatureMeasureBounds(data[bulletChart.valueField], categoryValue, isHorizontal);
+            bounds = this.calculateFeatureMeasureBounds(+argsData.value, categoryValue, isHorizontal);
             if (data && bulletChart.type === 'Dot') {
-                var value = data[bulletChart.valueField];
+                var value = +argsData.value;
                 if (isHorizontal) {
                     bounds.pointX = bounds.pointX + (((value > 0) && !bulletChart.enableRtl) ||
                         ((value < 0) && bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
@@ -35614,7 +35653,6 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
     };
     ScaleGroup.prototype.renderCommonComparativeSymbol = function (dataCount, isHorizontal) {
         var bulletChart = this.bulletChart;
-        var value;
         var rect = bulletChart.initialClipRect;
         var scaleLength = isHorizontal ? rect.width : rect.height;
         var y1;
@@ -35635,8 +35673,14 @@ var ScaleGroup = /** @__PURE__ @class */ (function () {
         var featureBarSize = (isHorizontal ? rect.height : rect.width) / dataCount;
         var svgElement;
         for (var k = 0; k < dataCount; k++) {
-            value = bulletChart.dataSource[k][bulletChart.targetField];
-            values = values.concat(value);
+            var argsData = void 0;
+            argsData = {
+                // tslint:disable-next-line:max-line-length
+                name: barRender, bulletChart: bulletChart, value: bulletChart.dataSource[k][bulletChart.valueField], target: bulletChart.dataSource[k][bulletChart.targetField],
+                category: bulletChart.dataSource[k][bulletChart.categoryField]
+            };
+            bulletChart.trigger(barRender, argsData);
+            values = values.concat(argsData.target);
             for (var i = 0; i < values.length; i++) {
                 targetType = targetTypes[i % targetTypeLength];
                 if (values[i] >= minimum && values[i] <= maximum) {
@@ -37078,6 +37122,9 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
     __decorate$13([
         Event()
     ], BulletChart.prototype, "tooltipRender", void 0);
+    __decorate$13([
+        Event()
+    ], BulletChart.prototype, "barRender", void 0);
     __decorate$13([
         Event()
     ], BulletChart.prototype, "load", void 0);
@@ -43776,5 +43823,5 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, onZooming, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, onZooming, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, barRender, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es5.js.map

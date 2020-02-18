@@ -7,7 +7,7 @@ import { AutoComplete, ComboBox, DropDownList, MultiSelect } from '@syncfusion/e
 import { DatePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { ContextMenu, Toolbar } from '@syncfusion/ej2-navigations';
 import { Workbook } from '@syncfusion/ej2-excel-export';
-import { PdfBitmap, PdfBorders, PdfColor, PdfCompositeField, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPaddings, PdfPageCountField, PdfPageNumberField, PdfPageOrientation, PdfPageSettings, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF, SizeF } from '@syncfusion/ej2-pdf-export';
+import { PdfBitmap, PdfBorders, PdfColor, PdfCompositeField, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPaddings, PdfPageCountField, PdfPageNumberField, PdfPageOrientation, PdfPageSettings, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfTrueTypeFont, PdfVerticalAlignment, PointF, RectangleF, SizeF } from '@syncfusion/ej2-pdf-export';
 
 /**
  * ValueFormatter class to globalize the value.
@@ -5701,6 +5701,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         this.focusByClick = false;
         this.prevIndexes = {};
         this.refMatrix = this.refreshMatrix(true);
+        this.actions = ['downArrow', 'upArrow'];
         this.parent = parent;
         this.rowModelGen = new RowModelGenerator(this.parent);
         this.addEventListener();
@@ -5758,8 +5759,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
             return;
         }
         this.setActive(isContent, isFrozen);
-        if (!isContent && isNullOrUndefined(closest(e.target, '.e-gridheader')) ||
-            e.target.classList.contains('e-filtermenudiv')) {
+        if (!isContent && isNullOrUndefined(closest(e.target, '.e-gridheader'))) {
             this.clearOutline();
             return;
         }
@@ -5781,6 +5781,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         if (this.skipOn(e)) {
             return;
         }
+        this.activeKey = e.action;
         var beforeArgs = { cancel: false, byKey: true, byClick: false, keyArgs: e };
         this.parent.notify(beforeCellFocused, beforeArgs);
         if (beforeArgs.cancel) {
@@ -5852,8 +5853,15 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         this.currentInfo.elementToFocus = element;
         setTimeout(function () {
             if (!isNullOrUndefined(_this.currentInfo.elementToFocus)) {
-                _this.parent.notify('virtaul-key-handler', e);
-                _this.currentInfo.elementToFocus.focus();
+                if (_this.parent.enableVirtualization && _this.actions.some(function (value) { return value === _this.activeKey; })) {
+                    _this.activeKey = _this.empty;
+                    _this.parent.notify('virtaul-key-handler', e);
+                    // tslint:disable-next-line:no-any
+                    _this.currentInfo.elementToFocus.focus({ preventScroll: true });
+                }
+                else {
+                    _this.currentInfo.elementToFocus.focus();
+                }
             }
         }, 0);
     };
@@ -5950,16 +5958,11 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
             var matrix = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             var frozenColumnsCount = _this.parent.getFrozenColumns();
             if (e.name === 'batchAdd' && frozenColumnsCount) {
-                var newMovableRows = rows.map(function (row) { return row.clone(); });
+                var mRows = _this.parent.getMovableRowsObject();
+                var newMovableRows = mRows.map(function (row) { return row.clone(); });
                 var newFrozenRows = rows.map(function (row) { return row.clone(); });
-                for (var i = 0; i < rows.length; i++) {
-                    if (rows[i].cells.length > frozenColumnsCount) {
-                        newFrozenRows[i].cells = rows[i].cells.slice(0, frozenColumnsCount);
-                        newMovableRows[i].cells = rows[i].cells.slice(frozenColumnsCount);
-                    }
-                }
                 _this.fContent.matrix.generate(newFrozenRows, _this.fContent.selector, isRowTemplate);
-                cFocus.matrix.generate(newMovableRows, cFocus.selector, isRowTemplate);
+                _this.content.matrix.generate(newMovableRows, _this.content.selector, isRowTemplate);
             }
             else {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
@@ -10261,8 +10264,10 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     var args = {
                         column: col,
                         data: value,
+                        rowIndex: rIdx
                     };
                     this.parent.trigger(beforePaste, args);
+                    rIdx = args.rowIndex;
                     if (!args.cancel) {
                         if (grid.editModule) {
                             if (col.type === 'number') {
@@ -10615,8 +10620,9 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
         var offsetTime = 'offsetTime';
         var off = 'offset';
         this.parent[rowUid] = args[rowUid];
+        args[off] = Math.sign(args[off]) === 1 ? -Math.abs(args[off]) : Math.abs(args[off]);
         this.parent[offsetTime] = args[off];
-        if (this.parent[offsetTime] !== Math.abs(new Date().getTimezoneOffset() / 60)) {
+        if (this.parent[offsetTime] !== new Date().getTimezoneOffset() / 60) {
             if (this.parent.editSettings.mode !== 'Batch') {
                 var action = 'action';
                 var rowIndex = 'rowIndex';
@@ -11704,7 +11710,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         if (requireGridRefresh) {
             if (freezeRefresh$$1 || this.frozenColumns || this.frozenRows) {
-                this.freezeRefresh();
+                if (!(isBlazor() && this.isServerRendered)) {
+                    this.freezeRefresh();
+                }
             }
             else {
                 this.refresh();
@@ -14282,6 +14290,53 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         return cols;
     };
+    /**
+   *  calculatePageSizeByParentHeight
+   */
+    Grid.prototype.calculatePageSizeByParentHeight = function (containerHeight) {
+        if (this.allowPaging) {
+            if ((this.allowTextWrap && this.textWrapSettings.wrapMode == 'Header') || (!this.allowTextWrap)) {
+                var pagesize = 0;
+                if (containerHeight.indexOf('%') != -1) {
+                    containerHeight = parseInt(containerHeight) / 100 * this.element.clientHeight;
+                }
+                var nonContentHeight = this.getNoncontentHeight() + this.getRowHeight();
+                if (containerHeight > nonContentHeight) {
+                    var contentHeight = 0;
+                    contentHeight = containerHeight - this.getNoncontentHeight();
+                    pagesize = (contentHeight / this.getRowHeight());
+                }
+                if (pagesize > 0) {
+                    return Math.floor(pagesize);
+                }
+            }
+        }
+        return 0;
+    };
+    Grid.prototype.getNoncontentHeight = function () {
+        var height = 0;
+        if (!isNullOrUndefined(this.getHeaderContent().clientHeight)) {
+            height += this.getHeaderContent().clientHeight;
+        }
+        if (this.toolbar && !isNullOrUndefined(this.element.querySelector('.e-toolbar').clientHeight)) {
+            height += this.element.querySelector('.e-toolbar').clientHeight;
+        }
+        if (this.allowPaging && !isNullOrUndefined(this.element.querySelector('.e-gridpager').clientHeight)) {
+            height += this.element.querySelector('.e-gridpager').clientHeight;
+        }
+        if (this.showColumnChooser && !isNullOrUndefined(this.element.querySelector(".e-columnheader").clientHeight)) {
+            height += this.element.querySelector(".e-columnheader").clientHeight;
+        }
+        if (this.allowGrouping && this.groupSettings.showDropArea && !isNullOrUndefined(this.element.querySelector('.e-groupdroparea').clientHeight)) {
+            height += this.element.querySelector('.e-groupdroparea').clientHeight;
+        }
+        if (this.aggregates.length > 0 && !isNullOrUndefined(this.element.querySelector('.e-summaryrow').clientHeight)) {
+            for (var i = 0; i < this.element.querySelectorAll('.e-summaryrow').length; i++) {
+                height += this.element.querySelectorAll('.e-summaryrow')[i].clientHeight;
+            }
+        }
+        return height;
+    };
     var Grid_1;
     __decorate$1([
         Property([])
@@ -16227,13 +16282,16 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
             }
             operator = 'equal';
         }
+        if (this.options.type === 'date' || this.options.type === 'datetime') {
+            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
+        }
         this.addDistinct(query);
         /* tslint:disable-next-line:max-line-length */
         var args = {
             requestType: filterSearchBegin,
             filterModel: this, columnName: field, column: column,
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
-            query: query
+            query: query, value: parsed
         };
         if (isBlazor() && !this.parent.isJsComponent) {
             var filterModel = 'filterModel';
@@ -16242,7 +16300,6 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         this.parent.notify(cBoxFltrBegin, args);
         predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
         if (this.options.type === 'date' || this.options.type === 'datetime') {
-            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
             operator = 'equal';
             if (isNullOrUndefined(parsed) && val.length) {
                 return;
@@ -19796,9 +19853,15 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
                 fltrValue = element.children[0].value;
             }
             else {
-                fltrValue = !isBlazor() && !isNullOrUndefined((element.children[0].ej2_instances)) ?
-                    element.children[0].ej2_instances[0].value
-                    : element.querySelector('.e-control').ej2_instances[0].value;
+                if (!isBlazor() && !isNullOrUndefined(element.children[0].ej2_instances)) {
+                    fltrValue = element.children[0].ej2_instances[0].value;
+                }
+                else {
+                    var eControl = element.querySelector('.e-control');
+                    fltrValue = !isNullOrUndefined(eControl.ej2_instances) ? eControl.ej2_instances[0].value : (col.type === 'boolean') ?
+                        (element.querySelector('.e-control').checked) :
+                        eControl.value;
+                }
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
         }
@@ -24777,7 +24840,7 @@ function summaryIterator(aggregates, callback) {
  * @hidden
  */
 var InterSectionObserver = /** @__PURE__ @class */ (function () {
-    function InterSectionObserver(parent, element, options) {
+    function InterSectionObserver(element, options) {
         var _this = this;
         this.fromWheel = false;
         this.touchMove = false;
@@ -24814,39 +24877,9 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
                 }, axis: 'X'
             }
         };
-        this.parent = parent;
         this.element = element;
         this.options = options;
-        this.addEventListener();
     }
-    InterSectionObserver.prototype.virtualKeyHandler = function (args) {
-        if (args && (args.action === 'upArrow' || args.action === 'downArrow') && isNullOrUndefined(this.activeKey)) {
-            this.activeKey = args.action;
-        }
-    };
-    /**
-     * @hidden
-     */
-    InterSectionObserver.prototype.addEventListener = function () {
-        this.parent.on('virtaul-key-handler', this.virtualKeyHandler, this);
-        this.parent.on('key-pressed', this.virtualKeyHandler, this);
-    };
-    /**
-     * @hidden
-     */
-    InterSectionObserver.prototype.removeEventListener = function () {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.off('virtaul-key-handler', this.virtualKeyHandler);
-        this.parent.off('key-pressed', this.virtualKeyHandler);
-    };
-    /**
-     * @hidden
-     */
-    InterSectionObserver.prototype.destroy = function () {
-        this.removeEventListener();
-    };
     InterSectionObserver.prototype.observe = function (callback, onEnterCallback) {
         var _this = this;
         this.containerRect = this.options.container.getBoundingClientRect();
@@ -24857,16 +24890,6 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
         var info = this.sentinelInfo[direction];
         return info.check(this.element.getBoundingClientRect(), info);
     };
-    InterSectionObserver.prototype.ensureKeyFocus = function () {
-        if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
-            return false;
-        }
-        var row = document.activeElement.parentElement;
-        var rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
-        var blockSize = this.parent.contentModule.getBlockSize() - 1;
-        rowIndex = this.activeKey === 'upArrow' ? rowIndex - blockSize : rowIndex + blockSize;
-        return !isNullOrUndefined(this.parent.getRowByIndex(rowIndex));
-    };
     InterSectionObserver.prototype.virtualScrollHandler = function (callback, onEnterCallback) {
         var _this = this;
         var delay = Browser.info.name === 'chrome' ? 200 : 100;
@@ -24875,36 +24898,32 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
         var debounced100 = debounce(callback, delay);
         var debounced50 = debounce(callback, 50);
         return function (e) {
-            var isKeyDown = _this.ensureKeyFocus();
-            if (!isKeyDown) {
-                var top_1 = e.target.scrollTop;
-                var left = e.target.scrollLeft;
-                var direction = prevTop < top_1 ? 'down' : 'up';
-                direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
-                prevTop = top_1;
-                prevLeft = left;
-                var current = _this.sentinelInfo[direction];
-                if (_this.options.axes.indexOf(current.axis) === -1) {
-                    return;
-                }
-                var check = _this.check(direction);
-                if (current.entered) {
-                    onEnterCallback(_this.element, current, direction, { top: top_1, left: left }, _this.fromWheel, check);
-                }
-                if (check) {
-                    var fn = debounced100;
-                    //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
-                    if (current.axis === 'X') {
-                        fn = debounced50;
-                    }
-                    fn({ direction: direction, sentinel: current, offset: { top: top_1, left: left },
-                        focusElement: document.activeElement });
-                }
-                _this.fromWheel = false;
+            var top = e.target.scrollTop;
+            var left = e.target.scrollLeft;
+            var direction = prevTop < top ? 'down' : 'up';
+            direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
+            prevTop = top;
+            prevLeft = left;
+            var current = _this.sentinelInfo[direction];
+            if (_this.options.axes.indexOf(current.axis) === -1) {
+                return;
             }
-            else {
-                _this.activeKey = undefined;
+            var check = _this.check(direction);
+            if (current.entered) {
+                onEnterCallback(_this.element, current, direction, { top: top, left: left }, _this.fromWheel, check);
             }
+            if (check) {
+                var fn = debounced100;
+                //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
+                if (current.axis === 'X') {
+                    fn = debounced50;
+                }
+                fn({
+                    direction: direction, sentinel: current, offset: { top: top, left: left },
+                    focusElement: document.activeElement
+                });
+            }
+            _this.fromWheel = false;
         };
     };
     InterSectionObserver.prototype.setPageHeight = function (value) {
@@ -25150,6 +25169,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _this.isSelection = false;
         _this.isBottom = false;
         _this.rndrCount = 0;
+        _this.empty = undefined;
         _this.locator = locator;
         _this.eventListener('on');
         _this.parent.on(columnVisibilityChanged, _this.setVisible, _this);
@@ -25172,7 +25192,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
-        this.observer = new InterSectionObserver(this.parent, this.virtualEle.wrapper, opt);
+        this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
     };
     VirtualContentRenderer.prototype.renderEmpty = function (tbody) {
         this.getTable().appendChild(tbody);
@@ -25274,6 +25294,12 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         infoType.nextInfo = infoType.loadNext ? { page: Math.max(1, infoType.page + (direction === 'down' ? 1 : -1)) } : {};
         if (isBlockAdded) {
             infoType.blockIndexes = [infoType.blockIndexes[0] - 1, infoType.blockIndexes[0], infoType.blockIndexes[0] + 1];
+        }
+        if (this.activeKey === 'downArrow') {
+            var firstBlock = Math.ceil(this.rowIndex / this.getBlockSize());
+            if (firstBlock !== 1 && (infoType.blockIndexes[1] !== firstBlock || infoType.blockIndexes.length < 3)) {
+                infoType.blockIndexes = [firstBlock - 1, firstBlock, firstBlock + 1];
+            }
         }
         infoType.columnIndexes = info.axis === 'X' ? this.vgenerator.getColumnIndexes() : this.parent.getColumnIndexesInView();
         if (this.parent.enableColumnVirtualization && info.axis === 'X') {
@@ -25435,50 +25461,18 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.refreshMvTbalTransform();
         }
-        this.focusCell(e, cOffset);
+        this.focusCell(e);
     };
-    VirtualContentRenderer.prototype.focusCell = function (e, cOffset) {
-        var _this = this;
+    VirtualContentRenderer.prototype.focusCell = function (e) {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
             return;
         }
         var row = this.parent.getRowByIndex(this.rowIndex);
-        var firstRow;
-        var lastRow;
-        var rows = this.parent.getRows();
-        var rowHeight = this.parent.getRowHeight();
-        var scrollEleHeight = this.parent.getContent().firstElementChild.getBoundingClientRect().height;
-        setTimeout(function () {
-            _this.resetTblTransform();
-        }, 50);
-        if (isNullOrUndefined(row)) {
-            for (var i = 0; i < rows.length; i++) {
-                if (this.isViewPortFirstRow(rows[i], rowHeight)) {
-                    firstRow = rows[i];
-                    break;
-                }
-            }
-            for (var i = rows.length - 1; i >= 0; i--) {
-                if (this.isViewPortLastRow(rows[i], scrollEleHeight)) {
-                    lastRow = rows[i];
-                    break;
-                }
-            }
-        }
-        var virtualRow = this.activeKey === 'downArrow' ? firstRow : lastRow;
-        var target = !isNullOrUndefined(row) ? row.cells[this.cellIndex]
-            : virtualRow.cells[this.cellIndex];
-        this.parent.focusModule.onClick({ target: target }, true);
-        this.parent.selectRow(parseInt(target.parentElement.getAttribute('aria-rowindex'), 10));
-        this.activeKey = this.parent.allowSelection ? this.activeKey : undefined;
-    };
-    VirtualContentRenderer.prototype.resetTblTransform = function () {
-        var xAxis = this.currentInfo.sentinelInfo.axis === 'X';
-        var top = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
-        var height = this.content.getBoundingClientRect().height;
-        var x = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);
-        var y = this.getTranslateY(this.parent.getContent().firstElementChild.scrollTop, height, xAxis && top === this.parent.getContent().firstElementChild.scrollTop ? this.prevInfo : undefined, true);
-        this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
+        // tslint:disable-next-line:no-any
+        var cell = row.cells[this.cellIndex];
+        cell.focus({ preventScroll: true });
+        this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
+        this.activeKey = this.empty;
     };
     VirtualContentRenderer.prototype.onDataReady = function (e) {
         if (!isNullOrUndefined(e.count)) {
@@ -25589,7 +25583,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.parent.selectRow(this.selectedRowIndex);
         }
         else {
-            this.activeKey = undefined;
+            this.activeKey = this.empty;
         }
     };
     VirtualContentRenderer.prototype.eventListener = function (action) {
@@ -25598,8 +25592,6 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         this.parent.addEventListener(dataBound, this.dataBound.bind(this));
         this.parent[action](refreshVirtualBlock, this.refreshContentRows, this);
         this.parent[action](selectVirtualRow, this.selectVirtualRow, this);
-        this.parent[action](virtaulKeyHandler, this.virtualKeyHandler, this);
-        this.parent[action](keyPressed, this.virtualKeyHandler, this);
         this.parent[action](virtaulCellFocus, this.virtualCellFocus, this);
         var event = this.actions;
         for (var i = 0; i < event.length; i++) {
@@ -25628,26 +25620,38 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             && e && (e.action === 'upArrow' || e.action === 'downArrow')) {
             var rowIndex = parseInt(ele.parentElement.getAttribute('aria-rowindex'), 10);
             if (e && (e.action === 'downArrow' || e.action === 'upArrow')) {
+                var scrollEle = this.parent.getContent().firstElementChild;
                 e.action === 'downArrow' ? rowIndex += 1 : rowIndex -= 1;
                 this.rowIndex = rowIndex;
                 this.cellIndex = parseInt(ele.getAttribute('aria-colindex'), 10);
                 var row = this.parent.getRowByIndex(rowIndex);
-                var top_2 = this.parent.getContent().firstElementChild.scrollTop;
+                var page = this.parent.pageSettings.currentPage;
+                var visibleRowCount = Math.floor(scrollEle.offsetHeight / this.parent.getRowHeight()) - 1;
+                var emptyRow = false;
                 if (isNullOrUndefined(row)) {
-                    this.parent.getContent().firstElementChild.scrollTop = e.action === 'downArrow' ?
-                        top_2 + this.parent.getRowHeight() : top_2 - this.parent.getRowHeight();
+                    emptyRow = true;
+                    if ((e.action === 'downArrow' && page === this.maxPage - 1) || (e.action === 'upArrow' && page === 1)) {
+                        emptyRow = false;
+                    }
+                }
+                if (emptyRow || this.ensureLastRow(row) || this.ensureFirstRow(row)) {
+                    this.activeKey = e.action;
+                    scrollEle.scrollTop = e.action === 'downArrow' ?
+                        (rowIndex - visibleRowCount) * this.parent.getRowHeight() : rowIndex * this.parent.getRowHeight();
                 }
                 else {
-                    this.parent.selectRow(rowIndex);
+                    this.activeKey = this.empty;
                 }
+                this.parent.selectRow(rowIndex);
             }
         }
     };
-    VirtualContentRenderer.prototype.virtualKeyHandler = function (args) {
-        if (args && (args.action === 'upArrow' || args.action === 'downArrow')
-            && isNullOrUndefined(this.activeKey)) {
-            this.activeKey = args.action;
-        }
+    VirtualContentRenderer.prototype.ensureLastRow = function (row) {
+        var cntOffset = this.parent.getContent().firstElementChild.offsetHeight;
+        return row && row.getBoundingClientRect().top > cntOffset;
+    };
+    VirtualContentRenderer.prototype.ensureFirstRow = function (row) {
+        return row && row.getBoundingClientRect().top < this.parent.getRowHeight();
     };
     VirtualContentRenderer.prototype.getBlockSize = function () {
         return this.parent.pageSettings.pageSize >> 1;
@@ -25803,16 +25807,10 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             var scrollTop = this.offsets[blockIndexes[0] - 1];
             var ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : this.parent.getContent().firstElementChild;
-            ele.scrollTop = scrollTop;
+            if (!isNullOrUndefined(scrollTop)) {
+                ele.scrollTop = scrollTop;
+            }
         }
-    };
-    VirtualContentRenderer.prototype.isViewPortFirstRow = function (row, rowHeight) {
-        var top = row.getBoundingClientRect().top;
-        return top > rowHeight;
-    };
-    VirtualContentRenderer.prototype.isViewPortLastRow = function (row, eleHeight) {
-        var top = row.getBoundingClientRect().top;
-        return top < eleHeight;
     };
     return VirtualContentRenderer;
 }(ContentRender));
@@ -26829,7 +26827,8 @@ var NumericEditCell = /** @__PURE__ @class */ (function () {
     };
     NumericEditCell.prototype.read = function (element) {
         var value = this.instances.getNumberParser({ format: 'n' })(element.value);
-        return value;
+        /* tslint:disable:no-string-literal */
+        return (this.obj['trimValue'])(value);
     };
     NumericEditCell.prototype.write = function (args) {
         var col = args.column;
@@ -27185,10 +27184,12 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection)) {
             if (this.parent.editSettings.mode !== 'Dialog') {
-                this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
                 if (isBlazor() && this.parent.isServerRendered) {
                     var rowIndex = 'editRowIndex';
                     editArgs[rowIndex] = this.rowIndex > -1 ? this.rowIndex : this.editRowIndex;
+                }
+                else {
+                    this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
                 }
             }
         }
@@ -27896,12 +27897,16 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
      */
     BatchEdit.prototype.addRowObject = function (row) {
         var isTop = this.parent.editSettings.newRowPosition === 'Top';
+        var frozenColumnsCount = this.parent.getFrozenColumns();
+        if (frozenColumnsCount) {
+            var mRow = this.parent.getMovableRowsObject();
+            var mEle = row.clone();
+            mEle.cells = mEle.cells.slice(frozenColumnsCount);
+            row.cells = row.cells.slice(0, frozenColumnsCount);
+            isTop ? mRow.unshift(mEle) : mRow.push(mEle);
+        }
         isTop ? this.parent.getRowsObject().unshift(row) :
             this.parent.getRowsObject().push(row);
-        var mRow = this.parent.getMovableRowsObject();
-        if (this.parent.getFrozenColumns() && !mRow.length) {
-            isTop ? mRow.unshift(row) : mRow.push(row);
-        }
     };
     // tslint:disable-next-line:max-func-body-length
     BatchEdit.prototype.bulkDelete = function (fieldname, data) {
@@ -28517,7 +28522,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 _this.refreshTD(cellSaveArgs.cell, column, gObj.getMovableRowsObject()[_this.cellDetails.rowIndex], cellSaveArgs.value);
             }
             else {
-                _this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+                var rowObj = parentsUntil(cellSaveArgs.cell, 'e-movablecontent') ?
+                    gObj.getMovableRowsObject()[_this.cellDetails.rowIndex] : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+                _this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
             }
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
@@ -29749,20 +29756,10 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
             this.hideOpenedDialog();
         }
         if (!this.dlgObj.visible) {
-            var args1 = {
-                requestType: 'beforeOpenColumnChooser', element: this.parent.element,
-                columns: this.getColumns(), cancel: false, searchOperator: this.searchOperator
-            };
-            if (isBlazor() && !this.parent.isJsComponent) {
-                args1 = {
-                    requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
-                };
-            }
-            this.parent.trigger(beforeOpenColumnChooser, args1);
-            if (args1.cancel) {
+            var args = this.beforeOpenColumnChooserEvent();
+            if (args.cancel) {
                 return;
             }
-            this.searchOperator = args1.searchOperator;
             if (target) {
                 this.targetdlg = target;
             }
@@ -29812,6 +29809,10 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         this.isCustomizeOpenCC = true;
         if (this.dlgObj.visible) {
             this.hideDialog();
+            return;
+        }
+        var args = this.beforeOpenColumnChooserEvent();
+        if (args.cancel) {
             return;
         }
         if (!this.isInitialOpen) {
@@ -30250,6 +30251,20 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
                 openCC[i].ej2_instances[0].hide();
             }
         }
+    };
+    ColumnChooser.prototype.beforeOpenColumnChooserEvent = function () {
+        var args1 = {
+            requestType: 'beforeOpenColumnChooser', element: this.parent.element,
+            columns: this.getColumns(), cancel: false, searchOperator: this.searchOperator
+        };
+        if (isBlazor() && !this.parent.isJsComponent) {
+            args1 = {
+                requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
+            };
+        }
+        this.parent.trigger(beforeOpenColumnChooser, args1);
+        this.searchOperator = args1.searchOperator;
+        return args1;
     };
     return ColumnChooser;
 }());
@@ -31657,6 +31672,9 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var allowHorizontalOverflow = true;
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
+            if (isBlazor()) {
+                this.getGridPdfFont(this.gridTheme);
+            }
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
                 true : pdfExportProperties.allowHorizontalOverflow;
         }
@@ -31746,6 +31764,55 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             //Material theme
             return { font: new PdfStandardFont(PdfFontFamily.Helvetica, 9.75), brush: new PdfSolidBrush(new PdfColor(0, 0, 0)),
                 backgroundBrush: new PdfSolidBrush(new PdfColor(246, 246, 246)) };
+        }
+    };
+    PdfExport.prototype.getGridPdfFont = function (args) {
+        var fontFamily = 'fontFamily';
+        var fontSize = 'fontSize';
+        var fontStyle = 'fontStyle';
+        var isTrueType = 'isTrueType';
+        var style = 0;
+        if (args.header && args.header.font) {
+            var headerFont = args.header.font[fontFamily];
+            var headerSize = args.header.font[fontSize];
+            var headerStyle = args.header.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[headerStyle]) ? 0 : PdfFontStyle[headerStyle]);
+            if (args.header.font[isTrueType]) {
+                args.header.font = new PdfTrueTypeFont(headerFont, headerSize, style);
+            }
+            else {
+                var fontFamily_1 = !isNullOrUndefined(headerFont) ?
+                    this.getFontFamily(headerFont) : PdfFontFamily.Helvetica;
+                args.header.font = new PdfStandardFont(fontFamily_1, headerSize, style);
+            }
+        }
+        if (args.caption && args.caption.font) {
+            var captionFont = args.caption.font[fontFamily];
+            var captionSize = args.caption.font[fontSize];
+            var captionStyle = args.caption.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[captionStyle]) ? 0 : PdfFontStyle[captionStyle]);
+            if (args.caption.font[isTrueType]) {
+                args.caption.font = new PdfTrueTypeFont(captionFont, captionSize, style);
+            }
+            else {
+                var fontFamily_2 = !isNullOrUndefined(captionFont) ?
+                    this.getFontFamily(captionFont) : PdfFontFamily.Helvetica;
+                args.caption.font = new PdfStandardFont(fontFamily_2, captionSize, style);
+            }
+        }
+        if (args.record && args.record.font) {
+            var recordFont = args.record.font[fontFamily];
+            var recordSize = args.record.font[fontSize];
+            var recordStyle = args.record.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[recordStyle]) ? 0 : PdfFontStyle[recordStyle]);
+            if (args.record.font[isTrueType]) {
+                args.record.font = new PdfTrueTypeFont(recordFont, recordSize, style);
+            }
+            else {
+                var fontFamily_3 = !isNullOrUndefined(recordFont) ?
+                    this.getFontFamily(recordFont) : PdfFontFamily.Helvetica;
+                args.record.font = new PdfStandardFont(fontFamily_3, recordSize, style);
+            }
         }
     };
     PdfExport.prototype.getHeaderThemeStyle = function () {
@@ -34381,13 +34448,11 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
             var item = _a[_i];
             var key = this.getKeyFromId(item.id);
             var dItem = this.defaultItems[key];
-            if (this.getDefaultItems().indexOf(key) !== -1) {
-                if (this.ensureDisabledStatus(key) && !dItem.hide) {
-                    this.disableItems.push(item.text);
-                }
-                else if (item.hide) {
-                    this.hiddenItems.push(item.text);
-                }
+            if (this.getDefaultItems().indexOf(key) !== -1 && this.ensureDisabledStatus(key) && !dItem.hide) {
+                this.disableItems.push(item.text);
+            }
+            if (item.hide) {
+                this.hiddenItems.push(item.text);
             }
         }
         this.columnMenu.enableItems(this.disableItems, false);

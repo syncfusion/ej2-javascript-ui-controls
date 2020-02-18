@@ -84,6 +84,7 @@ export interface TimePickerModel extends ComponentModel{
      * alt+uparrow<br/></td></tr> 
      * </table>
      * 
+     * {% codeBlock src='timepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      * @default null
      * @blazorType object 
      */
@@ -94,6 +95,7 @@ export interface TimePickerModel extends ComponentModel{
      * based on the culture. 
      * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format) documentation.
+     * {% codeBlock src='timepicker/format/index.md' %}{% endcodeBlock %}
      * @default null
      * @aspType string
      * @blazorType string
@@ -115,6 +117,7 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * {% codeBlock src='timepicker/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     htmlAttributes?: { [key: string]: string; };
@@ -174,6 +177,7 @@ export interface TimePickerModel extends ComponentModel{
      *  the given value is not present in the popup list.
      * > For more details refer to 
      * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
+     * {% codeBlock src='timepicker/scrollTo/index.md' %}{% endcodeBlock %}
      * @default null
      * @isBlazorNullableType true
      */

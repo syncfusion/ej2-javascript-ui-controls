@@ -2,16 +2,16 @@ import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } f
 import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectArgs, selectionComplete, beforeRibbonCreate, dialog, reapplyFilter, enableFileMenuItems } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
-import { enableRibbonItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
-import { tabSwitch, getUpdateUsingRaf, enableToolbar, updateToggleItem, initiateHyperlink, editHyperlink } from '../common/index';
-import { addRibbonTabs, addToolbarItems } from '../common/index';
+import { enableToolbarItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
+import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink } from '../common/index';
+import { addRibbonTabs, addToolbarItems, hideFileMenuItems, addFileMenuItems, hideToolbarItems, enableRibbonTabs } from '../common/index';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select } from '@syncfusion/ej2-base';
-import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat } from '../../workbook/index';
+import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat, setCell, RowModel } from '../../workbook/index';
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes } from '../../workbook/common/index';
+import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, SaveType } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs } from '../../workbook/common/index';
 import { sheetsDestroyed, SortOrder, NumberFormatType, SetCellFormatArgs } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat } from '../../workbook/index';
@@ -54,19 +54,19 @@ export class Ribbon {
     }
     private getRibbonMenuItems(): MenuItemModel[] {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let id: string = this.parent.element.id;
         return [{
                     text: this.parent.isMobileView() ? '' : l10n.getConstant('File'),
-                    iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null,
+                    iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null, id: `${id}_File`,
                     items: [
-                        { text: l10n.getConstant('New'), id: 'New', iconCss: 'e-new e-icons' },
-                        { text: l10n.getConstant('Open'), id: 'Open', iconCss: 'e-open e-icons' },
+                        { text: l10n.getConstant('New'), id: `${id}_New`, iconCss: 'e-new e-icons' },
+                        { text: l10n.getConstant('Open'), id: `${id}_Open`, iconCss: 'e-open e-icons' },
                         {
-                            text: l10n.getConstant('SaveAs'),
-                            iconCss: 'e-save e-icons',
+                            text: l10n.getConstant('SaveAs'), iconCss: 'e-save e-icons', id: `${id}_Save_As`,
                             items: [
-                                { text: l10n.getConstant('ExcelXlsx'), id: 'Xlsx', iconCss: 'e-xlsx e-icons' },
-                                { text: l10n.getConstant('ExcelXls'), id: 'Xls', iconCss: 'e-xls e-icons' },
-                                { text: l10n.getConstant('CSV'), id: 'Csv', iconCss: 'e-csv e-icons' }
+                                { text: l10n.getConstant('ExcelXlsx'), id: `${id}_Xlsx`, iconCss: 'e-xlsx e-icons' },
+                                { text: l10n.getConstant('ExcelXls'), id: `${id}_Xls`, iconCss: 'e-xls e-icons' },
+                                { text: l10n.getConstant('CSV'), id: `${id}_Csv`, iconCss: 'e-csv e-icons' }
                             ]
                         }]
                 }];
@@ -78,32 +78,37 @@ export class Ribbon {
             {
                 header: { text: l10n.getConstant('Home') },
                 content: [
-                    { prefixIcon: 'e-undo-icon', tooltipText: `${l10n.getConstant('Undo')} (Ctrl+Z)`, id: id + '_undo' },
-                    { prefixIcon: 'e-redo-icon', tooltipText: `${l10n.getConstant('Redo')} (Ctrl+Y)`, id: id + '_redo' },
-                    { type: 'Separator' },
+                    { prefixIcon: 'e-undo-icon', tooltipText: `${l10n.getConstant('Undo')} (Ctrl+Z)`, id: id + '_undo', disabled: true },
+                    { prefixIcon: 'e-redo-icon', tooltipText: `${l10n.getConstant('Redo')} (Ctrl+Y)`, id: id + '_redo', disabled: true },
+                    { type: 'Separator', id: id + '_separator_1' },
                     { prefixIcon: 'e-cut-icon', tooltipText: `${l10n.getConstant('Cut')} (Ctrl+X)`, id: id + '_cut' },
                     { prefixIcon: 'e-copy-icon', tooltipText: `${l10n.getConstant('Copy')} (Ctrl+C)`, id: id + '_copy' },
-                    { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id) },
-                    { type: 'Separator' },
-                    { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat') }, { type: 'Separator' },
-                    { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font') }, { type: 'Separator' },
-                    { template: this.getFontSizeDDB(id), tooltipText: l10n.getConstant('FontSize') }, { type: 'Separator' },
-                    { template: this.getBtn(id, 'bold'), tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)` },
-                    { template: this.getBtn(id, 'italic'), tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)` },
-                    { template: this.getBtn(id, 'line-through'), tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)` },
-                    { template: this.getBtn(id, 'underline'), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)` },
-                    { template: document.getElementById(`${id}_font_color_picker`), tooltipText: l10n.getConstant('TextColor') },
-                    { type: 'Separator' },
-                    { template: document.getElementById(`${id}_fill_color_picker`), tooltipText: l10n.getConstant('FillColor') },
-                    { type: 'Separator' }, { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment') },
-                    { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment') }]
+                    { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id), id: id + '_paste',
+                        disabled: true }, { type: 'Separator', id: id + '_separator_2' },
+                    { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
+                    { type: 'Separator', id: id + '_separator_3' },
+                    { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font'), id: id + '_font_name' },
+                    { type: 'Separator', id: id + '_separator_4' },
+                    { template: this.getFontSizeDDB(id), tooltipText: l10n.getConstant('FontSize'), id: id + '_font_size' },
+                    { type: 'Separator', id: id + '_separator_5' },
+                    { template: this.getBtn(id, 'bold'), tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)`, id: id + '_bold' },
+                    { template: this.getBtn(id, 'italic'), tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)`, id: id + '_italic' },
+                    { template: this.getBtn(id, 'line-through'), tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)`,
+                    id: id + '_line-through' },
+                    { template: this.getBtn(id, 'underline'), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)`,
+                    id: id + '_underline' },
+                    { template: document.getElementById(`${id}_font_color_picker`), tooltipText: l10n.getConstant('TextColor'),
+                    id: id + '_font_color_picker' }, { type: 'Separator', id: id + '_separator_6' },
+                    { template: document.getElementById(`${id}_fill_color_picker`), tooltipText: l10n.getConstant('FillColor'),
+                    id: id + '_fill_color_picker' }, { type: 'Separator', id: id + '_separator_7' },
+                    { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id:
+                    id + '_text_align' }, { template: this.getVerticalAlignDDB(id), tooltipText:
+                    l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' }]
             },
             {
                 header: { text: l10n.getConstant('Insert') },
-                content: [{
-                    prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
-                    id: id + '_hyperlink', click: (): void => { this.getHyperlinkDlg(); }
-                }]
+                content: [{ prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
+                    id: id + '_hyperlink', click: (): void => { this.getHyperlinkDlg(); }}]
             },
             {
                 header: { text: l10n.getConstant('Formulas') },
@@ -112,15 +117,14 @@ export class Ribbon {
             {
                 header: { text: l10n.getConstant('View') },
                 content: [
-                    { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' }, { type: 'Separator' },
+                    { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' },
+                    { type: 'Separator', id: id + '_separator_8' },
                     { prefixIcon: 'e-hide-gridlines', text: this.getLocaleText('GridLines'), id: id + '_gridlines' }]
             }];
         if (this.parent.allowSorting || this.parent.allowFiltering) {
             items.find((x: RibbonItemModel) => x.header && x.header.text === l10n.getConstant('Home')).content.push(
-                { type: 'Separator' },
-                {
-                    template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter')
-                });
+                { type: 'Separator', id: id + '_separator_9' },
+                { template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter'), id: id + '_sorting' });
         }
         return items;
     }
@@ -151,7 +155,14 @@ export class Ribbon {
 
     private getHyperlinkDlg(): void {
         let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        let cell: CellModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]].cells[indexes[1]];
+        let row: RowModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
+        let cell: CellModel;
+        if (!isNullOrUndefined(row)) {
+            cell = row.cells[indexes[1]];
+        }
+        if (isNullOrUndefined(cell)) {
+            setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
+        }
         if (cell && cell.hyperlink) {
             this.parent.notify(editHyperlink, null);
         } else {
@@ -172,7 +183,7 @@ export class Ribbon {
         return text;
     }
     private createRibbon(args: { uiUpdate?: boolean }): void {
-        let ribbonElement: HTMLElement = this.parent.createElement('div');
+        let ribbonElement: HTMLElement = this.parent.createElement('div', { id: `${this.parent.element.id}_ribbon` });
         this.ribbon = new RibbonComponent({
             selectedTab: 0,
             menuItems: this.getRibbonMenuItems(),
@@ -386,11 +397,6 @@ export class Ribbon {
     }
 
     private ribbonCreated(): void {
-        if (this.parent.enableClipboard) { this.enableRibbonItems([{ id: this.parent.element.id + '_paste', isEnable: false }]); }
-        if (this.parent.allowUndoRedo) {
-            this.enableRibbonItems([{ id: this.parent.element.id + '_undo', isEnable: false },
-            { id: this.parent.element.id + '_redo', isEnable: false }]);
-        }
         (this.ribbon.element.querySelector('.e-drop-icon') as HTMLElement).title
             = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('CollapseToolbar');
     }
@@ -483,10 +489,6 @@ export class Ribbon {
         { text: 'Calibri', iconCss: 'e-icons e-selected-icon' }, { text: 'Courier' }, { text: 'Courier New' },
         { text: 'Din Condensed' }, { text: 'Georgia' }, { text: 'Helvetica' }, { text: 'Helvetica New' }, { text: 'Roboto' },
         { text: 'Tahoma' }, { text: 'Times New Roman' }, { text: 'Verdana' }];
-    }
-
-    private enableToolbar(args: { enable: boolean }): void {
-        this.ribbon.enableItems(args.enable);
     }
 
     private numDDBSelect(args: MenuEventArgs): void {
@@ -655,18 +657,18 @@ export class Ribbon {
 
     private fileItemSelect(args: MenuEventArgs): void {
         let selectArgs: MenuSelectArgs = <MenuSelectArgs>extend({ cancel: false }, args);
-        this.parent.trigger('fileItemSelect', selectArgs);
+        this.parent.trigger('fileItemSelect', selectArgs); let id: string = this.parent.element.id;
         if (!selectArgs.cancel) {
             switch (args.item.id) {
-                case 'Open':
-                    (this.parent.element.querySelector('#' + this.parent.element.id + '_fileUpload') as HTMLElement).click();
+                case `${id}_Open`:
+                    (this.parent.element.querySelector('#' + id + '_fileUpload') as HTMLElement).click();
                     break;
-                case 'Xlsx':
-                case 'Xls':
-                case 'Csv':
-                    this.parent.save({ saveType: args.item.id });
+                case `${id}_Xlsx`:
+                case `${id}_Xls`:
+                case `${id}_Csv`:
+                    this.parent.save({ saveType: <SaveType>args.item.id.split(`${id}_`)[1] });
                     break;
-                case 'New':
+                case `${id}_New`:
                     let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
                     dialogInst.show({
                         height: 200, width: 400, isModal: true, showCloseIcon: true,
@@ -748,57 +750,12 @@ export class Ribbon {
         if (this.ribbon.items[this.ribbon.selectedTab].header.text === tabHeader) { this.updateToggleText(args.props.toLowerCase(), text); }
     }
 
-    private enableFileMenuItems(args: { items: string[], enable: boolean }): void {
-        this.ribbon.enableMenuItems(args.items, args.enable);
+    private enableFileMenuItems(args: { items: string[], enable: boolean, isUniqueId: boolean }): void {
+        this.ribbon.enableMenuItems(args.items, args.enable, args.isUniqueId);
     }
 
     private hideRibbonTabs(args: { tabs: string[], hide: boolean }): void {
-        let isActiveTab: boolean; let idx: number;
-        let tabCollection: HTMLElement[] = selectAll('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab)', this.parent.element);
-        args.tabs.forEach((tab: string): void => {
-            for (let i: number = 0; i < this.ribbon.items.length; i++) {
-                if (tab === this.ribbon.items[i].header.text) { idx = i; break; }
-            }
-            if (idx !== undefined) {
-                if (args.hide) {
-                    tabCollection[idx].classList.add('e-hide');
-                    if (idx === this.ribbon.selectedTab) { isActiveTab = true; }
-                } else {
-                    if (tabCollection[idx].classList.contains('e-hide')) {
-                        if (isActiveTab === undefined) {
-                            isActiveTab = select(
-                                '.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab):not(.e-hide)', this.parent.element) ? false :
-                                true;
-                        }
-                        tabCollection[idx].classList.remove('e-hide');
-                    }
-                }
-                idx = undefined;
-            }
-        });
-        let nextTab: HTMLElement;
-        if (isActiveTab) {
-            nextTab = <HTMLElement>select(
-                '.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab):not(.e-hide)', this.parent.element);
-            if (nextTab) {
-                this.toggleCollapsed();
-                let activeIdx: number = [].slice.call(tabCollection).indexOf(nextTab);
-                this.ribbon.selectedTab = activeIdx; this.ribbon.dataBind();
-            } else {
-                this.toggleCollapsed();
-            }
-        }
-        this.parent.updateActiveBorder(tabCollection[this.ribbon.selectedTab]);
-    }
-
-    private toggleCollapsed(): void {
-        if (this.ribbon.element.classList.contains('e-collapsed')) {
-            this.ribbon.element.classList.remove('e-collapsed');
-            this.ribbon.element.querySelector('.e-drop-icon').classList.remove('e-disabled');
-        } else {
-            this.ribbon.element.classList.add('e-collapsed');
-            this.ribbon.element.querySelector('.e-drop-icon').classList.add('e-disabled');
-        }
+        this.ribbon.hideTabs(args.tabs, args.hide);
     }
 
     private addRibbonTabs(args: { items: RibbonItemModel[], insertBefore: string }): void {
@@ -858,13 +815,10 @@ export class Ribbon {
         this.ribbon.addToolbarItems(args.tab, args.items, args.index);
     }
 
-    private enableRibbonItems(args: { id: string, isEnable: boolean }[]): void {
-        for (let i: number = 0, len: number = args.length; i < len; i++) {
-            let ele: Element = document.getElementById(args[i].id);
-            if (ele) {
-                this.ribbon.enableItems(args[i].isEnable, <HTMLElement>closest(ele, '.e-toolbar-item'));
-            }
-        }
+    private enableToolbarItems(args: { tab?: string, items?: number[] | string[], enable?: boolean }[]): void {
+        args.forEach((arg: { tab?: string, items?: number[] | string[], enable: boolean }): void => {
+            this.ribbon.enableItems(arg.tab || this.ribbon.items[this.ribbon.selectedTab].header.text, arg.items, arg.enable);
+        });
     }
 
     private createMobileView(): void {
@@ -976,20 +930,34 @@ export class Ribbon {
         }
         this.parent.trigger('fileMenuBeforeOpen', args);
     }
+    private enableRibbonTabs(args: { tabs: string[], enable: boolean }): void {
+        this.ribbon.enableTabs(args.tabs, args.enable);
+    }
     private fileMenuBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
         this.parent.trigger('fileMenuBeforeClose', args);
     }
-
+    private hideFileMenuItems(args: { items: string[], hide: boolean, isUniqueId: boolean }): void {
+        this.ribbon.hideMenuItems(args.items, args.hide, args.isUniqueId);
+    }
+    private addFileMenuItems(args: { items: MenuItemModel[], text: string, insertAfter: boolean, isUniqueId: boolean }): void {
+        this.ribbon.addMenuItems(args.items, args.text, args.insertAfter, args.isUniqueId);
+    }
+    private hideToolbarItems(args: { tab: string, indexes: number[], hide: boolean }): void {
+        this.ribbon.hideToolbarItems(args.tab, args.indexes, args.hide);
+    }
     private addEventListener(): void {
         this.parent.on(ribbon, this.initRibbon, this);
-        this.parent.on(enableRibbonItems, this.enableRibbonItems, this);
+        this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
         this.parent.on(activeCellChanged, this.refreshRibbonContent, this);
-        this.parent.on(enableToolbar, this.enableToolbar, this);
         this.parent.on(updateToggleItem, this.toggleRibbonItems, this);
         this.parent.on(enableFileMenuItems, this.enableFileMenuItems, this);
         this.parent.on(hideRibbonTabs, this.hideRibbonTabs, this);
         this.parent.on(addRibbonTabs, this.addRibbonTabs, this);
         this.parent.on(addToolbarItems, this.addToolbarItems, this);
+        this.parent.on(hideFileMenuItems, this.hideFileMenuItems, this);
+        this.parent.on(addFileMenuItems, this.addFileMenuItems, this);
+        this.parent.on(hideToolbarItems, this.hideToolbarItems, this);
+        this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
     }
     public destroy(): void {
         let parentElem: HTMLElement = this.parent.element;
@@ -1012,14 +980,17 @@ export class Ribbon {
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(ribbon, this.initRibbon);
-            this.parent.off(enableRibbonItems, this.enableRibbonItems);
+            this.parent.off(enableToolbarItems, this.enableToolbarItems);
             this.parent.off(activeCellChanged, this.refreshRibbonContent);
-            this.parent.off(enableToolbar, this.enableToolbar);
             this.parent.off(updateToggleItem, this.toggleRibbonItems);
             this.parent.off(enableFileMenuItems, this.enableFileMenuItems);
             this.parent.off(hideRibbonTabs, this.hideRibbonTabs);
             this.parent.off(addRibbonTabs, this.addRibbonTabs);
             this.parent.off(addToolbarItems, this.addToolbarItems);
+            this.parent.off(hideFileMenuItems, this.hideFileMenuItems);
+            this.parent.off(addFileMenuItems, this.addFileMenuItems);
+            this.parent.off(hideToolbarItems, this.hideToolbarItems);
+            this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
         }
     }
 }

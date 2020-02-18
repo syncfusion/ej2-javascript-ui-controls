@@ -997,7 +997,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     break;
                 case 'hide':
                     this.preventAltUp = this.isPopupOpen;
-                    this.hidePopup();
+                    this.hidePopup(e);
                     this.focusDropDown(e);
                     break;
                 case 'enter':
@@ -1007,7 +1007,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 case 'tab':
                 case 'close':
                     if (this.isPopupOpen) {
-                        this.hidePopup();
+                        this.hidePopup(e);
                         this.focusDropDown(e);
                     }
                     break;

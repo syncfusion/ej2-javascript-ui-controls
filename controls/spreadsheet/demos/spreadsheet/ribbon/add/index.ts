@@ -1,7 +1,7 @@
 /**
  * Spreadsheet default sample
  */
-import { Spreadsheet, SheetModel, ColumnModel } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, MenuSelectArgs } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from './../../../common/data-source';
@@ -47,6 +47,17 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     created: (): void => {
         spreadsheet.addToolbarItems('Home', [{ type: 'Separator' }, { text: 'Custom', tooltipText: 'Custom Btn' }], 2);
         spreadsheet.addToolbarItems('Formulas', [{ type: 'Separator' }, { text: 'Custom Formulas', tooltipText: 'Custom Formulas' }], 2);
+        spreadsheet.addFileMenuItems([{ text: 'Export', iconCss: 'e-save e-icons' }], 'Save As');
+        spreadsheet.addFileMenuItems([{ text: 'Import', iconCss: 'e-open e-icons' }], 'Open', false);
+    },
+    fileMenuBeforeOpen: (): void => spreadsheet.hideFileMenuItems(['Save As', 'Open']),
+    fileItemSelect: (args: MenuSelectArgs): void => {
+        switch (args.item.text) {
+            case 'Import': (spreadsheet.element.querySelector('#' + spreadsheet.element.id + '_fileUpload') as HTMLElement).click();
+                break;
+            case 'Export': spreadsheet.save({ saveType: 'Xlsx' });
+                break;
+        }
     }
 });
 

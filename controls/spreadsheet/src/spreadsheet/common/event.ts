@@ -66,7 +66,7 @@ export const ribbonClick: string = 'ribboClick';
 /** @hidden */
 export const refreshRibbon: string = 'ribbonRefresh';
 /** @hidden */
-export const enableRibbonItems: string = 'enableRibbonItems';
+export const enableToolbarItems: string = 'enableToolbarItems';
 /** @hidden */
 export const tabSwitch: string = 'tabSwitch';
 /** @hidden */
@@ -92,11 +92,19 @@ export const enableContextMenuItems: string = 'enableContextMenuItems';
 /** @hidden */
 export const enableFileMenuItems: string = 'enableFileMenuItems';
 /** @hidden */
+export const hideFileMenuItems: string = 'hideFileMenuItems';
+/** @hidden */
+export const addFileMenuItems: string = 'addFileMenuItems';
+/** @hidden */
 export const hideRibbonTabs: string = 'hideRibbonTabs';
+/** @hidden */
+export const enableRibbonTabs: string = 'enableRibbonTabs';
 /** @hidden */
 export const addRibbonTabs: string = 'addRibbonTabs';
 /** @hidden */
 export const addToolbarItems: string = 'addToolbarItems';
+/** @hidden */
+export const hideToolbarItems: string = 'hideToolbarItems';
 /** @hidden */
 export const beforeRibbonCreate: string = 'beforeRibbonCreate';
 /** @hidden */
@@ -113,8 +121,6 @@ export const deInitProperties: string = 'deInitProperties';
 export const activeSheetChanged: string = 'activeSheetChanged';
 /** @hidden */
 export const renameSheet: string = 'renameSheet';
-/** @hidden */
-export const enableToolbar: string = 'enableToolbar';
 /** @hidden */
 export const initiateCustomSort: string = 'initiateCustomSort';
 /** @hidden */

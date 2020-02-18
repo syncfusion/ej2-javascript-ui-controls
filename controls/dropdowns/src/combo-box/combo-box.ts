@@ -336,7 +336,7 @@ export class ComboBox extends DropDownList {
     protected onBlur(e: MouseEvent): void {
         let inputValue: string = this.inputElement.value === '' ? null : this.inputElement.value;
         if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
-            this.customValue();
+            this.customValue(e);
         }
         super.onBlur(e);
     }
@@ -878,10 +878,10 @@ export class ComboBox extends DropDownList {
             let selected: HTMLElement = <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected);
             if (dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {
-                    this.onChangeEvent(null);
+                    this.onChangeEvent(e);
                     this.isSelectCustom = false;
                 }
-                super.hidePopup();
+                super.hidePopup(e);
                 return;
             }
             if (this.getModuleName() === 'combobox' && this.inputElement.value.trim() !== '') {

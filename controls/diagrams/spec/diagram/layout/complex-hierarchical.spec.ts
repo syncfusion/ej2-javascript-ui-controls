@@ -11,7 +11,7 @@ import {
     HierarchicalTree, NodeModel, Rect, BasicShapeModel, ComplexHierarchicalTree, ShapeModel, SnapSettingsModel, SnapConstraints, TextModel,
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-Diagram.Inject(ComplexHierarchicalTree);
+Diagram.Inject(ComplexHierarchicalTree,HierarchicalTree);
 
 let data: object[] = [{ 'Name': 'Customer Support', 'fillColor': '#0f688d' },
 { 'Name': 'OEM Support', 'fillColor': '#0f688d', 'ReportingPerson': ['Customer Support'] },
@@ -876,6 +876,110 @@ describe('Diagram Control', () => {
             diagram.doLayout();
             expect(diagram.nodes[3].offsetX == 500 && diagram.nodes[3].offsetY == 100 && diagram.nodes[4].offsetX == 500 &&
                 diagram.nodes[4].offsetY == 300).toBe(true);
+            done();
+        });
+
+        it('CR issue for node and connector collection reset', (done: Function) => {
+            diagram.layout.orientation = "LeftToRight"
+            diagram.nodes = [
+                {
+                    id: 'node0',
+                    offsetX: 100,
+                    offsetY: 100,
+                    width: 30,
+                    height: 30,
+                    annotations: [{
+                        content: 'Start',
+                        margin: { bottom: -30 }
+                    }],
+                    style: {
+                        strokeColor: '#62A716',
+                        strokeWidth: 1
+                    }
+                },
+                {
+                    id: 'node1',
+                    offsetX: 250,
+                    offsetY: 250,
+                    width: 90,
+                    height: 60,
+                    annotations: [
+                        {
+                            content: 'Activity 1'
+                        }
+                    ],
+                    /*borderColor: '#78BE83',*/
+                    borderWidth: 4,
+                    style: {
+                        fill: '#d8ecdc',
+                        strokeColor: '#78BE83',
+                        strokeWidth: 3,
+                        gradient: {
+                            // Start point of linear gradient
+                            x1: 0,
+                            y1: 0,
+                            // End point of linear gradient
+                            x2: 1,
+                            y2: 1,
+                            // Sets an array of stop objects
+                            stops: [
+                                {
+                                    color: 'white',
+                                    offset: 30,
+                                    opacity: 0.1
+                                },
+                                {
+                                    color: '#d8ecdc',
+                                    offset: 100,
+                                    opacity: 0.1
+                                }
+                            ],
+                            type: 'Linear'
+                        }
+                    }
+                },
+                {
+                    id: 'node2',
+                    offsetX: 250,
+                    offsetY: 800,
+                    width: 90,
+                    height: 60,
+                    /*borderColor: '#78BE83',*/
+                    borderWidth: 4,
+                    annotations: [
+                        {
+                            content: `Sample Text`,
+                            // horizontalAlignment: 'Left',
+                            style: {
+                                textOverflow: 'Ellipsis',
+                                textWrapping: 'NoWrap',
+                                // textAlign: 'Left',
+                                whiteSpace: 'CollapseAll'
+                            },
+                            height: 50,
+                            width: 80,
+                            margin: { left: 0, top: 0, right: 0, bottom: 0 }
+                        }
+                    ],
+                    style: {
+                        strokeColor: '#778899',
+                        strokeWidth: 3
+                    }
+                },
+
+                { id: 'node3', offsetX: 500, offsetY: 100 },
+                { id: 'node4', offsetX: 500, offsetY: 300 }
+
+            ];
+    diagram.connectors =[{
+        id: 'connector1', sourceID: 'node0', targetID: 'node1'
+    },
+    {
+        id: 'connector2', sourceID: 'node1', targetID: 'node2'
+    }
+    ];
+    diagram.dataBind();
+            expect(diagram.nodes[0].offsetX === 65 && diagram.nodes[0].offsetY === 417.5&&diagram.nodes.length===5).toBe(true);
             done();
         });
     });

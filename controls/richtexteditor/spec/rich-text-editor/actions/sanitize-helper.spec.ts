@@ -8,7 +8,7 @@ import { renderRTE, destroy, setCursorPoint } from './../render.spec';
 
 describe('Sanitize Html Helper', () => {
     let innerHTML: string = `<div>
-    <div id="inline-event" onmouseover='javascript:alert(1)'></div>
+    <div id="inline-event" onmouseover='javascript:alert(1)'>div element</div>
     <script>alert('hi')</script>
     <img src="javascript:alert('XSS Image');"/>
     <iframe src="http://evil.com/xss.html"></iframe>
@@ -437,7 +437,7 @@ describe('Sanitize Html Helper', () => {
         let defaultString: string = `
         <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
         <div>
-        <div id="inline-event" onmouseover='javascript:alert(1)'></div>
+        <div id="inline-event" onmouseover='javascript:alert(1)'>div element</div>
         <script>alert('hi')</script>
         <img src="javascript:alert('XSS Image');"/>
         <iframe src="http://evil.com/xss.html"></iframe>
@@ -468,8 +468,7 @@ describe('Sanitize Html Helper', () => {
             },
             items: []
           };
-          (rteObj as any).inputElement.focus();
-          setCursorPoint((rteObj as any).inputElement, 0);
+          setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
           rteObj.onPaste(keyBoardEvent);
           setTimeout(() => {
             if (rteObj.pasteCleanupSettings.prompt) {

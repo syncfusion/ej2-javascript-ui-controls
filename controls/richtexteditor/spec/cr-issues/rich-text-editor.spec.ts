@@ -893,4 +893,33 @@ describe('RTE CR issues', () => {
             expect(rteObj.getCharCount()).toBe(10);
         });
     });
+
+    describe('Change event triggered -readOnly enabled', () => {
+        let rteObj: RichTextEditor;
+        let changeEvent: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion</p>',
+                maxLength: 10  ,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                saveInterval : 1,
+                change : function() {
+                    changeEvent = true ;
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check change event when readonly is enabled', (done: Function) => {
+          rteObj.inputElement.focus();
+          (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+          setTimeout(() => {
+            expect(changeEvent).toBe(false);
+            done();
+          }, 100);
+        });
+    });
 });

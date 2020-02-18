@@ -309,7 +309,8 @@ export class EventWindow {
             }
             if (!isBlazor() || (isBlazor() && args)) {
                 let templateId: string = this.parent.element.id + '_editorTemplate';
-                let tempEle: NodeList = this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false);
+                let tempEle: HTMLElement[] =
+                    [].slice.call(this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false));
                 append(tempEle, form);
                 this.updateEditorTemplate();
             }

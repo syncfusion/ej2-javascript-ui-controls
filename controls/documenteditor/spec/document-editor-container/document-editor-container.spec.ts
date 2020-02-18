@@ -41,3 +41,29 @@ describe('Document Editor container initialization', () => {
         expect(container.element).toBe(undefined);
     });
 });
+
+describe('Property vaidation', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ showPropertiesPane: true, enableComment: false });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        container.destroy();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        expect(() => { container.destroy(); }).not.toThrowError();
+        element = undefined;
+        container = undefined;
+    });
+    it('Check enable comment in DocumentEditor', (done) => {
+        setTimeout(() => {
+            expect(container.documentEditor.enableComment).toBe(false);
+            done();
+        }, 10);
+    });
+});

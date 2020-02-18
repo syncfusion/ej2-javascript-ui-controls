@@ -264,6 +264,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * alt+uparrow<br/></td></tr> 
      * </table>
      * 
+     * {% codeBlock src='timepicker/keyConfigs/index.md' %}{% endcodeBlock %}
      * @default null
      * @blazorType object 
      */
@@ -274,6 +275,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * based on the culture. 
      * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format) documentation.
+     * {% codeBlock src='timepicker/format/index.md' %}{% endcodeBlock %}
      * @default null
      * @aspType string
      * @blazorType string
@@ -295,6 +297,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * {% codeBlock src='timepicker/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})
@@ -354,6 +357,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      *  the given value is not present in the popup list.
      * > For more details refer to 
      * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
+     * {% codeBlock src='timepicker/scrollTo/index.md' %}{% endcodeBlock %}
      * @default null
      * @isBlazorNullableType true
      */
@@ -2112,6 +2116,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             };
             let eventArgs: PopupEventArgs = this.openPopupEventArgs;
             this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
+                if ((isBlazor() && this.isServerRendered)) { eventArgs.popup = this.popupObj || null; }
                 this.openPopupEventArgs = eventArgs;
                 if (!this.openPopupEventArgs.cancel && !this.inputWrapper.buttons[0].classList.contains(DISABLED)) {
                     this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);

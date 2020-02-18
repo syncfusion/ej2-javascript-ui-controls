@@ -14,7 +14,7 @@ import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selec
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
-import { ColorPicker, ColorPickerEventArgs, ColorPickerModel } from '@syncfusion/ej2-inputs';
+import { ColorPicker, ColorPickerEventArgs, ColorPickerModel, FileInfo } from '@syncfusion/ej2-inputs';
 import { Link } from '../renderer/link-module';
 import { Image } from '../renderer/image-module';
 import { Table } from '../renderer/table-module';
@@ -302,14 +302,20 @@ export interface IImageNotifyArgs {
     cssClass?: string;
 }
 export interface IImageCommandsArgs {
+    /** Defines the src attribute of the image */
     url?: string;
+    /** Defines the instance of the current selection */
     selection?: NodeSelection;
+    /** Defines the minWidth, maxWidth and width of the image */
     width?: { minWidth?: string | number, maxWidth?: string | number; width?: string | number };
+    /** Defines the minHeight, maxHeight and height of the image */
     height?: { minHeight?: string | number, maxHeight?: string | number; height?: string | number };
+    /** Defines the alternate text attribute of the image */
     altText?: string;
-    selectParent?: Node[];
+    /** Defines the class name to be added to the image */
     cssClass?: string;
-    selectNode?: Node[];
+    /** Defines the image element to be edited */
+    selectParent?: Node[];
 }
 /**
  * @deprecated
@@ -320,11 +326,17 @@ export interface ImageDragEvent extends DragEvent {
 }
 
 export interface ILinkCommandsArgs {
+    /** Defines the url attribute of the link */
     url?: string;
+    /** Defines the instance of the current selection */
     selection?: NodeSelection;
+    /** Defines the title of the link to be inserted */
     title?: string;
+    /** Defines the text of the link to be inserted */
     text?: string;
-    target?: Element;
+    /** Defines the target attribute of the link */
+    target?: string;
+    /** Defines the link element to be edited */
     selectParent?: Node[];
 }
 
@@ -333,6 +345,8 @@ export interface ITableCommandsArgs {
     row?: number;
     /** Defines the number of columns to be inserted in the table */
     columns?: number;
+    /** Defines the minWidth, maxWidth and width of the table */
+    width?: { minWidth?: string | number, maxWidth?: string | number; width?: string | number };
     /** Defines the instance of the current selection */
     selection?: NodeSelection;
 }
@@ -729,6 +743,230 @@ export interface ISetToolbarStatusArgs {
     dropDownModule: DropDownButtons;
 }
 
+export interface ChangeEventArgs {
+    /**
+     * Returns value of RichTextEditor
+     */
+    value: string;
+    /** Defines the event name. */
+    name?: string;
+}
+
+export interface DialogOpenEventArgs {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    target: HTMLElement | String;
+    /**
+     * Returns the root container element of the dialog.
+     */
+    container: HTMLElement;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface DialogCloseEventArgs {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Returns the root container element of the dialog.
+     */
+    container: HTMLElement;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Returns the original event arguments.
+     */
+    event: Event;
+    /**
+     * Determines whether the event is triggered by interaction.
+     */
+    isInteracted: boolean;
+    /**
+     * DEPRECATED-Determines whether the event is triggered by interaction.
+     */
+    isInteraction: boolean;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    target: HTMLElement | String;
+}
+
+export interface ToolbarUpdateEventArgs {
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+    /**
+     * Specify the name of the event.
+     */
+    redo: boolean;
+    /**
+     * Specify the name of the event.
+     */
+    undo: boolean;
+}
+
+export interface ImageSuccessEventArgs {
+    /**
+     * Returns the original event arguments.
+     */
+    e?: object;
+    /**
+     * Returns the details about upload file.
+     * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
+     */
+    file: FileInfo;
+    /**
+     * Returns the upload status.
+     */
+    statusText?: string;
+    /**
+     * Returns the upload event operation.
+     */
+    operation: string;
+    /**
+     * Returns the upload event operation.
+     * @blazorType ResponseEventArgs
+     */
+    response?: ResponseEventArgs;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface ImageFailedEventArgs {
+    /**
+     * Returns the original event arguments.
+     */
+    e?: object;
+    /**
+     * Returns the details about upload file.
+     * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
+     */
+    file: FileInfo;
+    /**
+     * Returns the upload status.
+     */
+    statusText?: string;
+    /**
+     * Returns the upload event operation.
+     */
+    operation: string;
+    /**
+     * Returns the upload event operation.
+     * @blazorType ResponseEventArgs
+     */
+    response?: ResponseEventArgs;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface ResponseEventArgs {
+    /**
+     * Returns the headers information of the upload image.
+     */
+    headers?: string;
+    /**
+     * Returns the readyState information.
+     */
+    readyState?: object;
+    /**
+     * Returns the upload image statusCode.
+     */
+    statusCode?: object;
+    /**
+     * Returns the upload image statusText.
+     */
+    statusText?: string;
+    /**
+     * Returns the credentials status of the upload image.
+     */
+    withCredentials?: boolean;
+}
+
+export interface DestroyedEventArgs {
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+}
+
+export interface BlurEventArgs {
+    /**
+     * Returns the original event arguments.
+     */
+    event: Event;
+    /**
+     * Determines whether the event is triggered by interaction.
+     */
+    isInteracted: boolean;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface ToolbarClickEventArgs {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Defines the current Toolbar Item Object.
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
+     */
+    item: ItemModel;
+    /**
+     * Defines the current Event arguments
+     */
+    originalEvent: MouseEvent;
+    /**
+     * Specify the request type of the event.
+     */
+    requestType: string;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface FocusEventArgs {
+    /**
+     * Returns the original event arguments.
+     */
+    event: FocusEvent;
+    /**
+     * Determines whether the event is triggered by interaction.
+     */
+    isInteracted: boolean;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
 export declare type ColorModeType = 'Picker' | 'Palette';
 
 /**
@@ -847,6 +1085,10 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         command: 'Links',
         subCommand: 'createLink'
     },
+    'editLink': {
+        command: 'Links',
+        subCommand: 'createLink'
+    },
     'createImage': {
         command: 'Images',
         subCommand: 'Images'
@@ -886,6 +1128,10 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         command: 'Images',
         subCommand: 'Image',
     },
+    'editImage': {
+        command: 'Images',
+        subCommand: 'Image',
+    },
     'insertTable': {
         command: 'Table',
         subCommand: 'CreateTable'
@@ -918,4 +1164,4 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
     'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |
     'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
     'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' |
-    'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable';
+    'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink';

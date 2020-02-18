@@ -207,7 +207,7 @@ describe('Schedule Timeline Week view', () => {
         it('event double click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('This Event');
+            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('Edit Event');
             (<HTMLInputElement>dialogElement.querySelector('.' + cls.SUBJECT_CLASS)).value = 'Spanned Event - Same week';
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
@@ -1628,7 +1628,7 @@ describe('Schedule Timeline Week view', () => {
         it('event double click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('This Event');
+            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('Edit Event');
             let hall: DropDownList = (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(hall.text).toEqual('Hall 1');
             expect(hall.value).toEqual(1);

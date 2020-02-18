@@ -1,9 +1,8 @@
-import { EventHandler, Browser, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, Browser } from '@syncfusion/ej2-base';
 import { debounce } from '@syncfusion/ej2-base';
 import { SentinelInfo, SentinelType } from '../base/type';
-import { InterSection, IGrid } from '../base/interface';
+import { InterSection } from '../base/interface';
 export type ScrollDirection = 'up' | 'down' | 'right' | 'left';
-import { Grid } from '../base/grid';
 /**
  * InterSectionObserver - class watch whether it enters the viewport.
  * @hidden
@@ -14,8 +13,6 @@ export class InterSectionObserver {
     private fromWheel: boolean = false;
     private touchMove: boolean = false;
     private options: InterSection = {};
-    private parent: IGrid;
-    private activeKey: string;
     public sentinelInfo: SentinelInfo = {
         'up': {
             check: (rect: ClientRect, info: SentinelType) => {
@@ -48,41 +45,9 @@ export class InterSectionObserver {
             }, axis: 'X'
         }
     };
-    constructor(parent: IGrid, element: HTMLElement, options: InterSection) {
-        this.parent = parent;
+    constructor(element: HTMLElement, options: InterSection) {
         this.element = element;
         this.options = options;
-        this.addEventListener();
-    }
-
-    private virtualKeyHandler(args: KeyboardEventArgs): void {
-        if (args && (args.action === 'upArrow' || args.action === 'downArrow') && isNullOrUndefined(this.activeKey)) {
-            this.activeKey = args.action;
-        }
-    }
-
-    /**
-     * @hidden
-     */
-    public addEventListener(): void {
-        this.parent.on('virtaul-key-handler', this.virtualKeyHandler, this);
-        this.parent.on('key-pressed', this.virtualKeyHandler, this);
-    }
-
-    /**
-     * @hidden
-     */
-    public removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
-        this.parent.off('virtaul-key-handler', this.virtualKeyHandler);
-        this.parent.off('key-pressed', this.virtualKeyHandler);
-    }
-
-    /**
-     * @hidden
-     */
-    public destroy(): void {
-        this.removeEventListener();
     }
 
     public observe(callback: Function, onEnterCallback: Function): void {
@@ -96,52 +61,38 @@ export class InterSectionObserver {
         return info.check(this.element.getBoundingClientRect(), info);
     }
 
-    private ensureKeyFocus(): boolean {
-        if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
-            return false;
-        }
-        let row: HTMLElement = document.activeElement.parentElement;
-        let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
-        let blockSize: number = (<{ getBlockSize?: Function }>(<Grid>this.parent).contentModule).getBlockSize() - 1;
-        rowIndex = this.activeKey === 'upArrow' ? rowIndex - blockSize : rowIndex + blockSize;
-        return !isNullOrUndefined(this.parent.getRowByIndex(rowIndex));
-    }
-
     private virtualScrollHandler(callback: Function, onEnterCallback: Function): Function {
         let delay: number = Browser.info.name === 'chrome' ? 200 : 100;
         let prevTop: number = 0; let prevLeft: number = 0; let debounced100: Function = debounce(callback, delay);
         let debounced50: Function = debounce(callback, 50);
         return (e: Event) => {
-            let isKeyDown: boolean = this.ensureKeyFocus();
-            if (!isKeyDown) {
-                let top: number = (<HTMLElement>e.target).scrollTop;
-                let left: number = (<HTMLElement>e.target).scrollLeft;
-                let direction: ScrollDirection = prevTop < top ? 'down' : 'up';
-                direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
-                prevTop = top; prevLeft = left;
+            let top: number = (<HTMLElement>e.target).scrollTop;
+            let left: number = (<HTMLElement>e.target).scrollLeft;
+            let direction: ScrollDirection = prevTop < top ? 'down' : 'up';
+            direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
+            prevTop = top; prevLeft = left;
 
-                let current: SentinelType = this.sentinelInfo[direction];
+            let current: SentinelType = this.sentinelInfo[direction];
 
-                if (this.options.axes.indexOf(current.axis) === -1) {
-                    return;
-                }
-
-                let check: boolean = this.check(direction);
-                if (current.entered) {
-                    onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
-                }
-
-                if (check) {
-                    let fn: Function = debounced100;
-                    //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
-                    if (current.axis === 'X') { fn = debounced50; }
-                    fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement});
-                }
-                this.fromWheel = false;
-            } else {
-                this.activeKey = undefined;
+            if (this.options.axes.indexOf(current.axis) === -1) {
+                return;
             }
+
+            let check: boolean = this.check(direction);
+            if (current.entered) {
+                onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
+            }
+
+            if (check) {
+                let fn: Function = debounced100;
+                //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
+                if (current.axis === 'X') { fn = debounced50; }
+                fn({
+                    direction: direction, sentinel: current, offset: { top: top, left: left },
+                    focusElement: document.activeElement
+                });
+            }
+            this.fromWheel = false;
         };
     }
 

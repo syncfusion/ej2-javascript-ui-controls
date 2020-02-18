@@ -954,7 +954,7 @@ describe('RTE base module', () => {
             expect(allElem.children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
             expect(allElem.children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
             let expected: boolean = false;
-            let expectedElem: string = `<p>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>text after second URL</p>`;
+            let expectedElem: string = `<p>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>text after second URL</p><div><ol><li class="first-p">First p node-0</li></ol><p class="second-p">First p node-1</p></div>`;
             if (allElem.innerHTML === expectedElem) {
                 expected = true;
             }
@@ -1781,7 +1781,7 @@ describe('RTE base module', () => {
             rteObj.executeCommand('insertHTML', 'inserted an html');
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
         });
-
+        
         it('ensure insert image on execute command', () => {
             destroy(rteObj);
             rteObj = renderRTE({
@@ -1799,7 +1799,70 @@ describe('RTE base module', () => {
             expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
         });
 
-        it('ensure insert table on execute command', () => {
+        
+        it('ensure insert image on execute command with arguments', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px'
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
+            (rteObj as any).inputElement.focus();
+            rteObj.executeCommand('insertImage', {
+                url: 'https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png',
+                cssClass: 'testingClass',
+                width: { minWidth: '200px', maxWidth: '200px', width: 180 },
+                height: { minHeight: '200px', maxHeight: '600px', height: 500 },
+                altText: 'testing image'
+            });
+            let imgElem: HTMLElement = (rteObj as any).inputElement.querySelector('img');
+            expect(imgElem.getAttribute('src')).toBe('https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png');
+            expect(imgElem.classList.contains('testingClass')).toBe(true);
+            expect(imgElem.getAttribute('alt') === 'testing image').toBe(true);
+            expect(imgElem.getAttribute('width') === '180px').toBe(true);
+            expect(imgElem.getAttribute('height') === '500px').toBe(true);
+            expect(imgElem.getAttribute('style')).toBe('min-width: 200px; max-width: 200px; min-height: 200px; max-height: 600px;');
+        });
+
+        it('ensure edit image on execute command with arguments', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                value: `<p>This is a image <p><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image testingClass" alt="testing image" width="180px" height="500px" style="min-width: 200px; max-width: 200px; min-height: 200px; max-height: 600px;">`
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
+            (rteObj as any).inputElement.focus();
+            let editImg: HTMLElement = rteObj.inputElement.querySelector('img');
+            expect(editImg.getAttribute('src')).toBe('https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png');
+            expect(editImg.classList.contains('testingClass')).toBe(true);
+            expect(editImg.getAttribute('alt') === 'testing image').toBe(true);
+            expect(editImg.getAttribute('width') === '180px').toBe(true);
+            expect(editImg.getAttribute('height') === '500px').toBe(true);
+            expect(editImg.getAttribute('style')).toBe('min-width: 200px; max-width: 200px; min-height: 200px; max-height: 600px;');
+            rteObj.executeCommand('editImage', {
+                cssClass: 'editClass',
+                width: { minWidth: '100px', maxWidth: '300px', width: 250 },
+                height: { minHeight: '100px', maxHeight: '700px', height: 400 },
+                altText: 'editing alt image',
+                selectParent: [editImg]
+            });
+            let imgElem: HTMLElement = (rteObj as any).inputElement.querySelector('img');
+            expect(imgElem.getAttribute('src')).toBe('https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png');
+            expect(imgElem.classList.contains('editClass')).toBe(true);
+            expect(imgElem.getAttribute('alt') === 'editing alt image').toBe(true);
+            expect(imgElem.getAttribute('width') === '250px').toBe(true);
+            expect(imgElem.getAttribute('height') === '400px').toBe(true);
+            expect(imgElem.getAttribute('style')).toBe('min-width: 100px; max-width: 300px; min-height: 100px; max-height: 700px;');            
+        });
+
+        it('ensure insert table on execute command with all the arguments', () => {
             destroy(rteObj);
             rteObj = renderRTE({
                 height: '200px',
@@ -1811,10 +1874,77 @@ describe('RTE base module', () => {
             let saveSelection: NodeSelection;
             range = selection.getRange(document);
             saveSelection = selection.save(range, document);
-            rteObj.executeCommand('insertTable', {row: 2, columns: 5, selection: saveSelection});
+            rteObj.executeCommand('insertTable', {
+                row: 2,
+                columns: 5,
+                width: { minWidth: '20px', maxWidth: '100px', width: 40 },
+                selection: saveSelection
+            });
             expect((rteObj as any).inputElement.querySelector('table')).not.toBe(null);
             expect((rteObj as any).inputElement.querySelectorAll('tr').length).toBe(2);
             expect((rteObj as any).inputElement.querySelectorAll('tr')[0].querySelectorAll('td').length).toBe(5);
+            expect((rteObj as any).inputElement.querySelector('table').getAttribute('style')).toBe('width: 40px; min-width: 20px; max-width: 100px;');
+        });
+
+        it('ensure create link on execute command with all the arguments', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px'
+            });
+            (rteObj as any).inputElement.focus();
+            let selection: NodeSelection = new NodeSelection();
+            let range: Range;
+            let saveSelection: NodeSelection;
+            range = selection.getRange(document);
+            saveSelection = selection.save(range, document);
+            rteObj.executeCommand('createLink', {
+                url: 'https://www.facebook.com',
+                title: 'facebook',
+                selection: saveSelection,
+                text: 'hello this is facebook link',
+                target: '_self'
+            });
+            let linkElm: HTMLElement = rteObj.inputElement.querySelector('a');
+            expect(linkElm).not.toBe(null);
+            expect(linkElm.getAttribute('href')).toBe('https://www.facebook.com');
+            expect(linkElm.getAttribute('title')).toBe('facebook');
+            expect(linkElm.getAttribute('target')).toBe('_self');
+            expect(linkElm.innerText).toBe('hello this is facebook link');
+        });
+
+        it('ensure edit link on execute command with all the arguments', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                value: `<p>This is link <a class="e-rte-anchor" href="https://www.facebook.com" title="facebook" target="_self">hello this is facebook link</a></p>`
+            });
+            (rteObj as any).inputElement.focus();
+            let selection: NodeSelection = new NodeSelection();
+            let range: Range;
+            let saveSelection: NodeSelection;
+            range = selection.getRange(document);
+            saveSelection = selection.save(range, document);
+            let linkElm: HTMLElement = rteObj.inputElement.querySelector('a');
+            expect(linkElm).not.toBe(null);
+            expect(linkElm.getAttribute('href')).toBe('https://www.facebook.com');
+            expect(linkElm.getAttribute('title')).toBe('facebook');
+            expect(linkElm.getAttribute('target')).toBe('_self');
+            expect(linkElm.innerText).toBe('hello this is facebook link');
+            rteObj.executeCommand('editLink', {
+                url: 'https://www.google.com',
+                title: 'google',
+                selection: saveSelection,
+                text: 'hello this is google link',
+                selectParent: [linkElm]
+            });
+            let editElm: HTMLElement = rteObj.inputElement.querySelector('a');
+            expect(editElm).not.toBe(null);
+            expect(editElm.getAttribute('href')).toBe('https://www.google.com');
+            expect(editElm.getAttribute('title')).toBe('google');
+            expect(editElm.getAttribute('target')).toBe(null);
+            expect(editElm.innerText).toBe('hello this is google link');
         });
         afterAll(() => {
             destroy(rteObj);
@@ -3708,5 +3838,21 @@ describe('IFrame - Util - setEditFrameFocus method testing', function () {
     it("Set focus with active element testing", function () {
         setEditFrameFocus(rteObj.inputElement, 'iframe');
         expect(document.activeElement.tagName).toEqual('BODY');
+    });
+});
+describe('Check destroy method', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: "<p>RTE</p>"
+        });
+        done();
+    });
+    it('Check rte element', () => {
+    rteObj.destroy();
+    expect(document.querySelector('e-richtexteditor')).toBe(null);
+    });
+    afterAll(() => {
+        destroy(rteObj);
     });
 });

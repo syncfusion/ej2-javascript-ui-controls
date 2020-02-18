@@ -14,7 +14,7 @@ import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IClickEventA
 import { ChangedObject } from './objects/interface/IElement';
 import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';
 import { UserHandleEventsArgs } from './objects/interface/IElement';
-import { IBlazorDropEventArgs, IBlazorScrollChangeEventArgs, } from './objects/interface/IElement';
+import { IBlazorDropEventArgs, IBlazorScrollChangeEventArgs, IKeyEventArgs } from './objects/interface/IElement';
 import { DiagramEventObjectCollection, IBlazorCollectionChangeEventArgs } from './objects/interface/IElement';
 import { ICommandExecuteEventArgs, IBlazorDragEnterEventArgs } from './objects/interface/IElement';
 import { ISizeChangeEventArgs, IConnectionChangeEventArgs, IEndChangeEventArgs, IDoubleClickEventArgs } from './objects/interface/IElement';
@@ -1108,6 +1108,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public positionChange: EmitType<IDraggingEventArgs>;
 
     /**
+     * Triggers when a user releases a key.
+     * @event
+     * @blazorProperty 'OnKeyUp'
+     */
+    @Event()
+    public keyUp: EmitType<IKeyEventArgs>;
+
+    /**
+     * Triggers when a user is pressing a key.
+     * @event
+     * @blazorProperty 'OnKeyDown'
+     */
+    @Event()
+    public keyDown: EmitType<IKeyEventArgs>;
+
+    /**
      * Triggers after animation is completed for the diagram elements.
      * @event
      * @blazorProperty 'OnAnimationComplete'
@@ -1683,7 +1699,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         break;
                 }
             }
-            if (refreshLayout) { this.doLayout(); }
+            if (refreshLayout && !refereshColelction) { this.doLayout(); }
             if (isPropertyChanged && this.propertyChange) {
                 let args: IPropertyChangeEventArgs | IBlazorPropertyChangeEventArgs = {
                     element: cloneBlazorObject(this), cause: this.diagramActions,
@@ -1704,6 +1720,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (refereshColelction) {
                 this.initObjects(true);
                 this.refreshDiagramLayer();
+                if(refreshLayout){
+                    this.doLayout()
+                }
             }
             if (!refereshColelction) {
                 for (let temp of this.views) {
@@ -2208,6 +2227,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.add(this.diagramCanvas, stopEvent, this.eventHandler.mouseUp, this.eventHandler);
         EventHandler.add(this.diagramCanvas, cancelEvent, this.eventHandler.mouseLeave, this.eventHandler);
         EventHandler.add(this.diagramCanvas, 'keydown', this.eventHandler.keyDown, this.eventHandler);
+        EventHandler.add(this.diagramCanvas, 'keyup', this.eventHandler.keyUp, this.eventHandler);
         EventHandler.add(this.diagramCanvas, 'dblclick', this.eventHandler.doubleClick, this.eventHandler);
         EventHandler.add(this.diagramCanvas, 'scroll', this.eventHandler.scrolled, this.eventHandler);
         EventHandler.add(this.diagramCanvas, wheelEvent, this.eventHandler.mouseWheel, this.eventHandler);
@@ -2232,6 +2252,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.remove(this.diagramCanvas, stopEvent, this.eventHandler.mouseUp);
         EventHandler.remove(this.diagramCanvas, cancelEvent, this.eventHandler.mouseLeave);
         EventHandler.remove(this.diagramCanvas, 'keydown', this.eventHandler.keyDown);
+        EventHandler.remove(this.diagramCanvas, 'keyup', this.eventHandler.keyUp);
         EventHandler.remove(this.diagramCanvas, 'dblclick', this.eventHandler.doubleClick);
         EventHandler.remove(this.diagramCanvas, 'scroll', this.eventHandler.scrolled);
         EventHandler.remove(this.diagramCanvas, wheelEvent, this.eventHandler.mouseWheel);

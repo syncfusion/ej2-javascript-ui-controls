@@ -5160,7 +5160,7 @@ export class PdfViewerBase {
             }
         }
         let target: HTMLElement = evt.target as HTMLElement;
-        // tslint:disable-next-line:max-line-length
+           // tslint:disable-next-line:max-line-length
         if (!touches && evt.cancelable && this.skipPreventDefault(target)) {
             evt.preventDefault();
         }
@@ -5180,7 +5180,7 @@ export class PdfViewerBase {
         if (target && !target.classList.contains('e-pdfviewer-formFields')
             && !target.classList.contains('e-pdfviewer-ListBox') && !target.classList.contains('e-pdfviewer-signatureformFields')
             && !((target).className === 'free-text-input' && (target).tagName === 'TEXTAREA')
-            && !isSkip) {
+            && !isSkip && !((target).className === 'e-pv-hyperlink')) {
             isSkipped = true;
         }
         return isSkipped;

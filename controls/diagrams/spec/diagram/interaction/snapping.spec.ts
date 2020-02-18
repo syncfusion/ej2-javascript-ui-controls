@@ -10,7 +10,7 @@ import { Rect } from '../../../src/index';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { MouseEvents } from './mouseevents.spec';
-import { SelectorConstraints } from '../../../src/diagram/index';
+import { SelectorConstraints, ZoomOptions } from '../../../src/diagram/index';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(Snapping);
 
@@ -1332,7 +1332,7 @@ describe('SnapSettings', () => {
             let matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, 50, bounds.center.x, bounds.center.y);
             let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
-            mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + 8, rotator.y + 8, endPoint.x + 8, endPoint.y + 8);
+            mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + 8, rotator.y + 8, endPoint.x + 4, endPoint.y + 4);
             diagram.nodes[1].rotateAngle = Math.round(diagram.nodes[1].rotateAngle);
             expect(diagram.nodes[1].rotateAngle % 360 === 54).toBe(true);
             done();
@@ -1359,7 +1359,7 @@ describe('SnapSettings', () => {
             let matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, 50, bounds.center.x, bounds.center.y);
             let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
-            mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + 0.2, rotator.y + 0.2, endPoint.x + 0.2, endPoint.y + 0.2);
+            mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + 0.2, rotator.y + 0.2, endPoint.x - 4, endPoint.y - 4);
             diagram.nodes[1].rotateAngle = Math.round(diagram.nodes[1].rotateAngle);
             expect(diagram.nodes[1].rotateAngle % 360 === 46).toBe(true);
             done();
@@ -1484,5 +1484,140 @@ describe('SnapSettings', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+    describe('Snap Settings with zoom in and out', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let horizontalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
+        let verticalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
+        let snapSettings: SnapSettingsModel = {
+            snapObjectDistance: 5,
+            constraints: (SnapConstraints.ShowLines & SnapConstraints.SnapToLines) | SnapConstraints.SnapToObject,
+            horizontalGridlines, verticalGridlines
+        };
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 60, height: 60, offsetX: 100, offsetY: 100,
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 60, height: 90, offsetX: 170, offsetY: 100,
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 60, height: 120, offsetX: 240, offsetY: 100,
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 60, height: 90, offsetX: 100, offsetY: 250,
+            };
+            let node5: NodeModel = {
+                id: 'node5', width: 90, height: 90, offsetX: 185, offsetY: 250,
+            };
+            let node6: NodeModel = {
+                id: 'node6', width: 120, height: 90, offsetX: 300, offsetY: 250,
+            };
+            let node7: NodeModel = {
+                id: 'node7', width: 60, height: 60, offsetX: 100, offsetY: 380,
+            };
+            let node8: NodeModel = {
+                id: 'node8', width: 60, height: 60, offsetX: 170, offsetY: 380,
+            };
+            let node9: NodeModel = {
+                id: 'node9', width: 60, height: 60, offsetX: 240, offsetY: 380,
+            };
+            let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 500, y: 100 }, targetPoint: { x: 550, y: 100 } };
+            diagram = new Diagram({
+                width: '1200px', height: '1600px',
+                nodes: [node, node2, node3, node4, node5, node6, node7, node8, node9],
+                connectors: [connector],
+                snapSettings: { constraints: (SnapConstraints.SnapToObject | SnapConstraints.SnapToLines) | SnapConstraints.ShowLines, snapObjectDistance: 5 },
+                selectedItems: { constraints: SelectorConstraints.All & ~SelectorConstraints.ToolTip }
+            });
+            diagram.appendTo('#diagram');
+            let zoomin: ZoomOptions = { type: 'ZoomIn', zoomFactor: 0.2 };
+            diagram.zoomTo(zoomin);
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Resize Node - Snapping', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[2]]);
+            let resizeOptions: HTMLElement = document.getElementById('resizeEast');
+            let bounds: any = resizeOptions.getBoundingClientRect();
+            let x: number = bounds.x;
+            let y: number = bounds.y;
+            mouseEvents.mouseDownEvent(diagramCanvas, x, y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, x - 2, y);
+            let selectionRect: HTMLElement = document.getElementById('_SnappingLines');
+            expect(selectionRect !== null).toBe(true);
+            done();
+        });
+        it('Snap to object', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[2]]);
+            let resizeOptions: HTMLElement = document.getElementById('resizeEast');
+            let bounds: any = resizeOptions.getBoundingClientRect();
+            let x: number = bounds.x;
+            let y: number = bounds.y;
+            mouseEvents.mouseDownEvent(diagramCanvas, x - 20, y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, x - 17, y);
+            let selectionRect: HTMLElement = document.getElementById('_SnappingLines');
+            expect(selectionRect !== null).toBe(true);
+            done();
+        });
+        it('Snap to Lines - Vertically Snapped', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.nodes = [diagram.nodes[2]];
+            diagram.dataBind();
+            diagram.select([diagram.nodes[0]]);
+            let resizeOptions: HTMLElement = document.getElementById('resizeEast');
+            let bounds: any = resizeOptions.getBoundingClientRect();
+            let x: number = bounds.x;
+            let y: number = bounds.y;
+            mouseEvents.mouseDownEvent(diagramCanvas, x - 20, y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, x - 5, y);
+            mouseEvents.mouseUpEvent(diagramCanvas, x - 5, y);
+            expect(diagram.nodes[0].offsetX === 250).toBe(true);
+            done();
+        });
+        it('Snap to Lines - Vertical - 2', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            let resizeOptions: HTMLElement = document.getElementById('resizeEast');
+            let bounds: any = resizeOptions.getBoundingClientRect();
+            let x: number = bounds.x;
+            let y: number = bounds.y;
+            mouseEvents.mouseDownEvent(diagramCanvas, x - 20, y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, x, y);
+            mouseEvents.mouseUpEvent(diagramCanvas, x, y);
+            expect(diagram.nodes[0].offsetX === 270).toBe(true);
+            done();
+        });
+        it('Snap to Lines - Horizontally Snapped', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            let resizeOptions: HTMLElement = document.getElementById('resizeSouth');
+            let bounds: any = resizeOptions.getBoundingClientRect();
+            let x: number = bounds.x;
+            let y: number = bounds.y;
+            mouseEvents.mouseDownEvent(diagramCanvas, x, y - 20);
+            mouseEvents.mouseMoveEvent(diagramCanvas, x, y);
+            mouseEvents.mouseUpEvent(diagramCanvas, x, y);
+            expect(diagram.nodes[0].offsetY !== 100).toBe(true);
+            done();
+        });
     });
 });

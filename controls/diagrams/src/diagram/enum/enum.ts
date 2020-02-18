@@ -2366,7 +2366,7 @@ export enum DiagramEvent {
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
     'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
-    'onDoBindingInit'
+    'onDoBindingInit', 'keyUp', 'keyDown'
 }
 /**
  * @private

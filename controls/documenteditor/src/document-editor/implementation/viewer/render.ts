@@ -94,8 +94,12 @@ export class Renderer {
         this.pageContext.beginPath();
         if (this.viewer instanceof WebLayoutViewer) {
             height = height > this.documentHelper.visibleBounds.height ? height : this.documentHelper.visibleBounds.height;
+            let marginTop: number = top;
+            if (page.index === 0) {
+                marginTop = top - this.viewer.padding.top;
+            }
             // tslint:disable-next-line:max-line-length
-            this.pageContext.fillRect(left - this.viewer.padding.left, top - this.viewer.padding.top, width + this.viewer.padding.left, height + this.viewer.padding.top);
+            this.pageContext.fillRect(left - this.viewer.padding.left, marginTop, width + this.viewer.padding.left, height + this.viewer.padding.top);
         } else {
             this.pageContext.fillRect(left, top, width, height);
         }
@@ -474,7 +478,7 @@ export class Renderer {
                     let leftPosition: string = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
                     if (this.viewer instanceof WebLayoutViewer) {
                         // tslint:disable-next-line:max-line-length
-                        leftPosition = (this.documentHelper.visibleBounds.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
+                        leftPosition = (page.boundingRectangle.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
                     }
                     let topPosition: string = this.getScaledValue(top + (page.boundingRectangle.y -
                         (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';

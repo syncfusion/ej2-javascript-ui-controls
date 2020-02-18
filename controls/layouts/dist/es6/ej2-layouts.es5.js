@@ -197,8 +197,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                                     case 'size':
                                         var newValSize = Object(newProp.paneSettings[index])[property];
                                         if (newValSize !== '' && !isNullOrUndefined(newValSize)) {
-                                            this.allPanes[index].style.flexBasis = newValSize;
-                                            this.allPanes[index].classList.add(STATIC_PANE);
+                                            this.updatePaneSize(newValSize, index);
                                         }
                                         break;
                                 }
@@ -221,6 +220,29 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
         }
+    };
+    Splitter.prototype.updatePaneSize = function (newValSize, index) {
+        this.allPanes[index].style.flexBasis = newValSize;
+        var flexPaneIndexes = [];
+        var staticPaneWidth;
+        var flexCount = 0;
+        for (var i = 0; i < this.allPanes.length; i++) {
+            if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
+                flexPaneIndexes[flexCount] = i;
+                flexCount++;
+            }
+            else if (this.paneSettings[i].size) {
+                staticPaneWidth = this.paneSettings[i].size && this.paneSettings[i].size.indexOf('%') > -1 ?
+                    (parseInt(newValSize, 10) / 100) * this.element.offsetWidth : this.allPanes[index].offsetWidth;
+            }
+        }
+        staticPaneWidth = (this.allBars[0].offsetWidth * this.allBars.length) + staticPaneWidth;
+        var flexPaneWidth = this.element.offsetWidth - staticPaneWidth;
+        var avgDiffWidth = flexPaneWidth / flexPaneIndexes.length;
+        for (var j = 0; j < flexPaneIndexes.length; j++) {
+            this.allPanes[flexPaneIndexes[j]].style.flexBasis = avgDiffWidth + 'px';
+        }
+        this.allPanes[index].classList.add(STATIC_PANE);
     };
     Splitter.prototype.preRender = function () {
         this.wrapper = this.element.cloneNode(true);
@@ -929,10 +951,16 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             removeClass([this.previousPane], collapseClass);
             addClass([this.previousPane], EXPAND_PANE);
             addClass([this.nextPane], collapseClass);
+            if (this.expandFlag) {
+                this.updatePaneSettings(this.nextPaneIndex, true);
+            }
         }
         else {
             removeClass([this.previousPane], collapseClass);
             removeClass([this.nextPane], EXPAND_PANE);
+            if (this.expandFlag) {
+                this.updatePaneSettings(this.prevPaneIndex, false);
+            }
         }
         this.updateIconsOnExpand(e);
         this.previousPane.setAttribute('aria-expanded', 'true');
@@ -1074,12 +1102,18 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
             removeClass([this.previousPane], EXPAND_PANE);
             removeClass([this.nextPane], collapseClass);
+            if (!this.collapseFlag) {
+                this.updatePaneSettings(this.nextPaneIndex, false);
+            }
         }
         else {
             removeClass([this.previousPane], EXPAND_PANE);
             removeClass([this.nextPane], collapseClass);
             addClass([this.nextPane], EXPAND_PANE);
             addClass([this.previousPane], collapseClass);
+            if (!this.collapseFlag) {
+                this.updatePaneSettings(this.prevPaneIndex, true);
+            }
         }
         this.updateIconsOnCollapse(e);
         this.previousPane.setAttribute('aria-expanded', 'false');
@@ -1333,6 +1367,20 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         else {
             return parseFloat(value);
         }
+    };
+    Splitter.prototype.updatePaneSettings = function (index, collapsed) {
+        var paneValue = {
+            size: this.paneSettings[index].size,
+            min: this.paneSettings[index].min,
+            max: this.paneSettings[index].max,
+            content: this.paneSettings[index].content,
+            resizable: this.paneSettings[index].resizable,
+            collapsed: collapsed,
+            collapsible: this.paneSettings[index].collapsible,
+            cssClass: this.paneSettings[index].size,
+        };
+        this.paneSettings.splice(index, 1, paneValue);
+        this.setProperties({ 'paneSettings': this.paneSettings }, true);
     };
     Splitter.prototype.calcDragPosition = function (rectValue, offsetValue) {
         var separatorPosition;
@@ -1808,6 +1856,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
      */
     Splitter.prototype.expand = function (index) {
         this.collapsedOnchange(index);
+        this.updatePaneSettings(index, false);
     };
     /**
      * collapses corresponding pane based on the index is passed.
@@ -1816,6 +1865,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
      */
     Splitter.prototype.collapse = function (index) {
         this.isCollapsed(index);
+        this.updatePaneSettings(index, true);
     };
     /**
      * Removes the control from the DOM and also removes all its related events.
@@ -2118,6 +2168,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         _this.minLeft = 0;
         _this.isBlazor = false;
         _this.isInlineRendering = false;
+        _this.removeAllCalled = false;
         return _this;
     }
     /**
@@ -2175,7 +2226,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         this.updateDragArea();
         this.renderComplete();
-        if (isBlazor() && this.isInlineRendering) {
+        this.updateServerPanelData();
+    };
+    DashboardLayout.prototype.updateServerPanelData = function () {
+        if (isBlazor() && this.isServerRendered) {
             this.setProperties({ panels: this.panels }, true);
             this.allowServerDataBinding = true;
             this.serverDataBind();
@@ -2460,8 +2514,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     
     DashboardLayout.prototype.downHandler = function (e) {
         this.resizeCalled = false;
+        this.panelsInitialModel = this.cloneModels(this.panels);
         var el = closest((e.currentTarget), '.e-panel');
-        var args = { event: e, element: el };
+        var args = { event: e, element: el, isInteracted: true };
         this.trigger('resizeStart', args);
         this.downTarget = e.currentTarget;
         this.shadowEle = document.createElement('div');
@@ -2495,7 +2550,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     DashboardLayout.prototype.updateMaxTopLeft = function (e) {
         this.moveTarget = this.downTarget;
         var el = closest((this.moveTarget), '.e-panel');
-        var args = { event: e, element: el };
+        var args = { event: e, element: el, isInteracted: true };
         this.trigger('resize', args);
     };
     DashboardLayout.prototype.updateResizeElement = function (el) {
@@ -2647,9 +2702,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.downTarget)) {
             return;
         }
+        this.updateServerPanelData();
         this.upTarget = this.downTarget;
         var el = closest((this.upTarget), '.e-panel');
-        var args = { event: e, element: el };
+        var args = { event: e, element: el, isInteracted: true };
         if (el) {
             addClass([el], 'e-panel-transition');
             var moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
@@ -2681,6 +2737,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         this.updatePanels();
         this.updateCloneArrayObject();
+        this.checkForChanges(true);
     };
     DashboardLayout.prototype.getResizeRowColumn = function (item, e) {
         var isChanged = false;
@@ -2919,8 +2976,17 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     && this.element.parentElement.offsetWidth / this.cellAspectRatio) + 'px';
                 this.cellSize[1] = this.element.parentElement
                     && (this.element.parentElement.offsetWidth / this.cellAspectRatio);
-                this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
-                this.setPanelPosition(panelElement, updatedPanel[i].row, updatedPanel[i].col);
+                if (this.addPanelCalled && this.isBlazor) {
+                    var panelProp = this.getActualProperties(updatedPanel[i]);
+                    panelProp.row = i;
+                    panelProp.col = 0;
+                    this.panelPropertyChange(updatedPanel[i], panelProp);
+                    this.setPanelPosition(panelElement, i, 0);
+                }
+                else {
+                    this.panelPropertyChange(updatedPanel[i], { row: i, col: 0 });
+                    this.setPanelPosition(panelElement, updatedPanel[i].row, updatedPanel[i].col);
+                }
                 this.setClasses(this.panelCollection);
                 this.checkDragging(this.dragCollection);
                 this.removeResizeClasses(this.panelCollection);
@@ -3937,6 +4003,28 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         value = [row, col];
         return value;
     };
+    DashboardLayout.prototype.checkForChanges = function (isInteracted, added, removed) {
+        var changedPanels = [];
+        if (this.removeAllCalled) {
+            changedPanels = [];
+        }
+        else {
+            for (var i = 0; i < this.panels.length; i++) {
+                if (((!isNullOrUndefined(added) ? (this.panels[i].id !== added[0].id) : true) &&
+                    (!isNullOrUndefined(removed) ? (this.panels[i].id !== removed[0].id) : true)) &&
+                    (this.panels[i].row !== this.panelsInitialModel[i].row || this.panels[i].col !== this.panelsInitialModel[i].col)) {
+                    changedPanels.push(this.panels[i]);
+                }
+            }
+        }
+        if (changedPanels.length > 0 || this.removeAllCalled) {
+            var changedArgs = {
+                changedPanels: changedPanels, isInteracted: isInteracted,
+                addedPanels: !isNullOrUndefined(added) ? added : [], removedPanels: !isNullOrUndefined(removed) ? removed : []
+            };
+            this.trigger('change', changedArgs);
+        }
+    };
     DashboardLayout.prototype.enableDraggingContent = function (collections) {
         var _this = this;
         for (var i = 0; i < collections.length; i++) {
@@ -3961,7 +4049,6 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                         else {
                             _this.setPanelPosition(_this.mainElement, model.row, model.col);
                         }
-                        var changedPanels = [];
                         _this.mainElement = null;
                         var item = _this.getPanelBase(args);
                         if (_this.shadowEle) {
@@ -3994,25 +4081,15 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                         var panelInstance = _this.getCellInstance(args.element.id);
                         _this.setPanelPosition(args.element, panelInstance.row, panelInstance.col);
                         _this.updatePanels();
+                        _this.updateServerPanelData();
                         _this.updateCloneArrayObject();
-                        for (var i_3 = 0; i_3 < _this.panels.length; i_3++) {
-                            if (_this.panels[i_3].row !== _this.panelsInitialModel[i_3].row ||
-                                _this.panels[i_3].col !== _this.panelsInitialModel[i_3].col) {
-                                changedPanels.push(_this.panels[i_3]);
-                            }
-                        }
-                        if (changedPanels.length > 0) {
-                            var changedArgs = { changedPanels: changedPanels };
-                            _this.trigger('change', changedArgs);
-                        }
+                        _this.checkForChanges(true);
                         _this.dragStopEventArgs = { event: args.event, element: args.element };
                         _this.trigger('dragStop', args);
                         _this.resizeEvents();
                         _this.rows = _this.maxRow(true);
                         _this.setHeightWidth();
                         _this.updateDragArea();
-                        _this.allowServerDataBinding = true;
-                        _this.serverDataBind();
                     },
                     drag: function (args) {
                         _this.draggedEventArgs = {
@@ -4242,6 +4319,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         // tslint:disable-next-line
         var panelProp = new Panel(this, 'panels', panel, true);
         this.panels.push(panelProp);
+        this.panelsInitialModel = this.cloneModels(this.panels);
         this.setMinMaxValues(panelProp);
         if (this.maxColumnValue < panelProp.col || this.maxColumnValue < (panelProp.col + panelProp.sizeX)) {
             this.panelPropertyChange(panelProp, { col: this.maxColumnValue - panelProp.sizeX });
@@ -4252,12 +4330,15 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.updateOldRowColumn();
         this.element.insertAdjacentElement('afterbegin', cell);
         var container = cell.querySelector('.e-panel-container');
+        this.addPanelCalled = true;
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
+            if (this.isBlazor) {
+                cell.style.removeProperty('visibility');
+            }
             this.removeResizeClasses(this.panelCollection);
         }
         else {
-            this.addPanelCalled = true;
             this.mainElement = cell;
             if (!this.checkCollision) {
                 this.checkCollision = [];
@@ -4267,8 +4348,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 cell.style.removeProperty('visibility');
             }
             this.updatePanelLayout(cell, panelProp);
-            this.addPanelCalled = false;
         }
+        this.addPanelCalled = false;
         if (this.allowResizing &&
             this.mediaQuery ? !(this.checkMediaQuery()) : false) {
             this.setResizingClass(cell, container);
@@ -4292,6 +4373,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+        this.checkForChanges(false, [panelProp]);
         this.allowServerDataBinding = true;
         this.serverDataBind();
     };
@@ -4385,10 +4467,12 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      * Removes all the panels from the DashboardLayout.
      */
     DashboardLayout.prototype.removeAll = function () {
+        this.removeAllCalled = true;
         for (var i = 0; i < this.panelCollection.length; i++) {
             detach(this.panelCollection[i]);
         }
         this.removeAllPanel();
+        this.updateServerPanelData();
         this.rows = 0;
         this.gridPanelCollection = [];
         this.setHeightWidth();
@@ -4400,9 +4484,12 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.panelCollection = [];
         this.oldRowCol = {};
         this.cloneObject = {};
+        var clonedPanels = this.cloneModels(this.panels);
         this.setProperties({ panels: [] }, true);
         this.updatePanels();
         this.updateCloneArrayObject();
+        this.checkForChanges(false, null, clonedPanels);
+        this.removeAllCalled = false;
     };
     /**
      * Removes the panel from the DashboardLayout.
@@ -4411,24 +4498,30 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      */
     DashboardLayout.prototype.removePanel = function (id) {
         var _this = this;
+        this.panelsInitialModel = this.cloneModels(this.panels);
+        var removedPanel;
         for (var i = 0; i < this.panelCollection.length; i++) {
             if (this.panelCollection[i].id === id) {
                 detach(this.panelCollection[i]);
                 this.panelCollection.splice(i, 1);
             }
             if (this.panels[i].id === id) {
+                removedPanel = this.panels[i];
                 this.panels.splice(i, 1);
+                this.panelsInitialModel.splice(i, 1);
                 this.updateOldRowColumn();
                 this.sortedPanel();
             }
         }
         this.updatePanels();
+        this.updateServerPanelData();
         this.gridPanelCollection.forEach(function (item) {
             if (item.id === id) {
                 _this.gridPanelCollection.splice(_this.gridPanelCollection.indexOf(item), 1);
             }
         });
         this.updateCloneArrayObject();
+        this.checkForChanges(false, null, [removedPanel]);
     };
     /**
      * Moves the panel in the DashboardLayout.
@@ -4439,7 +4532,11 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      */
     DashboardLayout.prototype.movePanel = function (id, row, col) {
         this.movePanelCalled = true;
+        this.panelsInitialModel = this.cloneModels(this.panels);
         var panelInstance = this.getCellInstance(id);
+        if ((isNaN(row) || row === null) || (isNaN(col) || col === null) || !panelInstance) {
+            return;
+        }
         if (col < 0) {
             col = 0;
         }
@@ -4457,12 +4554,14 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.updatePanelLayout(ele, panelInstance);
         this.updateRowHeight();
         this.updatePanels();
+        this.updateServerPanelData();
         this.updateCloneArrayObject();
         this.mainElement = null;
         if (this.allowFloating) {
             this.moveItemsUpwards();
         }
         this.movePanelCalled = false;
+        this.checkForChanges(false);
     };
     DashboardLayout.prototype.setAttributes = function (value, ele) {
         for (var i = 0; i < Object.keys(value).length; i++) {
@@ -4501,19 +4600,25 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      * @param {sizeY: number} sizeY - Defines the sizeY of dashboard layout.
      */
     DashboardLayout.prototype.resizePanel = function (id, sizeX, sizeY) {
+        this.panelsInitialModel = this.cloneModels(this.panels);
         var panelInstance = this.getCellInstance(id);
         this.resizeCalled = true;
+        var ele = document.getElementById(id);
+        var args = { event: null, element: ele, isInteracted: false };
+        this.trigger('resizeStart', args);
         this.panelPropertyChange(panelInstance, { sizeX: sizeX, sizeY: sizeY });
         this.setMinMaxValues(panelInstance);
         this.checkMinMaxValues(panelInstance);
-        var ele = document.getElementById(id);
         this.mainElement = ele;
         this.setAttributes({ value: { sizeX: panelInstance.sizeX.toString(), sizeY: panelInstance.sizeY.toString() } }, ele);
         this.setHeightAndWidth(ele, panelInstance);
         this.updatePanelLayout(ele, panelInstance);
         this.updatePanels();
+        this.updateServerPanelData();
         this.updateRowHeight();
         this.resizeCalled = false;
+        this.trigger('resizeStop', args);
+        this.checkForChanges(false);
     };
     /**
      * Destroys the DashboardLayout component
@@ -4579,7 +4684,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     DashboardLayout.prototype.checkForIDValues = function (panels) {
         var _this = this;
-        if (!isNullOrUndefined(panels)) {
+        if (!isNullOrUndefined(panels) && panels.length > 0) {
             this.panelID = 0;
             panels.forEach(function (panel) {
                 if (!panel.id) {
@@ -4587,6 +4692,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     _this.panelID = _this.panelID + 1;
                 }
             });
+        }
+        else {
+            this.restrictDynamicUpdate = true;
         }
     };
     /**
@@ -4667,10 +4775,13 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ allowPushing: newProp.allowPushing }, true);
                     break;
                 case 'panels':
-                    if (!newProp.columns) {
+                    if (!newProp.columns && !this.restrictDynamicUpdate) {
                         this.isRenderComplete = false;
                         this.updatePanelsDynamically(newProp.panels);
                         this.isRenderComplete = true;
+                    }
+                    else {
+                        this.restrictDynamicUpdate = false;
                     }
                     break;
                 case 'columns':

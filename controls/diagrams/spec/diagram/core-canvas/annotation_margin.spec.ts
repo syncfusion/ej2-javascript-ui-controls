@@ -112,22 +112,7 @@ describe('Diagram Control', () => {
             wrapper = (diagram.nodes[1] as NodeModel).wrapper;
 
             wrapper = (diagram.nodes[2] as NodeModel).wrapper;
-            console.log('testcase1')
-            console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width)
-            console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height)
-            console.log(( (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX))
-            console.log(( (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY))
-
-            console.log((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.width)
-            console.log((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.height)
-            console.log(( (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetX))
-            console.log(( (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetY))
-
-            console.log((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width)
-            console.log((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.height)
-            console.log(( (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetX))
-            console.log(( (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetY))
-            
+           
             //first label
             expect(((Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 80 || Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 79)
                 && (Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height) === 57||Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height) === 58) &&
@@ -176,22 +161,6 @@ describe('Diagram Control', () => {
 
             wrapper = (diagram.nodes[2] as NodeModel).wrapper;
 
-            console.log('testcase2')
-            console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width)
-            console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height)
-            console.log( (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX)
-            console.log( (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY)
-
-            console.log((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.width)
-            console.log((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.height)
-            console.log( (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetX)
-            console.log( (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetY)
-
-            console.log((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width)
-            console.log((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.height)
-            console.log( (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetX)
-            console.log( (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetY)
-            
 
             //first label
                 expect(((Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 100 || Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 99 || Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) >= 77 || Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) <= 79 )

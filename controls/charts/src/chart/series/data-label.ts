@@ -70,7 +70,7 @@ export class DataLabel {
         this.markerHeight = ((series.type === 'Scatter' || marker.visible)) ? (marker.height / 2) : 0;
         this.commonId = this.chart.element.id + '_Series_' + index + '_Point_';
         this.calculateErrorHeight(series, series.marker.dataLabel.position);
-        this.chartBackground = this.chart.chartArea.background === 'trasparent' ?
+        this.chartBackground = this.chart.chartArea.background === 'transparent' ?
             this.chart.background || this.chart.themeStyle.background : this.chart.chartArea.background;
     }
 

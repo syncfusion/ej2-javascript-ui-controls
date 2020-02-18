@@ -601,6 +601,58 @@ describe('ComboBox', () => {
         });
     });
 
+    describe('EJ2-36607 - isInteracted not updated in change event', () => {
+        let element: HTMLInputElement;
+        let empList: { [key: string]: Object }[] = [
+            { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+            { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+            { id: 'level5', sports: 'Football' }, { id: 'level6', sports: 'Golf' },
+            { id: 'level7', sports: 'Hockey' }, { id: 'level8', sports: 'Rugby' },
+            { id: 'level9', sports: 'Snooker' }, { id: 'level10', sports: 'Tennis' },
+        ];
+        let ddl: ComboBox;
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up', keyCode: 70 };
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            document.body.innerHTML = '';
+        });
+        it('when press tab key in change event ', (done) => {
+            ddl = new ComboBox({
+                dataSource: empList,
+                fields: { text: 'sports', value: 'id' },
+                popupHeight: '300px',
+                autofill: true,
+                allowCustom:true,
+                change: (args: ChangeEventArgs): void => {
+                    expect(args.isInteracted).toBe(true);
+                    done();
+                },
+                open: (): void => {
+                    keyEventArgs.action = 'tab';
+                    (<any>ddl).keyActionHandler(keyEventArgs);
+                    keyEventArgs.action = 'tab';
+                    (<any>ddl).keyActionHandler(keyEventArgs);
+                    setTimeout((): void => {
+                        (ddl as any).focusOut();
+                    }, 300);
+                }
+            });
+            ddl.appendTo(element);
+            ddl.focusIn();
+            (<any>ddl).inputElement.value = 'f';
+            expect((<any>ddl).value == null).toBe(true);
+            (<any>ddl).isValidKey = true;
+            (<any>ddl).onFilterUp(keyEventArgs);
+        });
+    });
+
     describe('EJ2-26477- dropdown popup closed suddenly. ', () => {
         let comboObj: any;
         let select: boolean = false;

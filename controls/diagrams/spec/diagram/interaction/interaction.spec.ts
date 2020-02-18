@@ -19,6 +19,7 @@ import { SnapConstraints } from '../../../src/diagram/index';
 import { DiagramTools, DiagramConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { IKeyEventArgs } from '../../../src/diagram/objects/interface/IElement'
 Diagram.Inject(BpmnDiagrams, DiagramContextMenu, UndoRedo);
 /**
  * Interaction Specification Document
@@ -1717,7 +1718,7 @@ describe('Diagram Control', () => {
             let targetNode = (diagram.nodes[3] as NodeModel);
             expect(diagram.selectedItems.nodes.length && diagram.selectedItems.nodes[0].id.indexOf('node2a'));
             expect(diagram.selectedItems.nodes[0].width === 350 &&
-                (diagram.selectedItems.nodes[0].shape as BasicShapeModel).points[0].x === 142 &&
+                ((diagram.selectedItems.nodes[0].shape as BasicShapeModel).points[0].x === 142 || (diagram.selectedItems.nodes[0].shape as BasicShapeModel).points[0].x === 150) &&
                 (diagram.selectedItems.nodes[0].shape as BasicShapeModel).points[0].y === 150 &&
                 diagram.selectedItems.nodes[0].height === 300).toBe(true);
             diagram.drawingObject = null;
@@ -1791,7 +1792,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagramdraw' });
             document.body.appendChild(ele);
-            let nodeport1: PointPortModel = { offset: { x: 1, y: 0.5 } };
+            let nodeport1: PointPortModel = { id:'port1', offset: { x: 1, y: 0.5 } };
             let nodeport2: PointPortModel = { offset: { x: 0, y: 0.5 } };
             let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle' };
             let node1: NodeModel = { id: 'node', offsetX: 100, offsetY: 100, width: 50, height: 50, shape: shape, ports: [nodeport1] };
@@ -1922,7 +1923,9 @@ describe('Diagram Control', () => {
             diagram.tool = DiagramTools.DrawOnce
             diagram.drawingObject = { type: 'Orthogonal' };
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.mouseMoveEvent(diagramCanvas, 133, 108);
+            let element = document.getElementById('node_port1');
+            let bounds: DOMRect | ClientRect = element.getBoundingClientRect();
+            mouseEvents.mouseMoveEvent(diagramCanvas, (bounds as DOMRect).x, (bounds as DOMRect).y);
             let drawElement: HTMLElement = document.getElementById('diagramdraw_diagramAdorner_svg_highlighter');
             expect(drawElement && drawElement.id === 'diagramdraw_diagramAdorner_svg_highlighter').toBe(true);
             done();
@@ -2155,6 +2158,12 @@ describe('Diagram Control', () => {
             mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 150, 150);
             (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'editText1';
             mouseEvents.keyDownEvent(diagramCanvas, 'Escape');
+            diagram.keyUp = (arg:IKeyEventArgs) => {
+                expect(diagram.selectedItems.nodes.length ===1).toBe(true);
+                done();
+            }
+            mouseEvents.keyUpEvent(diagramCanvas, 'Escape','');
+            
             expect(diagram.nodes.length == 1).toBe(true);
             done();
         });
@@ -2248,6 +2257,10 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 150, 150);
             (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = '[fg1 fg2 fg3 fg4 fg5 fg6 fg7 fg8 fg9 fg10 fg11 fg12';
+            diagram.keyDown = (arg:IKeyEventArgs) => {
+                expect(arg.key === 'Escape').toBe(true);
+                done();
+            } 
             mouseEvents.keyDownEvent(diagramCanvas, 'Escape');
             expect(diagram.nodes.length == 5).toBe(true);
 
@@ -2258,7 +2271,7 @@ describe('Diagram Control', () => {
 
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y - 10);
 
-            expect(diagram.nodes[4].offsetX == 112 && diagram.nodes[4].offsetY == 120 &&
+            expect((diagram.nodes[4].offsetX == 112 || diagram.nodes[4].offsetX == 120) && diagram.nodes[4].offsetY == 120 &&
                 Math.round(diagram.nodes[4].width) == 40 && Math.round(diagram.nodes[4].height) == 40
             ).toBe(true);
             done();
@@ -3135,7 +3148,7 @@ describe('Tool constraints TestCases', () => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 200, 100, true);
         expect(diagram.selectedItems.nodes.length === 0).toBe(true)
-        mouseEvents.dragAndDropEvent(diagramCanvas, 30, 30, 600, 300);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 30 + diagram.element.offsetLeft, 30 + diagram.element.offsetTop, 600 - diagram.element.offsetLeft, 300 - diagram.element.offsetTop);
         expect(diagram.selectedItems.nodes.length === 2 && diagram.selectedItems.connectors.length === 1).toBe(true);
 
         done();
@@ -3146,7 +3159,7 @@ describe('Tool constraints TestCases', () => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 200, 100, true);
         expect(diagram.selectedItems.nodes.length === 1).toBe(true)
-        mouseEvents.dragAndDropEvent(diagramCanvas, 30, 30, 600, 300);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 30 + diagram.element.offsetLeft, 30 + diagram.element.offsetTop, 600 - diagram.element.offsetLeft, 300 - diagram.element.offsetTop);
         expect(diagram.selectedItems.nodes.length === 2 && diagram.selectedItems.connectors.length === 1).toBe(true);
 
         done();
@@ -3208,13 +3221,13 @@ describe('Tool constraints TestCases', () => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.dragAndDropEvent(diagramCanvas, 450, 450, 350, 350);
         expect(diagram.selectedItems.connectors.length && diagram.selectedItems.connectors[0].id.indexOf('connector111'));
-        expect((diagram.selectedItems.connectors[0].wrapper.width === 100 || diagram.selectedItems.connectors[0].wrapper.width === 102) &&
+        expect((diagram.selectedItems.connectors[0].wrapper.width === 100 || diagram.selectedItems.connectors[0].wrapper.width === 102 || diagram.selectedItems.connectors[0].wrapper.width === 90) &&
             (diagram.selectedItems.connectors[0].wrapper.height === 100 || diagram.selectedItems.connectors[0].wrapper.height === 90)).toBe(true);
 
         diagram.drawingObject = { id: 'connector112', type: 'Straight' };
         mouseEvents.dragAndDropEvent(diagramCanvas, 550, 550, 450, 450);
         expect(diagram.selectedItems.connectors.length && diagram.selectedItems.connectors[0].id.indexOf('connector112'));
-        expect((diagram.selectedItems.connectors[0].wrapper.width === 100 || diagram.selectedItems.connectors[0].wrapper.width === 102) &&
+        expect((diagram.selectedItems.connectors[0].wrapper.width === 100 || diagram.selectedItems.connectors[0].wrapper.width === 102 || diagram.selectedItems.connectors[0].wrapper.width === 90) &&
             (diagram.selectedItems.connectors[0].wrapper.height === 100 || diagram.selectedItems.connectors[0].wrapper.height === 90)).toBe(true);
         done();
     });

@@ -9648,7 +9648,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             if (!li) {
                 return;
             }
-            else {
+            else if (event.originalEvent.which !== 3) {
                 let rippleElement = select('.' + RIPPLEELMENT, li);
                 let rippleIcons = select('.' + ICON, li);
                 this.removeHover();
@@ -9684,8 +9684,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                         this.toggleSelect(li, event.originalEvent, false);
                     }
                 }
-                this.triggerClickEvent(event.originalEvent, li);
             }
+            this.triggerClickEvent(event.originalEvent, li);
         }
     }
     nodeCheckedEvent(wrapper, isCheck, e) {
@@ -12124,7 +12124,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             let proxy = this;
             this.touchExpandObj = new Touch(this.element, {
                 tap: (e) => {
-                    if (this.expandOnType === 'Click' || (this.expandOnType === 'DblClick' && e.tapCount === 2)) {
+                    if ((this.expandOnType === 'Click' || (this.expandOnType === 'DblClick' && e.tapCount === 2))
+                        && e.originalEvent.which !== 3) {
                         proxy.expandHandler(e);
                     }
                 }

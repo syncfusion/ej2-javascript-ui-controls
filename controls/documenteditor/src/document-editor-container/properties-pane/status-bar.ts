@@ -76,9 +76,9 @@ export class StatusBar {
             this.spellCheckButton.appendTo(spellCheckBtn);
         }
         // tslint:disable-next-line:max-line-length   
-        this.pageButton = this.createButtonTemplate((this.documentEditor.layoutType === 'Pages') ? 'e-de-statusbar-pageweb e-btn-pageweb-toggle' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', this.localObj.getConstant('Print layout'), this.statusBarDiv, this.pageButton);
+        this.pageButton = this.createButtonTemplate((this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', this.localObj.getConstant('Print layout'), this.statusBarDiv, this.pageButton, (this.documentEditor.layoutType === 'Pages') ? true : false);
         // tslint:disable-next-line:max-line-length   
-        this.webButton = this.createButtonTemplate((this.documentEditor.layoutType === 'Continuous') ? 'e-de-statusbar-pageweb e-btn-pageweb-toggle' : 'e-de-statusbar-pageweb', 'e-de-weblayout e icons', this.localObj.getConstant('Web layout'), this.statusBarDiv, this.webButton);
+        this.webButton = this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e icons', this.localObj.getConstant('Web layout'), this.statusBarDiv, this.webButton, (this.documentEditor.layoutType === 'Continuous') ? true : false);
         this.pageButton.addEventListener('click', (): void => {
             this.documentEditor.layoutType = 'Pages';
             this.addRemoveClass(this.pageButton, this.webButton);
@@ -89,7 +89,7 @@ export class StatusBar {
         });
         let zoomBtn: HTMLButtonElement = createElement('button', {
             // tslint:disable-next-line:max-line-length
-            className: (this.container.enableSpellCheck) ? 'e-de-statusbar-zoom-spell' : 'e-de-statusbar-zoom', attrs: { type: 'button' }
+            className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.statusBarDiv.appendChild(zoomBtn);
         zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
@@ -297,12 +297,15 @@ export class StatusBar {
         }
     }
     // tslint:disable-next-line:max-line-length
-    private createButtonTemplate(className: string, iconcss: string, toolTipText: string, div: HTMLElement, appendDiv: HTMLButtonElement): HTMLButtonElement {
+    private createButtonTemplate(className: string, iconcss: string, toolTipText: string, div: HTMLElement, appendDiv: HTMLButtonElement, toggle: boolean): HTMLButtonElement {
         appendDiv = createElement('Button', { className: className, attrs: { type: 'button' } }) as HTMLButtonElement;
         div.appendChild(appendDiv);
         let btn: Button = new Button({
             cssClass: className, iconCss: iconcss, enableRtl: this.container.enableRtl
         });
+        if (toggle === true) {
+            appendDiv.classList.add('e-btn-pageweb-toggle');
+        }
         btn.appendTo(appendDiv);
         appendDiv.setAttribute('title', toolTipText);
         return appendDiv;

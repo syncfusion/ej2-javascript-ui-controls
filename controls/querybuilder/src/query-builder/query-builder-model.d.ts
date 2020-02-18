@@ -51,6 +51,8 @@ export interface ColumnsModel {
 
     /**
      * Specifies the date format for columns.
+     * @aspType string
+     * @blazorType string
      * @default null
      */
     format?: string | FormatObject;

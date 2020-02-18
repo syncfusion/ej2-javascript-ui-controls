@@ -1045,9 +1045,32 @@ export class Image {
                 this.dialogObj = null;
             },
         };
+        let dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-img-content' });
+        if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
+            || this.parent.editorMode === 'HTML') {
+            dialogContent.appendChild(this.imgUpload(e));
+        }
+        let linkHeader: HTMLElement = this.parent.createElement('div', { className: 'e-linkheader' });
+        let linkHeaderText: string = this.i10n.getConstant('imageLinkHeader');
+        if (this.parent.editorMode === 'HTML') {
+            linkHeader.innerHTML = linkHeaderText;
+        } else {
+            linkHeader.innerHTML = this.i10n.getConstant('mdimageLink');
+        }
+        dialogContent.appendChild(linkHeader);
+        dialogContent.appendChild(this.imageUrlPopup(e));
+        if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
+            dialogModel.header = this.parent.localeObj.getConstant('editImageHeader');
+            dialogModel.content = dialogContent;
+        } else {
+            dialogModel.content = dialogContent;
+        }
         this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(imgDialog);
+        if (e.selectNode && e.selectNode[0].nodeName === 'IMG' && (e.name === 'insertImage')) {
+            this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
+        }
         imgDialog.style.maxHeight = 'inherit';
         if (this.quickToolObj) {
             if (this.quickToolObj.imageQTBar && document.body.contains(this.quickToolObj.imageQTBar.element)) {
@@ -1215,35 +1238,14 @@ export class Image {
     private insertImage(e: IImageNotifyArgs): void {
         this.imagDialog(e);
         if (!isNullOrUndefined(this.dialogObj)) {
-            let dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-img-content' });
-            if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
-                || this.parent.editorMode === 'HTML') {
-                dialogContent.appendChild(this.imgUpload(e));
-            }
-            let linkHeader: HTMLElement = this.parent.createElement('div', { className: 'e-linkheader' });
-            let linkHeaderText: string = this.i10n.getConstant('imageLinkHeader');
-            if (this.parent.editorMode === 'HTML') {
-                linkHeader.innerHTML = linkHeaderText;
-            } else {
-                linkHeader.innerHTML = this.i10n.getConstant('mdimageLink');
-            }
-            dialogContent.appendChild(linkHeader);
-            dialogContent.appendChild(this.imageUrlPopup(e));
-            if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
-                this.dialogObj.setProperties({
-                    header: this.parent.localeObj.getConstant('editImageHeader'), content: dialogContent
-                });
-                this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
-            } else {
-                this.dialogObj.setProperties({ content: dialogContent }, false);
-            }
             this.dialogObj.element.style.maxHeight = 'inherit';
+            let dialogContent : HTMLElement = this.dialogObj.element.querySelector('.e-img-content');
             if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
-                || this.parent.editorMode === 'HTML') {
-                (dialogContent.querySelector('#' + this.rteID + '_insertImage') as HTMLElement).focus();
-            } else {
-                (dialogContent.querySelector('.e-img-url') as HTMLElement).focus();
-            }
+            || this.parent.editorMode === 'HTML') {
+            (dialogContent.querySelector('#' + this.rteID + '_insertImage') as HTMLElement).focus();
+        } else {
+            (dialogContent.querySelector('.e-img-url') as HTMLElement).focus();
+        }
         }
     }
 

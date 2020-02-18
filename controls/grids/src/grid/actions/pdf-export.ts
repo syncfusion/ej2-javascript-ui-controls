@@ -209,6 +209,9 @@ export class PdfExport {
         let allowHorizontalOverflow: boolean = true;
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
+            if (isBlazor()) {
+                this.getGridPdfFont(this.gridTheme);
+            }
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
             true : pdfExportProperties.allowHorizontalOverflow;
         }
@@ -305,6 +308,53 @@ export class PdfExport {
             //Material theme
             return { font: new PdfStandardFont(PdfFontFamily.Helvetica, 9.75), brush: new PdfSolidBrush(new PdfColor(0, 0, 0)),
                 backgroundBrush: new PdfSolidBrush(new PdfColor(246, 246, 246)) };
+        }
+    }
+
+    private getGridPdfFont(args: PdfTheme): void {
+        let fontFamily: string = 'fontFamily';
+        let fontSize: string = 'fontSize';
+        let fontStyle: string = 'fontStyle';
+        let isTrueType: string = 'isTrueType';
+        let style: number = 0;
+        if (args.header && args.header.font) {
+            let headerFont: string = args.header.font[fontFamily];
+            let headerSize: number = args.header.font[fontSize];
+            let headerStyle: string = args.header.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[headerStyle]) ? 0 : PdfFontStyle[headerStyle]);
+            if (args.header.font[isTrueType]) {
+                args.header.font = new PdfTrueTypeFont(headerFont, headerSize, style);
+            } else {
+                let fontFamily: number = !isNullOrUndefined(headerFont) ?
+                    this.getFontFamily(headerFont) : PdfFontFamily.Helvetica;
+                args.header.font = new PdfStandardFont(fontFamily, headerSize, style);
+            }
+        }
+        if (args.caption && args.caption.font) {
+            let captionFont: string = args.caption.font[fontFamily];
+            let captionSize: number = args.caption.font[fontSize];
+            let captionStyle: string = args.caption.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[captionStyle]) ? 0 : PdfFontStyle[captionStyle]);
+            if (args.caption.font[isTrueType]) {
+                args.caption.font = new PdfTrueTypeFont(captionFont, captionSize, style);
+            } else {
+                let fontFamily: number = !isNullOrUndefined(captionFont) ?
+                    this.getFontFamily(captionFont) : PdfFontFamily.Helvetica;
+                args.caption.font = new PdfStandardFont(fontFamily, captionSize, style);
+                }
+        }
+        if (args.record && args.record.font) {
+            let recordFont: string = args.record.font[fontFamily];
+            let recordSize: number = args.record.font[fontSize];
+            let recordStyle: string = args.record.font[fontStyle];
+            style = (isNullOrUndefined(PdfFontStyle[recordStyle]) ? 0 : PdfFontStyle[recordStyle]);
+            if (args.record.font[isTrueType]) {
+                args.record.font = new PdfTrueTypeFont(recordFont, recordSize, style);
+            } else {
+                let fontFamily: number = !isNullOrUndefined(recordFont) ?
+                    this.getFontFamily(recordFont) : PdfFontFamily.Helvetica;
+                args.record.font = new PdfStandardFont(fontFamily, recordSize, style);
+              }
         }
     }
 

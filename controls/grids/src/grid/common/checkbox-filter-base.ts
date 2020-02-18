@@ -498,13 +498,16 @@ export class CheckBoxFilterBase {
             }
             operator = 'equal';
         }
+        if (this.options.type === 'date' || this.options.type === 'datetime') {
+            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
+        }
         this.addDistinct(query);
         /* tslint:disable-next-line:max-line-length */
         let args: FilterSearchBeginEventArgs = {
             requestType: events.filterSearchBegin,
             filterModel: this, columnName: field, column: column,
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
-            query: query
+            query: query, value: parsed
         };
         if (isBlazor() && !this.parent.isJsComponent) {
             let filterModel: string = 'filterModel';
@@ -513,7 +516,6 @@ export class CheckBoxFilterBase {
         this.parent.notify(events.cBoxFltrBegin, args);
         predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
         if (this.options.type === 'date' || this.options.type === 'datetime') {
-            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
             operator = 'equal';
             if (isNullOrUndefined(parsed) && val.length) {
                 return;

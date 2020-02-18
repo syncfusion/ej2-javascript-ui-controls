@@ -47,7 +47,7 @@ export class Snapping {
         diagram: Diagram, selectedObject: SelectorModel, towardsLeft: boolean, towardsTop: boolean, delta: PointModel,
         startPoint: PointModel, endPoint: PointModel): PointModel {
         let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
-        let zoomFactor: number = 1;
+        let zoomFactor: number = this.diagram.scroller.currentZoom;
         let offset: PointModel = { x: 0, y: 0 };
         let bounds: Rect = getBounds(selectedObject.wrapper);
         let horizontallysnapped: Snap = { snapped: false, offset: 0 };
@@ -133,10 +133,10 @@ export class Snapping {
      * @private
      */
     public round(value: number, snapIntervals: number[], scale: number): number {
-        if (scale > 1) {
+        if (scale === 1) {
             scale = Math.pow(2, Math.floor(Math.log(scale) / Math.log(2)));
         } else {
-            scale = Math.pow(2, Math.ceil(Math.log(scale) / Math.log(2)));
+            scale = scale;
         }
         let cutoff: number = 0;
         let i: number = 0;
@@ -282,7 +282,7 @@ export class Snapping {
      */
     public snapConnectorEnd(point: PointModel): PointModel {
         let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
-        let zoomFactor: number = 1;
+        let zoomFactor: number = this.diagram.scroller.currentZoom;
         if (snapSettings.constraints & SnapConstraints.SnapToLines) {
             point.x = this.round(point.x, (snapSettings.verticalGridlines as Gridlines).scaledIntervals, zoomFactor);
             point.y = this.round(point.y, (snapSettings.horizontalGridlines as Gridlines).scaledIntervals, zoomFactor);
@@ -410,7 +410,7 @@ export class Snapping {
         verticalSnap.top = true;
         let y: number;
         horizontalSnap.left = horizontalSnap.right = false;
-        let zoomFactor: number = 1;
+        let zoomFactor: number = this.diagram.scroller.currentZoom;
         //let initialBoundsT: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -441,7 +441,7 @@ export class Snapping {
         let x: number;
         horizontalSnap.right = true;
         verticalSnap.top = verticalSnap.bottom = false;
-        let zoomFactor: number = 1;
+        let zoomFactor: number = this.diagram.scroller.currentZoom;
         //let initialBound: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -472,7 +472,7 @@ export class Snapping {
         let x: number = 0;
         horizontalSnap.left = true;
         verticalSnap.top = verticalSnap.bottom = false;
-        let zoomFactor: number = 1;
+        let zoomFactor: number = this.diagram.scroller.currentZoom;
         //let initialBoundsB: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -502,7 +502,7 @@ export class Snapping {
         let dify: number = deltaY;
         verticalSnap.bottom = true;
         horizontalSnap.left = horizontalSnap.right = false;
-        let zoomFactor: number = 1;
+        let zoomFactor: number = this.diagram.scroller.currentZoom;
         let y: number = 0;
         //let initialRect: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {

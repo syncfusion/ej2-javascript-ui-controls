@@ -50,6 +50,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private activeKey: string;
     private rowIndex: number;
     private cellIndex: number;
+    private empty: string = undefined;
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -75,7 +76,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
-        this.observer = new InterSectionObserver(this.parent, this.virtualEle.wrapper, opt);
+        this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
     }
 
     public renderEmpty(tbody: HTMLElement): void {
@@ -178,6 +179,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         infoType.nextInfo = infoType.loadNext ? { page: Math.max(1, infoType.page + (direction === 'down' ? 1 : -1)) } : {};
         if (isBlockAdded) {
             infoType.blockIndexes = [infoType.blockIndexes[0] - 1, infoType.blockIndexes[0], infoType.blockIndexes[0] + 1];
+        }
+        if (this.activeKey === 'downArrow') {
+            let firstBlock: number = Math.ceil(this.rowIndex / this.getBlockSize());
+            if (firstBlock !== 1 && (infoType.blockIndexes[1] !== firstBlock || infoType.blockIndexes.length < 3)) {
+                infoType.blockIndexes = [firstBlock - 1, firstBlock, firstBlock + 1];
+            }
         }
         infoType.columnIndexes = info.axis === 'X' ? this.vgenerator.getColumnIndexes() : this.parent.getColumnIndexesInView();
         if (this.parent.enableColumnVirtualization && info.axis === 'X') {
@@ -335,55 +342,19 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.refreshMvTbalTransform();
         }
-        this.focusCell(e, cOffset);
+        this.focusCell(e);
     }
 
-    private focusCell(e: NotifyArgs, cOffset: number): void {
+    private focusCell(e: NotifyArgs): void {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
             return;
         }
         let row: Element = this.parent.getRowByIndex(this.rowIndex);
-        let firstRow: Element;
-        let lastRow: Element;
-        let rows: Element[] = this.parent.getRows();
-        let rowHeight: number = this.parent.getRowHeight();
-        let scrollEleHeight: number = this.parent.getContent().firstElementChild.getBoundingClientRect().height;
-        setTimeout(
-            () => {
-                this.resetTblTransform();
-            },
-            50);
-        if (isNullOrUndefined(row)) {
-            for (let i: number = 0; i < rows.length; i++) {
-                if (this.isViewPortFirstRow(rows[i], rowHeight)) {
-                    firstRow = rows[i];
-                    break;
-                }
-            }
-            for (let i: number = rows.length - 1; i >= 0; i--) {
-                if (this.isViewPortLastRow(rows[i], scrollEleHeight)) {
-                    lastRow = rows[i];
-                    break;
-                }
-            }
-        }
-        let virtualRow: Element = this.activeKey === 'downArrow' ? firstRow : lastRow;
-        let target: Element = !isNullOrUndefined(row) ? (<{ cells?: HTMLElement[] }>row).cells[this.cellIndex]
-            : (<{ cells?: HTMLElement[] }>virtualRow).cells[this.cellIndex];
-        this.parent.focusModule.onClick({ target }, true);
-        this.parent.selectRow(parseInt(target.parentElement.getAttribute('aria-rowindex'), 10));
-        this.activeKey = this.parent.allowSelection ? this.activeKey : undefined;
-    }
-
-    private resetTblTransform(): void {
-        let xAxis: boolean = this.currentInfo.sentinelInfo.axis === 'X';
-        let top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
-        let height: number = this.content.getBoundingClientRect().height;
-        let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);
-        let y: number = this.getTranslateY(
-            this.parent.getContent().firstElementChild.scrollTop, height,
-            xAxis && top === this.parent.getContent().firstElementChild.scrollTop ? this.prevInfo : undefined, true);
-        this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
+        // tslint:disable-next-line:no-any
+        let cell: any = (<{ cells?: HTMLElement[] }>row).cells[this.cellIndex];
+        cell.focus({ preventScroll: true });
+        this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
+        this.activeKey = this.empty;
     }
 
     protected onDataReady(e?: NotifyArgs): void {
@@ -496,7 +467,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.isSelection = false;
             this.parent.selectRow(this.selectedRowIndex);
         } else {
-            this.activeKey = undefined;
+            this.activeKey = this.empty;
         }
     }
 
@@ -505,8 +476,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent.addEventListener(events.dataBound, this.dataBound.bind(this));
         this.parent[action](refreshVirtualBlock, this.refreshContentRows, this);
         this.parent[action](events.selectVirtualRow, this.selectVirtualRow, this);
-        this.parent[action](events.virtaulKeyHandler, this.virtualKeyHandler, this);
-        this.parent[action](events.keyPressed, this.virtualKeyHandler, this);
         this.parent[action](events.virtaulCellFocus, this.virtualCellFocus, this);
         let event: string[] = this.actions;
         for (let i: number = 0; i < event.length; i++) {
@@ -536,26 +505,39 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             && e && (e.action === 'upArrow' || e.action === 'downArrow')) {
             let rowIndex: number = parseInt(ele.parentElement.getAttribute('aria-rowindex'), 10);
             if (e && (e.action === 'downArrow' || e.action === 'upArrow')) {
+                let scrollEle: Element = this.parent.getContent().firstElementChild;
                 e.action === 'downArrow' ? rowIndex += 1 : rowIndex -= 1;
                 this.rowIndex = rowIndex;
                 this.cellIndex = parseInt(ele.getAttribute('aria-colindex'), 10);
                 let row: Element = this.parent.getRowByIndex(rowIndex);
-                let top: number = this.parent.getContent().firstElementChild.scrollTop;
+                let page: number = this.parent.pageSettings.currentPage;
+                let visibleRowCount: number = Math.floor((scrollEle as HTMLElement).offsetHeight / this.parent.getRowHeight()) - 1;
+                let emptyRow: boolean = false;
                 if (isNullOrUndefined(row)) {
-                    this.parent.getContent().firstElementChild.scrollTop = e.action === 'downArrow' ?
-                        top + this.parent.getRowHeight() : top - this.parent.getRowHeight();
-                } else {
-                    this.parent.selectRow(rowIndex);
+                    emptyRow = true;
+                    if ((e.action === 'downArrow' && page === this.maxPage - 1) || (e.action === 'upArrow' && page === 1)) {
+                        emptyRow = false;
+                    }
                 }
+                if (emptyRow || this.ensureLastRow(row) || this.ensureFirstRow(row)) {
+                    this.activeKey = e.action;
+                    scrollEle.scrollTop = e.action === 'downArrow' ?
+                        (rowIndex - visibleRowCount) * this.parent.getRowHeight() :   rowIndex * this.parent.getRowHeight();
+                } else {
+                    this.activeKey = this.empty;
+                }
+                this.parent.selectRow(rowIndex);
             }
         }
     }
 
-    private virtualKeyHandler(args: KeyboardEventArgs): void {
-        if (args && (args.action === 'upArrow' || args.action === 'downArrow')
-            && isNullOrUndefined(this.activeKey)) {
-            this.activeKey = args.action;
-        }
+    private ensureLastRow(row: Element): boolean {
+        let cntOffset: number = (this.parent.getContent().firstElementChild as HTMLElement).offsetHeight;
+        return row && row.getBoundingClientRect().top > cntOffset;
+    }
+
+    private ensureFirstRow(row: Element): boolean {
+        return row && row.getBoundingClientRect().top < this.parent.getRowHeight();
     }
 
     public getBlockSize(): number {
@@ -723,18 +705,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             let scrollTop: number = this.offsets[blockIndexes[0] - 1];
             let ele: Element = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : (this.parent.getContent() as HTMLElement).firstElementChild;
-            ele.scrollTop = scrollTop;
+            if (!isNullOrUndefined(scrollTop)) {
+                ele.scrollTop = scrollTop;
+            }
         }
-    }
-
-    private isViewPortFirstRow(row: Element, rowHeight: number): boolean {
-        let top: number = row.getBoundingClientRect().top;
-        return top > rowHeight;
-    }
-
-    private isViewPortLastRow(row: Element, eleHeight: number): boolean {
-        let top: number = row.getBoundingClientRect().top;
-        return top < eleHeight;
     }
 }
 /**

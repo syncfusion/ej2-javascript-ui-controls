@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
  * Selector spec
@@ -14,11 +14,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramik' });
             ele.style.width = '100%';
             document.body.appendChild(ele);
@@ -92,7 +92,7 @@ describe('Diagram Control', () => {
             diagram.updateScrollOffset();
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -109,11 +109,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram_padding_tl' });
             ele.style.width = '100%';
             document.body.appendChild(ele);
@@ -122,7 +122,7 @@ describe('Diagram Control', () => {
                 width: '400px',
                 height: '400px',
                 nodes: [node],
-                scrollSettings: { padding: { left: 50, top: 50 }}
+                scrollSettings: { padding: { left: 50, top: 50 } }
             });
             diagram.appendTo('#diagram_padding_tl');
         });
@@ -137,7 +137,7 @@ describe('Diagram Control', () => {
             expect(diagramContent.scrollTop).toBe(50);
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -161,7 +161,7 @@ describe('Diagram Control', () => {
                 width: '400px',
                 height: '400px',
                 nodes: [node],
-                scrollSettings: { padding: { right: 50, bottom: 50 }}
+                scrollSettings: { padding: { right: 50, bottom: 50 } }
             });
             diagram.appendTo('#diagram_padding_rb');
         });
@@ -174,6 +174,71 @@ describe('Diagram Control', () => {
             let diagramContent: HTMLElement = document.getElementById(diagram.element.id + 'content');
             expect(diagramContent.scrollHeight).toBe(450);
             expect(diagramContent.scrollWidth).toBe(450);
+            done();
+        });
+    });
+
+
+    describe('Fit to page is not working for zoom greater than 1', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_padding_rb' });
+            ele.style.width = '100%';
+            ele.style.width = '100%';
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 200, height: 200, offsetX: 100, offsetY: 100, shape: {
+                        type: "Basic",
+                        shape: "Ellipse",
+                    },
+                },
+                {
+                    id: 'node2', width: 200, height: 200, offsetX: 100, offsetY: 600, shape: {
+                        type: "Basic",
+                        shape: "Ellipse",
+                    },
+                },
+                {
+                    id: 'node3', width: 200, height: 200, offsetX: 600, offsetY: 100, shape: {
+                        type: "Basic",
+                        shape: "Ellipse",
+                    },
+                },
+                {
+                    id: 'node4', width: 200, height: 200, offsetX: 600, offsetY: 600, shape: {
+                        type: "Basic",
+                        shape: "Ellipse",
+                    },
+                },
+            ];
+            diagram = new Diagram({
+                width: '100%',
+                height: '969px', nodes: nodes,
+            });
+            diagram.appendTo('#diagram_padding_rb');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Fit to page is not working for zoom greater than 1', (done: Function) => {
+
+            diagram.zoom(2, { x: 600, y: 600 })
+            diagram.fitToPage({
+                mode: "Page",
+                region: "Content",
+            });
+            expect(diagram.scroller.horizontalOffset == 27 && diagram.scroller.verticalOffset == 134.5).toBe(true);
+
+            diagram.fitToPage({
+                mode: "Page",
+                region: "Content",
+            });
+            expect(diagram.scroller.horizontalOffset == 27 && diagram.scroller.verticalOffset == 134.5).toBe(true);
             done();
         });
     });

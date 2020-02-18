@@ -9958,7 +9958,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             if (!li) {
                 return;
             }
-            else {
+            else if (event.originalEvent.which !== 3) {
                 var rippleElement = select('.' + RIPPLEELMENT, li);
                 var rippleIcons = select('.' + ICON, li);
                 this.removeHover();
@@ -9994,8 +9994,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                         this.toggleSelect(li, event.originalEvent, false);
                     }
                 }
-                this.triggerClickEvent(event.originalEvent, li);
             }
+            this.triggerClickEvent(event.originalEvent, li);
         }
     };
     TreeView.prototype.nodeCheckedEvent = function (wrapper, isCheck, e) {
@@ -12452,7 +12452,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             var proxy_4 = this;
             this.touchExpandObj = new Touch(this.element, {
                 tap: function (e) {
-                    if (_this.expandOnType === 'Click' || (_this.expandOnType === 'DblClick' && e.tapCount === 2)) {
+                    if ((_this.expandOnType === 'Click' || (_this.expandOnType === 'DblClick' && e.tapCount === 2))
+                        && e.originalEvent.which !== 3) {
                         proxy_4.expandHandler(e);
                     }
                 }

@@ -84,17 +84,17 @@ describe('Diagram Control', () => {
         });
         it('Checking stack panel drag and drop', (done: Function) => {
             let diagramCanvas = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 200, 100);
-            mouseEvents.mouseUpEvent(diagramCanvas, 200, 100);
+            mouseEvents.clickEvent(diagramCanvas, 80, 100);
+            mouseEvents.mouseDownEvent(diagramCanvas, 80, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 100);
+            mouseEvents.mouseUpEvent(diagramCanvas, 180, 100);
             expect(diagram.nameTable['group'].wrapper.children[2].id === 'node1').toBe(true);
             diagram.undo();
             expect(diagram.nameTable['group'].wrapper.children[0].id === 'node1').toBe(true);
             diagram.redo();
             expect(diagram.nameTable['group'].wrapper.children[2].id === 'node1').toBe(true);
             diagram.undo();
-
+ 
             done();
         });
         it('Checking stack panel drag and drop', (done: Function) => {

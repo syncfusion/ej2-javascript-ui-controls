@@ -56,10 +56,10 @@ export class TimelineHeaderRow {
         let keys: string[] = Object.keys(data);
         for (let i: number = 0; i < keys.length; i++) {
             let dates: Date[] = data[keys[i]];
-            let htmlCol: NodeList;
+            let htmlCol: HTMLElement[];
             if (row.template) {
                 let args: CellTemplateArgs = { date: dates[0], type: type };
-                htmlCol = this.parent.templateParser(row.template)(args);
+                htmlCol = [].slice.call(this.parent.templateParser(row.template)(args));
             } else {
                 let viewTemplate: string;
                 switch (row.option) {
@@ -77,7 +77,7 @@ export class TimelineHeaderRow {
                         viewTemplate = `<span class="e-header-week">${getWeekNumber(weekNumberDate)}</span>`;
                 }
                 let headerWrapper: HTMLElement = createElement('div', { innerHTML: viewTemplate });
-                htmlCol = headerWrapper.childNodes;
+                htmlCol = [].slice.call(headerWrapper.childNodes);
             }
             tdDatas.push({ date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol });
         }

@@ -31,7 +31,8 @@ export class NumericEditCell implements IEditCell {
 
     public read(element: Element): number {
         let value: number = this.instances.getNumberParser({ format: 'n' })((<HTMLInputElement>element).value);
-        return value;
+        /* tslint:disable:no-string-literal */
+        return (this.obj['trimValue'])(value);
     }
 
     public write(args: { rowData: Object, element: Element, column: Column, row: HTMLElement, requestType: string }): void {

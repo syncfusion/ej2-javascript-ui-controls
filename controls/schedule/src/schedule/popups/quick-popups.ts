@@ -140,10 +140,12 @@ export class QuickPopups {
         let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.setAttribute('aria-label', this.l10n.getConstant('occurrence'));
+            okButton.setAttribute('aria-label', okButton.innerHTML);
         }
         let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.setAttribute('aria-label', this.l10n.getConstant('series'));
+            cancelButton.setAttribute('aria-label', cancelButton.innerHTML);
         }
     }
 
@@ -205,14 +207,17 @@ export class QuickPopups {
         let editDeleteOnly: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (editDeleteOnly) {
             editDeleteOnly.innerHTML = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteEvent' : 'editEvent');
+            editDeleteOnly.setAttribute('aria-label', editDeleteOnly.innerHTML);
         }
         let editFollowingEventsOnly: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_FOLLOWING);
         if (editFollowingEventsOnly) {
             editFollowingEventsOnly.innerHTML = this.l10n.getConstant('editFollowingEvent');
+            editFollowingEventsOnly.setAttribute('aria-label', editFollowingEventsOnly.innerHTML);
         }
         let editDeleteSeries: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         if (editDeleteSeries) {
             editDeleteSeries.innerHTML = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteSeries' : 'editSeries');
+            editDeleteSeries.setAttribute('aria-label', editDeleteSeries.innerHTML);
         }
         this.quickDialog.content = this.l10n.getConstant('editContent');
         this.quickDialog.header = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteTitle' : 'editTitle');
@@ -231,8 +236,10 @@ export class QuickPopups {
         this.quickDialogClass('Alert');
         let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         okButton.innerHTML = this.l10n.getConstant('ok');
+        okButton.setAttribute('aria-label', okButton.innerHTML);
         let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         cancelButton.innerHTML = this.l10n.getConstant('cancel');
+        cancelButton.setAttribute('aria-label', cancelButton.innerHTML);
         this.quickDialog.header = this.l10n.getConstant('alert');
         switch (type) {
             case 'wrongPattern':
@@ -268,10 +275,12 @@ export class QuickPopups {
         let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.innerHTML = this.l10n.getConstant('delete');
+            okButton.setAttribute('aria-label', okButton.innerHTML);
         }
         let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.innerHTML = this.l10n.getConstant('cancel');
+            cancelButton.setAttribute('aria-label', cancelButton.innerHTML);
         }
         this.quickDialog.content = ((<{ [key: string]: Object }[]>this.parent.activeEventData.event).length > 1) ?
             this.l10n.getConstant('deleteMultipleContent') : this.l10n.getConstant('deleteContent');
@@ -287,10 +296,12 @@ export class QuickPopups {
         let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.innerHTML = this.l10n.getConstant('ok');
+            okButton.setAttribute('aria-label', okButton.innerHTML);
         }
         let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.innerHTML = this.l10n.getConstant('cancel');
+            okButton.setAttribute('aria-label', cancelButton.innerHTML);
         }
         this.quickDialogClass('Alert');
         this.showQuickDialog('ValidationAlert', eventData);
@@ -404,7 +415,6 @@ export class QuickPopups {
 
     // tslint:disable-next-line:max-func-body-length
     private cellClick(args: CellClickEventArgs): void {
-        this.resetQuickPopupTemplates();
         let date: Date = new Date(args.startTime.getTime());
         if (!this.parent.showQuickInfo || !this.parent.eventSettings.allowAdding ||
             this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args) ||
@@ -441,6 +451,7 @@ export class QuickPopups {
             }
             return;
         }
+        this.resetQuickPopupTemplates();
         let temp: { [key: string]: Object } = {};
         temp[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
         temp[this.parent.eventFields.endTime] = this.parent.activeCellsData.endTime;
@@ -496,7 +507,6 @@ export class QuickPopups {
     }
 
     private eventClick(events: EventClickArgs): void {
-        this.resetQuickPopupTemplates();
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.close();
         }
@@ -508,6 +518,7 @@ export class QuickPopups {
             if (isSameTarget) {
                 return;
             }
+            this.resetQuickPopupTemplates();
             let eventData: { [key: string]: Object; } = <{ [key: string]: Object }>events.event;
             let quickEventPopup: HTMLElement = createElement('div', { className: cls.EVENT_POPUP_CLASS });
             quickEventPopup.appendChild(this.getPopupHeader('Event', eventData));
@@ -552,8 +563,8 @@ export class QuickPopups {
             let headerArgs: Object = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
             let templateId: string = this.parent.element.id;
             let templateArgs: Object = util.addLocalOffsetToEvent(headerArgs as { [key: string]: Object }, this.parent.eventFields);
-            let headerTemp: NodeList =
-                this.parent.getQuickInfoTemplatesHeader()(templateArgs, this.parent, 'header', templateId + '_headerTemplate', false);
+            let headerTemp: HTMLElement[] = [].slice.call(
+                this.parent.getQuickInfoTemplatesHeader()(templateArgs, this.parent, 'header', templateId + '_headerTemplate', false));
             append([].slice.call(headerTemp), headerTemplate);
         } else {
             let header: string;
@@ -584,8 +595,8 @@ export class QuickPopups {
             let contentArgs: Object = extend({}, data, { elementType: type.toLowerCase() }, true);
             let templateId: string = this.parent.element.id;
             let templateArgs: Object = util.addLocalOffsetToEvent(contentArgs as { [key: string]: Object }, this.parent.eventFields);
-            let contentTemp: NodeList =
-                this.parent.getQuickInfoTemplatesContent()(templateArgs, this.parent, 'content', templateId + '_contentTemplate', false);
+            let contentTemp: HTMLElement[] = [].slice.call(
+                this.parent.getQuickInfoTemplatesContent()(templateArgs, this.parent, 'content', templateId + '_contentTemplate', false));
             append([].slice.call(contentTemp), contentTemplate);
         } else {
             let content: string;
@@ -646,8 +657,8 @@ export class QuickPopups {
             let footerArgs: Object = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
             let templateId: string = this.parent.element.id;
             let templateArgs: Object = util.addLocalOffsetToEvent(footerArgs as { [key: string]: Object }, this.parent.eventFields);
-            let footerTemp: NodeList =
-                this.parent.getQuickInfoTemplatesFooter()(templateArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
+            let footerTemp: HTMLElement[] = [].slice.call(
+                this.parent.getQuickInfoTemplatesFooter()(templateArgs, this.parent, 'footer', templateId + '_footerTemplate', false));
             append([].slice.call(footerTemp), footerTemplate);
         } else {
             let footer: string;
@@ -997,6 +1008,7 @@ export class QuickPopups {
         };
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             if (popupArgs.cancel) {
+                this.quickPopupHide();
                 this.destroyButtons();
                 if (popupArgs.element.classList.contains(cls.POPUP_OPEN)) {
                     this.quickPopupClose();

@@ -29,7 +29,7 @@ import { BulletLabelStyleModel, BulletDataLabelModel } from './model/bullet-base
 import { resized } from '../common/model/constants';
 import { ExportUtils } from '../common/utils/export';
 import { IBulletResizeEventArgs, IBulletStyle, IBulletchartTooltipEventArgs, IBulletLoadedEventArgs } from './model/bullet-interface';
-import { IFeatureBarBounds } from './model/bullet-interface';
+import { IFeatureBarBounds, IBarRenderEventArgs } from './model/bullet-interface';
 import { getBulletThemeColor } from './utils/theme';
 
 /**
@@ -376,6 +376,13 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      */
     @Event()
     public tooltipRender: EmitType<IBulletchartTooltipEventArgs>;
+
+    /**
+     * Triggers before the target and value bar is rendered.
+     * @event
+     */
+    @Event()
+    public barRender: EmitType<IBarRenderEventArgs>;
 
 
     /**

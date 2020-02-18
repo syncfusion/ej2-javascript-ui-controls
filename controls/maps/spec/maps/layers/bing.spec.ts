@@ -20,7 +20,7 @@ describe('Map layer testing', () => {
             return;
         }
     });
-    describe('Bing Map layer testing', () => {
+    describe('Bing Map Layer Testing', () => {
         let id: string = 'bing-map';
         let bingmap: Maps;
         let ele: HTMLDivElement;

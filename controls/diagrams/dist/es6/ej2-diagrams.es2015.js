@@ -2450,6 +2450,8 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["onUserHandleMouseLeave"] = 30] = "onUserHandleMouseLeave";
     DiagramEvent[DiagramEvent["onImageLoad"] = 31] = "onImageLoad";
     DiagramEvent[DiagramEvent["onDoBindingInit"] = 32] = "onDoBindingInit";
+    DiagramEvent[DiagramEvent["keyUp"] = 33] = "keyUp";
+    DiagramEvent[DiagramEvent["keyDown"] = 34] = "keyDown";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
@@ -21723,7 +21725,7 @@ class ConnectTool extends ToolBase {
                     this.commandHandler.updateConnectorValue(temparg);
                 }
             }
-            if (this.isConnected) {
+            if (this.isConnected && args.source.connectors) {
                 let connector = args.source.connectors[0];
                 let nodeEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                 let portEndId = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
@@ -23990,6 +23992,7 @@ class DiagramEventHandler {
         this.objectFinder = null;
         this.tool = null;
         this.eventArgs = null;
+        this.keyArgs = {};
         this.diagram = diagram;
         this.objectFinder = new ObjectFinder();
         this.commandHandler = commandHandler;
@@ -24956,6 +24959,56 @@ class DiagramEventHandler {
                 }
             }
         }
+        let selectedObject = (this.diagram.selectedItems.nodes.length) ?
+            this.diagram.selectedItems.nodes : this.diagram.selectedItems.connectors;
+        this.keyArgs = {
+            element: this.diagram.selectedItems,
+            key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which,
+        };
+        this.getKeyModifier(this.keyArgs, evt);
+        if ((this.diagram.diagramActions & DiagramAction.TextEdit)) {
+            this.getlabel(this.keyArgs, evt);
+        }
+        this.diagram.triggerEvent(DiagramEvent.keyDown, this.keyArgs);
+    }
+    getlabel(args, evt) {
+        let label = this.diagram.activeLabel;
+        args.target = this.diagram.element.id + '_editBox';
+        let node = this.diagram.nameTable[label.parentId];
+        args.text = document.getElementById(this.diagram.element.id + '_editBox').value;
+        for (let i = 0; i < node.annotations.length; i++) {
+            if (node.annotations[i].id === label.id) {
+                args.label = node.annotations[i];
+                break;
+            }
+        }
+    }
+    getKeyModifier(args, evt) {
+        args.keyModifiers = KeyModifiers.None;
+        if (evt.ctrlKey) {
+            args.keyModifiers |= KeyModifiers.Control;
+        }
+        if (evt.shiftKey) {
+            args.keyModifiers |= KeyModifiers.Shift;
+        }
+        if (evt.altKey) {
+            args.keyModifiers |= KeyModifiers.Alt;
+        }
+        if (this.isMetaKey(evt)) {
+            args.keyModifiers |= KeyModifiers.Meta;
+        }
+    }
+    keyUp(evt) {
+        this.keyArgs = {
+            element: this.diagram.selectedItems, key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which,
+        };
+        let selectedObject = (this.diagram.selectedItems.nodes.length) ?
+            this.diagram.selectedItems.nodes : this.diagram.selectedItems.connectors;
+        this.getKeyModifier(this.keyArgs, evt);
+        if ((this.diagram.diagramActions & DiagramAction.TextEdit)) {
+            this.getlabel(this.keyArgs, evt);
+        }
+        this.diagram.triggerEvent(DiagramEvent.keyUp, this.keyArgs);
     }
     startAutoScroll(e) {
         let position = this.getMousePosition(e);
@@ -30712,8 +30765,8 @@ class DiagramScroller {
             let scale = { x: 0, y: 0 };
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);
             scale.y = (this.viewPortHeight - (margin.top + margin.bottom)) / (bounds.height);
-            if (!canZoomIn && ((bounds.width - this.horizontalOffset) < this.viewPortWidth) &&
-                (bounds.height - this.verticalOffset) < this.viewPortHeight) {
+            if (!canZoomIn && (((bounds.width - this.horizontalOffset) < this.viewPortWidth) &&
+                (bounds.height - this.verticalOffset) < this.viewPortHeight) || this.currentZoom > 1) {
                 scale.x = Math.min(1, scale.x);
                 scale.y = Math.min(1, scale.y);
             }
@@ -31757,7 +31810,7 @@ class Diagram extends Component {
                         break;
                 }
             }
-            if (refreshLayout) {
+            if (refreshLayout && !refereshColelction) {
                 this.doLayout();
             }
             if (isPropertyChanged && this.propertyChange) {
@@ -31780,6 +31833,9 @@ class Diagram extends Component {
             if (refereshColelction) {
                 this.initObjects(true);
                 this.refreshDiagramLayer();
+                if (refreshLayout) {
+                    this.doLayout();
+                }
             }
             if (!refereshColelction) {
                 for (let temp of this.views) {
@@ -32240,6 +32296,7 @@ class Diagram extends Component {
         EventHandler.add(this.diagramCanvas, stopEvent, this.eventHandler.mouseUp, this.eventHandler);
         EventHandler.add(this.diagramCanvas, cancelEvent, this.eventHandler.mouseLeave, this.eventHandler);
         EventHandler.add(this.diagramCanvas, 'keydown', this.eventHandler.keyDown, this.eventHandler);
+        EventHandler.add(this.diagramCanvas, 'keyup', this.eventHandler.keyUp, this.eventHandler);
         EventHandler.add(this.diagramCanvas, 'dblclick', this.eventHandler.doubleClick, this.eventHandler);
         EventHandler.add(this.diagramCanvas, 'scroll', this.eventHandler.scrolled, this.eventHandler);
         EventHandler.add(this.diagramCanvas, wheelEvent, this.eventHandler.mouseWheel, this.eventHandler);
@@ -32262,6 +32319,7 @@ class Diagram extends Component {
         EventHandler.remove(this.diagramCanvas, stopEvent, this.eventHandler.mouseUp);
         EventHandler.remove(this.diagramCanvas, cancelEvent, this.eventHandler.mouseLeave);
         EventHandler.remove(this.diagramCanvas, 'keydown', this.eventHandler.keyDown);
+        EventHandler.remove(this.diagramCanvas, 'keyup', this.eventHandler.keyUp);
         EventHandler.remove(this.diagramCanvas, 'dblclick', this.eventHandler.doubleClick);
         EventHandler.remove(this.diagramCanvas, 'scroll', this.eventHandler.scrolled);
         EventHandler.remove(this.diagramCanvas, wheelEvent, this.eventHandler.mouseWheel);
@@ -39108,6 +39166,12 @@ __decorate([
 ], Diagram.prototype, "positionChange", void 0);
 __decorate([
     Event()
+], Diagram.prototype, "keyUp", void 0);
+__decorate([
+    Event()
+], Diagram.prototype, "keyDown", void 0);
+__decorate([
+    Event()
 ], Diagram.prototype, "animationComplete", void 0);
 __decorate([
     Event()
@@ -39880,7 +39944,9 @@ class PrintAndExport {
             this.diagram.scroller.verticalOffset = oldVerticalOffset;
         }
         this.diagram.renderSelector(false);
-        return htmlData;
+        /* tslint:disable */
+        return checkBrowserInfo() ? htmlData.replace("url(" + location.href + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
+        /* tslint:enable */
     }
     /** @private */
     exportImages(image, options) {
@@ -42076,7 +42142,8 @@ class BpmnDiagrams {
     updateBPMN(changedProp, oldObject, actualObject, diagram) {
         let newShape = changedProp.shape || {};
         let elementWrapper = actualObject.wrapper.children[0];
-        let actualShape = actualObject.shape.shape;
+        let actualShape = actualObject.shape.shape ||
+            (actualObject.shape.bpmnShape);
         let sizeChanged = changedProp.width !== undefined || changedProp.height !== undefined;
         if (((isBlazor() && newShape.bpmnShape === 'Gateway') || newShape.shape === 'Gateway') &&
             newShape.gateway) {
@@ -43589,7 +43656,7 @@ class Snapping {
      */
     snapPoint(diagram, selectedObject, towardsLeft, towardsTop, delta, startPoint, endPoint) {
         let snapSettings = this.diagram.snapSettings;
-        let zoomFactor = 1;
+        let zoomFactor = this.diagram.scroller.currentZoom;
         let offset = { x: 0, y: 0 };
         let bounds = getBounds(selectedObject.wrapper);
         let horizontallysnapped = { snapped: false, offset: 0 };
@@ -43684,11 +43751,11 @@ class Snapping {
      * @private
      */
     round(value, snapIntervals, scale) {
-        if (scale > 1) {
+        if (scale === 1) {
             scale = Math.pow(2, Math.floor(Math.log(scale) / Math.log(2)));
         }
         else {
-            scale = Math.pow(2, Math.ceil(Math.log(scale) / Math.log(2)));
+            scale = scale;
         }
         let cutoff = 0;
         let i = 0;
@@ -43849,7 +43916,7 @@ class Snapping {
      */
     snapConnectorEnd(point) {
         let snapSettings = this.diagram.snapSettings;
-        let zoomFactor = 1;
+        let zoomFactor = this.diagram.scroller.currentZoom;
         if (snapSettings.constraints & SnapConstraints.SnapToLines) {
             point.x = this.round(point.x, snapSettings.verticalGridlines.scaledIntervals, zoomFactor);
             point.y = this.round(point.y, snapSettings.horizontalGridlines.scaledIntervals, zoomFactor);
@@ -43979,7 +44046,7 @@ class Snapping {
         verticalSnap.top = true;
         let y;
         horizontalSnap.left = horizontalSnap.right = false;
-        let zoomFactor = 1;
+        let zoomFactor = this.diagram.scroller.currentZoom;
         //let initialBoundsT: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -44008,7 +44075,7 @@ class Snapping {
         let x;
         horizontalSnap.right = true;
         verticalSnap.top = verticalSnap.bottom = false;
-        let zoomFactor = 1;
+        let zoomFactor = this.diagram.scroller.currentZoom;
         //let initialBound: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -44037,7 +44104,7 @@ class Snapping {
         let x = 0;
         horizontalSnap.left = true;
         verticalSnap.top = verticalSnap.bottom = false;
-        let zoomFactor = 1;
+        let zoomFactor = this.diagram.scroller.currentZoom;
         //let initialBoundsB: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
             //(!this.selectedObject.isLane && !this.selectedObject.isSwimlane)) {
@@ -44065,7 +44132,7 @@ class Snapping {
         let dify = deltaY;
         verticalSnap.bottom = true;
         horizontalSnap.left = horizontalSnap.right = false;
-        let zoomFactor = 1;
+        let zoomFactor = this.diagram.scroller.currentZoom;
         let y = 0;
         //let initialRect: Rect = new Rect(shape.offsetX, shape.offsetY, shape.width, shape.height);
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject && !shape.rotateAngle) {
@@ -52199,7 +52266,7 @@ class SymbolPalette extends Component {
             }
             symbol.wrapper = wrapper;
         }
-        else if (symbol.shape instanceof BpmnShape && this.bpmnModule) {
+        else if (symbol.shape.type === 'Bpmn' && this.bpmnModule) {
             let wrapper = symbol.wrapper;
             symbol.wrapper = symbolContainer;
             symbolContainer.children[0].width = width;

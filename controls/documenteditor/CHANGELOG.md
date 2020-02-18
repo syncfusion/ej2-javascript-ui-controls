@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 1.0 (2020-02-18)
+
+### Document Editor
+
+#### New Features
+
+- `253670` - Enhancements for copy and paste operation.
+
+#### Bug Fixes
+
+- `150960` - Enable/disable comment now working properly.
+
 ## 17.4.49 (2020-02-11)
 
 ### Document Editor

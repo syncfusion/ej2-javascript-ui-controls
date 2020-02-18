@@ -2876,7 +2876,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                     break;
                                 case 'items':
                                     this.fontNameDropDown.setProperties({
-                                        items: this.getUpdateItems(newProp.fontFamily.items, 'FontSize')
+                                        items: this.getUpdateItems(newProp.fontFamily.items, 'FontName')
                                     });
                                     break;
                             }
@@ -7894,7 +7894,8 @@ var BLOCK_TAGS = ['address', 'article', 'aside', 'audio', 'blockquote',
     'canvas', 'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'li', 'main', 'nav',
     'noscript', 'ol', 'output', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
-    'thead', 'tr', 'ul', 'video'];
+    'thead', 'tr', 'ul', 'video', 'button', 'center', 'dir', 'frameset', 'iframe', 'isindex', 'map',
+    'menu', 'noframes', 'object'];
 /**
  * @hidden
  */
@@ -8085,8 +8086,10 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
      */
     NodeSelection.prototype.getSelectionNodes = function (nodeCollection) {
         nodeCollection = nodeCollection.reverse();
+        var regEx = new RegExp(String.fromCharCode(8203), 'g');
         for (var index = 0; index < nodeCollection.length; index++) {
-            if (nodeCollection[index].nodeType !== 3 || nodeCollection[index].textContent.trim() === '') {
+            if (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
+                (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx)))) {
                 nodeCollection.splice(index, 1);
                 index--;
             }
@@ -9943,20 +9946,23 @@ var Formats = /** @__PURE__ @class */ (function () {
 var InsertHtml = /** @__PURE__ @class */ (function () {
     function InsertHtml() {
     }
-    /**
-     * Insert method
-     * @hidden
-     * @deprecated
-     */
-    InsertHtml.Insert = function (docElement, insertNode, editNode) {
+    InsertHtml.Insert = function (docElement, insertNode, editNode, isExternal) {
         var node;
         if (typeof insertNode === 'string') {
             var divNode = document.createElement('div');
             divNode.innerHTML = insertNode;
-            node = divNode.firstChild;
+            node = isExternal ? divNode : divNode.firstChild;
         }
         else {
-            node = insertNode;
+            if (isExternal && !(!isNullOrUndefined(insertNode) && !isNullOrUndefined(insertNode.classList) &&
+                insertNode.classList.contains('pasteContent'))) {
+                var divNode = document.createElement('div');
+                divNode.appendChild(insertNode);
+                node = divNode;
+            }
+            else {
+                node = insertNode;
+            }
         }
         var nodeSelection = new NodeSelection();
         var nodeCutter = new NodeCutter();
@@ -9966,6 +9972,11 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
         var isCollapsed = range.collapsed;
         var nodes = nodeSelection.getInsertNodeCollection(range);
         var closestParentNode = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
+        if (isExternal || (!isNullOrUndefined(node) && !isNullOrUndefined(node.classList) &&
+            node.classList.contains('pasteContent'))) {
+            this.pasteInsertHTML(nodes, node, range, nodeSelection, nodeCutter, docElement, isCollapsed, closestParentNode, editNode);
+            return;
+        }
         if (editNode !== range.startContainer && ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
             TABLE_BLOCK_TAGS.indexOf(closestParentNode.tagName.toLocaleLowerCase()) !== -1))
             || (node.nodeName.toLowerCase() === 'table' && closestParentNode &&
@@ -10052,16 +10063,137 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
                 nodeSelection.setSelectionText(docElement, node, node, node.textContent.length, node.textContent.length);
             }
         }
-        if (!isNullOrUndefined(node) && !isNullOrUndefined(node.classList) && node.classList.contains('pasteContent')) {
-            var lastNode = node.lastChild;
-            lastNode = lastNode.nodeName === 'BR' ? lastNode.previousSibling : lastNode;
-            while (!isNullOrUndefined(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG' &&
-                lastNode.nodeName !== 'BR') {
-                lastNode = lastNode.lastChild;
+    };
+    InsertHtml.pasteInsertHTML = function (nodes, node, range, nodeSelection, nodeCutter, docElement, isCollapsed, closestParentNode, editNode) {
+        var isCursor = range.startOffset === range.endOffset &&
+            range.startContainer === range.endContainer;
+        var lasNode;
+        var sibNode;
+        var isSingleNode;
+        var preNode;
+        if (editNode !== range.startContainer && ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
+            TABLE_BLOCK_TAGS.indexOf(closestParentNode.tagName.toLocaleLowerCase()) !== -1))
+            || (node.nodeName.toLowerCase() === 'table' && closestParentNode &&
+                TABLE_BLOCK_TAGS.indexOf(closestParentNode.tagName.toLocaleLowerCase()) === -1))) {
+            preNode = nodeCutter.GetSpliceNode(range, closestParentNode);
+            sibNode = isNullOrUndefined(preNode.previousSibling) ? preNode.parentNode.previousSibling : preNode.previousSibling;
+            if (nodes.length === 1) {
+                nodeSelection.setSelectionContents(docElement, preNode);
+                range = nodeSelection.getRange(docElement);
+                isSingleNode = true;
             }
-            lastNode = isNullOrUndefined(lastNode) ? node : lastNode;
-            nodeSelection.setSelectionText(docElement, lastNode, lastNode, lastNode.textContent.length, lastNode.textContent.length);
+            else {
+                lasNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1].parentElement);
+                lasNode = isNullOrUndefined(lasNode) ? preNode : lasNode;
+                nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
+                    lasNode.textContent.length : lasNode.childNodes.length);
+                range = nodeSelection.getRange(docElement);
+                isSingleNode = false;
+            }
         }
+        var containsBlockNode = false;
+        this.removingComments(node);
+        var allChildNodes = node.childNodes;
+        for (var i = 0; i < allChildNodes.length; i++) {
+            if (BLOCK_TAGS.indexOf(allChildNodes[i].nodeName.toLocaleLowerCase()) >= 0) {
+                containsBlockNode = true;
+                break;
+            }
+        }
+        var lastSelectionNode;
+        var fragment = document.createDocumentFragment();
+        if (!containsBlockNode) {
+            if (!isCursor) {
+                while (node.firstChild) {
+                    lastSelectionNode = node.firstChild;
+                    fragment.appendChild(node.firstChild);
+                }
+                if (isSingleNode) {
+                    preNode.parentNode.replaceChild(fragment, preNode);
+                }
+                else {
+                    range.deleteContents();
+                    detach(lasNode);
+                    sibNode.parentNode.appendChild(fragment);
+                }
+            }
+            else {
+                var tempSpan = createElement('span', { className: 'tempSpan' });
+                range.insertNode(tempSpan);
+                while (node.firstChild) {
+                    lastSelectionNode = node.firstChild;
+                    fragment.appendChild(node.firstChild);
+                }
+                tempSpan.parentNode.replaceChild(fragment, tempSpan);
+            }
+        }
+        else {
+            var blockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            var splitedElm = nodeCutter.GetSpliceNode(range, blockNode);
+            splitedElm.parentNode.replaceChild(node, splitedElm);
+            var isFirstTextNode = true;
+            var isPreviousInlineElem = void 0;
+            var paraElm = void 0;
+            var previousParent = void 0;
+            range.deleteContents();
+            while (node.firstChild) {
+                if (node.firstChild.nodeName === '#text' && node.firstChild.textContent.trim() === '') {
+                    detach(node.firstChild);
+                    continue;
+                }
+                if (node.firstChild.nodeName === '#text' && isFirstTextNode ||
+                    (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0 && isFirstTextNode)) {
+                    lastSelectionNode = node.firstChild;
+                    if (isNullOrUndefined(node.previousElementSibling)) {
+                        var firstParaElm = createElement('p');
+                        node.parentElement.insertBefore(firstParaElm, node);
+                    }
+                    node.previousElementSibling.appendChild(node.firstChild);
+                }
+                else {
+                    lastSelectionNode = node.firstChild;
+                    if (node.firstChild.nodeName === '#text' ||
+                        (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0)) {
+                        if (!isPreviousInlineElem) {
+                            paraElm = createElement('p');
+                            paraElm.appendChild(node.firstChild);
+                            fragment.appendChild(paraElm);
+                        }
+                        else {
+                            previousParent.appendChild(node.firstChild);
+                            fragment.appendChild(previousParent);
+                        }
+                        previousParent = paraElm;
+                        isPreviousInlineElem = true;
+                    }
+                    else {
+                        fragment.appendChild(node.firstChild);
+                        isPreviousInlineElem = false;
+                    }
+                    isFirstTextNode = false;
+                }
+            }
+            node.parentNode.replaceChild(fragment, node);
+        }
+        lastSelectionNode = lastSelectionNode.nodeName === 'BR' ? lastSelectionNode.previousSibling : lastSelectionNode;
+        while (!isNullOrUndefined(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
+            lastSelectionNode.nodeName !== 'BR') {
+            lastSelectionNode = lastSelectionNode.lastChild;
+        }
+        lastSelectionNode = isNullOrUndefined(lastSelectionNode) ? node : lastSelectionNode;
+        nodeSelection.setSelectionText(docElement, lastSelectionNode, lastSelectionNode, lastSelectionNode.textContent.length, lastSelectionNode.textContent.length);
+        this.removeEmptyElements(editNode);
+    };
+    InsertHtml.getImmediateBlockNode = function (node, editNode) {
+        do {
+            node = node.parentNode;
+        } while (BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0);
+        return node;
+    };
+    InsertHtml.removingComments = function (elm) {
+        var innerElement = elm.innerHTML;
+        innerElement = innerElement.replace(/<!--[\s\S]*?-->/g, '');
+        elm.innerHTML = innerElement;
     };
     InsertHtml.findDetachEmptyElem = function (element) {
         var removableElement;
@@ -10101,6 +10233,16 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
         }
         return null;
     };
+    /**
+     * Insert method
+     * @hidden
+     * @deprecated
+     */
+    InsertHtml.inlineNode = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+        'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
+        'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+        'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
+        'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
     return InsertHtml;
 }());
 
@@ -10143,10 +10285,17 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
             (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) : null;
         if (!isNullOrUndefined(closestAnchor) && closestAnchor.tagName === 'A') {
             var anchorEle = closestAnchor;
-            anchorEle.setAttribute('href', e.item.url);
-            anchorEle.setAttribute('title', e.item.title);
-            var linkText = anchorEle.innerText;
-            anchorEle.innerText = e.item.text;
+            var linkText = '';
+            if (!isNullOrUndefined(e.item.url)) {
+                anchorEle.setAttribute('href', e.item.url);
+            }
+            if (!isNullOrUndefined(e.item.title)) {
+                anchorEle.setAttribute('title', e.item.title);
+            }
+            if (!isNullOrUndefined(e.item.text)) {
+                linkText = anchorEle.innerText;
+                anchorEle.innerText = e.item.text;
+            }
             if (!isNullOrUndefined(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
             }
@@ -10664,28 +10813,11 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
         e.item.url = isNullOrUndefined(e.item.url) || e.item.url === 'undefined' ? e.item.src : e.item.url;
         if (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent[0].tagName === 'IMG') {
             var imgEle = e.item.selectParent[0];
-            imgEle.setAttribute('src', e.item.url);
-            imgEle.setAttribute('alt', e.item.altText);
+            this.setStyle(imgEle, e);
         }
         else {
-            var imgElement = createElement('img', {
-                className: 'e-rte-image ' + e.item.cssClass, attrs: {
-                    width: (isNullOrUndefined(e.item.width) || isNullOrUndefined(e.item.width.width)) ? 'auto' :
-                        e.item.width.width,
-                    height: (isNullOrUndefined(e.item.height) || isNullOrUndefined(e.item.height.height)) ? 'auto' :
-                        e.item.height.height,
-                    alt: (e.item.altText !== '') ? e.item.altText : ''
-                }
-            });
-            imgElement.setAttribute('src', isNullOrUndefined(e.item.url) ? '' : e.item.url);
-            imgElement.style.minWidth = (isNullOrUndefined(e.item.width) || isNullOrUndefined(e.item.width.minWidth)) ? 0 + 'px' :
-                e.item.width.minWidth + 'px';
-            imgElement.style.maxWidth = (isNullOrUndefined(e.item.width) || isNullOrUndefined(e.item.width.maxWidth)) ? null :
-                e.item.width.maxWidth + 'px';
-            imgElement.style.minHeight = (isNullOrUndefined(e.item.height) || isNullOrUndefined(e.item.height.minHeight)) ? 0 + 'px' :
-                e.item.height.minHeight + 'px';
-            imgElement.style.maxHeight = (isNullOrUndefined(e.item.height) || isNullOrUndefined(e.item.height.maxHeight)) ? null :
-                e.item.height.maxHeight + 'px';
+            var imgElement = createElement('img');
+            this.setStyle(imgElement, e);
             if (!isNullOrUndefined(e.item.selection)) {
                 e.item.selection.restore();
             }
@@ -10710,6 +10842,48 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)
             });
         }
+    };
+    ImageCommand.prototype.setStyle = function (imgElement, e) {
+        if (!isNullOrUndefined(e.item.url)) {
+            imgElement.setAttribute('src', e.item.url);
+        }
+        imgElement.setAttribute('class', 'e-rte-image' + (isNullOrUndefined(e.item.cssClass) ? '' : ' ' + e.item.cssClass));
+        if (!isNullOrUndefined(e.item.altText)) {
+            imgElement.setAttribute('alt', e.item.altText);
+        }
+        if (!isNullOrUndefined(e.item.width) && !isNullOrUndefined(e.item.width.width)) {
+            imgElement.setAttribute('width', this.calculateStyleValue(e.item.width.width));
+        }
+        if (!isNullOrUndefined(e.item.height) && !isNullOrUndefined(e.item.height.height)) {
+            imgElement.setAttribute('height', this.calculateStyleValue(e.item.height.height));
+        }
+        if (!isNullOrUndefined(e.item.width) && !isNullOrUndefined(e.item.width.minWidth)) {
+            imgElement.style.minWidth = this.calculateStyleValue(e.item.width.minWidth);
+        }
+        if (!isNullOrUndefined(e.item.width) && !isNullOrUndefined(e.item.width.maxWidth)) {
+            imgElement.style.maxWidth = this.calculateStyleValue(e.item.width.maxWidth);
+        }
+        if (!isNullOrUndefined(e.item.height) && !isNullOrUndefined(e.item.height.minHeight)) {
+            imgElement.style.minHeight = this.calculateStyleValue(e.item.height.minHeight);
+        }
+        if (!isNullOrUndefined(e.item.height) && !isNullOrUndefined(e.item.height.maxHeight)) {
+            imgElement.style.maxHeight = this.calculateStyleValue(e.item.height.maxHeight);
+        }
+    };
+    ImageCommand.prototype.calculateStyleValue = function (value) {
+        var styleValue;
+        if (typeof (value) === 'string') {
+            if (value.indexOf('px') || value.indexOf('%') || value.indexOf('auto')) {
+                styleValue = value;
+            }
+            else {
+                styleValue = value + 'px';
+            }
+        }
+        else {
+            styleValue = value + 'px';
+        }
+        return styleValue;
     };
     ImageCommand.prototype.insertImageLink = function (e) {
         var anchor = createElement('a', {
@@ -10919,7 +11093,15 @@ var TableCommand = /** @__PURE__ @class */ (function () {
     TableCommand.prototype.createTable = function (e) {
         var table = createElement('table', { className: 'e-rte-table' });
         var tblBody = createElement('tbody');
-        table.style.width = e.item.width.width;
+        if (!isNullOrUndefined(e.item.width.width)) {
+            table.style.width = this.calculateStyleValue(e.item.width.width);
+        }
+        if (!isNullOrUndefined(e.item.width.minWidth)) {
+            table.style.minWidth = this.calculateStyleValue(e.item.width.minWidth);
+        }
+        if (!isNullOrUndefined(e.item.width.maxWidth)) {
+            table.style.maxWidth = this.calculateStyleValue(e.item.width.maxWidth);
+        }
         var tdWid = parseInt(e.item.width.width, 10) / e.item.columns;
         for (var i = 0; i < e.item.row; i++) {
             var row = createElement('tr');
@@ -10947,6 +11129,21 @@ var TableCommand = /** @__PURE__ @class */ (function () {
             });
         }
         return table;
+    };
+    TableCommand.prototype.calculateStyleValue = function (value) {
+        var styleValue;
+        if (typeof (value) === 'string') {
+            if (value.indexOf('px') || value.indexOf('%') || value.indexOf('auto')) {
+                styleValue = value;
+            }
+            else {
+                styleValue = value + 'px';
+            }
+        }
+        else {
+            styleValue = value + 'px';
+        }
+        return styleValue;
     };
     TableCommand.prototype.removeEmptyNode = function () {
         var emptyUl = this.parent.editableElement.querySelectorAll('ul:empty, ol:empty');
@@ -11494,7 +11691,7 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     var divNode = document.createElement('div');
-                    divNode.innerHTML = '&#65279;&#65279;';
+                    divNode.innerHTML = '&#8203;';
                     if (cloneNode.nodeType !== 3) {
                         cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
                         nodes[index] = cloneNode.firstChild;
@@ -11511,7 +11708,7 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                 for (; lastNode.firstChild !== null && lastNode.firstChild.nodeType !== 3; null) {
                     lastNode = lastNode.firstChild;
                 }
-                lastNode.innerHTML = '&#65279;&#65279;';
+                lastNode.innerHTML = '&#8203;';
                 nodes[index] = lastNode.firstChild;
             }
         }
@@ -11588,7 +11785,7 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
     };
     SelectionCommands.getInsertNode = function (docElement, range, format, value) {
         var element = this.GetFormatNode(format, value);
-        element.innerHTML = '&#65279;&#65279;';
+        element.innerHTML = '&#8203;';
         if (Browser.isIE) {
             var frag = docElement.createDocumentFragment();
             frag.appendChild(element);
@@ -11601,7 +11798,7 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
     };
     SelectionCommands.getChildNode = function (node, element) {
         if (node === undefined || node === null) {
-            element.innerHTML = '&#65279;';
+            element.innerHTML = '&#8203;';
             node = element.firstChild;
         }
         return node;
@@ -11735,7 +11932,7 @@ var InsertHtmlExec = /** @__PURE__ @class */ (function () {
         this.parent.observer.on(INSERTHTML_TYPE, this.applyHtml, this);
     };
     InsertHtmlExec.prototype.applyHtml = function (e) {
-        InsertHtml.Insert(this.parent.currentDocument, e.value, this.parent.editableElement);
+        InsertHtml.Insert(this.parent.currentDocument, e.value, this.parent.editableElement, true);
         if (e.subCommand === 'pasteCleanup') {
             e.callBack({
                 requestType: e.subCommand,
@@ -14092,7 +14289,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         return contentWithSpace;
     };
     PasteCleanup.prototype.imgUploading = function (elm) {
-        var allImgElm = elm.querySelector('#' + this.parent.getID() + '_pasteContent').querySelectorAll('img');
+        var allImgElm = elm.querySelectorAll('.pasteContent_Img');
         if (this.parent.insertImageSettings.saveUrl && allImgElm.length > 0) {
             var base64Src = [];
             var imgName = [];
@@ -14119,7 +14316,13 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         else if (this.parent.insertImageSettings.saveFormat === 'Blob') {
             this.getBlob(allImgElm);
         }
-        elm.querySelector('#' + this.parent.getID() + '_pasteContent').removeAttribute('id');
+        var allImgElmId = elm.querySelectorAll('.pasteContent_Img');
+        for (var i = 0; i < allImgElmId.length; i++) {
+            allImgElmId[i].classList.remove('pasteContent_Img');
+            if (allImgElmId[i].getAttribute('class').trim() === '') {
+                allImgElm[i].removeAttribute('class');
+            }
+        }
     };
     PasteCleanup.prototype.getBlob = function (allImgElm) {
         for (var i = 0; i < allImgElm.length; i++) {
@@ -14381,7 +14584,10 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         }
         this.saveSelection.restore();
         clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
-        clipBoardElem.setAttribute('id', this.parent.getID() + '_pasteContent');
+        var allImg = clipBoardElem.querySelectorAll('img');
+        for (var i = 0; i < allImg.length; i++) {
+            allImg[i].classList.add('pasteContent_Img');
+        }
         if (clipBoardElem.textContent !== '' || !isNullOrUndefined(clipBoardElem.querySelector('img')) ||
             !isNullOrUndefined(clipBoardElem.querySelector('table'))) {
             this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, function (returnArgs) {
@@ -16497,9 +16703,34 @@ var Image = /** @__PURE__ @class */ (function () {
                 _this.dialogObj = null;
             },
         };
+        var dialogContent = this.parent.createElement('div', { className: 'e-img-content' });
+        if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
+            || this.parent.editorMode === 'HTML') {
+            dialogContent.appendChild(this.imgUpload(e));
+        }
+        var linkHeader = this.parent.createElement('div', { className: 'e-linkheader' });
+        var linkHeaderText = this.i10n.getConstant('imageLinkHeader');
+        if (this.parent.editorMode === 'HTML') {
+            linkHeader.innerHTML = linkHeaderText;
+        }
+        else {
+            linkHeader.innerHTML = this.i10n.getConstant('mdimageLink');
+        }
+        dialogContent.appendChild(linkHeader);
+        dialogContent.appendChild(this.imageUrlPopup(e));
+        if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
+            dialogModel.header = this.parent.localeObj.getConstant('editImageHeader');
+            dialogModel.content = dialogContent;
+        }
+        else {
+            dialogModel.content = dialogContent;
+        }
         this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(imgDialog);
+        if (e.selectNode && e.selectNode[0].nodeName === 'IMG' && (e.name === 'insertImage')) {
+            this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
+        }
         imgDialog.style.maxHeight = 'inherit';
         if (this.quickToolObj) {
             if (this.quickToolObj.imageQTBar && document.body.contains(this.quickToolObj.imageQTBar.element)) {
@@ -16656,31 +16887,8 @@ var Image = /** @__PURE__ @class */ (function () {
     Image.prototype.insertImage = function (e) {
         this.imagDialog(e);
         if (!isNullOrUndefined(this.dialogObj)) {
-            var dialogContent = this.parent.createElement('div', { className: 'e-img-content' });
-            if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
-                || this.parent.editorMode === 'HTML') {
-                dialogContent.appendChild(this.imgUpload(e));
-            }
-            var linkHeader = this.parent.createElement('div', { className: 'e-linkheader' });
-            var linkHeaderText = this.i10n.getConstant('imageLinkHeader');
-            if (this.parent.editorMode === 'HTML') {
-                linkHeader.innerHTML = linkHeaderText;
-            }
-            else {
-                linkHeader.innerHTML = this.i10n.getConstant('mdimageLink');
-            }
-            dialogContent.appendChild(linkHeader);
-            dialogContent.appendChild(this.imageUrlPopup(e));
-            if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
-                this.dialogObj.setProperties({
-                    header: this.parent.localeObj.getConstant('editImageHeader'), content: dialogContent
-                });
-                this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
-            }
-            else {
-                this.dialogObj.setProperties({ content: dialogContent }, false);
-            }
             this.dialogObj.element.style.maxHeight = 'inherit';
+            var dialogContent = this.dialogObj.element.querySelector('.e-img-content');
             if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
                 || this.parent.editorMode === 'HTML') {
                 dialogContent.querySelector('#' + this.rteID + '_insertImage').focus();
@@ -18650,6 +18858,10 @@ var executeGroup = {
         command: 'Links',
         subCommand: 'createLink'
     },
+    'editLink': {
+        command: 'Links',
+        subCommand: 'createLink'
+    },
     'createImage': {
         command: 'Images',
         subCommand: 'Images'
@@ -18686,6 +18898,10 @@ var executeGroup = {
         value: '<hr/>'
     },
     'insertImage': {
+        command: 'Images',
+        subCommand: 'Image',
+    },
+    'editImage': {
         command: 'Images',
         subCommand: 'Image',
     },
@@ -19449,8 +19665,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'insertTable':
-                    value.width = { minWidth: this.tableSettings.minWidth,
-                        maxWidth: this.tableSettings.maxWidth, width: this.tableSettings.width };
+                    if (isNullOrUndefined(value.width)) {
+                        value.width = { minWidth: this.tableSettings.minWidth,
+                            maxWidth: this.tableSettings.maxWidth, width: this.tableSettings.width };
+                    }
                     break;
                 case 'insertImage':
                     var temp = this.createElement('img', {
@@ -19464,6 +19682,14 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     }).firstElementChild).getAttribute('src')) || null;
                     url = !isNullOrUndefined(url) ? url : '';
                     value.url = url;
+                    if (isNullOrUndefined(value.width)) {
+                        value.width = { minWidth: this.insertImageSettings.minWidth,
+                            maxWidth: this.insertImageSettings.maxWidth, width: this.insertImageSettings.width };
+                    }
+                    if (isNullOrUndefined(value.height)) {
+                        value.height = { minHeight: this.insertImageSettings.minHeight,
+                            maxHeight: this.insertImageSettings.maxHeight, height: this.insertImageSettings.height };
+                    }
                     break;
                 case 'createLink':
                     var tempNode = this.createElement('a', {
@@ -19755,57 +19981,59 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     RichTextEditor.prototype.destroy = function () {
-        this.notify(destroy, {});
-        this.destroyDependentModules();
-        if (!isNullOrUndefined(this.timeInterval)) {
-            clearInterval(this.timeInterval);
-            this.timeInterval = null;
-        }
-        this.unWireEvents();
-        if (this.originalElement.tagName === 'TEXTAREA') {
-            if (isBlazor()) {
-                detach(this.valueContainer);
-                this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
+        if (this.isRendered) {
+            this.notify(destroy, {});
+            this.destroyDependentModules();
+            if (!isNullOrUndefined(this.timeInterval)) {
+                clearInterval(this.timeInterval);
+                this.timeInterval = null;
             }
-            this.element.parentElement.insertBefore(this.valueContainer, this.element);
-            this.valueContainer.id = this.getID();
-            this.valueContainer.removeAttribute('name');
-            detach(this.element);
-            if (this.originalElement.innerHTML.trim() !== '') {
-                this.valueContainer.value = this.originalElement.innerHTML.trim();
-                if (!isBlazor()) {
+            this.unWireEvents();
+            if (this.originalElement.tagName === 'TEXTAREA') {
+                if (isBlazor()) {
+                    detach(this.valueContainer);
+                    this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
+                }
+                this.element.parentElement.insertBefore(this.valueContainer, this.element);
+                this.valueContainer.id = this.getID();
+                this.valueContainer.removeAttribute('name');
+                detach(this.element);
+                if (this.originalElement.innerHTML.trim() !== '') {
+                    this.valueContainer.value = this.originalElement.innerHTML.trim();
+                    if (!isBlazor()) {
+                        this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
+                    }
+                }
+                else {
+                    this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
+                }
+                this.element = this.valueContainer;
+                for (var i = 0; i < this.originalElement.classList.length; i++) {
+                    addClass([this.element], this.originalElement.classList[i]);
+                }
+                removeClass([this.element], CLS_RTE_HIDDEN);
+            }
+            else {
+                if (this.originalElement.innerHTML.trim() !== '') {
+                    this.element.innerHTML = this.originalElement.innerHTML.trim();
                     this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
                 }
+                else {
+                    this.element.innerHTML = '';
+                }
             }
-            else {
-                this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
+            if (this.placeholder && this.placeHolderWrapper) {
+                this.placeHolderWrapper = null;
             }
-            this.element = this.valueContainer;
-            for (var i = 0; i < this.originalElement.classList.length; i++) {
-                addClass([this.element], this.originalElement.classList[i]);
+            if (!isNullOrUndefined(this.cssClass)) {
+                removeClass([this.element], this.cssClass);
             }
-            removeClass([this.element], CLS_RTE_HIDDEN);
-        }
-        else {
-            if (this.originalElement.innerHTML.trim() !== '') {
-                this.element.innerHTML = this.originalElement.innerHTML.trim();
-                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
+            this.removeHtmlAttributes();
+            this.removeAttributes();
+            _super.prototype.destroy.call(this);
+            if (this.enablePersistence) {
+                window.localStorage.removeItem(this.getModuleName() + this.element.id);
             }
-            else {
-                this.element.innerHTML = '';
-            }
-        }
-        if (this.placeholder && this.placeHolderWrapper) {
-            this.placeHolderWrapper = null;
-        }
-        if (!isNullOrUndefined(this.cssClass)) {
-            removeClass([this.element], this.cssClass);
-        }
-        this.removeHtmlAttributes();
-        this.removeAttributes();
-        _super.prototype.destroy.call(this);
-        if (this.enablePersistence) {
-            window.localStorage.removeItem(this.getModuleName() + this.element.id);
         }
     };
     RichTextEditor.prototype.removeHtmlAttributes = function () {
@@ -20580,7 +20808,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 trg = null;
             }
         }
-        if (this.isBlur && isNullOrUndefined(trg)) {
+        if (this.isBlur && isNullOrUndefined(trg) && !this.readonly) {
             removeClass([this.element], [CLS_FOCUS]);
             this.notify(focusChange, {});
             var value = this.getUpdatedValue();

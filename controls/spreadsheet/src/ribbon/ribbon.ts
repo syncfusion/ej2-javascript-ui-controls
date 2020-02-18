@@ -56,7 +56,7 @@ export class RibbonItem extends ChildProperty<RibbonItem> {
      * Sets the CSS classes to the Tab item to customize its styles.
      * @default ''
      */
-    @Property({})
+    @Property('')
     public cssClass: string;
     /**
      * Sets true to disable user interactions of the Tab item.
@@ -222,11 +222,12 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             expandCollapseElem.removeEventListener('click', this.ribbonExpandCollapse.bind(this));
         }
         if (this.menuItems.length) {
-            let fileMenu: HTMLElement = document.getElementById(`${this.element.id}_menu_items`);
+            let fileMenu: HTMLElement = document.getElementById(`${this.element.id}_menu`);
             if (fileMenu) { (getComponent(fileMenu, 'menu') as Menu).destroy(); }
         }
         this.toolbarObj.destroy();
         this.tabObj.destroy();
+        this.element.innerHTML = '';
         this.toolbarObj = null; this.tabObj = null;
         super.destroy();
     }
@@ -250,7 +251,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     }
 
     private initMenu(menuItems: MenuItemModel[]): HTMLElement {
-        let menu: HTMLElement = this.createElement('ul', { id: `${this.element.id}_menu_items` });
+        let menu: HTMLElement = this.createElement('ul', { id: `${this.element.id}_menu` });
         this.element.appendChild(menu);
         let menuObj: Menu = new Menu({
             cssClass: 'e-file-menu',
@@ -298,7 +299,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 if (this.menuItems.length && args.selectingIndex === 0) {
                     args.cancel = true;
                 } else {
-                    this.toolbarObj.items = this.items[this.getIndex(args.selectingIndex, true)].content;
+                    if (args.selectingIndex === this.getIndex(this.selectedTab)) { return; }
+                    this.updateToolbar(this.getIndex(args.selectingIndex, true));
                     this.toolbarObj.dataBind();
                     if (this.element.classList.contains('e-collapsed')) {
                         EventHandler.remove(args.selectedItem, 'click', this.ribbonExpandCollapse);
@@ -314,6 +316,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 }
             },
             selected: (args: TabSelectEventArgs): void => {
+                if (args.selectedIndex === this.getIndex(this.selectedTab)) { return; }
                 this.setProperties({ 'selectedTab': this.getIndex(args.selectedIndex, true) }, true);
                 if (this.element.classList.contains('e-collapsed')) {
                     this.element.classList.remove('e-collapsed');
@@ -323,7 +326,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             created: (): void => {
                 let collapseBtn: Element = this.createElement('span', { className: 'e-drop-icon e-icons' });
                 collapseBtn.addEventListener('click', this.ribbonExpandCollapse.bind(this));
-                this.tabObj.element.querySelector('.e-tab-header').appendChild(collapseBtn);
+                let header: Element = this.tabObj.element.querySelector('.e-tab-header');
+                header.insertBefore(collapseBtn, header.getElementsByClassName('e-toolbar-items')[0]);
                 this.toolbarObj.refreshOverflow();
             }
         });
@@ -355,51 +359,142 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
         return this.menuItems.length ? (decrement ? index - 1 : index + 1) : index;
     }
 
-    /**
-     * Enables or disables the specified Ribbon items or all ribbon items.
-     * @param  {boolean} enable  - Boolean value that determines whether the command should be enabled or disabled.
-     * @param  {HTMLElement} items - DOM element or an array of items to be enabled or disabled.
-     * By default, `isEnable` is set to true.
-     * @returns void.
-     */
-    public enableItems(enable: boolean, items?: HTMLElement): void {
-        if (items) {
-            this.toolbarObj.enableItems(items, enable);
-        } else {
-            this.toolbarObj.disable(!enable);
-        }
+    private updateToolbar(index: number): void {
+        this.toolbarObj.items = this.items[index].content; this.toolbarObj.dataBind();
     }
 
     /**
      * To enable / disable the ribbon menu items.
      * @param {string[]} items - Items that needs to be enabled / disabled.
      * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
      * @returns void.
      */
-    public enableMenuItems(items: string[], enable: boolean = true): void {
+    public enableMenuItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
         if (!this.menuItems.length) { return; }
-        (getComponent(document.getElementById(`${this.element.id}_menu_items`), 'menu') as Menu).enableItems(items, enable);
+        (getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu).enableItems(items, enable, isUniqueId);
+    }
+
+    /**
+     * To show/hide the menu items in Ribbon.
+     * @param {string[]} items - Specifies the menu items text which is to be show/hide.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
+     * @returns void.
+     */
+    public hideMenuItems(items: string[], hide: boolean = true, isUniqueId?: boolean): void {
+        if (!this.menuItems.length) { return; }
+        let menuInstance: Menu = getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu;
+        hide ? menuInstance.hideItems(items, isUniqueId) : menuInstance.showItems(items, isUniqueId);
+    }
+
+    /**
+     * To add custom menu items.
+     * @param {MenuItemModel[]} items - Specifies the Ribbon menu items to be inserted.
+     * @param {string} text - Specifies the existing file menu item text before / after which the new file menu items to be inserted.
+     * @param {boolean} insertAfter? - Set `false` if the `items` need to be inserted before the `text`.
+     * By default, `items` are added after the `text`.
+     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
+     * @returns void.
+     */
+    public addMenuItems(items: MenuItemModel[], text: string, insertAfter: boolean = true, isUniqueId?: boolean): void {
+        if (!this.menuItems.length) { return; }
+        let menuInstance: Menu = getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu;
+        insertAfter ? menuInstance.insertAfter(items.reverse(), text, isUniqueId) : menuInstance.insertBefore(items, text, isUniqueId);
+    }
+
+    /**
+     * To show/hide the Ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
+     * @returns void.
+     */
+    public hideTabs(tabs: string[], hide: boolean = true): void {
+        let idx: number; let activeTab: boolean; let stateChanged: boolean; let isAllHidden: boolean;
+        if (!hide) { isAllHidden = this.isAllHidden(); }
+        tabs.forEach((tab: string): void => {
+            idx = this.getTabIndex(tab, -1);
+            if (idx > -1) {
+                if (hide) {
+                    if (!this.items[idx].cssClass.includes(' e-hide')) {
+                        this.items[idx].cssClass = `${this.items[idx].cssClass} e-hide`;
+                        this.tabObj.items[this.getIndex(idx)].cssClass = this.items[idx].cssClass;
+                        if (activeTab === undefined && idx === this.selectedTab) { activeTab = true; }
+                        stateChanged = true;
+                    }
+                } else {
+                    if (this.items[idx].cssClass.includes(' e-hide')) {
+                        this.items[idx].cssClass = this.items[idx].cssClass.replace(' e-hide', '');
+                        this.tabObj.items[this.getIndex(idx)].cssClass = this.items[idx].cssClass;
+                        if (activeTab === undefined && idx === this.selectedTab) { activeTab = true; }
+                        stateChanged = true;
+                    }
+                }
+            }
+        });
+        this.setProperties({ 'items': this.items }, true);
+        this.tabObj.items = this.tabObj.items; this.tabObj.dataBind();
+        if (hide) { isAllHidden = this.isAllHidden(); if (isAllHidden) { activeTab = false; } }
+        if (!hide && isAllHidden) { activeTab = activeTab ? false : true; }
+        if (stateChanged && isAllHidden) {
+            if (this.element.classList.contains('e-collapsed')) {
+                this.element.classList.remove('e-collapsed'); this.element.querySelector('.e-drop-icon').classList.remove('e-hide');
+            } else {
+                this.element.classList.add('e-collapsed'); this.element.querySelector('.e-drop-icon').classList.add('e-hide');
+            }
+        }
+        if (activeTab) {
+            for (let i: number = 0; i < this.items.length; i++) {
+                if (!this.items[i].cssClass.includes(' e-hide')) {
+                    this.tabObj.selectedItem = this.getIndex(i); this.tabObj.dataBind(); break;
+                }
+            }
+        }
+    }
+
+    private isAllHidden(): boolean {
+        let allHidden: boolean = true;
+        for (let i: number = 0; i < this.items.length; i++) {
+            if (!this.items[i].cssClass.includes(' e-hide')) { allHidden = false; break; }
+        }
+        return allHidden;
+    }
+
+    /**
+     * To enable / disable the Ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
+     * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
+     * @returns void.
+     */
+    public enableTabs(tabs: string[], enable: boolean = true): void {
+        tabs.forEach((tab: string): void => {
+            let idx: number = (this.getTabIndex(tab, -1));
+            if (idx > -1) {
+                this.items[idx].disabled = !enable; idx = this.getIndex(idx); this.tabObj.enableTab(idx, enable);
+            }
+        });
+        this.setProperties({ 'items': this.items }, true);
     }
 
     /**
      * To add custom tabs.
      * @param {RibbonItemModel[]} items - Specifies the Ribbon tab items to be inserted.
-     * @param {string} insertBefore? - specifies the existing Ribbon header text before which the new tabs will be inserted.
+     * @param {string} insertBefore? - Specifies the existing Ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
+     * @returns void.
      */
     public addTabs(items: RibbonItemModel[], insertBefore?: string): void {
         let idx: number = this.getTabIndex(insertBefore);
         items.forEach((item: RibbonItemModel): void => {
-            item = new RibbonItem(<RibbonItem>this.items[0], 'items', item, true);
-            this.items.splice(idx, 0, item);
+            item = new RibbonItem(<RibbonItem>this.items[0], 'items', item, true); this.items.splice(idx, 0, item);
             this.tabObj.addTab([{ header: item.header, content: this.toolbarObj.element }], this.getIndex(idx));
             idx++;
         });
+        this.setProperties({ 'items': this.items }, true);
         this.setProperties({ 'selectedTab': this.getIndex(this.tabObj.selectedItem, true) }, true);
     }
 
-    private getTabIndex(headerText: string): number {
-        let idx: number = this.items.length;
+    private getTabIndex(headerText: string, idx: number = this.items.length): number {
         if (headerText) {
             for (let i: number = 0; i < this.items.length; i++) {
                 if (this.items[i].header.text === headerText) { idx = i; break; }
@@ -411,8 +506,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     /**
      * To add the custom items in Ribbon toolbar.
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted..
-     * @param {ItemModel[]} items - specifies the ribbon toolbar items that needs to be inserted.
-     * @param {number} index? - specifies the index text before which the new items will be inserted.
+     * @param {ItemModel[]} items - Specifies the ribbon toolbar items that needs to be inserted.
+     * @param {number} index? - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
      */
     public addToolbarItems(tab: string, items: ItemModel[], index?: number): void {
@@ -422,9 +517,68 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             item = new Item(<Item>this.items[tabIdx].content[0], 'content', item, true);
             this.items[tabIdx].content.splice(index, 0, item); index++;
         });
-        if (tabIdx === this.selectedTab && items.length) {
-            this.toolbarObj.items = this.items[tabIdx].content; this.toolbarObj.dataBind();
+        this.setProperties({ 'items': this.items }, true);
+        if (tabIdx === this.selectedTab && items.length) { this.updateToolbar(tabIdx); }
+    }
+
+    /**
+     * Enables or disables the specified Ribbon toolbar items or all ribbon items.
+     * @param {string} tab - Specifies the ribbon tab header text under which the toolbar items need to be enabled / disabled.
+     * @param {string[]} items? - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
+     * If it is not specified the entire toolbar items will be enabled / disabled.
+     * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
+     * @returns void.
+     */
+    public enableItems(tab: string, items?: number[] | string[], enable?: boolean): void {
+        if (enable === undefined) { enable = true; }
+        if (items) {
+            let tabIdx: number = this.getTabIndex(tab, -1);
+            if (tabIdx < 0) { return; }
+            for (let i: number = 0; i < items.length; i++) {
+                if (typeof(items[i]) === 'string') {
+                    for (let j: number = 0; j < this.items[tabIdx].content.length; j++) {
+                        if (this.items[tabIdx].content[j].id === items[i]) { items[i] = j; break; }
+                    }
+                }
+                if (typeof(items[i]) === 'string') { return; }
+                this.items[tabIdx].content[items[i]].disabled = !enable;
+            }
+            if (tabIdx === this.selectedTab) { this.updateToolbar(tabIdx); }
+        } else {
+            this.toolbarObj.disable(!enable);
         }
+    }
+
+    /**
+     * To show/hide the existing Ribbon toolbar items.
+     * @param {string} tab - Specifies the ribbon tab header text under which the specified items need to be hidden / shown.
+     * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
+     * @returns void.
+     */
+    public hideToolbarItems(tab: string, indexes: number[], hide: boolean = true): void {
+        let tabIdx: number;
+        for (let i: number = 0; i < this.items.length; i++) {
+            if (this.items[i].header.text === tab) {
+                tabIdx = i;
+                indexes.forEach((idx: number): void => {
+                    if (this.items[tabIdx].content[idx]) {
+                        if (hide) {
+                            if (!this.items[tabIdx].content[idx].cssClass.includes(' e-hide')) {
+                                this.items[tabIdx].content[idx].cssClass = this.items[tabIdx].content[idx].cssClass + ' e-hide';
+                            }
+                        } else {
+                            if (this.items[tabIdx].content[idx].cssClass.includes(' e-hide')) {
+                                this.items[tabIdx].content[idx].cssClass = this.items[tabIdx].content[idx].cssClass.replace(' e-hide', '');
+                            }
+                        }
+                    }
+                });
+                break;
+            }
+        }
+        this.setProperties({ 'items': this.items }, true);
+        if (tabIdx !== undefined && tabIdx === this.selectedTab) { this.updateToolbar(tabIdx); }
     }
 
     /**

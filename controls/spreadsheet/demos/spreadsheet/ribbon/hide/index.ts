@@ -26,7 +26,24 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    name: 'PriceDetails',
+    rangeSettings: [{
+        dataSource: dataSource,
+        startCell: 'A1'
+    }],
+    rowCount: 200,
+    columns: columns
+},
+{
+    state: 'VeryHidden',
+    rangeSettings: [{
+        dataSource: dataSource,
+        startCell: 'A1'
+    }],
+    rowCount: 200,
+    columns: columns
+},
+{
+    state: 'Hidden',
     rangeSettings: [{
         dataSource: dataSource,
         startCell: 'A1'
@@ -38,7 +55,7 @@ let sheet: SheetModel[] = [{
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Sheet1') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Price Details') {
             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         }
     },
@@ -47,6 +64,12 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     created: (): void => {
         spreadsheet.hideRibbonTabs(['Formulas', 'Insert']);
         spreadsheet.addRibbonTabs([{ header: { text: 'Custom' }, content: [{ text: 'Custom', tooltipText: 'Custom Btn' }] }], 'View');
+        spreadsheet.hideToolbarItems('Home', [0, 1, 2, 4, 14, 15, 22, 23, 24]);
+        spreadsheet.hideToolbarItems('View', [1, 2]);
+    },
+    fileMenuBeforeOpen: (): void => {
+        spreadsheet.hideFileMenuItems(['New', 'Comma-separated values']);
+        spreadsheet.hideFileMenuItems([`${spreadsheet.element.id}_Xls`], true, true);
     }
 });
 

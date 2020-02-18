@@ -3,18 +3,18 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, ConnectorConstraints, PortConstraints, PortVisibility  } from '../../../src/diagram/enum/enum';
+import { Segments, ConnectorConstraints, PortConstraints, PortVisibility } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { SnapConstraints } from '../../../src/diagram/index';
+import { SnapConstraints, Snapping, ConnectorBridging } from '../../../src/diagram/index';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { ConnectorEditing } from '../../../src/diagram/interaction/connector-editing';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
-Diagram.Inject(ConnectorEditing);
+Diagram.Inject(ConnectorEditing, Snapping, ConnectorBridging);
 /**
  * Editing test cases
  */
@@ -37,11 +37,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'SegmentsCopyAndPaste' });
             document.body.appendChild(ele);
             let connector1: ConnectorModel = {
@@ -165,11 +165,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'SegmentsUndoRedo' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -304,7 +304,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.connectors[0].sourceID == srcNode.id).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Multiple Segments connect to source node ', () => {
         let diagram: Diagram;
@@ -314,11 +314,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'SegmentsConnect' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -427,7 +427,9 @@ describe('Diagram Control', () => {
             diagram.select([diagram.connectors[0]]);
             mouseEvents.clickEvent(diagramCanvas, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y - diagram.element.offsetTop);
             mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y - diagram.element.offsetTop, diagram.nodes[0].offsetX + diagram.element.offsetLeft, diagram.nodes[0].offsetY + diagram.element.offsetTop);
-            expect(diagram.selectedItems.connectors[0].segments.length == 2).toBe(true);
+            if (diagram.selectedItems.connectors[0] && diagram.selectedItems.connectors[0].segments) {
+                expect(diagram.selectedItems.connectors[0].segments.length == 2).toBe(true);
+            }
             done();
         });
         it('Checking drag source point - first segment(Right) and length greater than node width', (done: Function) => {
@@ -455,7 +457,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.connectors[0].segments.length == 3).toBe(true);
             done();
         });
-         });
+    });
 
 
     describe('Multiple Segments update segments when drag the source node (connect to node)', () => {
@@ -466,11 +468,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'SegmentsChangeSourceNodeDrag1' });
             document.body.appendChild(ele);
 
@@ -672,11 +674,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'SegmentsChangeSourceNodeDrag' });
             document.body.appendChild(ele);
 
@@ -1094,7 +1096,7 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[7] as Connector).intermediatePoints[0].x == 1070 && (diagram.connectors[7] as Connector).intermediatePoints[0].y == 300 && (diagram.connectors[7] as Connector).intermediatePoints[1].x == 1055 && (diagram.connectors[7] as Connector).intermediatePoints[1].y == 300 && (diagram.connectors[7] as Connector).intermediatePoints[2].x == 1055 && (diagram.connectors[7] as Connector).intermediatePoints[2].y == 250 && (diagram.connectors[7] as Connector).intermediatePoints[3].x == 1005 && (diagram.connectors[7] as Connector).intermediatePoints[3].y == 250 && (diagram.connectors[7] as Connector).intermediatePoints[4].x == 1005 && (diagram.connectors[7] as Connector).intermediatePoints[4].y == 220 && (diagram.connectors[7] as Connector).intermediatePoints[5].x == 950 && (diagram.connectors[7] as Connector).intermediatePoints[5].y == 220).toBe(true);
             done();
         });
-         });
+    });
 
     describe('Conectors with segments - Orthogonal Segment Interaction(Port To Node)', () => {
         let diagram: Diagram;
@@ -1103,11 +1105,11 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'PortToNodeIssue' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1156,7 +1158,7 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 147.55 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 235 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 97.55 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 235 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 97.55 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 135 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 170 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 135).toBe(true);
             done();
         });
-      });
+    });
 
     describe('Conectors with segments - Orthogonal Segment Interaction(Port To Node)', () => {
         let diagram: Diagram;
@@ -1165,11 +1167,11 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'MultipleSelectionDraggingNodeAndConnectorConnectToNode' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1224,7 +1226,7 @@ describe('Diagram Control', () => {
                 (diagram.connectors[0].wrapper.children[0] as PathElement).data == 'M76 200 L66 200 L66 250 L116 250 L116 300 L299.5 300').toBe(true);
             done();
         });
-       });
+    });
 
     describe('Conectors with segments - Terminal segment(Two points) - Drag target point', () => {
         let diagram: Diagram;
@@ -1233,11 +1235,11 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'TerminalSegmentTwoPoints' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1245,22 +1247,22 @@ describe('Diagram Control', () => {
                     {
                         id: 'Conn1', sourcePoint: { x: 300, y: 200 },
                         targetPoint: { x: 400, y: 100 }, type: 'Orthogonal',
-                        segments: [{type: 'Orthogonal', direction: 'Top', length: 100 }]
+                        segments: [{ type: 'Orthogonal', direction: 'Top', length: 100 }]
                     },
                     {
                         id: 'Conn2', sourcePoint: { x: 300, y: 300 },
                         targetPoint: { x: 400, y: 400 }, type: 'Orthogonal',
-                        segments: [{ type: 'Orthogonal',direction: 'Right', length: 100 }]
+                        segments: [{ type: 'Orthogonal', direction: 'Right', length: 100 }]
                     },
                     {
                         id: 'Conn3', sourcePoint: { x: 200, y: 300 },
                         targetPoint: { x: 100, y: 400 }, type: 'Orthogonal',
-                        segments: [{ type: 'Orthogonal',direction: 'Bottom', length: 100 }]
+                        segments: [{ type: 'Orthogonal', direction: 'Bottom', length: 100 }]
                     },
                     {
                         id: 'Conn4', sourcePoint: { x: 200, y: 200 },
                         targetPoint: { x: 100, y: 100 }, type: 'Orthogonal',
-                        segments: [{ type: 'Orthogonal',direction: 'Left', length: 100 }]
+                        segments: [{ type: 'Orthogonal', direction: 'Left', length: 100 }]
                     }
                 ],
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
@@ -1282,19 +1284,19 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 10, 10);
             diagram.select([diagram.connectors[0]]);
             mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[0].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[0].targetPoint.y + diagram.element.offsetTop, 400 + diagram.element.offsetLeft, 90 + diagram.element.offsetTop);
-            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 200 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 98 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 400 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 98).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 200 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 98 && ((diagram.connectors[0] as Connector).intermediatePoints[2].x == 400 || (diagram.connectors[0] as Connector).intermediatePoints[2].x == 408) && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 98).toBe(true);
             diagram.select([diagram.connectors[1]]);
             mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[1].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[1].targetPoint.y + diagram.element.offsetTop, 410 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop);
-            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 300 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 410 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 300 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 410 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 408).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 300 && ((diagram.connectors[1] as Connector).intermediatePoints[1].x == 410 || (diagram.connectors[1] as Connector).intermediatePoints[1].x == 418) && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 300 && ((diagram.connectors[1] as Connector).intermediatePoints[2].x == 410 || (diagram.connectors[1] as Connector).intermediatePoints[2].x == 418) && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 408).toBe(true);
             diagram.select([diagram.connectors[2]]);
             mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[2].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[2].targetPoint.y + diagram.element.offsetTop, 100 + diagram.element.offsetLeft, 410 + diagram.element.offsetTop);
-            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 300 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 200 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 418 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 100 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 418).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 300 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 200 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 418 && ((diagram.connectors[2] as Connector).intermediatePoints[2].x == 100 || (diagram.connectors[2] as Connector).intermediatePoints[2].x == 108) && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 418).toBe(true);
             diagram.select([diagram.connectors[3]]);
             mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[3].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[3].targetPoint.y + diagram.element.offsetTop, 100 + diagram.element.offsetLeft, 110 + diagram.element.offsetTop);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 200 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 100 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 200 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 100 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 118).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 200 && ((diagram.connectors[3] as Connector).intermediatePoints[1].x == 100 || (diagram.connectors[3] as Connector).intermediatePoints[1].x == 108) && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 200 && ((diagram.connectors[3] as Connector).intermediatePoints[2].x == 100 || (diagram.connectors[3] as Connector).intermediatePoints[2].x == 108) && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 118).toBe(true);
             done();
         });
-        it('memory leak', () => {     
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -1311,13 +1313,13 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            
+
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'SourceNodeRotion' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1372,7 +1374,7 @@ describe('Diagram Control', () => {
         });
     });
     describe('Check connector ', () => {
-       
+
         let diagram: Diagram;
         let ele: HTMLElement;
         let diagramCanvas: HTMLElement;
@@ -1380,90 +1382,92 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'checkconnector' });
             document.body.appendChild(ele);
             let port: PointPortModel[] =
-[{ id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle',
+                [{
+                    id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle',
 
-constraints: PortConstraints.Draw,
+                    constraints: PortConstraints.Draw,
 
-offset: { x: 0, y: 0.5 } },
-{ id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
-{ id: 'port3', visibility: PortVisibility.Hidden, shape: 'Circle', offset: { x: 1, y: 0.5 } },
-{ id: 'port4', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 0.5, y: 1 } }
-]
-let nodes: NodeModel[] = [
-    {
-        id: 'node1', width: 50, height: 50, offsetX: 100,
-        offsetY: 100,ports:port
-    }, {
-        id: 'node2', width: 50, height: 50, offsetX: 300,
-        offsetY: 100,ports:port
-    },
-    {
-        id: 'node3', width: 50, height: 50, offsetX: 100,
-        offsetY: 200,ports:port
-    },
-    {
-        id: 'node4', width: 50, height: 50, offsetX: 300,
-        offsetY: 200,ports:port
-    },
-];
+                    offset: { x: 0, y: 0.5 }
+                },
+                { id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+                { id: 'port3', visibility: PortVisibility.Hidden, shape: 'Circle', offset: { x: 1, y: 0.5 } },
+                { id: 'port4', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 0.5, y: 1 } }
+                ]
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 50, height: 50, offsetX: 100,
+                    offsetY: 100, ports: port
+                }, {
+                    id: 'node2', width: 50, height: 50, offsetX: 300,
+                    offsetY: 100, ports: port
+                },
+                {
+                    id: 'node3', width: 50, height: 50, offsetX: 100,
+                    offsetY: 200, ports: port
+                },
+                {
+                    id: 'node4', width: 50, height: 50, offsetX: 300,
+                    offsetY: 200, ports: port
+                },
+            ];
 
 
-let connectors: ConnectorModel[] = [      {
-    id: 'connector1', sourceID:'node1', targetID:'node2', type:'Orthogonal'
-},
-{
-    id: 'connector2', sourceID:'node3', targetID:'node4', type:'Orthogonal'
-},
-{
-    id: 'connector3', sourceID:'node2', targetID:'node3', type:'Orthogonal',
-    segments: [{direction: 'Bottom', type: 'Orthogonal', length: 20}, 
-    {direction: 'Left', type: 'Orthogonal', length: 50}],
+            let connectors: ConnectorModel[] = [{
+                id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal'
+            },
+            {
+                id: 'connector2', sourceID: 'node3', targetID: 'node4', type: 'Orthogonal'
+            },
+            {
+                id: 'connector3', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal',
+                segments: [{ direction: 'Bottom', type: 'Orthogonal', length: 20 },
+                { direction: 'Left', type: 'Orthogonal', length: 50 }],
 
-},
-{
-    id: 'connector11',
-    type: 'Orthogonal',
-    sourcePoint: { x: 200, y: 500 },
-    segments: [{
-        type: 'Orthogonal',
-        direction: 'Top', length: 100
-    },
-    {
-        type: 'Orthogonal',
-        direction: 'Right', length: 50
-    },
-    ],
-    targetPoint: { x: 400, y: 500 }
-},
-{
-    id: 'connector12',
-    type: 'Orthogonal',
-    sourceID: 'node2',
-    segments: [{
-        type: 'Orthogonal',
-        direction: 'Bottom', length: 10
-    },
-    {
-        type: 'Orthogonal',
-        direction: 'Left', length: 50
-    },
-    {
-        type: 'Orthogonal',
-        direction: 'Top', length: 50
-    },
-    ],
-    targetPoint: { x: 1000, y: 100 }
-}];
+            },
+            {
+                id: 'connector11',
+                type: 'Orthogonal',
+                sourcePoint: { x: 200, y: 500 },
+                segments: [{
+                    type: 'Orthogonal',
+                    direction: 'Top', length: 100
+                },
+                {
+                    type: 'Orthogonal',
+                    direction: 'Right', length: 50
+                },
+                ],
+                targetPoint: { x: 400, y: 500 }
+            },
+            {
+                id: 'connector12',
+                type: 'Orthogonal',
+                sourceID: 'node2',
+                segments: [{
+                    type: 'Orthogonal',
+                    direction: 'Bottom', length: 10
+                },
+                {
+                    type: 'Orthogonal',
+                    direction: 'Left', length: 50
+                },
+                {
+                    type: 'Orthogonal',
+                    direction: 'Top', length: 50
+                },
+                ],
+                targetPoint: { x: 1000, y: 100 }
+            }];
             diagram = new Diagram({
-                width: 1000, height: 1000, connectors: connectors,nodes:nodes,
+                width: 1000, height: 1000, connectors: connectors, nodes: nodes,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -1480,15 +1484,14 @@ let connectors: ConnectorModel[] = [      {
             ele.remove();
         });
         it('Checking when editing an Orthogonal connector segment in a group', (done: Function) => {
-            debugger;
             diagram.selectAll();
             diagram.group();
             mouseEvents.dragAndDropEvent(diagramCanvas, 500 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, 500 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop);
             expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 225 &&
-            (diagram.connectors[4] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 235 &&
-            (diagram.connectors[4] as Connector).intermediatePoints[2].x == 250 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 235 &&
-            (diagram.connectors[4] as Connector).intermediatePoints[3].x == 250 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 185 &&
-            (diagram.connectors[4] as Connector).intermediatePoints[4].x == 1000 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 185
+                (diagram.connectors[4] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 235 &&
+                (diagram.connectors[4] as Connector).intermediatePoints[2].x == 250 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 235 &&
+                (diagram.connectors[4] as Connector).intermediatePoints[3].x == 250 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 185 &&
+                (diagram.connectors[4] as Connector).intermediatePoints[4].x == 1000 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 185
             ).toBe(true);
             done();
         });

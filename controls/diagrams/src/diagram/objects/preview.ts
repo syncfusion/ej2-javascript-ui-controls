@@ -6,7 +6,7 @@ import { ChildProperty, Property } from '@syncfusion/ej2-base';
 export class SymbolSize extends ChildProperty<SymbolSize> {
 
     /**
-     * Sets the width of the symbols
+     * Defines diagram symbol width
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -15,7 +15,7 @@ export class SymbolSize extends ChildProperty<SymbolSize> {
     public width: number;
 
     /**
-     * Sets the height of the symbols
+     * Defines diagram symbol height.
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

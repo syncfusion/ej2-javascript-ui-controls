@@ -21,7 +21,7 @@ import { PdfExport } from '../../../src/grid/actions/pdf-export';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import { ContextMenuItemModel } from '../../../src/grid/base/interface';
 import { calculatePosition } from '@syncfusion/ej2-popups';
-import { ContextMenuModel } from '@syncfusion/ej2-navigations';
+import { ContextMenuModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
@@ -645,6 +645,48 @@ describe('column menu module', () => {
         afterAll(() => {
            destroy(gridObj);
            gridObj = null;
+        });
+    });
+
+    describe('EJ2-36302-column menu hide hide', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                showColumnMenu: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 120, showColumnMenu: false },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 170, showInColumnChooser: false },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150, visible: false, textAlign: 'Right' }
+                ]
+            }, done);
+        });
+        it('column menu open', (done: Function) => {
+            gridObj.columnMenuItems = [{ text: 'Apply value down', id: 'setvalueforrows' },'Ungroup'] as any;
+            gridObj.dataBind();
+            let colMenu = gridObj.columnMenuModule as any;
+            let columnMenuObj = colMenu.columnMenu as ContextMenuModel;
+            let eve = {
+                target: gridObj.element.querySelectorAll('.e-columnmenu')[1],
+                preventDefault: function () { }
+            };
+            gridObj.columnMenuOpen = function (args: ColumnMenuOpenEventArgs) {
+                (args.items[0] as any).hide = true;
+                (args.items[1] as any).hide = true;
+            }
+            colMenu.openColumnMenu(eve);
+            columnMenuObj.onOpen = function (args: OpenCloseMenuEventArgs) {
+                expect(args.element.children[0].classList.contains('e-menu-hide')).toBeTruthy();
+                expect(args.element.children[1].classList.contains('e-menu-hide')).toBeTruthy();
+                done();
+                colMenu.columnMenu.close();
+            };
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 

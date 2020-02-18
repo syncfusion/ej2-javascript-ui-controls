@@ -144,7 +144,7 @@ export class HeaderRenderer {
         }
     }
     public updateActiveView(): void {
-        let selEle: NodeList = this.toolbarObj.element.querySelectorAll('.e-views');
+        let selEle: HTMLElement[] = [].slice.call(this.toolbarObj.element.querySelectorAll('.e-views'));
         removeClass(selEle, ['e-active-view']);
         if (selEle.length > 0 && selEle[this.parent.viewIndex]) {
             addClass(<Element[]>[selEle[this.parent.viewIndex]], ['e-active-view']);

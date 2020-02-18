@@ -2,6 +2,9 @@ import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink } from '../common/index';
 import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle } from '../../workbook/common/index';
 import { CellModel, SheetModel } from '../../workbook';
+import { setCell } from '../../workbook/base/cell';
+import { RowModel } from '../../workbook/base/row-model';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Represents keyboard shortcut support for Spreadsheet.
@@ -35,8 +38,15 @@ export class KeyboardShortcut {
             }
             if (e.keyCode === 75) {
                 let sheet: SheetModel = this.parent.getActiveSheet();
-                let idx: number[] = getCellIndexes(sheet.activeCell);
-                let cell: CellModel = sheet.rows[idx[0]].cells[idx[1]];
+                let indexes: number[] = getCellIndexes(sheet.activeCell);
+                let row: RowModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
+                let cell: CellModel;
+                if (!isNullOrUndefined(row)) {
+                    cell = row.cells[indexes[1]];
+                }
+                if (isNullOrUndefined(cell)) {
+                    setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
+                }
                 e.preventDefault();
                 if (cell && cell.hyperlink) {
                     this.parent.notify(editHyperlink, null);

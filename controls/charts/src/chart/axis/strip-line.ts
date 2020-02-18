@@ -11,6 +11,7 @@ import {
 } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { ZIndex, Anchor, SizeType } from '../utils/enum';
+import { DataUtil } from '@syncfusion/ej2-data';
 /**
  * `StripLine` module is used to render the stripLine in chart.
  */
@@ -24,7 +25,7 @@ export class StripLine {
      * @param segmentAxis
      */
     private measureStripLine(
-        axis: Axis, stripline: StripLineSettingsModel, seriesClipRect: Rect, startValue: number, segmentAxis: Axis
+        axis: Axis, stripline: StripLineSettingsModel, seriesClipRect: Rect, startValue: number, segmentAxis: Axis, chart: Chart
     ): Rect {
         let actualStart: number; let actualEnd: number;
         let orientation: string = axis.orientation;
@@ -33,14 +34,17 @@ export class StripLine {
             actualEnd = null;
         } else {
             if (axis.valueType === 'DateTimeCategory') {
-                let start: Date | number = stripline.start;
-                let end: Date | number = stripline.end;
-                actualStart = (start != null && typeof start !== 'number') ? axis.labels.indexOf((start).getTime().toString()) :
-                    start as number;
-                actualEnd = (end != null && typeof end !== 'number') ? axis.labels.indexOf((end).getTime().toString()) : end as number;
+                let start: Date | number | Object = stripline.start;
+                let end: Date | number | Object = stripline.end;
+                actualStart = (start != null && typeof start !== 'number') ?
+                    axis.labels.indexOf(this.dateToMilliSeconds(start, chart).toString()) : start as number;
+                actualEnd = (end != null && typeof end !== 'number') ?
+                    axis.labels.indexOf(this.dateToMilliSeconds(end, chart).toString()) : end as number;
             } else {
-                actualStart = stripline.start === null ? null : +stripline.start;
-                actualEnd = stripline.end === null ? null : +stripline.end;
+                actualStart = stripline.start === null ? null : this.isCoreDate(stripline.start) ?
+                    this.dateToMilliSeconds(stripline.start, chart) : +stripline.start;
+                actualEnd = stripline.end === null ? null : this.isCoreDate(stripline.start) ?
+                    this.dateToMilliSeconds(stripline.end, chart) : +stripline.end;
             }
         }
         let rect: { from: number, to: number } = this.getFromTovalue(
@@ -54,7 +58,11 @@ export class StripLine {
             ((stripline.sizeType === 'Pixel' ? rect.from : rect.to) * axis.rect.height));
         if (stripline.isSegmented && stripline.segmentStart != null && stripline.segmentEnd != null && stripline.sizeType !== 'Pixel') {
             let segRect: { from: number, to: number } = this.getFromTovalue(
-                +stripline.segmentStart, +stripline.segmentEnd, null, null, segmentAxis, stripline);
+                this.isCoreDate(stripline.segmentStart) ? this.dateToMilliSeconds(stripline.segmentStart, chart) :
+                    +stripline.segmentStart,
+                this.isCoreDate(stripline.segmentEnd) ? this.dateToMilliSeconds(stripline.segmentEnd, chart) : +stripline.segmentEnd,
+                null, null, segmentAxis, stripline
+            );
             if (segmentAxis.orientation === 'Vertical') {
                 y = (segmentAxis.rect.y + segmentAxis.rect.height -
                     (segRect.to * segmentAxis.rect.height));
@@ -140,6 +148,11 @@ export class StripLine {
         }
         return value;
     }
+    private dateParse(value: Date | Object, chart: Chart): Date {
+        let dateParser: Function = chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+        let dateFormatter: Function = chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+        return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
+    }
     /**
      * To render strip lines based start and end.
      * @private
@@ -178,8 +191,9 @@ export class StripLine {
                     }
                     if (stripline.isRepeat && stripline.repeatEvery != null && stripline.size !== null && stripline.sizeType !== 'Pixel') {
                         limit = (stripline.repeatUntil != null) ? ((axis.valueType === 'DateTime') ?
-                            (stripline.repeatUntil as Date).getTime() : +stripline.repeatUntil) : axis.actualRange.max;
-                        startValue = stripline.start as number;
+                            this.dateToMilliSeconds(stripline.repeatUntil, chart) : +stripline.repeatUntil) : axis.actualRange.max;
+                        startValue = this.isCoreDate(stripline.start) ? this.dateToMilliSeconds(stripline.start, chart) :
+                            stripline.start as number;
                         if ((stripline.startFromAxis && axis.valueType === 'DateTime' && stripline.sizeType === 'Auto') ||
                         (stripline.start < axis.visibleRange.min)) {
                             startValue = axis.visibleLabels[0].value === axis.visibleRange.min ? axis.visibleRange.min :
@@ -196,7 +210,7 @@ export class StripLine {
                                 );
                             }
                             count++;
-                            startValue = this.getStartValue(axis, stripline, startValue);
+                            startValue = this.getStartValue(axis, stripline, startValue, chart);
                         }
                     } else {
                         this.renderStripLineElement(
@@ -208,6 +222,23 @@ export class StripLine {
             }
         }
         appendChildElement(chart.enableCanvas, chart.svgObject, striplineGroup, chart.redraw);
+    }
+
+    /**
+     * To convert the C# date to js date
+     * @param value
+     * @param axis
+     */
+    private isCoreDate(value: string | number | Object | Date): boolean {
+        return typeof value === 'string' ? true : false;
+    }
+    /**
+     * To get the total milli seconds
+     * @param value
+     * @param chart
+     */
+    private dateToMilliSeconds(value: Date | number | Object, chart: Chart): number {
+        return this.dateParse(value, chart).getTime();
     }
     /**
      * To draw the single line strip line
@@ -318,10 +349,14 @@ export class StripLine {
      * @param stripline
      * @param startValue
      */
-    private getStartValue(axis: Axis, stripline: StripLineSettingsModel, startValue: number): number {
+    private getStartValue(axis: Axis, stripline: StripLineSettingsModel, startValue: number, chart: Chart): number {
         if (axis.valueType === 'DateTime') {
-            return this.getToValue(null, startValue, +stripline.repeatEvery, axis, null, stripline);
-
+            return (this.getToValue(
+                null, startValue,
+                // tslint:disable-next-line:max-line-length
+                this.isCoreDate(stripline.repeatEvery) ? this.dateToMilliSeconds(stripline.repeatEvery, chart) : +stripline.repeatEvery,
+                axis, null, stripline
+            ));
         } else {
             return startValue + (+stripline.repeatEvery);
 
@@ -363,7 +398,7 @@ export class StripLine {
         axis: Axis, stripline: StripLineSettingsModel, seriesClipRect: Rect, id: string, striplineGroup: Element, chart: Chart,
         startValue: number, segmentAxis: Axis, count: number
     ): void {
-        let rect: Rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis);
+        let rect: Rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis, chart);
         if (stripline.sizeType === 'Pixel') {
             this.renderPath(stripline, rect, id + 'path_' + axis.name + '_' + count, striplineGroup, chart, axis);
         } else {

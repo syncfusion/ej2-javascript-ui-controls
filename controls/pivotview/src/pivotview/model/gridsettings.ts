@@ -210,7 +210,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * Triggers before Grid copy action.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.BeforeCopyEventArgs
       * @deprecated
       */
      @Event()
@@ -219,7 +218,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * Triggers after print action is completed.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintEventArgs
       * @deprecated
       */
      @Event()
@@ -228,7 +226,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * Triggers before the print action starts.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintEventArgs
       * @deprecated
       */
      @Event()
@@ -253,7 +250,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before context menu opens.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Navigations.BeforeOpenCloseMenuEventArgs
       * @deprecated
       */
      @Event()
@@ -262,8 +258,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when click on context menu.
       * @event
-      * @blazorProperty 'ContextMenuItemClicked'
-      * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
       * @deprecated
       */
      @Event()
@@ -273,7 +267,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Triggered every time a request is made to access cell information, element, or data.
       * This will be triggered before the cell element is appended to the Grid element.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.QueryCellInfoEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -283,7 +276,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Triggered for column header.
       * This will be triggered before the cell element is appended to the Grid element.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.HeaderCellInfoEventArgs
       * @deprecated
       */
      @Event()
@@ -292,7 +284,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before row selection occurs.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -301,7 +292,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers after a row is selected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -310,7 +300,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before deselecting the selected row.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -319,7 +308,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when a selected row is deselected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -328,7 +316,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before any cell selection occurs.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -337,7 +324,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers after a cell is selected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -346,7 +332,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before the selected cell is deselecting.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellDeselectEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -355,7 +340,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when a particular selected cell is deselected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellDeselectEventArgs<TValue>
       * @deprecated
       */
      @Event()
@@ -364,7 +348,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when column resize starts.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
       * @deprecated
       */
      @Event()
@@ -373,7 +356,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers on column resizing.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
       * @deprecated
       */
      @Event()
@@ -382,7 +364,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when column resize ends.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
       * @deprecated
       */
      @Event()
@@ -391,7 +372,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfHeaderQueryCellInfoEventArgs
       * @deprecated
       */
      @Event()
@@ -400,7 +380,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfQueryCellInfoEventArgs
       * @deprecated
       */
      @Event()
@@ -410,7 +389,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Triggers before exporting each header cell to Excel file.
       * You can also customize the Excel cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelHeaderQueryCellInfoEventArgs
       * @deprecated
       */
      @Event()
@@ -420,7 +398,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Triggers before exporting each cell to Excel file.
       * You can also customize the Excel cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelQueryCellInfoEventArgs
       * @deprecated
       */
      @Event()
@@ -429,7 +406,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**  
       * Triggers when column header element drag (move) starts. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
       * @deprecated
       */
      @Event()
@@ -438,7 +414,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**  
       * Triggers when column header element is dragged (moved) continuously. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
       * @deprecated
       */
      @Event()
@@ -447,7 +422,6 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**  
       * Triggers when a column header element is dropped on the target column. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
       * @deprecated
       */
      @Event()

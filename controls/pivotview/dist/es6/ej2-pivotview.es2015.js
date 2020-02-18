@@ -1442,22 +1442,12 @@ class PivotEngine {
             let members = (this.formatFields[fieldName] &&
                 (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1)) ?
                 field.formattedMembers : field.members;
-            let isNotValidFilterElement = false;
+            isValidFilterElement = true;
             for (let field of this.values) {
                 if (fieldName === field.name) {
-                    isNotValidFilterElement = true;
+                    isValidFilterElement = false;
                     break;
                 }
-            }
-            let isItemAvail = false;
-            for (let item of filterElement.items) {
-                if (members[item]) {
-                    isItemAvail = true;
-                    break;
-                }
-            }
-            if (!isNotValidFilterElement && isItemAvail) {
-                isValidFilterElement = true;
             }
         }
         else if (allowLabelFiltering) {
@@ -6955,7 +6945,6 @@ class Render {
         this.parent.trigger(excelHeaderQueryCellInfo, args);
     }
     pdfColumnEvent(args) {
-        args = this.exportHeaderEvent(args);
         this.parent.trigger(pdfHeaderQueryCellInfo, args);
     }
     excelRowEvent(args) {
@@ -16211,28 +16200,6 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         let keyEntity = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
         /* tslint:disable */
         this.chartSettings['tooltipRender'] = undefined;
-        this.chartSettings['resized'] = undefined;
-        this.chartSettings['loaded'] = undefined;
-        this.chartSettings['beforePrint'] = undefined;
-        this.chartSettings['animationComplete'] = undefined;
-        this.chartSettings['load'] = undefined;
-        this.chartSettings['textRender'] = undefined;
-        this.chartSettings['legendRender'] = undefined;
-        this.chartSettings['seriesRender'] = undefined;
-        this.chartSettings['pointRender'] = undefined;
-        this.chartSettings['axisLabelRender'] = undefined;
-        this.chartSettings['chartMouseClick'] = undefined;
-        this.chartSettings['chartMouseMove'] = undefined;
-        this.chartSettings['pointMove'] = undefined;
-        this.chartSettings['pointClick'] = undefined;
-        this.chartSettings['chartMouseDown'] = undefined;
-        this.chartSettings['chartMouseLeave'] = undefined;
-        this.chartSettings['dragComplete'] = undefined;
-        this.chartSettings['chartMouseUp'] = undefined;
-        this.chartSettings['scrollStart'] = undefined;
-        this.chartSettings['zoomComplete'] = undefined;
-        this.chartSettings['scrollChanged'] = undefined;
-        this.chartSettings['scrollEnd'] = undefined;
         /* tslint:enable */
         return this.addOnPersist(keyEntity);
     }

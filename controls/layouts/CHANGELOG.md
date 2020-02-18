@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 1.0 (2020-02-18)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#263496` - Resolved the issue with the splitter paneSettings `collapsed` property that is not updated properly when the panes are expanded or collapsed.
+
+### Dashboard Layout
+
+#### New Features
+
+- `#262900` - The `change` event now triggers when a panel is resized and then the adjacent panel position changes.
+
 ## 17.4.47 (2020-02-05)
 
 ### Splitter

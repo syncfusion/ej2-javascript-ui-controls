@@ -1099,22 +1099,12 @@ export class PivotEngine {
             let members: IMembers = (this.formatFields[fieldName] &&
                 (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1)) ?
                 field.formattedMembers : field.members;
-            let isNotValidFilterElement: boolean = false;
+            isValidFilterElement = true;
             for (let field of this.values) {
                 if (fieldName === field.name) {
-                    isNotValidFilterElement = true;
+                    isValidFilterElement = false;
                     break;
                 }
-            }
-            let isItemAvail: boolean = false;
-            for (let item of filterElement.items) {
-                if (members[item]) {
-                    isItemAvail = true;
-                    break;
-                }
-            }
-            if (!isNotValidFilterElement && isItemAvail) {
-                isValidFilterElement = true;
             }
         } else if (allowLabelFiltering) {
             for (let field of dataFields) {

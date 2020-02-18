@@ -163,8 +163,6 @@ describe('Diagram Control', () => {
                     });
 
                     it('Line routing ', (done: Function) => {
-                        console.log('Test case 1145');
-                        console.log("line routing test case begin");
                         expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 150 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 100 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 250 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 100).toBe(true);
                         expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 125 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 275).toBe(true);
                         expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 250 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 300 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 150 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 300).toBe(true);
@@ -214,7 +212,7 @@ describe('Diagram Control', () => {
                     });
 
                     it('Line routing - left side block in target node ', (done: Function) => {
-                        console.log('Test case 1146');
+                      
                         expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 100 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 125 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 100 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 250 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 250 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 270).toBe(true);
                         done();
                     });
@@ -257,7 +255,7 @@ describe('Diagram Control', () => {
                     });
 
                     it('Line routing - left and top side block in target node', (done: Function) => {
-                        console.log('Test case 1147');
+                      
                         expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 100 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 125 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 100 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 250 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 210 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 250 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 210 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 330 && (diagram.connectors[0] as Connector).intermediatePoints[4].x == 230 && (diagram.connectors[0] as Connector).intermediatePoints[4].y == 330 && (diagram.connectors[0] as Connector).intermediatePoints[5].x == 230 && (diagram.connectors[0] as Connector).intermediatePoints[5].y == 350 && (diagram.connectors[0] as Connector).intermediatePoints[6].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[6].y == 350 && (diagram.connectors[0] as Connector).intermediatePoints[7].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[7].y == 330).toBe(true);
                         done();
                     });
@@ -4515,8 +4513,6 @@ describe('Diagram Control', () => {
             });
 
             it('Check - Rendering', (done: Function) => {
-                console.log('Test case 1219');
-                debugger
                 expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 50 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 100 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 30 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 100 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 30 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 50 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 170 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 50 && (diagram.connectors[0] as Connector).intermediatePoints[4].x == 170 && (diagram.connectors[0] as Connector).intermediatePoints[4].y == 100 && (diagram.connectors[0] as Connector).intermediatePoints[5].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[5].y == 100).toBe(true);
                 expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 100 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 70 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 100 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 50 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 170 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 50 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 170 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 100 && (diagram.connectors[1] as Connector).intermediatePoints[4].x == 300 && (diagram.connectors[1] as Connector).intermediatePoints[4].y == 100).toBe(true);
                 expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 150 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 100 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 100).toBe(true);
@@ -5401,8 +5397,7 @@ describe('Diagram Control', () => {
             });
 
             it('Node Position change', (done: Function) => {
-                console.log('Test case 1222');
-                debugger
+                
                 expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 125 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 300 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 650 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 300).toBe(true);
                 diagram.nodes[1].offsetX = 500;
                 diagram.nodes[1].offsetY = 150;
@@ -5549,7 +5544,7 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Connection change from target node to point', (done: Function) => {
-                console.log('Test case 1231');
+              
                 expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 150 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 200 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 190 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 570 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 190 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 570 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 300 && (diagram.connectors[0] as Connector).intermediatePoints[4].x == 650 && (diagram.connectors[0] as Connector).intermediatePoints[4].y == 300).toBe(true);
                 diagram.connectors[0].targetID = '';
                 diagram.connectors[0].targetPoint = { x: 600, y: 250 };
@@ -6520,7 +6515,6 @@ describe('Diagram Control', () => {
 
             it('Single Selection', (done: Function) => {
                 console.log('Test case 1235');
-                debugger
                 let node = diagram.nodes[6];
                 mouseEvents.clickEvent(diagramCanvas, node.offsetX + diagram.element.offsetLeft, node.offsetY + diagram.element.offsetTop);
                 mouseEvents.mouseDownEvent(diagramCanvas, node.offsetX + diagram.element.offsetLeft, node.offsetY + diagram.element.offsetTop);

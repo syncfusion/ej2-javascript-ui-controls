@@ -5703,7 +5703,7 @@ var Layout = /** @__PURE__ @class */ (function () {
      * Layouts the items
      * @private
      */
-    Layout.prototype.layoutItems = function (sections) {
+    Layout.prototype.layoutItems = function (sections, isReLayout) {
         var _this = this;
         var page;
         for (var i = 0; i < sections.length; i++) {
@@ -5727,7 +5727,9 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             this.layoutSection(section, 0, this.viewer);
         }
-        this.layoutComments(this.documentHelper.comments);
+        if (!isReLayout) {
+            this.layoutComments(this.documentHelper.comments);
+        }
         this.updateFieldElements();
         /* tslint:disable:align */
         setTimeout(function () {
@@ -11070,8 +11072,12 @@ var Renderer = /** @__PURE__ @class */ (function () {
         this.pageContext.beginPath();
         if (this.viewer instanceof WebLayoutViewer) {
             height = height > this.documentHelper.visibleBounds.height ? height : this.documentHelper.visibleBounds.height;
+            var marginTop = top;
+            if (page.index === 0) {
+                marginTop = top - this.viewer.padding.top;
+            }
             // tslint:disable-next-line:max-line-length
-            this.pageContext.fillRect(left - this.viewer.padding.left, top - this.viewer.padding.top, width + this.viewer.padding.left, height + this.viewer.padding.top);
+            this.pageContext.fillRect(left - this.viewer.padding.left, marginTop, width + this.viewer.padding.left, height + this.viewer.padding.top);
         }
         else {
             this.pageContext.fillRect(left, top, width, height);
@@ -11451,7 +11457,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
                     var leftPosition = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
                     if (this.viewer instanceof WebLayoutViewer) {
                         // tslint:disable-next-line:max-line-length
-                        leftPosition = (this.documentHelper.visibleBounds.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
+                        leftPosition = (page.boundingRectangle.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
                     }
                     var topPosition = this.getScaledValue(top + (page.boundingRectangle.y -
                         (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
@@ -13327,6 +13333,10 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         /**
          * @private
          */
+        this.isWebPrinting = false;
+        /**
+         * @private
+         */
         this.currentPage = undefined;
         this.selectionStartPageIn = undefined;
         this.selectionEndPageIn = undefined;
@@ -14974,7 +14984,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         }
         this.owner.isDocumentLoaded = true;
         this.layout.isInitialLoad = true;
-        this.layout.layoutItems(sections);
+        this.layout.layoutItems(sections, false);
         if (this.owner.selection) {
             this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
@@ -15354,7 +15364,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
      * @private
      */
     DocumentHelper.prototype.scrollToPosition = function (startPosition, endPosition, skipCursorUpdate) {
-        if (this.skipScrollToPosition) {
+        if (this.skipScrollToPosition || this.isWebPrinting) {
             this.skipScrollToPosition = false;
             return;
         }
@@ -16134,7 +16144,13 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             var pageTop = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.documentHelper.zoomFactor + this.pageGap * (i + 1);
             var pageHeight = (page.boundingRectangle.height * this.documentHelper.zoomFactor) + this.pageGap;
             var pageLeft = page.boundingRectangle.x;
-            var pageRight = ((page.boundingRectangle.right - pageLeft) * this.documentHelper.zoomFactor) + pageLeft;
+            var pageRight = void 0;
+            if (this instanceof PageLayoutViewer) {
+                pageRight = ((page.boundingRectangle.right - pageLeft) * this.documentHelper.zoomFactor) + pageLeft;
+            }
+            else {
+                pageRight = page.boundingRectangle.right + pageLeft;
+            }
             if (pageTop <= point.y && pageTop + pageHeight >= point.y) {
                 if (updateCurrentPage) {
                     this.documentHelper.currentPage = page;
@@ -16154,6 +16170,9 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         }
         return point;
     };
+    /**
+     * @private
+     */
     LayoutViewer.prototype.getPageHeightAndWidth = function (height, width, viewerWidth, viewerHeight) {
         height = 0;
         for (var i = 0; i < this.documentHelper.pages.length; i++) {
@@ -16298,6 +16317,9 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             this.owner.editorModule.layoutWholeDocument();
         }
     };
+    /**
+     * @private
+     */
     // tslint:disable-next-line:max-line-length
     LayoutViewer.prototype.updateCanvasWidthAndHeight = function (viewerWidth, viewerHeight, containerHeight, containerWidth, width, height) {
         if (this instanceof PageLayoutViewer) {
@@ -16315,7 +16337,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             }
         }
         if (containerWidth > viewerWidth) {
-            viewerHeight -= (this.documentHelper.visibleBounds.height - this.documentHelper.viewerContainer.clientHeight);
+            viewerHeight -= this.documentHelper.scrollbarWidth;
         }
         width = containerWidth > viewerWidth ? containerWidth : viewerWidth;
         height = containerHeight > viewerHeight ? containerHeight : viewerHeight;
@@ -16349,6 +16371,9 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             'containerWidth': containerWidth
         };
     };
+    /**
+     * @private
+     */
     // tslint:disable-next-line:max-line-length
     LayoutViewer.prototype.updateScrollBarPosition = function (containerWidth, containerHeight, viewerWidth, viewerHeight, width, height) {
         this.owner.viewer.containerTop = this.documentHelper.viewerContainer.scrollTop;
@@ -16784,6 +16809,9 @@ var WebLayoutViewer = /** @__PURE__ @class */ (function (_super) {
         }
         return height;
     };
+    /**
+     * @private
+     */
     WebLayoutViewer.prototype.getContentWidth = function () {
         var width = this.documentHelper.visibleBounds.width;
         var currentWidth = width;
@@ -16827,13 +16855,23 @@ var WebLayoutViewer = /** @__PURE__ @class */ (function (_super) {
         this.visiblePages = [];
         var page;
         var y;
+        var height = this.documentHelper.visibleBounds.height;
+        var vertical = this.documentHelper.viewerContainer.scrollTop;
         for (var i = 0; i < this.documentHelper.pages.length; i++) {
             page = this.documentHelper.pages[i];
             y = (page.boundingRectangle.y) * this.documentHelper.zoomFactor;
-            this.addVisiblePage(page, 10, y);
+            var pageH = page.boundingRectangle.height * this.documentHelper.zoomFactor;
+            var isTopFit = y >= vertical && y <= vertical + height;
+            var isBottomFit = y + pageH >= vertical && y + pageH <= vertical + height;
+            var isMiddleFit = y <= vertical && y + pageH >= vertical + height;
+            //UI Virtualization
+            if (isTopFit || isBottomFit || isMiddleFit) {
+                this.addVisiblePage(page, this.padding.left, y);
+            }
         }
     };
     WebLayoutViewer.prototype.addVisiblePage = function (page, x, y) {
+        var _this = this;
         var width = this.getContentWidth();
         // tslint:disable-next-line:max-line-length
         var height = this.getContentHeight() * this.documentHelper.zoomFactor + this.padding.top + this.padding.bottom;
@@ -16841,7 +16879,32 @@ var WebLayoutViewer = /** @__PURE__ @class */ (function (_super) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        this.renderPage(page, x, y, width, height);
+        // tslint:disable-next-line:max-line-length
+        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
+            page.allowNextPageRendering = false;
+            this.owner.documentHelper.cachedPages.push(page.index);
+            var contentlen = this.documentHelper.owner.spellChecker.getPageContent(page);
+            if (contentlen.trim().length > 0) {
+                // tslint:disable-next-line:max-line-length
+                /* tslint:disable:no-any */
+                this.owner.spellChecker.CallSpellChecker(this.owner.spellChecker.languageID, contentlen, true, false, false, true).then(function (data) {
+                    /* tslint:disable:no-any */
+                    var jsonObj = JSON.parse(data);
+                    _this.owner.spellChecker.updateUniqueWords(jsonObj.SpellCollection);
+                    page.allowNextPageRendering = true;
+                    _this.owner.documentHelper.triggerSpellCheck = true;
+                    _this.renderPage(page, x, y, width, height);
+                    _this.owner.documentHelper.triggerSpellCheck = false;
+                    _this.owner.documentHelper.triggerElementsOnLoading = false;
+                });
+            }
+            else {
+                this.renderPage(page, x, y, width, height);
+            }
+        }
+        else {
+            this.renderPage(page, x, y, width, height);
+        }
     };
     /**
      * @private
@@ -39161,7 +39224,13 @@ var Selection = /** @__PURE__ @class */ (function () {
             return;
         }
         var left = page.boundingRectangle.x;
-        var right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
+        var right;
+        if (this.viewer instanceof PageLayoutViewer) {
+            right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
+        }
+        else {
+            right = page.boundingRectangle.width + left;
+        }
         if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
             if (this.isHideSelection(this.start.paragraph)) {
                 this.caret.style.display = 'none';
@@ -39623,7 +39692,12 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.isCursorInsidePageRect = function (point, page) {
         // tslint:disable-next-line:max-line-length
         if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
-            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor))) {
+            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor)) && this.viewer instanceof PageLayoutViewer) {
+            return true;
+            // tslint:disable-next-line:max-line-length
+        }
+        else if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
+            (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + page.boundingRectangle.width)) {
             return true;
         }
         return false;
@@ -40672,6 +40746,12 @@ var SearchResults = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Get the module name.
+     */
+    SearchResults.prototype.getModuleName = function () {
+        return 'SearchResults';
+    };
     /**
      * Replace text in current search result.
      * @param textToReplace text to replace
@@ -50277,7 +50357,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var sections = this.combineSection();
         this.documentHelper.clearContent();
         // this.documentHelper.layout.isRelayout = false;
-        this.documentHelper.layout.layoutItems(sections);
+        this.documentHelper.layout.layoutItems(sections, true);
         // this.documentHelper.layout.isRelayout = true;
         this.documentHelper.owner.isShiftingEnabled = false;
         this.setPositionForCurrentIndex(startPosition, startIndex);
@@ -77078,11 +77158,13 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.printModule) {
             if (this.layoutType === 'Continuous') {
+                this.documentHelper.isWebPrinting = true;
                 this.viewer = new PageLayoutViewer(this);
                 this.editor.layoutWholeDocument();
                 this.printModule.print(this.documentHelper, printWindow);
                 this.viewer = new WebLayoutViewer(this);
                 this.editor.layoutWholeDocument();
+                this.documentHelper.isWebPrinting = false;
             }
             else {
                 this.printModule.print(this.documentHelper, printWindow);
@@ -81120,9 +81202,9 @@ var StatusBar = /** @__PURE__ @class */ (function () {
                 _this.spellCheckButton.appendTo(spellCheckBtn);
             }
             // tslint:disable-next-line:max-line-length   
-            _this.pageButton = _this.createButtonTemplate((_this.documentEditor.layoutType === 'Pages') ? 'e-de-statusbar-pageweb e-btn-pageweb-toggle' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', _this.localObj.getConstant('Print layout'), _this.statusBarDiv, _this.pageButton);
+            _this.pageButton = _this.createButtonTemplate((_this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', _this.localObj.getConstant('Print layout'), _this.statusBarDiv, _this.pageButton, (_this.documentEditor.layoutType === 'Pages') ? true : false);
             // tslint:disable-next-line:max-line-length   
-            _this.webButton = _this.createButtonTemplate((_this.documentEditor.layoutType === 'Continuous') ? 'e-de-statusbar-pageweb e-btn-pageweb-toggle' : 'e-de-statusbar-pageweb', 'e-de-weblayout e icons', _this.localObj.getConstant('Web layout'), _this.statusBarDiv, _this.webButton);
+            _this.webButton = _this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e icons', _this.localObj.getConstant('Web layout'), _this.statusBarDiv, _this.webButton, (_this.documentEditor.layoutType === 'Continuous') ? true : false);
             _this.pageButton.addEventListener('click', function () {
                 _this.documentEditor.layoutType = 'Pages';
                 _this.addRemoveClass(_this.pageButton, _this.webButton);
@@ -81133,7 +81215,7 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             });
             var zoomBtn = createElement('button', {
                 // tslint:disable-next-line:max-line-length
-                className: (_this.container.enableSpellCheck) ? 'e-de-statusbar-zoom-spell' : 'e-de-statusbar-zoom', attrs: { type: 'button' }
+                className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
             });
             _this.statusBarDiv.appendChild(zoomBtn);
             zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
@@ -81368,12 +81450,15 @@ var StatusBar = /** @__PURE__ @class */ (function () {
         this.addRemoveClass(this.pageButton, this.webButton);
     };
     // tslint:disable-next-line:max-line-length
-    StatusBar.prototype.createButtonTemplate = function (className, iconcss, toolTipText, div, appendDiv) {
+    StatusBar.prototype.createButtonTemplate = function (className, iconcss, toolTipText, div, appendDiv, toggle) {
         appendDiv = createElement('Button', { className: className, attrs: { type: 'button' } });
         div.appendChild(appendDiv);
         var btn = new Button({
             cssClass: className, iconCss: iconcss, enableRtl: this.container.enableRtl
         });
+        if (toggle === true) {
+            appendDiv.classList.add('e-btn-pageweb-toggle');
+        }
         btn.appendTo(appendDiv);
         appendDiv.setAttribute('title', toolTipText);
         return appendDiv;
@@ -81806,10 +81891,10 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
             layoutType: this.layoutType,
-            enableComment: this.enableComment,
             pageOutline: '#E0E0E0'
         });
         this.documentEditor.enableAllModules();
+        this.documentEditor.enableComment = this.enableComment;
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);

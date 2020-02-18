@@ -233,17 +233,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking stack panel without children', (done: Function) => {
-
-            console.log(element1.absolutePath);
-            console.log(element2.absolutePath);
-            console.log(element3.absolutePath);
-            console.log(element4.absolutePath);
-            console.log(element5.absolutePath);
-            console.log(element6.absolutePath);
-            console.log(element7.absolutePath);
-
-
-            expect(element1.absolutePath === "M 0 0 L 100 0 M 100 0 L 100 100 M 100 100 L 0 100 M 0 100 L 0 0 Z" &&
+           expect(element1.absolutePath === "M 0 0 L 100 0 M 100 0 L 100 100 M 100 100 L 0 100 M 0 100 L 0 0 Z" &&
                 element2.absolutePath === "M 150 150 H 0 A 150 150 0 1 0 150 0 Z" &&
                 element3.absolutePath === "M 35.25 24.99 L 22.72 49.99 L 22.72 0 L 35.25 24.99 Z M 22.72 24.99 L 0 24.99 M 35.25 49.63 L 35.25 0.36 M 35.25 24.99 L 50 24.99" &&
                 element4.absolutePath === "M 0 75 C 0 -25 150 -25 150 75 S 300 175 300 75" &&

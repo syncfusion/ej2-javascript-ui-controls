@@ -382,7 +382,9 @@ export class VirtualScroll {
     }
 
     private updateVTrackWidth(args: { colIdx: number, threshold: number }): void {
-        if (args.colIdx < this.parent.getActiveSheet().colCount) {
+        let threshold: number = this.parent.getThreshold('col');
+        let lastIdx: number = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (threshold * 2);
+        if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= lastIdx ) {
             let hdrVTrack: HTMLElement = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
             hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
             let cntVTrack: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;

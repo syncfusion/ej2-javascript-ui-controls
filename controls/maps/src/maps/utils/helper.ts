@@ -1498,7 +1498,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                     x = size.x + ((-(min['x'])) 
                         + ((size.width / 2) - (mapWidth / 2)));
                 } else {
-                    if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1) {
+                    if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1 && !mapObject.zoomModule.isDragZoom) {
                         scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
                         mapWidth *= scaleFactor;
                         x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
@@ -1507,6 +1507,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                     } else {
                         x = mapObject.zoomTranslatePoint.x;
                         y = mapObject.zoomTranslatePoint.y;
+                        scaleFactor = mapObject.scale;
                     }
                 }
             }   
@@ -1529,9 +1530,28 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
     let center: CenterPositionModel = mapObject.centerPosition;
     let latitude : number = center.latitude;
     let longitude : number = center.longitude;
+    if (isNullOrUndefined(mapObject.previousCenterLatitude) &&
+        isNullOrUndefined(mapObject.previousCenterLongitude)) {
+        mapObject.previousCenterLatitude = mapObject.centerPosition.latitude;
+        mapObject.previousCenterLongitude = mapObject.centerPosition.longitude;
+    }
+    else if (mapObject.previousCenterLatitude !==
+        mapObject.centerPosition.latitude && mapObject.previousCenterLongitude !==
+        mapObject.centerPosition.longitude) {
+        mapObject.centerPositionChanged = true;
+        mapObject.previousCenterLatitude = mapObject.centerPosition.latitude;
+        mapObject.previousCenterLongitude = mapObject.centerPosition.longitude;
+    }
+    else {
+        mapObject.centerPositionChanged = false;
+    }
     if (isNullOrUndefined(mapObject.mapScaleValue) || (zoomFactorValue > mapObject.mapScaleValue)) {
         mapObject.mapScaleValue = zoomFactorValue;
     }
+    mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor !== 1 &&
+        mapObject.zoomSettings.zoomFactor ===
+        mapObject.mapScaleValue ? mapObject.zoomSettings.zoomFactor :
+        mapObject.zoomSettings.zoomFactor !== mapObject.mapScaleValue && !mapObject.centerPositionChanged ? mapObject.mapScaleValue : mapObject.zoomSettings.zoomFactor;
     if (mapObject.zoomSettings.shouldZoomInitially) {
         mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale == 1)
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;

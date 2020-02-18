@@ -2991,11 +2991,10 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, targetPointY);
                 mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, targetPointY - 15);
                 mouseEvents.mouseUpEvent(diagramCanvas, sourcePointX, targetPointY - 15);
-                console.log("node.wrapper.offsetX" + node.wrapper.offsetX);
-                console.log("node.wrapper.offsetY" + node.wrapper.offsetY);
+              
                 expect(node.wrapper.offsetX == 510 && node.wrapper.offsetY == 400).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('height'));
-                console.log(lane);
+              
                 done();
             });
 
@@ -3063,8 +3062,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX, sourcePointY);
                 mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 5, sourcePointY);
                 mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 5, sourcePointY);
-                console.log('node.wrapper.offsetX' + node.wrapper.offsetX);
-                console.log('node.wrapper.offsetY' + node.wrapper.offsetY);
+               
                 expect(node.wrapper.offsetX == 655 && node.wrapper.offsetY == 400).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('width'));
                 expect(lane === 385).toBe(true);
@@ -5614,10 +5612,10 @@ describe('Diagram Control', () => {
                 
                 (diagram.nodes[0].shape as SwimLaneModel).phaseSize = 0;
                 previous = grid.rowDefinitions().length;
-                console.log(previous);
+               
                 diagram.dataBind();
                 current = grid.rowDefinitions().length;
-                console.log(current);
+               
                 expect(current === previous - 1).toBe(true);
                 done();
             });
@@ -5626,8 +5624,7 @@ describe('Diagram Control', () => {
                 (diagram.nodes[0].shape as SwimLaneModel).phaseSize = 10;
                 diagram.dataBind();
                 current = grid.rowDefinitions().length;
-                console.log(grid.rowDefinitions().length);
-                console.log(grid.rowDefinitions()[1].height);
+               
                 expect(current === previous + 1).toBe(true);
                 expect(grid.rowDefinitions()[1].height === 10).toBe(true);
                 done();
@@ -5863,10 +5860,10 @@ describe('Diagram Control', () => {
             it('PhaseSize 0', function (done) {
                 (diagram.nodes[0].shape as SwimLaneModel).phaseSize = 0;
                 previous = grid.columnDefinitions().length;
-                console.log(previous);
+               
                 diagram.dataBind();
                 current = grid.columnDefinitions().length;
-                console.log(current);
+              
                 expect(current === previous - 1).toBe(true);
                 done();
             });
@@ -5875,8 +5872,7 @@ describe('Diagram Control', () => {
                 (diagram.nodes[0].shape as SwimLaneModel).phaseSize = 10;
                 diagram.dataBind();
                 current = grid.columnDefinitions().length;
-                console.log(grid.columnDefinitions().length);
-                console.log(grid.columnDefinitions()[0].width);
+               
                 expect(current === previous + 1).toBe(true);
                 expect(grid.columnDefinitions()[0].width === 10).toBe(true);
                 done();
@@ -6272,7 +6268,6 @@ describe('Diagram Control', () => {
     
             it('Change delivery lane to second lane', function (done) {
                 setTimeout(function () {
-                    debugger
                     let node = diagram.nameTable["swimlanestackCanvas40"];
                     let target = diagram.nameTable["swimlanestackCanvas10"];
     
@@ -6729,7 +6724,6 @@ describe('Diagram Control', () => {
 
             it('DropBeyondSwimlane  - Order Node', function (done) {
                 setTimeout(function () {
-                    debugger;
                     var node = diagram.nameTable["Order"];
                     var target = diagram.nameTable["swimlane"];
                     mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
@@ -6744,7 +6738,6 @@ describe('Diagram Control', () => {
             });
             it('Lane Interchange', function (done) {
                 setTimeout(function () {
-                    debugger;
                     var node = diagram.nameTable["swimlanestackCanvas40"];
                     var target = diagram.nameTable["swimlanestackCanvas10"];
                     mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
@@ -6760,7 +6753,7 @@ describe('Diagram Control', () => {
             });
             it('DropBeyondSwimlane  - Order Node', function (done) {
                 setTimeout(function () {
-                    debugger;
+                    
                     var node = diagram.nameTable["Order"];
                     var target = diagram.nameTable["swimlane"];
                     mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
@@ -6835,7 +6828,7 @@ describe('Diagram Control', () => {
 
         it('Checking - TextWrapping for lane headers', function (done) {
             setTimeout(function () {
-                debugger;
+                
                 let collection = document.getElementById("swimlanestackCanvas1_0_header_laneHeader_groupElement").childNodes[1].childNodes;
                 expect(collection.length == 3).toBe(true);
                 done();

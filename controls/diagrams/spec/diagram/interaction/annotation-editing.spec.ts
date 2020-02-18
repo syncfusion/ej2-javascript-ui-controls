@@ -144,7 +144,7 @@ describe('Diagram Control', () => {
         it('Checking textediting when text box change using keydown', (done: Function) => {
 
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.clickEvent(diagramCanvas, 400, 180);
+            mouseEvents.clickEvent(diagramCanvas, 400 + diagram.element.offsetLeft, 180 + diagram.element.offsetTop);
             expect(diagram.selectedItems.nodes[0].annotations[0].content == 'Coding').toBe(true);
             diagram.startTextEdit();
             let textBox = document.getElementById(diagram.element.id + '_editBox')

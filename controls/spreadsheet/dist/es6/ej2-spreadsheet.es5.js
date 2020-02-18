@@ -394,9 +394,9 @@ var beforeHyperlinkCreate = 'beforeHyperlinkCreate';
 /** @hidden */
 var afterHyperlinkCreate = 'afterHyperlinkCreate';
 /** @hidden */
-var beforeHyperlinkClick = 'beforeHyperlinkCreate';
+var beforeHyperlinkClick = 'beforeHyperlinkClick';
 /** @hidden */
-var afterHyperlinkClick = 'afterHyperlinkCreate';
+var afterHyperlinkClick = 'afterHyperlinkClick';
 /** @hidden */
 var addHyperlink = 'addHyperlink';
 /** @hidden */
@@ -1300,7 +1300,7 @@ var ribbonClick = 'ribboClick';
 /** @hidden */
 var refreshRibbon = 'ribbonRefresh';
 /** @hidden */
-var enableRibbonItems = 'enableRibbonItems';
+var enableToolbarItems = 'enableToolbarItems';
 /** @hidden */
 var tabSwitch = 'tabSwitch';
 /** @hidden */
@@ -1326,11 +1326,19 @@ var enableContextMenuItems = 'enableContextMenuItems';
 /** @hidden */
 var enableFileMenuItems = 'enableFileMenuItems';
 /** @hidden */
+var hideFileMenuItems = 'hideFileMenuItems';
+/** @hidden */
+var addFileMenuItems = 'addFileMenuItems';
+/** @hidden */
 var hideRibbonTabs = 'hideRibbonTabs';
+/** @hidden */
+var enableRibbonTabs = 'enableRibbonTabs';
 /** @hidden */
 var addRibbonTabs = 'addRibbonTabs';
 /** @hidden */
 var addToolbarItems = 'addToolbarItems';
+/** @hidden */
+var hideToolbarItems = 'hideToolbarItems';
 /** @hidden */
 var beforeRibbonCreate = 'beforeRibbonCreate';
 /** @hidden */
@@ -1347,8 +1355,6 @@ var deInitProperties = 'deInitProperties';
 var activeSheetChanged = 'activeSheetChanged';
 /** @hidden */
 var renameSheet = 'renameSheet';
-/** @hidden */
-var enableToolbar = 'enableToolbar';
 /** @hidden */
 var initiateCustomSort = 'initiateCustomSort';
 /** @hidden */
@@ -8518,7 +8524,12 @@ var WorkbookHyperlink = /** @__PURE__ @class */ (function () {
         var address;
         if (cellAddr && cellAddr.indexOf('!') !== -1) {
             range = cellAddr.split('!');
-            sheetIdx = parseInt(range[0].replace(/\D/g, ''), 10) - 1;
+            var sheets = this.parent.sheets;
+            for (var idx = 0; idx < sheets.length; idx++) {
+                if (sheets[idx].name === range[0]) {
+                    sheetIdx = idx;
+                }
+            }
             sheet = this.parent.sheets[sheetIdx];
             cellAddr = range[1];
         }
@@ -8539,20 +8550,16 @@ var WorkbookHyperlink = /** @__PURE__ @class */ (function () {
             sheet.rows[rowIdx].cells[colIdx] = {};
         }
         if (typeof (hyperlink) === 'string') {
-            if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('www.') !== -1) {
-                address = 'http://' + hyperlink;
-            }
-            else {
+            if (hyperlink.indexOf('http://') !== 0 && hyperlink.indexOf('https://') !== 0 && hyperlink.indexOf('ftp://') !== 0) {
+                hyperlink = hyperlink.indexOf('www.') === 0 ? 'http://' + hyperlink : hyperlink;
                 address = hyperlink;
             }
-            sheet.rows[rowIdx].cells[colIdx].hyperlink = address;
+            sheet.rows[rowIdx].cells[colIdx].hyperlink = hyperlink;
         }
         else {
-            if (hyperlink.address.indexOf('http://') === -1 && hyperlink.address.indexOf('www.') !== -1) {
-                address = 'http://' + hyperlink.address;
-            }
-            else {
-                address = hyperlink.address;
+            address = hyperlink.address;
+            if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
+                address = address.indexOf('www.') === 0 ? 'http://' + address : address;
             }
             sheet.rows[rowIdx].cells[colIdx].hyperlink = {
                 address: address,
@@ -11315,7 +11322,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         });
     };
     Clipboard.prototype.hidePaste = function (isShow) {
-        this.parent.notify(enableRibbonItems, [{ id: this.parent.element.id + '_paste', isEnable: isShow || false }]);
+        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_paste'], enable: isShow || false }]);
     };
     Clipboard.prototype.setExternalCells = function (args) {
         var cell;
@@ -11679,7 +11686,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         this.positionEditor();
         this.parent.isEdit = this.isEdit = true;
         this.parent.notify(clearCopy, null);
-        this.parent.notify(enableToolbar, { enable: false });
+        this.parent.notify(enableToolbarItems, [{ enable: false }]);
     };
     Edit.prototype.setCursorPosition = function () {
         var elem = this.editorElem;
@@ -11906,7 +11913,7 @@ var Edit = /** @__PURE__ @class */ (function () {
     };
     Edit.prototype.focusElement = function () {
         this.parent.element.focus();
-        this.parent.notify(enableToolbar, { enable: true });
+        this.parent.notify(enableToolbarItems, [{ enable: true }]);
     };
     Edit.prototype.triggerEvent = function (eventName) {
         var eventArgs = {
@@ -12985,7 +12992,9 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
     };
     VirtualScroll.prototype.updateVTrackWidth = function (args) {
-        if (args.colIdx < this.parent.getActiveSheet().colCount) {
+        var threshold = this.parent.getThreshold('col');
+        var lastIdx = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (threshold * 2);
+        if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= lastIdx) {
             var hdrVTrack = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0];
             hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
             var cntVTrack = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0];
@@ -13255,8 +13264,15 @@ var KeyboardShortcut = /** @__PURE__ @class */ (function () {
             }
             if (e.keyCode === 75) {
                 var sheet = this.parent.getActiveSheet();
-                var idx = getCellIndexes(sheet.activeCell);
-                var cell = sheet.rows[idx[0]].cells[idx[1]];
+                var indexes = getCellIndexes(sheet.activeCell);
+                var row = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
+                var cell = void 0;
+                if (!isNullOrUndefined(row)) {
+                    cell = row.cells[indexes[1]];
+                }
+                if (isNullOrUndefined(cell)) {
+                    setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
+                }
                 e.preventDefault();
                 if (cell && cell.hyperlink) {
                     this.parent.notify(editHyperlink, null);
@@ -13772,7 +13788,9 @@ var Resize = /** @__PURE__ @class */ (function () {
         var threshold = parseInt(oldValue, 10) > autofitValue ?
             -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
         if (isCol) {
-            if (oldIdx >= this.parent.viewport.leftIndex && oldIdx <= this.parent.viewport.leftIndex + 62) {
+            var colThreshold = this.parent.getThreshold('col');
+            var lastIdx = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (colThreshold * 2);
+            if (oldIdx >= this.parent.viewport.leftIndex && oldIdx <= lastIdx) {
                 getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
                 this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: oldIdx });
                 this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
@@ -14372,7 +14390,7 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
                             
                         }
                     }
-                    address = sheetName + '!' + address;
+                    address = sheetName + '!' + address.toUpperCase();
                     var args = { address: address };
                     this.parent.insertHyperlink(args, this.parent.getActiveSheet().activeCell, value, false);
                 }
@@ -14424,10 +14442,14 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
     SpreadsheetHyperlink.prototype.removeHyperlinkHandler = function (cell) {
         this.parent.removeHyperlink(cell);
     };
+    // tslint:disable-next-line:max-func-body-length
     SpreadsheetHyperlink.prototype.hlOpenHandler = function (trgt) {
         var _this = this;
         if (trgt.classList.contains('e-hyperlink')) {
             var range = ['', ''];
+            var selRange = void 0;
+            var rangeIndexes = void 0;
+            var isEmpty = true;
             trgt.style.color = '#551A8B';
             var sheet = this.parent.getActiveSheet();
             var colIdx = parseInt(trgt.parentElement.getAttribute('aria-colindex'), 10) - 1;
@@ -14436,24 +14458,20 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
             var address = void 0;
             var befArgs = void 0;
             var aftArgs = void 0;
-            befArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell, cancel: false };
-            aftArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell };
+            befArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell, target: '_blank', cancel: false };
             this.parent.trigger(beforeHyperlinkClick, befArgs);
             if (befArgs.cancel) {
                 return;
             }
             rangeAddr = befArgs.hyperlink;
+            aftArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell };
             if (typeof (rangeAddr) === 'string') {
                 address = rangeAddr;
             }
             if (typeof (rangeAddr) === 'object') {
                 address = rangeAddr.address;
             }
-            if (address.indexOf('http://') > -1 || address.indexOf('www.') > -1) {
-                address = (address.indexOf('http://') === -1) ? 'http://' + address : address;
-                window.open(address);
-            }
-            else if (address.indexOf('www.') === -1) {
+            if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 if (!isNullOrUndefined(address)) {
                     if (this.parent.definedNames) {
                         for (var idx = 0; idx < this.parent.definedNames.length; idx++) {
@@ -14466,48 +14484,74 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
                     }
                     if (address.indexOf('!') !== -1) {
                         range = address.split('!');
+                        if (range[0].indexOf(' ') !== -1) {
+                            range[0] = range[0].slice(1, range[0].length - 1);
+                        }
                     }
                     else {
                         range[0] = this.parent.getActiveSheet().name;
                         range[1] = address;
                     }
+                    selRange = range[1];
                     var sheetIdx = void 0;
                     for (var idx = 0; idx < this.parent.sheets.length; idx++) {
                         if (this.parent.sheets[idx].name === range[0]) {
                             sheetIdx = idx;
                         }
                     }
-                    var rangeIndexes = getRangeIndexes(range[1]);
+                    sheet = this.parent.sheets[sheetIdx];
+                    if (range[1].indexOf(':') !== -1) {
+                        var colIndex = range[1].indexOf(':');
+                        var left = range[1].substr(0, colIndex);
+                        var right = range[1].substr(colIndex + 1, range[1].length);
+                        left = left.replace('$', '');
+                        right = right.replace('$', '');
+                        if (right.match(/\D/g) && !right.match(/[0-9]/g) && left.match(/\D/g) && !left.match(/[0-9]/g)) {
+                            selRange = left + '1' + ':' + right + sheet.rowCount;
+                            left = left + '1';
+                            right = right + sheet.rowCount;
+                            range[1] = left + ':' + right;
+                        }
+                        else if (!right.match(/\D/g) && right.match(/[0-9]/g) && !left.match(/\D/g) && left.match(/[0-9]/g)) {
+                            selRange = getCellAddress(parseInt(left, 10) - 1, 0) + ':' +
+                                getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
+                            rangeIndexes = [parseInt(left, 10) - 1, 0, parseInt(right, 10) - 1, sheet.colCount - 1];
+                            isEmpty = false;
+                        }
+                    }
+                    rangeIndexes = isEmpty ? getRangeIndexes(range[1]) : rangeIndexes;
                     if (this.parent.scrollSettings.enableVirtualization) {
                         rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.topIndex ?
                             rangeIndexes[0] - this.parent.viewport.topIndex : rangeIndexes[0];
                         rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.leftIndex ?
                             rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
                     }
-                    sheet = this.parent.sheets[sheetIdx];
                     if (!isNullOrUndefined(sheet)) {
                         if (sheet === this.parent.getActiveSheet()) {
                             this.parent.selectRange(getRangeAddress(rangeIndexes));
                         }
                         else {
-                            sheet.selectedRange = range[1];
+                            sheet.selectedRange = selRange;
                             this.parent.activeSheetTab = sheetIdx + 1;
                             this.parent.dataBind();
                         }
                         if (this.parent.scrollSettings.enableVirtualization) {
-                            rangeIndexes[0] =
-                                rangeIndexes[0] >= this.parent.viewport.rowCount ? rangeIndexes[0] - this.parent.viewport.rowCount : 0;
-                            rangeIndexes[2] =
-                                rangeIndexes[2] >= this.parent.viewport.rowCount ? rangeIndexes[2] - this.parent.viewport.rowCount : 0;
-                            rangeIndexes[1] =
-                                rangeIndexes[1] >= this.parent.viewport.colCount ? rangeIndexes[1] - this.parent.viewport.colCount : 0;
-                            rangeIndexes[3] =
-                                rangeIndexes[3] >= this.parent.viewport.colCount ? rangeIndexes[3] - this.parent.viewport.colCount : 0;
+                            rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.rowCount ?
+                                rangeIndexes[0] - (this.parent.viewport.rowCount - 2) : 0;
+                            rangeIndexes[2] = rangeIndexes[2] >= this.parent.viewport.rowCount ?
+                                rangeIndexes[2] - (this.parent.viewport.rowCount - 2) : 0;
+                            rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.colCount ?
+                                rangeIndexes[1] - (this.parent.viewport.colCount - 2) : 0;
+                            rangeIndexes[3] = rangeIndexes[3] >= this.parent.viewport.colCount ?
+                                rangeIndexes[3] - (this.parent.viewport.colCount - 2) : 0;
                         }
                         var rangeAddr_1 = getRangeAddress(rangeIndexes);
                         getUpdateUsingRaf(function () { _this.parent.goTo(rangeAddr_1); });
                     }
                 }
+            }
+            else {
+                trgt.setAttribute('target', befArgs.target);
             }
             this.parent.trigger(afterHyperlinkClick, aftArgs);
         }
@@ -14589,10 +14633,11 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(cell.hyperlink)) {
             var hyperlink = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
-                if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('www.') !== -1) {
+                if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('https://') === -1 &&
+                    hyperlink.indexOf('ftp://') === -1 && hyperlink.indexOf('www.') !== -1) {
                     hyperlink = 'http://' + hyperlink;
                 }
-                if (hyperlink.indexOf('www.') !== -1) {
+                if (hyperlink.indexOf('http://') === 0 || hyperlink.indexOf('https://') === 0 || hyperlink.indexOf('ftp://') === 0) {
                     hyperEle.setAttribute('href', hyperlink);
                     hyperEle.setAttribute('target', '_blank');
                 }
@@ -14605,10 +14650,8 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
                 td.appendChild(hyperEle);
             }
             else if (typeof (hyperlink) === 'object') {
-                if (hyperlink.address.indexOf('http://') === -1 && hyperlink.address.indexOf('www.') !== -1) {
-                    hyperlink.address = 'http://' + hyperlink.address;
-                }
-                if (hyperlink.address.indexOf('www') !== -1) {
+                if (hyperlink.address.indexOf('http://') === 0 || hyperlink.address.indexOf('https://') === 0 ||
+                    hyperlink.address.indexOf('ftp://') === 0) {
                     hyperEle.setAttribute('href', hyperlink.address);
                     hyperEle.setAttribute('target', '_blank');
                 }
@@ -14631,22 +14674,20 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
             indexes[0] = indexes[0] - this.parent.viewport.topIndex;
             indexes[1] = indexes[1] - this.parent.viewport.leftIndex;
         }
-        var td = this.parent.getMainContent().getElementsByClassName('e-row')[indexes[0]].getElementsByClassName('e-cell')[indexes[1]];
-        var hyperlinkEle = td.getElementsByClassName('e-hyperlink')[0];
         var value = this.parent.getDisplayText(cell);
         var address;
         var hyperlink = cell.hyperlink;
         if (typeof (hyperlink) === 'string') {
             address = hyperlink;
             value = value || address;
-            if (address.indexOf('www.') === -1) {
+            if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 isWeb = false;
             }
         }
         else if (typeof (hyperlink) === 'object') {
             address = hyperlink.address;
             value = value || address;
-            if (address.indexOf('www.') === -1) {
+            if (address.indexOf('http://') === -1 && address.indexOf('https://') === -1 && address.indexOf('ftp://') === -1) {
                 isWeb = false;
             }
         }
@@ -14655,7 +14696,7 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
             var webContElem = item.querySelector('.e-webpage');
             webContElem.getElementsByClassName('e-cont')[0].getElementsByClassName('e-text')[0].setAttribute('value', value);
             if (typeof (hyperlink) === 'string') {
-                webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').innerHTML = hyperlink;
+                webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').setAttribute('value', hyperlink);
             }
             else {
                 var address_1;
@@ -14723,6 +14764,7 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-func-body-length
     SpreadsheetHyperlink.prototype.hyperlinkContent = function () {
+        var l10n = this.parent.serviceLocator.getService(locale);
         var idx = 0;
         var selIdx = 0;
         var isWeb = true;
@@ -14744,13 +14786,15 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
             }
             var hyperlink = cell_1.hyperlink;
             if (typeof (hyperlink) === 'string') {
-                if (hyperlink.indexOf('www.') === -1) {
+                var hl = hyperlink;
+                if (hl.indexOf('http://') === -1 && hl.indexOf('https://') === -1 && hl.indexOf('ftp://') === -1) {
                     address = hyperlink;
                     isWeb = false;
                 }
             }
             else if (typeof (hyperlink) === 'object') {
-                if (hyperlink.address.indexOf('www.') === -1) {
+                var hl = hyperlink.address;
+                if (hl.indexOf('http://') === -1 && hl.indexOf('https://') === -1 && hl.indexOf('ftp://') === -1) {
                     address = hyperlink.address;
                     isWeb = false;
                 }
@@ -14788,6 +14832,12 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
             ]
         });
         headerTabs.appendTo(dialogElem);
+        if (isWeb) {
+            dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator').setAttribute('style', 'left: 0; right: 136px');
+        }
+        else {
+            dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator').setAttribute('style', 'left: 136px; right: 0');
+        }
         var textCont = this.parent.createElement('div', { className: 'e-cont' });
         var urlCont = this.parent.createElement('div', { className: 'e-cont' });
         var textH = this.parent.createElement('div', { className: 'e-header', innerHTML: 'Display Text' });
@@ -14814,17 +14864,18 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
         var definedName = [];
         var sheets = this.parent.sheets;
         for (idx; idx < this.parent.sheets.length; idx++) {
+            var sheetName = this.parent.sheets[idx].name;
             if (sheets[idx] === this.parent.getActiveSheet()) {
                 cellRef.push({
                     nodeId: 'sheet',
-                    nodeText: this.parent.sheets[idx].name,
+                    nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName,
                     selected: true
                 });
             }
             else {
                 cellRef.push({
                     nodeId: 'sheet',
-                    nodeText: this.parent.sheets[idx].name
+                    nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName
                 });
             }
         }
@@ -14988,8 +15039,8 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         this.updateUndoRedoIcons();
     };
     UndoRedo.prototype.updateUndoRedoIcons = function () {
-        this.parent.notify(enableRibbonItems, [{ id: this.parent.element.id + '_undo', isEnable: this.undoCollection.length > 0 }]);
-        this.parent.notify(enableRibbonItems, [{ id: this.parent.element.id + '_redo', isEnable: this.redoCollection.length > 0 }]);
+        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_undo'], enable: this.undoCollection.length > 0 }]);
+        this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_redo'], enable: this.redoCollection.length > 0 }]);
     };
     UndoRedo.prototype.undoForClipboard = function (args) {
         var eventArgs = args.eventArgs;
@@ -15190,7 +15241,7 @@ var RibbonItem = /** @__PURE__ @class */ (function (_super) {
         Collection([], Item)
     ], RibbonItem.prototype, "content", void 0);
     __decorate$7([
-        Property({})
+        Property('')
     ], RibbonItem.prototype, "cssClass", void 0);
     __decorate$7([
         Property(false)
@@ -15240,13 +15291,14 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
             expandCollapseElem.removeEventListener('click', this.ribbonExpandCollapse.bind(this));
         }
         if (this.menuItems.length) {
-            var fileMenu = document.getElementById(this.element.id + "_menu_items");
+            var fileMenu = document.getElementById(this.element.id + "_menu");
             if (fileMenu) {
                 getComponent(fileMenu, 'menu').destroy();
             }
         }
         this.toolbarObj.destroy();
         this.tabObj.destroy();
+        this.element.innerHTML = '';
         this.toolbarObj = null;
         this.tabObj = null;
         _super.prototype.destroy.call(this);
@@ -15271,7 +15323,7 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
     };
     Ribbon.prototype.initMenu = function (menuItems) {
         var _this = this;
-        var menu = this.createElement('ul', { id: this.element.id + "_menu_items" });
+        var menu = this.createElement('ul', { id: this.element.id + "_menu" });
         this.element.appendChild(menu);
         var menuObj = new Menu({
             cssClass: 'e-file-menu',
@@ -15323,7 +15375,10 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
                     args.cancel = true;
                 }
                 else {
-                    _this.toolbarObj.items = _this.items[_this.getIndex(args.selectingIndex, true)].content;
+                    if (args.selectingIndex === _this.getIndex(_this.selectedTab)) {
+                        return;
+                    }
+                    _this.updateToolbar(_this.getIndex(args.selectingIndex, true));
                     _this.toolbarObj.dataBind();
                     if (_this.element.classList.contains('e-collapsed')) {
                         EventHandler.remove(args.selectedItem, 'click', _this.ribbonExpandCollapse);
@@ -15341,6 +15396,9 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
                 }
             },
             selected: function (args) {
+                if (args.selectedIndex === _this.getIndex(_this.selectedTab)) {
+                    return;
+                }
                 _this.setProperties({ 'selectedTab': _this.getIndex(args.selectedIndex, true) }, true);
                 if (_this.element.classList.contains('e-collapsed')) {
                     _this.element.classList.remove('e-collapsed');
@@ -15350,7 +15408,8 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
             created: function () {
                 var collapseBtn = _this.createElement('span', { className: 'e-drop-icon e-icons' });
                 collapseBtn.addEventListener('click', _this.ribbonExpandCollapse.bind(_this));
-                _this.tabObj.element.querySelector('.e-tab-header').appendChild(collapseBtn);
+                var header = _this.tabObj.element.querySelector('.e-tab-header');
+                header.insertBefore(collapseBtn, header.getElementsByClassName('e-toolbar-items')[0]);
                 _this.toolbarObj.refreshOverflow();
             }
         });
@@ -15380,39 +15439,164 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
     Ribbon.prototype.getIndex = function (index, decrement) {
         return this.menuItems.length ? (decrement ? index - 1 : index + 1) : index;
     };
-    /**
-     * Enables or disables the specified Ribbon items or all ribbon items.
-     * @param  {boolean} enable  - Boolean value that determines whether the command should be enabled or disabled.
-     * @param  {HTMLElement} items - DOM element or an array of items to be enabled or disabled.
-     * By default, `isEnable` is set to true.
-     * @returns void.
-     */
-    Ribbon.prototype.enableItems = function (enable, items) {
-        if (items) {
-            this.toolbarObj.enableItems(items, enable);
-        }
-        else {
-            this.toolbarObj.disable(!enable);
-        }
+    Ribbon.prototype.updateToolbar = function (index) {
+        this.toolbarObj.items = this.items[index].content;
+        this.toolbarObj.dataBind();
     };
     /**
      * To enable / disable the ribbon menu items.
      * @param {string[]} items - Items that needs to be enabled / disabled.
      * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
      * @returns void.
      */
-    Ribbon.prototype.enableMenuItems = function (items, enable) {
+    Ribbon.prototype.enableMenuItems = function (items, enable, isUniqueId) {
         if (enable === void 0) { enable = true; }
         if (!this.menuItems.length) {
             return;
         }
-        getComponent(document.getElementById(this.element.id + "_menu_items"), 'menu').enableItems(items, enable);
+        getComponent(document.getElementById(this.element.id + "_menu"), 'menu').enableItems(items, enable, isUniqueId);
+    };
+    /**
+     * To show/hide the menu items in Ribbon.
+     * @param {string[]} items - Specifies the menu items text which is to be show/hide.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
+     * @returns void.
+     */
+    Ribbon.prototype.hideMenuItems = function (items, hide, isUniqueId) {
+        if (hide === void 0) { hide = true; }
+        if (!this.menuItems.length) {
+            return;
+        }
+        var menuInstance = getComponent(document.getElementById(this.element.id + "_menu"), 'menu');
+        hide ? menuInstance.hideItems(items, isUniqueId) : menuInstance.showItems(items, isUniqueId);
+    };
+    /**
+     * To add custom menu items.
+     * @param {MenuItemModel[]} items - Specifies the Ribbon menu items to be inserted.
+     * @param {string} text - Specifies the existing file menu item text before / after which the new file menu items to be inserted.
+     * @param {boolean} insertAfter? - Set `false` if the `items` need to be inserted before the `text`.
+     * By default, `items` are added after the `text`.
+     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
+     * @returns void.
+     */
+    Ribbon.prototype.addMenuItems = function (items, text, insertAfter, isUniqueId) {
+        if (insertAfter === void 0) { insertAfter = true; }
+        if (!this.menuItems.length) {
+            return;
+        }
+        var menuInstance = getComponent(document.getElementById(this.element.id + "_menu"), 'menu');
+        insertAfter ? menuInstance.insertAfter(items.reverse(), text, isUniqueId) : menuInstance.insertBefore(items, text, isUniqueId);
+    };
+    /**
+     * To show/hide the Ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
+     * @returns void.
+     */
+    Ribbon.prototype.hideTabs = function (tabs, hide) {
+        var _this = this;
+        if (hide === void 0) { hide = true; }
+        var idx;
+        var activeTab;
+        var stateChanged;
+        var isAllHidden;
+        if (!hide) {
+            isAllHidden = this.isAllHidden();
+        }
+        tabs.forEach(function (tab) {
+            idx = _this.getTabIndex(tab, -1);
+            if (idx > -1) {
+                if (hide) {
+                    if (!_this.items[idx].cssClass.includes(' e-hide')) {
+                        _this.items[idx].cssClass = _this.items[idx].cssClass + " e-hide";
+                        _this.tabObj.items[_this.getIndex(idx)].cssClass = _this.items[idx].cssClass;
+                        if (activeTab === undefined && idx === _this.selectedTab) {
+                            activeTab = true;
+                        }
+                        stateChanged = true;
+                    }
+                }
+                else {
+                    if (_this.items[idx].cssClass.includes(' e-hide')) {
+                        _this.items[idx].cssClass = _this.items[idx].cssClass.replace(' e-hide', '');
+                        _this.tabObj.items[_this.getIndex(idx)].cssClass = _this.items[idx].cssClass;
+                        if (activeTab === undefined && idx === _this.selectedTab) {
+                            activeTab = true;
+                        }
+                        stateChanged = true;
+                    }
+                }
+            }
+        });
+        this.setProperties({ 'items': this.items }, true);
+        this.tabObj.items = this.tabObj.items;
+        this.tabObj.dataBind();
+        if (hide) {
+            isAllHidden = this.isAllHidden();
+            if (isAllHidden) {
+                activeTab = false;
+            }
+        }
+        if (!hide && isAllHidden) {
+            activeTab = activeTab ? false : true;
+        }
+        if (stateChanged && isAllHidden) {
+            if (this.element.classList.contains('e-collapsed')) {
+                this.element.classList.remove('e-collapsed');
+                this.element.querySelector('.e-drop-icon').classList.remove('e-hide');
+            }
+            else {
+                this.element.classList.add('e-collapsed');
+                this.element.querySelector('.e-drop-icon').classList.add('e-hide');
+            }
+        }
+        if (activeTab) {
+            for (var i = 0; i < this.items.length; i++) {
+                if (!this.items[i].cssClass.includes(' e-hide')) {
+                    this.tabObj.selectedItem = this.getIndex(i);
+                    this.tabObj.dataBind();
+                    break;
+                }
+            }
+        }
+    };
+    Ribbon.prototype.isAllHidden = function () {
+        var allHidden = true;
+        for (var i = 0; i < this.items.length; i++) {
+            if (!this.items[i].cssClass.includes(' e-hide')) {
+                allHidden = false;
+                break;
+            }
+        }
+        return allHidden;
+    };
+    /**
+     * To enable / disable the Ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
+     * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
+     * @returns void.
+     */
+    Ribbon.prototype.enableTabs = function (tabs, enable) {
+        var _this = this;
+        if (enable === void 0) { enable = true; }
+        tabs.forEach(function (tab) {
+            var idx = (_this.getTabIndex(tab, -1));
+            if (idx > -1) {
+                _this.items[idx].disabled = !enable;
+                idx = _this.getIndex(idx);
+                _this.tabObj.enableTab(idx, enable);
+            }
+        });
+        this.setProperties({ 'items': this.items }, true);
     };
     /**
      * To add custom tabs.
      * @param {RibbonItemModel[]} items - Specifies the Ribbon tab items to be inserted.
-     * @param {string} insertBefore? - specifies the existing Ribbon header text before which the new tabs will be inserted.
+     * @param {string} insertBefore? - Specifies the existing Ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
+     * @returns void.
      */
     Ribbon.prototype.addTabs = function (items, insertBefore) {
         var _this = this;
@@ -15423,10 +15607,11 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
             _this.tabObj.addTab([{ header: item.header, content: _this.toolbarObj.element }], _this.getIndex(idx));
             idx++;
         });
+        this.setProperties({ 'items': this.items }, true);
         this.setProperties({ 'selectedTab': this.getIndex(this.tabObj.selectedItem, true) }, true);
     };
-    Ribbon.prototype.getTabIndex = function (headerText) {
-        var idx = this.items.length;
+    Ribbon.prototype.getTabIndex = function (headerText, idx) {
+        if (idx === void 0) { idx = this.items.length; }
         if (headerText) {
             for (var i = 0; i < this.items.length; i++) {
                 if (this.items[i].header.text === headerText) {
@@ -15440,8 +15625,8 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
     /**
      * To add the custom items in Ribbon toolbar.
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted..
-     * @param {ItemModel[]} items - specifies the ribbon toolbar items that needs to be inserted.
-     * @param {number} index? - specifies the index text before which the new items will be inserted.
+     * @param {ItemModel[]} items - Specifies the ribbon toolbar items that needs to be inserted.
+     * @param {number} index? - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
      */
     Ribbon.prototype.addToolbarItems = function (tab, items, index) {
@@ -15455,9 +15640,84 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
             _this.items[tabIdx].content.splice(index, 0, item);
             index++;
         });
+        this.setProperties({ 'items': this.items }, true);
         if (tabIdx === this.selectedTab && items.length) {
-            this.toolbarObj.items = this.items[tabIdx].content;
-            this.toolbarObj.dataBind();
+            this.updateToolbar(tabIdx);
+        }
+    };
+    /**
+     * Enables or disables the specified Ribbon toolbar items or all ribbon items.
+     * @param {string} tab - Specifies the ribbon tab header text under which the toolbar items need to be enabled / disabled.
+     * @param {string[]} items? - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
+     * If it is not specified the entire toolbar items will be enabled / disabled.
+     * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
+     * @returns void.
+     */
+    Ribbon.prototype.enableItems = function (tab, items, enable) {
+        if (enable === undefined) {
+            enable = true;
+        }
+        if (items) {
+            var tabIdx = this.getTabIndex(tab, -1);
+            if (tabIdx < 0) {
+                return;
+            }
+            for (var i = 0; i < items.length; i++) {
+                if (typeof (items[i]) === 'string') {
+                    for (var j = 0; j < this.items[tabIdx].content.length; j++) {
+                        if (this.items[tabIdx].content[j].id === items[i]) {
+                            items[i] = j;
+                            break;
+                        }
+                    }
+                }
+                if (typeof (items[i]) === 'string') {
+                    return;
+                }
+                this.items[tabIdx].content[items[i]].disabled = !enable;
+            }
+            if (tabIdx === this.selectedTab) {
+                this.updateToolbar(tabIdx);
+            }
+        }
+        else {
+            this.toolbarObj.disable(!enable);
+        }
+    };
+    /**
+     * To show/hide the existing Ribbon toolbar items.
+     * @param {string} tab - Specifies the ribbon tab header text under which the specified items need to be hidden / shown.
+     * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
+     * @returns void.
+     */
+    Ribbon.prototype.hideToolbarItems = function (tab, indexes, hide) {
+        var _this = this;
+        if (hide === void 0) { hide = true; }
+        var tabIdx;
+        for (var i = 0; i < this.items.length; i++) {
+            if (this.items[i].header.text === tab) {
+                tabIdx = i;
+                indexes.forEach(function (idx) {
+                    if (_this.items[tabIdx].content[idx]) {
+                        if (hide) {
+                            if (!_this.items[tabIdx].content[idx].cssClass.includes(' e-hide')) {
+                                _this.items[tabIdx].content[idx].cssClass = _this.items[tabIdx].content[idx].cssClass + ' e-hide';
+                            }
+                        }
+                        else {
+                            if (_this.items[tabIdx].content[idx].cssClass.includes(' e-hide')) {
+                                _this.items[tabIdx].content[idx].cssClass = _this.items[tabIdx].content[idx].cssClass.replace(' e-hide', '');
+                            }
+                        }
+                    }
+                });
+                break;
+            }
+        }
+        this.setProperties({ 'items': this.items }, true);
+        if (tabIdx !== undefined && tabIdx === this.selectedTab) {
+            this.updateToolbar(tabIdx);
         }
     };
     /**
@@ -15710,19 +15970,19 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
     };
     Ribbon$$1.prototype.getRibbonMenuItems = function () {
         var l10n = this.parent.serviceLocator.getService(locale);
+        var id = this.parent.element.id;
         return [{
                 text: this.parent.isMobileView() ? '' : l10n.getConstant('File'),
-                iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null,
+                iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null, id: id + "_File",
                 items: [
-                    { text: l10n.getConstant('New'), id: 'New', iconCss: 'e-new e-icons' },
-                    { text: l10n.getConstant('Open'), id: 'Open', iconCss: 'e-open e-icons' },
+                    { text: l10n.getConstant('New'), id: id + "_New", iconCss: 'e-new e-icons' },
+                    { text: l10n.getConstant('Open'), id: id + "_Open", iconCss: 'e-open e-icons' },
                     {
-                        text: l10n.getConstant('SaveAs'),
-                        iconCss: 'e-save e-icons',
+                        text: l10n.getConstant('SaveAs'), iconCss: 'e-save e-icons', id: id + "_Save_As",
                         items: [
-                            { text: l10n.getConstant('ExcelXlsx'), id: 'Xlsx', iconCss: 'e-xlsx e-icons' },
-                            { text: l10n.getConstant('ExcelXls'), id: 'Xls', iconCss: 'e-xls e-icons' },
-                            { text: l10n.getConstant('CSV'), id: 'Csv', iconCss: 'e-csv e-icons' }
+                            { text: l10n.getConstant('ExcelXlsx'), id: id + "_Xlsx", iconCss: 'e-xlsx e-icons' },
+                            { text: l10n.getConstant('ExcelXls'), id: id + "_Xls", iconCss: 'e-xls e-icons' },
+                            { text: l10n.getConstant('CSV'), id: id + "_Csv", iconCss: 'e-csv e-icons' }
                         ]
                     }
                 ]
@@ -15736,33 +15996,36 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             {
                 header: { text: l10n.getConstant('Home') },
                 content: [
-                    { prefixIcon: 'e-undo-icon', tooltipText: l10n.getConstant('Undo') + " (Ctrl+Z)", id: id + '_undo' },
-                    { prefixIcon: 'e-redo-icon', tooltipText: l10n.getConstant('Redo') + " (Ctrl+Y)", id: id + '_redo' },
-                    { type: 'Separator' },
+                    { prefixIcon: 'e-undo-icon', tooltipText: l10n.getConstant('Undo') + " (Ctrl+Z)", id: id + '_undo', disabled: true },
+                    { prefixIcon: 'e-redo-icon', tooltipText: l10n.getConstant('Redo') + " (Ctrl+Y)", id: id + '_redo', disabled: true },
+                    { type: 'Separator', id: id + '_separator_1' },
                     { prefixIcon: 'e-cut-icon', tooltipText: l10n.getConstant('Cut') + " (Ctrl+X)", id: id + '_cut' },
                     { prefixIcon: 'e-copy-icon', tooltipText: l10n.getConstant('Copy') + " (Ctrl+C)", id: id + '_copy' },
-                    { tooltipText: l10n.getConstant('Paste') + " (Ctrl+V)", template: this.getPasteBtn(id) },
-                    { type: 'Separator' },
-                    { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat') }, { type: 'Separator' },
-                    { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font') }, { type: 'Separator' },
-                    { template: this.getFontSizeDDB(id), tooltipText: l10n.getConstant('FontSize') }, { type: 'Separator' },
-                    { template: this.getBtn(id, 'bold'), tooltipText: l10n.getConstant('Bold') + " (Ctrl+B)" },
-                    { template: this.getBtn(id, 'italic'), tooltipText: l10n.getConstant('Italic') + " (Ctrl+I)" },
-                    { template: this.getBtn(id, 'line-through'), tooltipText: l10n.getConstant('Strikethrough') + " (Ctrl+5)" },
-                    { template: this.getBtn(id, 'underline'), tooltipText: l10n.getConstant('Underline') + " (Ctrl+U)" },
-                    { template: document.getElementById(id + "_font_color_picker"), tooltipText: l10n.getConstant('TextColor') },
-                    { type: 'Separator' },
-                    { template: document.getElementById(id + "_fill_color_picker"), tooltipText: l10n.getConstant('FillColor') },
-                    { type: 'Separator' }, { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment') },
-                    { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment') }
+                    { tooltipText: l10n.getConstant('Paste') + " (Ctrl+V)", template: this.getPasteBtn(id), id: id + '_paste',
+                        disabled: true }, { type: 'Separator', id: id + '_separator_2' },
+                    { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
+                    { type: 'Separator', id: id + '_separator_3' },
+                    { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font'), id: id + '_font_name' },
+                    { type: 'Separator', id: id + '_separator_4' },
+                    { template: this.getFontSizeDDB(id), tooltipText: l10n.getConstant('FontSize'), id: id + '_font_size' },
+                    { type: 'Separator', id: id + '_separator_5' },
+                    { template: this.getBtn(id, 'bold'), tooltipText: l10n.getConstant('Bold') + " (Ctrl+B)", id: id + '_bold' },
+                    { template: this.getBtn(id, 'italic'), tooltipText: l10n.getConstant('Italic') + " (Ctrl+I)", id: id + '_italic' },
+                    { template: this.getBtn(id, 'line-through'), tooltipText: l10n.getConstant('Strikethrough') + " (Ctrl+5)",
+                        id: id + '_line-through' },
+                    { template: this.getBtn(id, 'underline'), tooltipText: l10n.getConstant('Underline') + " (Ctrl+U)",
+                        id: id + '_underline' },
+                    { template: document.getElementById(id + "_font_color_picker"), tooltipText: l10n.getConstant('TextColor'),
+                        id: id + '_font_color_picker' }, { type: 'Separator', id: id + '_separator_6' },
+                    { template: document.getElementById(id + "_fill_color_picker"), tooltipText: l10n.getConstant('FillColor'),
+                        id: id + '_fill_color_picker' }, { type: 'Separator', id: id + '_separator_7' },
+                    { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align' }, { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' }
                 ]
             },
             {
                 header: { text: l10n.getConstant('Insert') },
-                content: [{
-                        prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
-                        id: id + '_hyperlink', click: function () { _this.getHyperlinkDlg(); }
-                    }]
+                content: [{ prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
+                        id: id + '_hyperlink', click: function () { _this.getHyperlinkDlg(); } }]
             },
             {
                 header: { text: l10n.getConstant('Formulas') },
@@ -15771,15 +16034,14 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             {
                 header: { text: l10n.getConstant('View') },
                 content: [
-                    { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' }, { type: 'Separator' },
+                    { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' },
+                    { type: 'Separator', id: id + '_separator_8' },
                     { prefixIcon: 'e-hide-gridlines', text: this.getLocaleText('GridLines'), id: id + '_gridlines' }
                 ]
             }
         ];
         if (this.parent.allowSorting || this.parent.allowFiltering) {
-            items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ type: 'Separator' }, {
-                template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter')
-            });
+            items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ type: 'Separator', id: id + '_separator_9' }, { template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter'), id: id + '_sorting' });
         }
         return items;
     };
@@ -15808,7 +16070,14 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
     };
     Ribbon$$1.prototype.getHyperlinkDlg = function () {
         var indexes = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        var cell = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]].cells[indexes[1]];
+        var row = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
+        var cell;
+        if (!isNullOrUndefined(row)) {
+            cell = row.cells[indexes[1]];
+        }
+        if (isNullOrUndefined(cell)) {
+            setCell(indexes[0], indexes[1], this.parent.getActiveSheet(), cell, false);
+        }
         if (cell && cell.hyperlink) {
             this.parent.notify(editHyperlink, null);
         }
@@ -15835,7 +16104,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         return text;
     };
     Ribbon$$1.prototype.createRibbon = function (args) {
-        var ribbonElement = this.parent.createElement('div');
+        var ribbonElement = this.parent.createElement('div', { id: this.parent.element.id + "_ribbon" });
         this.ribbon = new Ribbon$1({
             selectedTab: 0,
             menuItems: this.getRibbonMenuItems(),
@@ -16056,13 +16325,6 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         return this.sortingDdb.element;
     };
     Ribbon$$1.prototype.ribbonCreated = function () {
-        if (this.parent.enableClipboard) {
-            this.enableRibbonItems([{ id: this.parent.element.id + '_paste', isEnable: false }]);
-        }
-        if (this.parent.allowUndoRedo) {
-            this.enableRibbonItems([{ id: this.parent.element.id + '_undo', isEnable: false },
-                { id: this.parent.element.id + '_redo', isEnable: false }]);
-        }
         this.ribbon.element.querySelector('.e-drop-icon').title
             = this.parent.serviceLocator.getService(locale).getConstant('CollapseToolbar');
     };
@@ -16175,9 +16437,6 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             { text: 'Calibri', iconCss: 'e-icons e-selected-icon' }, { text: 'Courier' }, { text: 'Courier New' },
             { text: 'Din Condensed' }, { text: 'Georgia' }, { text: 'Helvetica' }, { text: 'Helvetica New' }, { text: 'Roboto' },
             { text: 'Tahoma' }, { text: 'Times New Roman' }, { text: 'Verdana' }];
-    };
-    Ribbon$$1.prototype.enableToolbar = function (args) {
-        this.ribbon.enableItems(args.enable);
     };
     Ribbon$$1.prototype.numDDBSelect = function (args) {
         var eventArgs = {
@@ -16354,17 +16613,18 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         var _this = this;
         var selectArgs = extend({ cancel: false }, args);
         this.parent.trigger('fileItemSelect', selectArgs);
+        var id = this.parent.element.id;
         if (!selectArgs.cancel) {
             switch (args.item.id) {
-                case 'Open':
-                    this.parent.element.querySelector('#' + this.parent.element.id + '_fileUpload').click();
+                case id + "_Open":
+                    this.parent.element.querySelector('#' + id + '_fileUpload').click();
                     break;
-                case 'Xlsx':
-                case 'Xls':
-                case 'Csv':
-                    this.parent.save({ saveType: args.item.id });
+                case id + "_Xlsx":
+                case id + "_Xls":
+                case id + "_Csv":
+                    this.parent.save({ saveType: args.item.id.split(id + "_")[1] });
                     break;
-                case 'New':
+                case id + "_New":
                     var dialogInst_1 = this.parent.serviceLocator.getService(dialog);
                     dialogInst_1.show({
                         height: 200, width: 400, isModal: true, showCloseIcon: true,
@@ -16460,63 +16720,10 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Ribbon$$1.prototype.enableFileMenuItems = function (args) {
-        this.ribbon.enableMenuItems(args.items, args.enable);
+        this.ribbon.enableMenuItems(args.items, args.enable, args.isUniqueId);
     };
     Ribbon$$1.prototype.hideRibbonTabs = function (args) {
-        var _this = this;
-        var isActiveTab;
-        var idx;
-        var tabCollection = selectAll('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab)', this.parent.element);
-        args.tabs.forEach(function (tab) {
-            for (var i = 0; i < _this.ribbon.items.length; i++) {
-                if (tab === _this.ribbon.items[i].header.text) {
-                    idx = i;
-                    break;
-                }
-            }
-            if (idx !== undefined) {
-                if (args.hide) {
-                    tabCollection[idx].classList.add('e-hide');
-                    if (idx === _this.ribbon.selectedTab) {
-                        isActiveTab = true;
-                    }
-                }
-                else {
-                    if (tabCollection[idx].classList.contains('e-hide')) {
-                        if (isActiveTab === undefined) {
-                            isActiveTab = select('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab):not(.e-hide)', _this.parent.element) ? false :
-                                true;
-                        }
-                        tabCollection[idx].classList.remove('e-hide');
-                    }
-                }
-                idx = undefined;
-            }
-        });
-        var nextTab;
-        if (isActiveTab) {
-            nextTab = select('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab):not(.e-hide)', this.parent.element);
-            if (nextTab) {
-                this.toggleCollapsed();
-                var activeIdx = [].slice.call(tabCollection).indexOf(nextTab);
-                this.ribbon.selectedTab = activeIdx;
-                this.ribbon.dataBind();
-            }
-            else {
-                this.toggleCollapsed();
-            }
-        }
-        this.parent.updateActiveBorder(tabCollection[this.ribbon.selectedTab]);
-    };
-    Ribbon$$1.prototype.toggleCollapsed = function () {
-        if (this.ribbon.element.classList.contains('e-collapsed')) {
-            this.ribbon.element.classList.remove('e-collapsed');
-            this.ribbon.element.querySelector('.e-drop-icon').classList.remove('e-disabled');
-        }
-        else {
-            this.ribbon.element.classList.add('e-collapsed');
-            this.ribbon.element.querySelector('.e-drop-icon').classList.add('e-disabled');
-        }
+        this.ribbon.hideTabs(args.tabs, args.hide);
     };
     Ribbon$$1.prototype.addRibbonTabs = function (args) {
         this.ribbon.addTabs(args.items, args.insertBefore);
@@ -16578,13 +16785,11 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
     Ribbon$$1.prototype.addToolbarItems = function (args) {
         this.ribbon.addToolbarItems(args.tab, args.items, args.index);
     };
-    Ribbon$$1.prototype.enableRibbonItems = function (args) {
-        for (var i = 0, len = args.length; i < len; i++) {
-            var ele = document.getElementById(args[i].id);
-            if (ele) {
-                this.ribbon.enableItems(args[i].isEnable, closest(ele, '.e-toolbar-item'));
-            }
-        }
+    Ribbon$$1.prototype.enableToolbarItems = function (args) {
+        var _this = this;
+        args.forEach(function (arg) {
+            _this.ribbon.enableItems(arg.tab || _this.ribbon.items[_this.ribbon.selectedTab].header.text, arg.items, arg.enable);
+        });
     };
     Ribbon$$1.prototype.createMobileView = function () {
         var _this = this;
@@ -16699,19 +16904,34 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         }
         this.parent.trigger('fileMenuBeforeOpen', args);
     };
+    Ribbon$$1.prototype.enableRibbonTabs = function (args) {
+        this.ribbon.enableTabs(args.tabs, args.enable);
+    };
     Ribbon$$1.prototype.fileMenuBeforeClose = function (args) {
         this.parent.trigger('fileMenuBeforeClose', args);
     };
+    Ribbon$$1.prototype.hideFileMenuItems = function (args) {
+        this.ribbon.hideMenuItems(args.items, args.hide, args.isUniqueId);
+    };
+    Ribbon$$1.prototype.addFileMenuItems = function (args) {
+        this.ribbon.addMenuItems(args.items, args.text, args.insertAfter, args.isUniqueId);
+    };
+    Ribbon$$1.prototype.hideToolbarItems = function (args) {
+        this.ribbon.hideToolbarItems(args.tab, args.indexes, args.hide);
+    };
     Ribbon$$1.prototype.addEventListener = function () {
         this.parent.on(ribbon, this.initRibbon, this);
-        this.parent.on(enableRibbonItems, this.enableRibbonItems, this);
+        this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
         this.parent.on(activeCellChanged, this.refreshRibbonContent, this);
-        this.parent.on(enableToolbar, this.enableToolbar, this);
         this.parent.on(updateToggleItem, this.toggleRibbonItems, this);
         this.parent.on(enableFileMenuItems, this.enableFileMenuItems, this);
         this.parent.on(hideRibbonTabs, this.hideRibbonTabs, this);
         this.parent.on(addRibbonTabs, this.addRibbonTabs, this);
         this.parent.on(addToolbarItems, this.addToolbarItems, this);
+        this.parent.on(hideFileMenuItems, this.hideFileMenuItems, this);
+        this.parent.on(addFileMenuItems, this.addFileMenuItems, this);
+        this.parent.on(hideToolbarItems, this.hideToolbarItems, this);
+        this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
     };
     Ribbon$$1.prototype.destroy = function () {
         var parentElem = this.parent.element;
@@ -16737,14 +16957,17 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
     Ribbon$$1.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
             this.parent.off(ribbon, this.initRibbon);
-            this.parent.off(enableRibbonItems, this.enableRibbonItems);
+            this.parent.off(enableToolbarItems, this.enableToolbarItems);
             this.parent.off(activeCellChanged, this.refreshRibbonContent);
-            this.parent.off(enableToolbar, this.enableToolbar);
             this.parent.off(updateToggleItem, this.toggleRibbonItems);
             this.parent.off(enableFileMenuItems, this.enableFileMenuItems);
             this.parent.off(hideRibbonTabs, this.hideRibbonTabs);
             this.parent.off(addRibbonTabs, this.addRibbonTabs);
             this.parent.off(addToolbarItems, this.addToolbarItems);
+            this.parent.off(hideFileMenuItems, this.hideFileMenuItems);
+            this.parent.off(addFileMenuItems, this.addFileMenuItems);
+            this.parent.off(hideToolbarItems, this.hideToolbarItems);
+            this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
         }
     };
     return Ribbon$$1;
@@ -16871,6 +17094,23 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
             var sheetIdx = getSheetIndex(this.parent, getSheetNameFromAddress(refersTo));
             var range = getRangeFromAddress(refersTo);
             var sheet = getSheet(this.parent, sheetIdx);
+            if (range.indexOf(':') !== -1) {
+                var colIndex = range.indexOf(':');
+                var left = range.substr(0, colIndex);
+                var right = range.substr(colIndex + 1, range.length);
+                left = left.replace('$', '');
+                right = right.replace('$', '');
+                if (right.match(/\D/g) && !right.match(/[0-9]/g) && left.match(/\D/g) && !left.match(/[0-9]/g)) {
+                    left = left + '1';
+                    right = right + sheet.rowCount;
+                    range = left + ':' + right;
+                }
+                else if (!right.match(/\D/g) && right.match(/[0-9]/g) && !left.match(/\D/g) && left.match(/[0-9]/g)) {
+                    left = getCellAddress(parseInt(left, 10) - 1, 0);
+                    right = getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
+                    range = left + ':' + right;
+                }
+            }
             if ((sheetIdx + 1) === this.parent.activeSheetTab) {
                 this.parent.selectRange(range);
                 this.parent.element.focus();
@@ -17555,7 +17795,7 @@ var Formula = /** @__PURE__ @class */ (function () {
         }
     };
     Formula.prototype.getNames = function (sheetName) {
-        var names = this.parent.definedNames.filter(function (name) { return name.scope === '' || name.scope === sheetName; });
+        var names = this.parent.definedNames.filter(function (name) { return name.scope === 'Workbook' || name.scope === '' || name.scope === sheetName; });
         return names;
     };
     Formula.prototype.getNameFromRange = function (range) {
@@ -17573,14 +17813,29 @@ var Formula = /** @__PURE__ @class */ (function () {
     Formula.prototype.addDefinedName = function (definedName) {
         if (!definedName.refersTo) {
             var sheet = getSheet(this.parent, this.parent.activeSheetTab - 1);
+            var sheetName = getSheetName(this.parent);
+            sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
             var selectRange$$1 = sheet.selectedRange;
             if (!isNullOrUndefined(selectRange$$1)) {
                 var colIndex = selectRange$$1.indexOf(':');
                 var left = selectRange$$1.substr(0, colIndex);
                 var right = selectRange$$1.substr(colIndex + 1, selectRange$$1.length);
-                selectRange$$1 = left === right ? left : selectRange$$1;
+                if (parseInt(right.replace(/\D/g, ''), 10) === sheet.rowCount && parseInt(left.replace(/\D/g, ''), 10) === 1) {
+                    right = right.replace(/[0-9]/g, '');
+                    left = left.replace(/[0-9]/g, '');
+                    selectRange$$1 = '$' + left + ':$' + right;
+                }
+                else if (getCellIndexes(right)[1] === sheet.colCount - 1 && getCellIndexes(left)[1] === 0) {
+                    right = right.replace(/\D/g, '');
+                    left = left.replace(/\D/g, '');
+                    selectRange$$1 = '$' + left + ':$' + right;
+                }
+                else {
+                    selectRange$$1 = left === right ? left : selectRange$$1;
+                }
             }
-            definedName.refersTo = getSheetName(this.parent) + '!' + selectRange$$1;
+            definedName.refersTo = sheetName + '!' + selectRange$$1;
+            definedName.scope = 'Workbook';
         }
         var eventArgs = {
             action: 'addDefinedName', definedName: definedName, isAdded: false
@@ -19548,8 +19803,6 @@ var Filter = /** @__PURE__ @class */ (function () {
             };
             var excelFilter = new ExcelFilterBase(_this.parent, _this.getLocalizedCustomOperators());
             excelFilter.openDialog(options);
-            var filterPopup = _this.parent.element.querySelector('.e-filter-popup');
-            filterPopup.classList.add('e-grid'); //Need to remove this once separate style provided.
             _this.parent.hideSpinner();
         });
     };
@@ -20875,6 +21128,19 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             }
         }
         if (cell && cell.hyperlink && !hasTemplate(this.parent, rowIdx, colIdx, this.parent.activeSheetTab - 1)) {
+            var address = void 0;
+            if (typeof (cell.hyperlink) === 'string') {
+                address = cell.hyperlink;
+                if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
+                    cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                }
+            }
+            else {
+                address = cell.hyperlink.address;
+                if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
+                    cell.hyperlink.address = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                }
+            }
             var hArgs = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
             this.parent.notify(createHyperlinkElement, hArgs);
         }
@@ -21778,7 +22044,12 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         var sheetIdx;
         if (range && range.indexOf('!') !== -1) {
             rangeArr = range.split('!');
-            sheetIdx = parseInt(rangeArr[0].replace(/\D/g, ''), 10) - 1;
+            var sheets = this.sheets;
+            for (var idx = 0; idx < sheets.length; idx++) {
+                if (sheets[idx].name === rangeArr[0]) {
+                    sheetIdx = idx;
+                }
+            }
             sheet = this.sheets[sheetIdx];
             range = rangeArr[1];
         }
@@ -21832,7 +22103,12 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                 _super.prototype.addHyperlink.call(this, hyperlink, address);
                 if (address && address.indexOf('!') !== -1) {
                     addrRange = address.split('!');
-                    sheetIdx = parseInt(addrRange[0].replace(/\D/g, ''), 10) - 1;
+                    var sheets = this.sheets;
+                    for (var idx = 0; idx < sheets.length; idx++) {
+                        if (sheets[idx].name === addrRange[0]) {
+                            sheetIdx = idx;
+                        }
+                    }
                     sheet = this.sheets[sheetIdx];
                     address = addrRange[1];
                 }
@@ -22206,37 +22482,97 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     /**
      * To enable / disable file menu items.
      * @param {string[]} items - Items that needs to be enabled / disabled.
-     * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
-     * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     * @param {boolean} enable? - Set `true` / `false` to enable / disable the menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @returns void.
      */
-    Spreadsheet.prototype.enableFileMenuItems = function (items, enable) {
+    Spreadsheet.prototype.enableFileMenuItems = function (items, enable, isUniqueId) {
         if (enable === void 0) { enable = true; }
-        this.notify(enableFileMenuItems, { items: items, enable: enable });
+        this.notify(enableFileMenuItems, { items: items, enable: enable, isUniqueId: isUniqueId });
+    };
+    /**
+     * To show/hide the file menu items in Spreadsheet ribbon.
+     * @param {string[]} items - Specifies the file menu items text which is to be show/hide.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the file menu items.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @returns void.
+     */
+    Spreadsheet.prototype.hideFileMenuItems = function (items, hide, isUniqueId) {
+        if (hide === void 0) { hide = true; }
+        this.notify(hideFileMenuItems, { items: items, hide: hide, isUniqueId: isUniqueId });
+    };
+    /**
+     * To add custom file menu items.
+     * @param {MenuItemModel[]} items - Specifies the ribbon file menu items to be inserted.
+     * @param {string} text - Specifies the existing file menu item text before / after which the new file menu items to be inserted.
+     * @param {boolean} insertAfter? - Set `false` if the `items` need to be inserted before the `text`.
+     * By default, `items` are added after the `text`.
+     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @returns void.
+     */
+    Spreadsheet.prototype.addFileMenuItems = function (items, text, insertAfter, isUniqueId) {
+        if (insertAfter === void 0) { insertAfter = true; }
+        this.notify(addFileMenuItems, { items: items, text: text, insertAfter: insertAfter, isUniqueId: isUniqueId });
     };
     /**
      * To show/hide the existing ribbon tabs.
-     * @param {string[]} tabs - Specifies the tab header text which is to be show/hide.
-     * @param {boolean} hide - Set `true` / `false` to hide / show the ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
+     * @returns void.
      */
     Spreadsheet.prototype.hideRibbonTabs = function (tabs, hide) {
         if (hide === void 0) { hide = true; }
         this.notify(hideRibbonTabs, { tabs: tabs, hide: hide });
     };
     /**
+     * To enable / disable the existing ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
+     * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
+     * @returns void.
+     */
+    Spreadsheet.prototype.enableRibbonTabs = function (tabs, enable) {
+        if (enable === void 0) { enable = true; }
+        this.notify(enableRibbonTabs, { tabs: tabs, enable: enable });
+    };
+    /**
      * To add custom ribbon tabs.
      * @param {RibbonItemModel[]} items - Specifies the ribbon tab items to be inserted.
-     * @param {string} insertBefore? - specifies the existing ribbon header text before which the new tabs will be inserted.
+     * @param {string} insertBefore? - Specifies the existing ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
+     * @returns void.
      */
     Spreadsheet.prototype.addRibbonTabs = function (items, insertBefore) {
         this.notify(addRibbonTabs, { items: items, insertBefore: insertBefore });
     };
     /**
+     * Enables or disables the specified ribbon toolbar items or all ribbon items.
+     * @param {string} tab - Specifies the ribbon tab header text under which the toolbar items need to be enabled / disabled.
+     * @param {string[]} items? - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
+     * If it is not specified the entire toolbar items will be enabled / disabled.
+     * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
+     * @returns void.
+     */
+    Spreadsheet.prototype.enableToolbarItems = function (tab, items, enable) {
+        this.notify(enableToolbarItems, [{ tab: tab, items: items, enable: enable === undefined ? true : enable }]);
+    };
+    /**
+     * To show/hide the existing Spreadsheet ribbon toolbar items.
+     * @param {string} tab - Specifies the ribbon tab header text under which the specified items needs to be hidden / shown.
+     * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
+     * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
+     * @returns void.
+     */
+    Spreadsheet.prototype.hideToolbarItems = function (tab, indexes, hide) {
+        if (hide === void 0) { hide = true; }
+        this.notify(hideToolbarItems, { tab: tab, indexes: indexes, hide: hide });
+    };
+    /**
      * To add the custom items in Spreadsheet ribbon toolbar.
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted.
-     * @param {ItemModel[]} items - specifies the ribbon toolbar items that needs to be inserted.
-     * @param {number} index? - specifies the index text before which the new items will be inserted.
+     * @param {ItemModel[]} items - Specifies the ribbon toolbar items that needs to be inserted.
+     * @param {number} index? - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
+     * @returns void.
      */
     Spreadsheet.prototype.addToolbarItems = function (tab, items, index) {
         this.notify(addToolbarItems, { tab: tab, items: items, index: index });
@@ -22520,5 +22856,5 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
  * Export Spreadsheet modules
  */
 
-export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, Hyperlink, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, onSave, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableRibbonItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideRibbonTabs, addRibbonTabs, addToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, enableToolbar, initiateCustomSort, applySort, collaborativeUpdate, hideShowRow, hideShowCol, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, Hyperlink, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, onSave, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShowRow, hideShowCol, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es5.js.map

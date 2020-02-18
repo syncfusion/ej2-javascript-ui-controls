@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 1.0 (2020-02-18)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#148560` - An issue with misplaced dragging events in different drag intervals has been fixed.
+- `#262962` - An issue with page becoming crash for invalid recurrence rule has been fixed.
+- `#151346` - An issue with incorrect aria-label for alert windows has been fixed.
+
 ## 17.4.46 (2020-01-30)
 
 ### Schedule

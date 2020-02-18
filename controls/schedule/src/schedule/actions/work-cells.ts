@@ -64,6 +64,10 @@ export class WorkCellInteraction {
                         this.parent.selectCell(target);
                     }
                     this.parent.notify(event.cellClick, clickArgs);
+                } else {
+                    if (this.parent.quickPopup) {
+                        this.parent.quickPopup.quickPopupHide();
+                    }
                 }
             });
         } else {

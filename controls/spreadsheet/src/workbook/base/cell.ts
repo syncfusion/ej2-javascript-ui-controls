@@ -62,7 +62,6 @@ export class Cell extends ChildProperty<RowModel> {
     /**
      * Specifies the hyperlink of the cell.
      * @default ''
-     * @aspType SpreadsheetHyperlink
      */
     @Property('')
     public hyperlink: string | HyperlinkModel;

@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress } from '../../workbook/common/address';
-import { keyDown, editOperation, clearCopy, keyUp, mouseDown, selectionComplete, enableToolbar, completeAction } from '../common/event';
-import { formulaBarOperation, formulaOperation, setActionData } from '../common/event';
+import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
+import { formulaBarOperation, formulaOperation, setActionData, keyUp } from '../common/event';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getCellPosition, getSheet } from '../../workbook/base/index';
@@ -252,7 +252,7 @@ export class Edit {
         this.positionEditor();
         this.parent.isEdit = this.isEdit = true;
         this.parent.notify(clearCopy, null);
-        this.parent.notify(enableToolbar, { enable: false });
+        this.parent.notify(enableToolbarItems, [{ enable: false }]);
     }
 
     private setCursorPosition(): void {
@@ -480,7 +480,7 @@ export class Edit {
 
     private focusElement(): void {
         this.parent.element.focus();
-        this.parent.notify(enableToolbar, { enable: true });
+        this.parent.notify(enableToolbarItems, [{ enable: true }]);
     }
 
     private triggerEvent(eventName: string): boolean {

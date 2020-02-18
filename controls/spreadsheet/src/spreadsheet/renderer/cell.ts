@@ -114,6 +114,18 @@ export class CellRenderer implements ICellRenderer {
             if (isRefresh) { this.removeStyle(td); }
         }
         if (cell && cell.hyperlink && !hasTemplate(this.parent, rowIdx, colIdx, this.parent.activeSheetTab - 1)) {
+            let address: string;
+            if (typeof (cell.hyperlink) === 'string') {
+                address = cell.hyperlink;
+                if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
+                    cell.hyperlink = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                }
+            } else {
+                address = cell.hyperlink.address;
+                if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
+                    cell.hyperlink.address = address.indexOf('www.') === 0 ? 'http://' + address : address;
+                }
+            }
             let hArgs: object = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
             this.parent.notify(createHyperlinkElement, hArgs);
         }

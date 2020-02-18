@@ -2053,7 +2053,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let li: Element = closest(target, '.' + LISTITEM);
             if (!li) {
                 return;
-            } else {
+            } else if (event.originalEvent.which !== 3) {
                 let rippleElement: Element =  select('.' + RIPPLEELMENT, li);
                 let rippleIcons: Element = select('.' + ICON, li);
                 this.removeHover();
@@ -2084,8 +2084,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         this.toggleSelect(li, event.originalEvent, false);
                     }
                 }
-                this.triggerClickEvent(event.originalEvent, li);
             }
+            this.triggerClickEvent(event.originalEvent, li);
         }
     }
 
@@ -4558,7 +4558,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let proxy: TreeView = this;
             this.touchExpandObj = new Touch(this.element, {
                 tap: (e: TapEventArgs) => {
-                    if (this.expandOnType === 'Click' || (this.expandOnType === 'DblClick' && e.tapCount === 2)) {
+                    if ((this.expandOnType === 'Click' || (this.expandOnType === 'DblClick' && e.tapCount === 2))
+                        && e.originalEvent.which !== 3 ) {
                         proxy.expandHandler(e);
                     }
                 }

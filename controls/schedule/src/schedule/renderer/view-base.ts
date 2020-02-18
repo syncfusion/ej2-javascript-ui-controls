@@ -389,8 +389,8 @@ export class ViewBase {
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.resourceHeaderTemplateName;
             let templateId: string = scheduleId + viewName + 'resourceHeaderTemplate';
-            let quickTemplate: NodeList =
-                this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false);
+            let quickTemplate: HTMLElement[] =
+                [].slice.call(this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false));
             append(quickTemplate, tdElement);
         } else {
             tdElement.appendChild(createElement('div', {
@@ -444,8 +444,8 @@ export class ViewBase {
 
     public wireExpandCollapseIconEvents(): void {
         if (this.parent.resourceBase && this.parent.resourceBase.resourceCollection.length > 1) {
-            let treeIcons: NodeListOf<Element> = this.element.querySelectorAll('.' + cls.RESOURCE_TREE_ICON_CLASS);
-            [].slice.call(treeIcons).forEach((icon: Element) => {
+            let treeIcons: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.RESOURCE_TREE_ICON_CLASS));
+            treeIcons.forEach((icon: Element) => {
                 EventHandler.clearEvents(icon);
                 EventHandler.add(icon, 'click', this.parent.resourceBase.onTreeIconClick, this.parent.resourceBase);
             });

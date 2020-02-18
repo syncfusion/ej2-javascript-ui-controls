@@ -45,7 +45,12 @@ export class WorkbookHyperlink {
         let address: string;
         if (cellAddr && cellAddr.indexOf('!') !== -1) {
             range = cellAddr.split('!');
-            sheetIdx = parseInt(range[0].replace(/\D/g, ''), 10) - 1;
+            let sheets: SheetModel[] = this.parent.sheets;
+            for (let idx: number = 0; idx < sheets.length; idx++) {
+                if (sheets[idx].name === range[0]) {
+                    sheetIdx = idx;
+                }
+            }
             sheet = this.parent.sheets[sheetIdx];
             cellAddr = range[1];
         }
@@ -66,17 +71,15 @@ export class WorkbookHyperlink {
             sheet.rows[rowIdx].cells[colIdx] = {};
         }
         if (typeof (hyperlink) === 'string') {
-            if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('www.') !== -1) {
-                address = 'http://' + hyperlink;
-            } else {
+            if (hyperlink.indexOf('http://') !== 0 && hyperlink.indexOf('https://') !== 0 && hyperlink.indexOf('ftp://') !== 0) {
+                hyperlink = hyperlink.indexOf('www.') === 0 ? 'http://' + hyperlink : hyperlink;
                 address = hyperlink;
             }
-            sheet.rows[rowIdx].cells[colIdx].hyperlink = address;
+            sheet.rows[rowIdx].cells[colIdx].hyperlink = hyperlink;
         } else {
-            if (hyperlink.address.indexOf('http://') === -1 && hyperlink.address.indexOf('www.') !== -1) {
-                address = 'http://' + hyperlink.address;
-            } else {
-                address = hyperlink.address;
+            address = hyperlink.address;
+            if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
+                address = address.indexOf('www.') === 0 ? 'http://' + address : address;
             }
             sheet.rows[rowIdx].cells[colIdx].hyperlink = {
                 address: address,

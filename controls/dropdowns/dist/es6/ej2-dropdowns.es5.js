@@ -1976,7 +1976,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'hide':
                     this.preventAltUp = this.isPopupOpen;
-                    this.hidePopup();
+                    this.hidePopup(e);
                     this.focusDropDown(e);
                     break;
                 case 'enter':
@@ -1986,7 +1986,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 case 'tab':
                 case 'close':
                     if (this.isPopupOpen) {
-                        this.hidePopup();
+                        this.hidePopup(e);
                         this.focusDropDown(e);
                     }
                     break;
@@ -4014,7 +4014,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
     ComboBox.prototype.onBlur = function (e) {
         var inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
         if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
-            this.customValue();
+            this.customValue(e);
         }
         _super.prototype.onBlur.call(this, e);
     };
@@ -4555,10 +4555,10 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
             var selected = this.list.querySelector('.' + dropDownListClasses.selected);
             if (dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {
-                    this.onChangeEvent(null);
+                    this.onChangeEvent(e);
                     this.isSelectCustom = false;
                 }
-                _super.prototype.hidePopup.call(this);
+                _super.prototype.hidePopup.call(this, e);
                 return;
             }
             if (this.getModuleName() === 'combobox' && this.inputElement.value.trim() !== '') {
@@ -9517,8 +9517,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             this.element.style.display = 'none';
         }
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
-        if (this.list.getElementsByClassName(cssClass.li)[0]) {
-            this.list.getElementsByClassName(cssClass.li)[0].classList.remove(dropDownBaseClasses.focus);
+        if (this.list.getElementsByClassName('e-list-item')[0]) {
+            this.list.getElementsByClassName('e-list-item')[0].classList.remove(dropDownBaseClasses.focus);
         }
         removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
         this.validationAttribute(this.element, hiddenSelect);
@@ -9539,7 +9539,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         if (this.allowDragAndDrop) {
             new Sortable(this.ulElement, {
                 scope: this.scope,
-                itemClass: cssClass.li,
+                itemClass: 'e-list-item',
                 dragStart: this.triggerDragStart.bind(this),
                 drag: this.triggerDrag.bind(this),
                 beforeDrop: this.beforeDragEnd.bind(this),
@@ -10322,7 +10322,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.selectHandler = function (e, isKey) {
         var isSelect = true;
         var currSelIdx;
-        var li = closest(e.target, '.' + cssClass.li);
+        var li = closest(e.target, '.' + 'e-list-item');
         var selectedLi = [li];
         if (li) {
             currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
@@ -10345,7 +10345,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             if (e.shiftKey && !this.selectionSettings.showCheckbox && this.selectionSettings.mode !== 'Single') {
                 selectedLi = [].slice.call(li.parentElement.children)
                     .slice(Math.min(currSelIdx, this.prevSelIdx), Math.max(currSelIdx, this.prevSelIdx) + 1)
-                    .filter(function (ele) { return ele.classList.contains(cssClass.li); });
+                    .filter(function (ele) { return ele.classList.contains('e-list-item'); });
             }
             else {
                 this.prevSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
@@ -10740,7 +10740,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var ele = [];
         if (this.selectionSettings.showCheckbox) {
             [].slice.call(this.ulElement.getElementsByClassName('e-check')).forEach(function (cbox) {
-                ele.push(closest(cbox, '.' + cssClass.li));
+                ele.push(closest(cbox, '.' + 'e-list-item'));
             });
         }
         else {

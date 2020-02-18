@@ -816,4 +816,48 @@ describe('Excel Filter =>', () => {
                 actionComplete = null;
             });
         });
+
+        describe('EJ2-36547 => Scrolling while filter => ', () => {
+            let gridObj: Grid;
+            let actionComplete: (args: any) => void;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: filterData,
+                        allowFiltering: true,
+                        allowPaging: false,
+                        width:600,
+                        pageSettings: { currentPage: 1 },
+                        filterSettings: { type: 'Excel' },
+                        columns: [
+                            { field: 'OrderID', visible: true,width: 120 },
+                            { field: 'CustomerID', headerText: 'Customer ID', width:120},
+                            { field:'Freight',headerText:'Freight', width:130 },
+                            { field:'OrderDate',headerText:'Order Date', width:130 },
+                            { field: 'ShipCountry',  headerText: 'Ship Country', width: 120 }
+                        ],
+                        actionComplete : actionComplete
+                    }, done);
+                });
+
+                it('checking current focused element', (done: Function) => {
+                        let flag: boolean = true;
+                        actionComplete = (args?: any): void => {
+                            if (flag) {
+                                flag = false;
+                                expect(gridObj.focusModule.getContent().matrix.current[1]).toBe(4);
+                                done();
+                            }
+                            done();
+                        };
+                        gridObj.actionComplete = actionComplete;
+                        (gridObj.element.querySelectorAll(".e-filtermenudiv")[4] as HTMLElement).click();                
+                    });
+
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = getActualProperties = getString = null;
+                actionComplete = null;
+            });
+        });
     });

@@ -2168,6 +2168,14 @@ describe('Batch Editing module', () => {
                     ]
                 }, done);
         });
+        it('Disable altrow', (done: Function) => {
+            let dataBound = (args: Object) => {
+                expect(gridObj.getContent().querySelectorAll('.e-altrow').length).toBe(0);
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.refreshColumns();
+        });
 
         it(' Batch edit add start', (done: Function) => {
             let beforeBatchAdd = (args?: any): void => {
@@ -3040,3 +3048,72 @@ describe('EJ2-36298 - Delete with persist selection => ', () => {
         destroy(gridObj);
     });
 });
+
+describe('Batch editing render with Freeze => ', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                frozenColumns: 1,
+                editSettings: {
+                    allowEditing: true, allowAdding: true, allowDeleting: true,
+                    mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false
+                },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    { field: 'ShipCity' }
+                ]
+            }, done);
+    });
+
+    it('tab key with frozen columns', (done: Function) => {
+        gridObj.addRecord();
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        expect(gridObj.focusModule.currentInfo.element.getAttribute('aria-colindex')).toBe("1");
+        done();
+    });
+
+    afterAll(() => {
+        gridObj.notify('tooltip-destroy', {});
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('numeric text box validating minimum and maximum value', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowSelection: true,
+                allowPaging: true,
+                pageSettings: { pageSize: 6 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                columns: [
+                    { field: 'OrderID', width: 120, textAlign: 'Right', headerText: 'Order ID' },
+                    { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 120, format: 'C2', validationRules: { required: true },
+                        edit: { params: { min: 10, max: 20 } }
+                    }
+                ],
+            }, done);
+    });
+    it('checking with freight max value', () => {
+        (gridObj.editModule as any).editModule.editCell(0, 'Freight');
+        let val: number = (gridObj.element.querySelector('.e-editedbatchcell .e-input') as any).ej2_instances[0].value;
+        expect(val).toBe(20);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+

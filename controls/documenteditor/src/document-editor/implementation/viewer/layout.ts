@@ -103,7 +103,7 @@ export class Layout {
      * Layouts the items
      * @private
      */
-    public layoutItems(sections: BodyWidget[]): void {
+    public layoutItems(sections: BodyWidget[], isReLayout: boolean): void {
         let page: Page;
         for (let i: number = 0; i < sections.length; i++) {
             let section: BodyWidget = sections[i] as BodyWidget;
@@ -126,7 +126,9 @@ export class Layout {
             }
             this.layoutSection(section, 0, this.viewer);
         }
-        this.layoutComments(this.documentHelper.comments);
+        if (!isReLayout) {
+            this.layoutComments(this.documentHelper.comments);
+        }
         this.updateFieldElements();
         /* tslint:disable:align */
         setTimeout((): void => {

@@ -1475,29 +1475,18 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             var members = (this.formatFields[fieldName] &&
                 (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1)) ?
                 field.formattedMembers : field.members;
-            var isNotValidFilterElement = false;
+            isValidFilterElement = true;
             for (var _i = 0, _a = this.values; _i < _a.length; _i++) {
                 var field_1 = _a[_i];
                 if (fieldName === field_1.name) {
-                    isNotValidFilterElement = true;
+                    isValidFilterElement = false;
                     break;
                 }
-            }
-            var isItemAvail = false;
-            for (var _b = 0, _c = filterElement.items; _b < _c.length; _b++) {
-                var item = _c[_b];
-                if (members[item]) {
-                    isItemAvail = true;
-                    break;
-                }
-            }
-            if (!isNotValidFilterElement && isItemAvail) {
-                isValidFilterElement = true;
             }
         }
         else if (allowLabelFiltering) {
-            for (var _d = 0, dataFields_2 = dataFields; _d < dataFields_2.length; _d++) {
-                var field = dataFields_2[_d];
+            for (var _b = 0, dataFields_2 = dataFields; _b < dataFields_2.length; _b++) {
+                var field = dataFields_2[_b];
                 if (fieldName === field.name &&
                     (['Label', 'Date', 'Number'].indexOf(filterElement.type) >= 0)) {
                     isValidFilterElement = true;
@@ -7056,7 +7045,6 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent.trigger(excelHeaderQueryCellInfo, args);
     };
     Render.prototype.pdfColumnEvent = function (args) {
-        args = this.exportHeaderEvent(args);
         this.parent.trigger(pdfHeaderQueryCellInfo, args);
     };
     Render.prototype.excelRowEvent = function (args) {
@@ -16781,28 +16769,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         var keyEntity = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
         /* tslint:disable */
         this.chartSettings['tooltipRender'] = undefined;
-        this.chartSettings['resized'] = undefined;
-        this.chartSettings['loaded'] = undefined;
-        this.chartSettings['beforePrint'] = undefined;
-        this.chartSettings['animationComplete'] = undefined;
-        this.chartSettings['load'] = undefined;
-        this.chartSettings['textRender'] = undefined;
-        this.chartSettings['legendRender'] = undefined;
-        this.chartSettings['seriesRender'] = undefined;
-        this.chartSettings['pointRender'] = undefined;
-        this.chartSettings['axisLabelRender'] = undefined;
-        this.chartSettings['chartMouseClick'] = undefined;
-        this.chartSettings['chartMouseMove'] = undefined;
-        this.chartSettings['pointMove'] = undefined;
-        this.chartSettings['pointClick'] = undefined;
-        this.chartSettings['chartMouseDown'] = undefined;
-        this.chartSettings['chartMouseLeave'] = undefined;
-        this.chartSettings['dragComplete'] = undefined;
-        this.chartSettings['chartMouseUp'] = undefined;
-        this.chartSettings['scrollStart'] = undefined;
-        this.chartSettings['zoomComplete'] = undefined;
-        this.chartSettings['scrollChanged'] = undefined;
-        this.chartSettings['scrollEnd'] = undefined;
         /* tslint:enable */
         return this.addOnPersist(keyEntity);
     };

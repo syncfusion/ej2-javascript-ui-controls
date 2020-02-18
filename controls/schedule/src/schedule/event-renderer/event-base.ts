@@ -667,6 +667,9 @@ export class EventBase {
                 }
                 if (eventClickArgs.cancel) {
                     this.removeSelectedAppointmentClass();
+                    if (this.parent.quickPopup) {
+                        this.parent.quickPopup.quickPopupHide();
+                    }
                 } else {
                     if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
                         addClass([this.parent.activeEventData.element as Element], cls.AGENDA_SELECTED_CELL);

@@ -2681,7 +2681,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (checkCursor) { this.updateDefaultCursor(); }
         if (requireGridRefresh) {
             if (freezeRefresh || this.frozenColumns || this.frozenRows) {
-                this.freezeRefresh();
+                if (!(isBlazor() && this.isServerRendered)) {
+                    this.freezeRefresh();
+                }
             } else {
                 this.refresh();
             }
@@ -5400,5 +5402,51 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return cols;
     }
+
+      /**
+     *  calculatePageSizeByParentHeight
+     */
+    public calculatePageSizeByParentHeight(containerHeight: number | string): number {
+        if (this.allowPaging) {
+            if ((this.allowTextWrap && this.textWrapSettings.wrapMode == 'Header') || (!this.allowTextWrap)) {
+                var pagesize: number = 0;
+                if ((containerHeight as string).indexOf('%') != -1) {
+                    containerHeight = parseInt(containerHeight as string) / 100 * this.element.clientHeight;
+                }
+                var nonContentHeight: number = this.getNoncontentHeight() + this.getRowHeight();
+                if (containerHeight > nonContentHeight) {
+                    var contentHeight: number = 0;
+                    (contentHeight as number) = (containerHeight as number) - this.getNoncontentHeight();
+                    pagesize = (contentHeight / this.getRowHeight());
+                }
+                if(pagesize>0){
+                    return Math.floor(pagesize);
+                }                
+            }
+        }
+        return 0;
+    }
+
+    private getNoncontentHeight(): number {
+        var height: number = 0;
+        if (!isNullOrUndefined(this.getHeaderContent().clientHeight)) {
+            height += this.getHeaderContent().clientHeight;
+        }
+        if (this.toolbar && !isNullOrUndefined(this.element.querySelector('.e-toolbar').clientHeight))
+        { height += this.element.querySelector('.e-toolbar').clientHeight; }
+        if (this.allowPaging && !isNullOrUndefined(this.element.querySelector('.e-gridpager').clientHeight))
+        { height += this.element.querySelector('.e-gridpager').clientHeight; }
+        if (this.showColumnChooser && !isNullOrUndefined(this.element.querySelector(".e-columnheader").clientHeight))
+        { height += this.element.querySelector(".e-columnheader").clientHeight; }
+        if (this.allowGrouping && this.groupSettings.showDropArea && !isNullOrUndefined(this.element.querySelector('.e-groupdroparea').clientHeight))
+        { height += this.element.querySelector('.e-groupdroparea').clientHeight; }
+        if (this.aggregates.length > 0 && !isNullOrUndefined(this.element.querySelector('.e-summaryrow').clientHeight)) 
+        {  for (let i = 0; i < this.element.querySelectorAll('.e-summaryrow').length; i++) {
+                height += this.element.querySelectorAll('.e-summaryrow')[i].clientHeight;
+            }
+        }
+        return height;
+    }
+
 
 }

@@ -137,7 +137,7 @@ export class SelectionCommands {
                     nodes[index] = cloneNode;
                 } else {
                     let divNode: HTMLDivElement = document.createElement('div');
-                    divNode.innerHTML = '&#65279;&#65279;';
+                    divNode.innerHTML = '&#8203;';
                     if (cloneNode.nodeType !== 3) {
                         cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
                         nodes[index] = cloneNode.firstChild;
@@ -152,7 +152,7 @@ export class SelectionCommands {
                 for (; lastNode.firstChild !== null && lastNode.firstChild.nodeType !== 3; null) {
                     lastNode = lastNode.firstChild;
                 }
-                (lastNode as HTMLElement).innerHTML = '&#65279;&#65279;';
+                (lastNode as HTMLElement).innerHTML = '&#8203;';
                 nodes[index] = lastNode.firstChild;
             }
         }
@@ -237,7 +237,7 @@ export class SelectionCommands {
 
     private static getInsertNode(docElement: Document, range: Range, format: string, value: string): HTMLElement {
         let element: HTMLElement = this.GetFormatNode(format, value);
-        element.innerHTML = '&#65279;&#65279;';
+        element.innerHTML = '&#8203;';
         if (Browser.isIE) {
             let frag: DocumentFragment = docElement.createDocumentFragment();
             frag.appendChild(element);
@@ -250,7 +250,7 @@ export class SelectionCommands {
 
     private static getChildNode(node: Node, element: HTMLElement): Node {
         if (node === undefined || node === null) {
-            element.innerHTML = '&#65279;';
+            element.innerHTML = '&#8203;';
             node = element.firstChild;
         }
         return node;

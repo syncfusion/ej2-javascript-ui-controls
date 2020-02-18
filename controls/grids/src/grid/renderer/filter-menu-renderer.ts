@@ -236,10 +236,16 @@ export class FilterMenuRenderer {
             if ((<HTMLInputElement>element.children[0]).value) {
                 fltrValue = (<HTMLInputElement>element.children[0]).value;
             } else {
-                fltrValue = !isBlazor() && !isNullOrUndefined(((<EJ2Intance>(element.children[0] as Element)).ej2_instances)) ?
-                    ((<EJ2Intance>(element.children[0] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value
-                    : ((<EJ2Intance>(element.querySelector('.e-control') as Element)).ej2_instances[0] as
+                if (!isBlazor() && !isNullOrUndefined((<EJ2Intance>(element.children[0] as Element)).ej2_instances)) {
+                    fltrValue = ((<EJ2Intance>(element.children[0] as Element)).ej2_instances[0] as
                         { value?: string | boolean | Date }).value;
+                } else {
+                    let eControl: EJ2Intance = ((element.querySelector('.e-control') as Element) as EJ2Intance);
+                    fltrValue = !isNullOrUndefined(eControl.ej2_instances) ? (eControl.ej2_instances[0] as
+                        { value?: string | boolean | Date }).value : (col.type === 'boolean') ?
+                            ((element.querySelector('.e-control') as HTMLInputElement).checked) :
+                            (eControl as { value?: string | boolean | Date }).value;
+                }
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
         } else {

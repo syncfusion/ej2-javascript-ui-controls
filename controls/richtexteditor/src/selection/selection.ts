@@ -183,8 +183,10 @@ export class NodeSelection {
      */
     public getSelectionNodes(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
+        let regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         for (let index: number = 0; index < nodeCollection.length; index++) {
-            if (nodeCollection[index].nodeType !== 3 || nodeCollection[index].textContent.trim() === '') {
+            if (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
+            (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx)))) {
                 nodeCollection.splice(index, 1);
                 index--;
             }

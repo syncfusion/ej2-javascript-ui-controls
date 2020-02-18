@@ -1,4 +1,4 @@
-import { createElement, closest, detach, Browser } from '@syncfusion/ej2-base';
+import { createElement, closest, detach, Browser, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
@@ -33,7 +33,15 @@ export class TableCommand {
     private createTable(e: IHtmlItem): HTMLElement {
         let table: HTMLElement = createElement('table', { className: 'e-rte-table' });
         let tblBody: HTMLElement = createElement('tbody');
-        table.style.width = e.item.width.width as string;
+        if (!isNOU(e.item.width.width)) {
+            table.style.width = this.calculateStyleValue(e.item.width.width);
+        }
+        if (!isNOU(e.item.width.minWidth)) {
+            table.style.minWidth = this.calculateStyleValue(e.item.width.minWidth);
+        }
+        if (!isNOU(e.item.width.maxWidth)) {
+            table.style.maxWidth = this.calculateStyleValue(e.item.width.maxWidth);
+        }
         let tdWid: number = parseInt(e.item.width.width as string, 10) / e.item.columns;
         for (let i: number = 0; i < e.item.row; i++) {
             let row: HTMLElement = createElement('tr');
@@ -61,6 +69,20 @@ export class TableCommand {
             });
         }
         return table;
+    }
+
+    private calculateStyleValue(value: string | number): string {
+        let styleValue: string;
+        if (typeof(value) === 'string') {
+            if (value.indexOf('px') || value.indexOf('%') || value.indexOf('auto')) {
+                styleValue = value;
+            } else {
+                styleValue = value + 'px';
+            }
+        } else {
+            styleValue = value + 'px';
+        }
+        return styleValue;
     }
 
     private removeEmptyNode(): void {

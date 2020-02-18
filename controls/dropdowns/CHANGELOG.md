@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 1.0 (2020-02-18)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#261827` - Issue when ListBox and menu component in a same page has been resolved.
+
 ## 17.4.49 (2020-02-11)
 
 ### DropDownList

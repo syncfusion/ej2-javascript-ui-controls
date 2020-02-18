@@ -25,6 +25,19 @@
     }
   }
 
+  .e-btn-pageweb-spellcheck {
+    border: 0;
+    box-shadow: none;
+    float: right;
+    height: 33px;
+    margin-left: $de-zoom-tlbr-margin-left;
+    width: 33px;
+  }
+
+  .e-bigger .e-btn-pageweb-spellcheck {
+    height: 35px;
+  }
+
   .e-bigger .e-de-statusbar-pageweb {
     height: 35px;
   }

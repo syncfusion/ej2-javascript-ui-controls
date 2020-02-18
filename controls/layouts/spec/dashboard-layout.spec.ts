@@ -1906,6 +1906,7 @@ describe('GridLayout', () => {
                 ],
                 resizeStart: function (args: ResizeArgs) {
                     expect((<any>args).name == 'resizeStart').toBe(true);
+                    expect(args.isInteracted).toBe(true);
                     expect((<any>args).event.type == 'mousedown').toBe(true);
                     expect((<any>args).element == resizingElement).toBe(true);
                 },
@@ -1913,11 +1914,13 @@ describe('GridLayout', () => {
                     expect((<any>args).name == 'resizeStop').toBe(true);
                     expect((<any>args).event.type == 'mouseup').toBe(true);
                     expect((<any>args).element == resizingElement).toBe(true);
+                    expect(args.isInteracted).toBe(true);
                 },
                 resize: function (args: ResizeArgs) {
                     expect((<any>args).name == 'resize').toBe(true);
                     expect((<any>args).event.type == 'mousemove').toBe(true);
                     expect((<any>args).element == resizingElement).toBe(true);
+                    expect(args.isInteracted).toBe(true);
                 }
             });
             gridLayOut.appendTo('#gridlayout');
@@ -3978,6 +3981,89 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('two').sizeY).toBe(1);
         });
 
+        it('resizePanel public method test for events', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 6,
+                cellSpacing: [20, 20],
+                panels: [{
+                    id: "one",
+                    sizeX: 2,
+                    sizeY: 1,
+                    row: 1,
+                    col: 0
+                },
+                {
+                    id: "two",
+                    sizeX: 2,
+                    sizeY: 1,
+                    row: 0,
+                    col: 0,
+                    minSizeX: 2,
+                    maxSizeX: 3,
+                    minSizeY: 1,
+                    maxSizeY: 2
+                },
+                {
+                    id: "three",
+                    sizeX: 1,
+                    sizeY: 1,
+                    row: 0,
+                    col: 2
+                },
+                {
+                    id: "four",
+                    sizeX: 5,
+                    sizeY: 1,
+                    row: 2,
+                    col: 0
+                },
+                {
+                    id: "five",
+                    sizeX: 3,
+                    sizeY: 1,
+                    row: 1,
+                    col: 2
+                },
+                {
+                    id: "six",
+                    sizeX: 2,
+                    sizeY: 1,
+                    row: 0,
+                    col: 3
+                }
+                ],
+                resizeStart: function(args): void{
+                    expect(args.event).toBe(null);
+                    expect(args.element.id).toBe("two");
+                    expect(args.isInteracted).toBe(false);
+                },
+                resizeStop: function(args): void{
+                    expect(args.event).toBe(null);
+                    expect(args.element.id).toBe("two");
+                    expect(args.isInteracted).toBe(false);
+                },
+                change: function(args): void{
+                    expect(args.changedPanels.length).toBe(3);
+                    expect(args.isInteracted).toBe(false);
+                }
+            });
+            gridLayOut.appendTo('#gridlayout');
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            setCss(CellElements);
+            expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
+            expect(gridLayOut.element.childElementCount == 6).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('two').row).toBe(0);
+            expect((<any>gridLayOut).getCellInstance('two').col).toBe(0);
+            expect((<any>gridLayOut).getCellInstance('two').sizeX).toBe(2);
+            expect((<any>gridLayOut).getCellInstance('two').sizeY).toBe(1);
+            gridLayOut.resizePanel('two', 1, 0);
+            expect((<any>gridLayOut).getCellInstance('two').row).toBe(0);
+            expect((<any>gridLayOut).getCellInstance('two').col).toBe(0);
+            expect((<any>gridLayOut).getCellInstance('two').sizeX).toBe(2);
+            expect((<any>gridLayOut).getCellInstance('two').sizeY).toBe(1);
+        });
+
         it('resizePanel public method test case exceeding max', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
@@ -4171,7 +4257,15 @@ describe('GridLayout', () => {
                 cellAspectRatio: 1,
                 columns: 6,
                 cellSpacing: [20, 20],
-                panels: panelData
+                panels: panelData,
+                change: function (args: ChangeEventArgs): void {
+                    expect(args.addedPanels == []).toBe(false);
+                    expect(args.removedPanels.length).toBe(0);
+                    expect(args.isInteracted == null).toBe(false);
+                    expect(args.changedPanels.length).toBe(2);
+                    expect(args.changedPanels[0].id).toBe("one");
+                    expect(args.changedPanels[1].id).toBe("four");
+                }
             });
             gridLayOut.appendTo('#gridlayout');
             let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
@@ -4283,7 +4377,13 @@ describe('GridLayout', () => {
                     col: 3,
                     content: ("#template2")
                 }
-                ]
+                ],
+                change: function(args: ChangeEventArgs): void{
+                    expect(args.removedPanels[0].id).toBe("two");
+                    expect(args.addedPanels.length).toBe(0);
+                    expect(args.changedPanels.length).toBe(1);
+                    expect(args.changedPanels[0].id).toBe("one");
+                }
             });
             gridLayOut.appendTo('#gridlayout');
             let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
@@ -4301,8 +4401,13 @@ describe('GridLayout', () => {
                 cellAspectRatio: 1,
                 columns: 6,
                 cellSpacing: [20, 20],
-                panels: panelObject
-
+                panels: panelObject,
+                change: function (args: ChangeEventArgs) {
+                    expect(args.isInteracted).toBe(false);
+                    expect(args.changedPanels.length === 0).toBe(true);
+                    expect(args.addedPanels.length).toBe(0);
+                    expect(args.removedPanels.length).toBe(6);
+                }
             });
             gridLayOut.appendTo('#gridlayout');
             let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
@@ -6209,6 +6314,7 @@ describe('GridLayout', () => {
             gridLayOut.change = function (args: ChangeEventArgs) {
                 expect(args.changedPanels.length > 0).toBe(true);
                 expect(args.changedPanels.length === 6).toBe(true);
+                expect(args.isInteracted === true).toBe(true);
             }
             gridLayOut.dataBind();
             gridLayOut.dragStart = function (args: DragStartArgs) {
@@ -6254,7 +6360,27 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('16').row == 5).toBe(true);
             expect((<any>gridLayOut).getCellInstance('16').col == 0).toBe(true);
         });
-
+        it('change event testing with movePanel', () => {
+            gridLayOut.change = function (args: ChangeEventArgs) {
+                expect(args.changedPanels.length > 0).toBe(true);
+                expect(args.changedPanels.length === 6).toBe(true);
+                expect(args.isInteracted === true).toBe(false);
+            }
+            gridLayOut.dataBind();
+            gridLayOut.movePanel("0", 0, 1);
+            expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').row == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('13').row == 4).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('13').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('16').row == 5).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('16').col == 0).toBe(true);
+        });
         it('Swapping test case with moving panels method', () => {
             gridLayOut.movePanel("15", 1, 5);
             let movingElemnt: HTMLElement = document.getElementById('8');

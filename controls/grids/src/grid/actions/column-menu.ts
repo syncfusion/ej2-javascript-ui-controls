@@ -265,12 +265,11 @@ export class ColumnMenu implements IAction {
         for (let item of args.items) {
             let key: string = this.getKeyFromId(item.id);
             let dItem: ColumnMenuItemModel = this.defaultItems[key];
-            if (this.getDefaultItems().indexOf(key) !== -1) {
-                if (this.ensureDisabledStatus(key) && !dItem.hide) {
-                    this.disableItems.push(item.text);
-                } else if ((item as ColumnMenuItemModel).hide) {
-                    this.hiddenItems.push(item.text);
-                }
+            if (this.getDefaultItems().indexOf(key) !== -1 && this.ensureDisabledStatus(key) && !dItem.hide) {
+                this.disableItems.push(item.text);
+            }
+            if ((item as ColumnMenuItemModel).hide) {
+                this.hiddenItems.push(item.text);
             }
         }
         this.columnMenu.enableItems(this.disableItems, false);

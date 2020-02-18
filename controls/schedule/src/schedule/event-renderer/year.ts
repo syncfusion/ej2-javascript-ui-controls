@@ -26,7 +26,7 @@ export class YearEvent extends TimelineEvent {
 
     public renderAppointments(): void {
         this.fields = this.parent.eventFields;
-        let eventWrapper: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS);
+        let eventWrapper: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
         [].slice.call(eventWrapper).forEach((node: Element) => remove(node));
         this.renderedEvents = [];
         if (this.parent.currentView !== 'TimelineYear') {
@@ -68,9 +68,10 @@ export class YearEvent extends TimelineEvent {
         this.cellHeader = (workCell.querySelector('.' + cls.DATE_HEADER_CLASS) as HTMLElement).offsetHeight;
         let eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
         this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
-        let wrapperCollection: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS);
+        let wrapperCollection: HTMLElement[] =
+            [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
         for (let row: number = 0; row < 12; row++) {
-            let wrapper: Element = wrapperCollection.item(row);
+            let wrapper: Element = wrapperCollection[row];
             let eventWrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
             wrapper.appendChild(eventWrapper);
             let monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), row, 1);
@@ -79,7 +80,7 @@ export class YearEvent extends TimelineEvent {
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 let leftValue: number;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
-                    let wrapper: Element = wrapperCollection.item(dayIndex);
+                    let wrapper: Element = wrapperCollection[dayIndex];
                     let eventWrapper: HTMLElement = wrapper.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS) as HTMLElement;
                     if (!eventWrapper) {
                         eventWrapper = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });

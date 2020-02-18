@@ -84,3 +84,5 @@ export const regSup: RegExp = /\^\d+\^/g;
 export const beforeExport : string = 'beforeExport';
 /** @private */
 export const afterExport : string = 'afterExport';
+/** @private */
+export const barRender: string = 'barRender';

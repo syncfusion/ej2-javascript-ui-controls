@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 1.0 (2020-02-18)
+
+### Calendar
+
+#### Bug Fixes
+
+- Now, selection style is applied to the previous month selected date in the current month view.
+
 ## 17.4.49 (2020-02-11)
 
 ### DateTimePicker

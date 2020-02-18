@@ -455,7 +455,7 @@ export class ResourceBase {
             this.treePopup.hide();
             removeClass([this.popupOverlay], cls.ENABLE_CLASS);
         } else {
-            let treeNodes: NodeListOf<Element> = this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)');
+            let treeNodes: HTMLElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)'));
             removeClass(treeNodes, 'e-active');
             addClass([treeNodes[this.parent.uiStateValues.groupIndex]], 'e-active');
             this.treePopup.show();

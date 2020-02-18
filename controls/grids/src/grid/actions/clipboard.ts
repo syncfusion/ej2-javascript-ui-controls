@@ -128,8 +128,10 @@ export class Clipboard implements IAction {
                     let args: BeforePasteEventArgs = {
                         column: col,
                         data: value,
+                        rowIndex: rIdx
                     };
                     this.parent.trigger(events.beforePaste, args);
+                    rIdx = args.rowIndex;
                     if (!args.cancel) {
                         if (grid.editModule) {
                             if (col.type === 'number') {

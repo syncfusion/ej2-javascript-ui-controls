@@ -1695,11 +1695,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.printModule) {
             if (this.layoutType === 'Continuous') {
+                this.documentHelper.isWebPrinting = true;
                 this.viewer = new PageLayoutViewer(this);
                 this.editor.layoutWholeDocument();
                 this.printModule.print(this.documentHelper, printWindow);
                 this.viewer = new WebLayoutViewer(this);
                 this.editor.layoutWholeDocument();
+                this.documentHelper.isWebPrinting = false;
             } else {
                 this.printModule.print(this.documentHelper, printWindow);
             }

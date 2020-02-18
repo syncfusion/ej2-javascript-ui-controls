@@ -1704,4 +1704,50 @@ describe('MultiSelect', () => {
             }, 800);
         });
     });
+    describe('EJ2-36388', () => {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let dropDowns: any;
+        let ischanged: boolean = false;
+        let originalTimeout: number;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
+            dropDowns = new MultiSelect({
+                dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
+                allowFiltering: true,
+                mode: 'CheckBox',
+                change: function (e: any) {
+                    ischanged = true;
+                    expect(e.name === 'change').toBe(true);
+                    expect(e.value.length > 0).toBe(true);
+                }
+            });
+            dropDowns.appendTo(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Change event is not triggered', () => {
+            let temp: any = Browser.userAgent;
+            Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            expect(dropDowns.isPopupOpen()).toBe(true);
+            let list: Array<HTMLElement> = (<any>dropDowns).ulElement.querySelectorAll('li');
+            mouseEventArgs.target = list[0];
+            mouseEventArgs.type = 'click';
+            (<any>dropDowns).onMouseClick(mouseEventArgs);
+            mouseEventArgs.target = document.body;
+            dropDowns.checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
+            expect(dropDowns.isPopupOpen()).not.toBe(true);
+            expect(ischanged).toBe(true);
+            Browser.userAgent = temp;
+        });
+    });
 });
