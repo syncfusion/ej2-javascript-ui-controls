@@ -78,7 +78,7 @@ export class TableOptionsDialog {
             id: this.documentHelper.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
         let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'width: 504px;position: relative;height: auto;margin-bottom: 14px'
+            className: 'e-de-table-options-dlg-div'
         });
         let innerDivLabel: HTMLElement = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',

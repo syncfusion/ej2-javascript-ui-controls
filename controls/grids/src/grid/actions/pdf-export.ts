@@ -23,7 +23,10 @@ import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { getValue } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
-import { getUid, getPrintGridModel, measureColumnDepth } from '../base/util';
+import {
+    getUid, getPrintGridModel, measureColumnDepth, isExportColumns,
+    updateColumnTypeForExportColumns, prepareColumns
+} from '../base/util';
 import { ColumnModel } from '../models/models';
 
 /**
@@ -121,6 +124,9 @@ export class PdfExport {
                 return resolve();
             });
         }
+        if (isExportColumns(pdfExportProperties)) {
+            updateColumnTypeForExportColumns(pdfExportProperties, parent);
+        }
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
@@ -209,7 +215,7 @@ export class PdfExport {
         let allowHorizontalOverflow: boolean = true;
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
-            if (isBlazor()) {
+            if (isBlazor() && !isNullOrUndefined(this.gridTheme)) {
                 this.getGridPdfFont(this.gridTheme);
             }
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
@@ -217,7 +223,8 @@ export class PdfExport {
         }
         let helper: ExportHelper = new ExportHelper(gObj);
         let dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
-        let columns: Column[] = gObj.columns as Column[];
+        let columns: Column[] = isExportColumns(pdfExportProperties) ?
+            prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns as Column[];
         let isGrouping: boolean = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
@@ -243,7 +250,7 @@ export class PdfExport {
 
         // process grid header content
         pdfGrid = this.processGridHeaders(gObj.groupSettings.columns.length, pdfGrid, returnValue.rows,
-                                          gridColumns, border, headerFont, headerBrush, gObj, allowHorizontalOverflow);
+                                          gridColumns, border, headerFont, headerBrush, gObj, allowHorizontalOverflow, columns);
 
         // set alignment, width and type of the values of the column
         this.setColumnProperties(gridColumns, pdfGrid, helper, gObj, allowHorizontalOverflow);
@@ -438,10 +445,10 @@ export class PdfExport {
     }
     private processGridHeaders(childLevels: number, pdfGrid: PdfGrid, rows: Row<Column>[],
                                gridColumn: Column[], border: PdfBorders, headerFont: PdfFont, headerBrush: PdfSolidBrush, grid: IGrid,
-                               allowHorizontalOverflow: boolean): PdfGrid {
+                               allowHorizontalOverflow: boolean, eCols: Column[]): PdfGrid {
         let columnCount: number = gridColumn.length + childLevels;
-        let depth: number = measureColumnDepth(grid.columns as Column[]);
-        let cols: Column[] | string[] | ColumnModel[] = grid.columns;
+        let depth: number = measureColumnDepth(eCols);
+        let cols: Column[] | string[] | ColumnModel[] = eCols;
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
         let applyTextAndSpan: Function = (rowIdx: number, colIdx: number, col: Column, rowSpan: number, colSpan: number) => {

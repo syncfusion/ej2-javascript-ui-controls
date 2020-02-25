@@ -153,6 +153,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public isDropEnd: boolean = false;
     public droppedObjects: Object[] = [];
     public destinationPath: string;
+    public uploadingCount: number = 0;
+    public uploadedCount: number = 0;
 
     /**
      * Specifies the AJAX settings of the file manager.
@@ -203,7 +205,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Specifies the details view settings of the file manager.
      * @default {     
      * columns: [{
-     * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', template: '<span class="e-fe-text">${name}</span>',
+     * field: 'name', headerText: 'Name', minWidth: 120, template: '<span class="e-fe-text">${name}</span>',
      * customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified',
      * minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
      * template: '<span class="e-fe-size">${size}</span>' }
@@ -212,6 +214,13 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Complex<DetailsViewSettingsModel>({}, DetailsViewSettings)
     public detailsViewSettings: DetailsViewSettingsModel;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * Enables or disables persisting component's state between page reloads. If enabled, the following APIs will persist:
@@ -321,7 +330,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      *  autoUpload: true,
      *  minFileSize: 0,
      *  maxFileSize: 30000000,
-     *  allowedExtensions: ''
+     *  allowedExtensions: '',
+     *  autoClose: false
      * }
      */
     @Complex<UploadSettingsModel>({}, UploadSettings)
@@ -725,6 +735,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             paneSettings: paneSettings,
             width: '100%',
             enableRtl: false,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
             resizing: this.splitterResize.bind(this)
         });
         this.splitterObj.isStringTemplate = true;
@@ -807,6 +818,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
             enableRtl: this.enableRtl,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
             open: this.onOpen.bind(this),
             close: this.onClose.bind(this),
             beforeOpen: this.onBeforeOpen.bind(this),
@@ -942,6 +954,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     private onRemoving(): void {
+        this.onFileUploadSuccess({ count: 1 });
         if (this.uploadObj.getFilesData().length === 1) {
             this.uploadDialogObj.hide();
         }
@@ -956,6 +969,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /* istanbul ignore next */
     private onSelected(args: SelectedEventArgs): void {
         if (args.filesData.length === 0) { return; }
+        this.uploadingCount = args.filesData.length;
+        this.uploadedCount = 0;
         let details: Object = getPathObject(this);
         if (!hasUploadAccess(details)) {
             args.cancel = true;
@@ -964,12 +979,21 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         }
         this.uploadDialogObj.show();
     }
+
+    private onFileUploadSuccess(args: { [key: string]: Object; }): void {
+        this.uploadedCount = this.uploadedCount + (<number>args.count) ;
+        if (this.uploadSettings.autoClose && (this.uploadingCount === this.uploadedCount)) {
+            this.uploadDialogObj.hide();
+        }
+    }
+
     /* istanbul ignore next */
     private onUploadSuccess(files: Object): void {
         let args: SuccessEventArgs = { action: 'Upload', result: files };
         this.trigger('success', args);
         this.itemData = [getValue(this.pathId[this.pathId.length - 1], this.feParent)];
         read(this, events.pathChanged, this.path);
+        this.onFileUploadSuccess({ count: 1 });
         if (typeof getValue('onSuccess', this.uploadEventArgs.ajaxSettings) === 'function') {
             getValue('onSuccess', this.uploadEventArgs.ajaxSettings)();
         }
@@ -999,6 +1023,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.on(events.afterRequest, this.hideSpinner, this);
         this.on(events.initialEnd, this.onInitialEnd, this);
         this.on(events.detailsInit, this.onDetailsInit, this);
+        this.on(events.skipUpload, this.onFileUploadSuccess, this);
         EventHandler.add(this.element, 'contextmenu', this.onContextMenu, this);
     }
     private removeEventListeners(): void {
@@ -1007,6 +1032,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.off(events.afterRequest, this.hideSpinner);
         this.off(events.initialEnd, this.onInitialEnd);
         this.off(events.detailsInit, this.onDetailsInit);
+        this.off(events.skipUpload, this.onFileUploadSuccess);
         EventHandler.remove(this.element, 'contextmenu', this.onContextMenu);
     }
 

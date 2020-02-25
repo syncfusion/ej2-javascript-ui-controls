@@ -330,7 +330,7 @@ export class Parser {
         let condition: string;
         let ticLoc: number = tempString.indexOf(this.parent.tic);
         let singleTicLoc: number = tempString.indexOf(this.parent.singleTic);
-        if (ticLoc > -1 || singleTicLoc > -1) {
+        if (ticLoc > -1) {
             tempString = tempString.split(this.parent.singleTic).join(this.parent.tic);
             i = tempString.indexOf(this.parent.tic);
             while (i > -1 && tempString.length > 0) {
@@ -657,7 +657,9 @@ export class Parser {
                                     right = 'u' + right;
                                 }
                             }
-                            noCellReference = !this.parent.isCellReference(right);
+                            if (noCellReference && right.startsWith(this.sheetToken)) {
+                                noCellReference = !this.parent.isCellReference(right);
+                            }
                             if (!noCellReference) {
                                 this.parent.updateDependentCell(right);
                             }

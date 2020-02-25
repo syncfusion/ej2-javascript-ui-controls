@@ -37,7 +37,7 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             keyboardEventArgs = {
                 preventDefault: (): void => { },
                 action: null,
@@ -57,7 +57,6 @@ describe('FileManager control Grid view', () => {
         it('altN key pressed', (done: Function) => {
             keyboardEventArgs.action = 'altN';
             feObj.keyActionHandler(keyboardEventArgs);
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                 expect(li.length).toEqual(5);
@@ -71,13 +70,11 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data4)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(data5)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let li1: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                     expect(li1.length).toEqual(6);
@@ -109,7 +106,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                 let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-row');
@@ -127,7 +123,6 @@ describe('FileManager control Grid view', () => {
         it('ctrl + U key pressed', (done: Function) => {
             keyboardEventArgs.action = 'ctrlU';
             feObj.keyActionHandler(keyboardEventArgs);
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toBe(5);
             let fileObj: File[] = [];
             fileObj[0] = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
@@ -139,7 +134,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(UploadData)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(document.querySelector('.e-file-status').innerHTML).toBe("File uploaded successfully");
                 (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
@@ -158,6 +152,7 @@ describe('FileManager control Grid view', () => {
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             keyboardEventArgs = {
                 preventDefault: (): void => { },
                 action: null,
@@ -199,7 +194,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data24)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -222,7 +216,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data25)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(document.getElementsByClassName('e-fe-error')[0].textContent).toEqual('Cannot rename "File1.txt" to "File.png": destination already exists.');
                     done();
@@ -255,14 +248,13 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(data12)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             keyboardEventArgs = {
                 preventDefault: (): void => { },
                 action: null,
                 target: null,
                 stopImmediatePropagation: (): void => { },
             };
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 done();
             }, 500);

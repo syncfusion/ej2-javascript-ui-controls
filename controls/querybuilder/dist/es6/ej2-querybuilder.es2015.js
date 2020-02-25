@@ -884,6 +884,10 @@ let QueryBuilder = class QueryBuilder extends Component {
         let element = closest(ddlArgs.element, '.e-group-container');
         let groupID = element.id.replace(this.element.id + '_', '');
         let ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
+        let tooltipElem = ruleElem.querySelectorAll('.e-tooltip.e-input-group');
+        for (let i = 0; i < tooltipElem.length; i++) {
+            getComponent(tooltipElem[i], 'tooltip').destroy();
+        }
         if (!args.cancel) {
             tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
@@ -1597,7 +1601,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         if (closest(target, '.e-rule-filter')) {
             dropDownObj = getComponent(target, 'dropdownlist');
             if (!this.isImportRules && rule.rules[index].field.toLowerCase() !== this.columns[dropDownObj.index].field.toLowerCase()) {
-                if (!(rule.rules[index].operator.indexOf('null') > -1) || (rule.rules[index].operator.indexOf('empty') > -1)) {
+                if (!(ruleElem.querySelectorAll('.e-template')) && !(rule.rules[index].operator.indexOf('null') > -1)
+                    || (rule.rules[index].operator.indexOf('empty') > -1)) {
                     rule.rules[index].value = '';
                 }
             }

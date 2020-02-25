@@ -5152,6 +5152,8 @@ var FORMATTING_MENU = 'e-pivot-format-menu';
 var NUMBER_FORMATTING_MENU = 'e-pivot-number-format-menu';
 /** @hidden */
 var CONDITIONAL_FORMATTING_MENU = 'e-pivot-conditional-format-menu';
+/** @hidden */
+var EMPTY_FORMAT = 'e-pivot-conditional-empty-format';
 
 /**
  * `AggregateMenu` module to create aggregate type popup.
@@ -6873,8 +6875,9 @@ var Render = /** @__PURE__ @class */ (function () {
                     var horizontalOverflow = contentWidth < tableWidth;
                     var verticalOverflow = contentHeight < tableHeight;
                     var commonOverflow = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
+                    var fixedOverflow = gridHeight <= (this.engine.valueContent.length * this.gridSettings.rowHeight);
                     if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
-                        !verticalOverflow && !commonOverflow) {
+                        !verticalOverflow && !commonOverflow && !fixedOverflow) {
                         this.parent.grid.height = 'auto';
                     }
                     else {
@@ -9110,8 +9113,7 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
         this.removeDrillThroughDialog();
         var drillThroughDialog = createElement('div', {
             id: this.parent.element.id + '_drillthrough',
-            className: DRILLTHROUGH_DIALOG,
-            styles: 'visibility:hidden;'
+            className: DRILLTHROUGH_DIALOG
         });
         this.parent.element.appendChild(drillThroughDialog);
         this.dialogPopUp = new Dialog({
@@ -14630,7 +14632,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                 childSets.push(item);
                 if (this.isPaging) {
                     var drillField = item.split('::[')[fieldPos];
-                    drillField = drillField[0] == '[' ? drillField : ('[' + drillField);
+                    drillField = drillField[0] === '[' ? drillField : ('[' + drillField);
                     var drillFieldSep = drillField.split('~~');
                     for (var fPos = drillFieldSep.indexOf(memberName); fPos < drillFieldSep.length; fPos++) {
                         memberObj[drillFieldSep[fPos]] = drillFieldSep[fPos];
@@ -20331,7 +20333,6 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
             id: this.parent.parentID + '_EditorTreeView',
             className: MEMBER_EDITOR_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
             attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
-            styles: 'visibility:hidden;'
         });
         var filterCaption = this.parent.engineModule.fieldList[fieldName].caption;
         var headerTemplate = this.parent.localeObj.getConstant('filter') + ' ' +
@@ -27321,8 +27322,8 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
             var outerDiv = this.createDialogElements();
             var element = createElement('p', {
                 id: this.parentID + 'emptyFormat',
+                className: EMPTY_FORMAT,
                 innerHTML: this.parent.localeObj.getConstant('emptyFormat'),
-                styles: 'margin: 10px'
             });
             outerDiv.appendChild(element);
             format.appendChild(outerDiv);
@@ -28850,8 +28851,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
         });
         var table = createElement('table', {
             id: this.parent.element.id + '_FormatTable',
-            className: FORMATTING_TABLE,
-            styles: 'width: 100%'
+            className: FORMATTING_TABLE
         });
         var tRow = createElement('tr');
         var tValue = createElement('td');

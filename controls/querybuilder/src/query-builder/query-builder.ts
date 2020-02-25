@@ -1068,6 +1068,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let element: Element = closest(ddlArgs.element, '.e-group-container');
         let groupID: string = element.id.replace(this.element.id + '_', '');
         let ddlObj: DropDownList = getComponent(ddlArgs.element, 'dropdownlist') as DropDownList;
+        let tooltipElem: NodeListOf<Element> = ruleElem.querySelectorAll('.e-tooltip.e-input-group');
+        for (let i: number = 0; i < tooltipElem.length; i++) {
+            (getComponent(tooltipElem[i] as HTMLElement, 'tooltip') as Tooltip).destroy();
+        }
         if (!args.cancel) {
             tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
@@ -1728,7 +1732,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (closest(target, '.e-rule-filter')) {
             dropDownObj = getComponent(target as HTMLElement, 'dropdownlist') as DropDownList;
             if (!this.isImportRules && rule.rules[index].field.toLowerCase() !== this.columns[dropDownObj.index].field.toLowerCase()) {
-                if (!(rule.rules[index].operator.indexOf('null') > -1 ) || (rule.rules[index].operator.indexOf('empty') > -1 )) {
+                if (!(ruleElem.querySelectorAll('.e-template')) && !(rule.rules[index].operator.indexOf('null') > -1 )
+                || (rule.rules[index].operator.indexOf('empty') > -1 )) {
                 rule.rules[index].value = '';
                 }
             }

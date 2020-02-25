@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### Common
+
+#### Bug Fixes
+
+- `I261768` - Resolved script error for invalid custom number formatting.
+
 ## 17.4.43 (2020-01-14)
 
 ### Common

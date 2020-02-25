@@ -60,6 +60,8 @@ export class Row<T> {
 
     public childGrid: IGrid;
 
+    public parentUid: string;
+
     constructor(options: { [x: string]: Object }) {
         merge(this, options);
     }

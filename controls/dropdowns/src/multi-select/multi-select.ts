@@ -2068,8 +2068,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.selectAllEventData = [];
                         this.selectAllEventEle = [];
                     }
-                    if (isClearAll) { this.clearAllCallback(eve as MouseEvent, isClearAll); }
-                    if (this.isSelectAll && isBlazor() && this.isServerRendered && (this.value && this.value.length === 0)) {
+                    if (isClearAll && (length === 1 || length === null)) { this.clearAllCallback(eve as MouseEvent, isClearAll); }
+                    if (isBlazor() && this.isServerRendered && (this.value && this.value.length === 0)) {
                         this.updatedataValueItems(eve);
                     }
                 }
@@ -2820,8 +2820,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.remoteCustomValue = false;
             this.addValue(value, text, e);
         }
-        if (this.isSelectAll && isBlazor() && this.isServerRendered && this.value && this.list &&
-            this.value.length === this.list.querySelectorAll('li').length) {
+        if (isBlazor() && this.isServerRendered && this.value && this.list &&
+            this.value.length === this.list.querySelectorAll('li').length || this.value.length === this.maximumSelectionLength) {
             this.updatedataValueItems(e);
             this.checkPlaceholderSize();
         }

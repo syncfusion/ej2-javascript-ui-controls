@@ -183,3 +183,17 @@ describe('zoomclick shapedata', () => {
         done();
     });
 });
+
+describe('labels', () => {
+    it('legend labels', (done: Function) => {
+        browser.load('/demos/CRIssues/legendLabelIsEmptyString.html');
+        browser.compareScreen(element(By.id('datalabel')), 'CI/legendlabelempty');
+        browser.actions().mouseMove(element(By.id('datalabel_Legend_Index_1'))).perform();
+        browser.compareScreen(element(By.id('datalabel')), 'CI/legendlabelempty_legendmousehover');
+        browser.actions().mouseMove(element(By.id('datalabel_LayerIndex_0_shapeIndex_2_dataIndex_25'))).perform();
+        browser.compareScreen(element(By.id('datalabel')), 'CI/legendlabelempty_samplemousehover');  
+        browser.actions().mouseMove(element(By.id('datalabel_LayerIndex_0_shapeIndex_47_dataIndex_37'))).perform();
+        browser.compareScreen(element(By.id('datalabel')), 'CI/legendlabelempty_samplemousehover1');  
+        done();
+    });
+});

@@ -36,4 +36,8 @@
       }
     }
   }
+
+  .e-mobile-popup-wrapper .e-close-icon::before {
+    content: '\e7fc';
+  }
 }

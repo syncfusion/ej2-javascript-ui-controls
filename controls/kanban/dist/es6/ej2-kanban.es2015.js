@@ -1,6 +1,7 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, extend, formatUnit, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Button } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
 
 /**
@@ -180,6 +181,9 @@ __decorate$2([
     Property()
 ], CardSettings.prototype, "template", void 0);
 __decorate$2([
+    Property()
+], CardSettings.prototype, "priority", void 0);
+__decorate$2([
     Property('Single')
 ], CardSettings.prototype, "selectionType", void 0);
 
@@ -287,13 +291,13 @@ const CONTENT_ROW_CLASS = 'e-content-row';
 /** @hidden */
 const SWIMLANE_ROW_CLASS = 'e-swimlane-row';
 /** @hidden */
-const SWIMLANE_ROW_EXPAND = 'e-swimlane-row-expand';
+const SWIMLANE_ROW_EXPAND_CLASS = 'e-swimlane-row-expand';
 /** @hidden */
-const SWIMLANE_ROW_COLLAPSE = 'e-swimlane-row-collapse';
+const SWIMLANE_ROW_COLLAPSE_CLASS = 'e-swimlane-row-collapse';
 /** @hidden */
-const SWIMLANE_ROW_TEXT = 'e-swimlane-text';
+const SWIMLANE_ROW_TEXT_CLASS = 'e-swimlane-text';
 /** @hidden */
-const CARD_ITEM_COUNT = 'e-item-count';
+const CARD_ITEM_COUNT_CLASS = 'e-item-count';
 /** @hidden */
 const CARD_WRAPPER_CLASS = 'e-card-wrapper';
 /** @hidden */
@@ -307,11 +311,11 @@ const CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
 /** @hidden */
 const CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
 /** @hidden */
-const COLUMN_EXPAND = 'e-column-expand';
+const COLUMN_EXPAND_CLASS = 'e-column-expand';
 /** @hidden */
-const COLUMN_COLLAPSE = 'e-column-collapse';
+const COLUMN_COLLAPSE_CLASS = 'e-column-collapse';
 /** @hidden */
-const COLLAPSE_HEADER_TEXT = 'e-collapse-header-text';
+const COLLAPSE_HEADER_TEXT_CLASS = 'e-collapse-header-text';
 /** @hidden */
 const COLLAPSED_CLASS = 'e-collapsed';
 /** @hidden */
@@ -327,53 +331,55 @@ const COLLAPSED_CLASS = 'e-collapsed';
 /** @hidden */
 
 /** @hidden */
-const DRAGGED_CLONE = 'e-target-dragged-clone';
+const DRAGGED_CLONE_CLASS = 'e-target-dragged-clone';
 /** @hidden */
-const DRAGGED_CARD = 'e-kanban-dragged-card';
+const CLONED_CARD_CLASS = 'e-cloned-card';
 /** @hidden */
-const DROPPED_CLONE = 'e-target-dropped-clone';
+const DRAGGED_CARD_CLASS = 'e-kanban-dragged-card';
 /** @hidden */
-const DROPPING = 'e-dropping';
+const DROPPED_CLONE_CLASS = 'e-target-dropped-clone';
 /** @hidden */
-const TOGGLE_VISIBLE = 'e-toggle-visible';
+const DROPPING_CLASS = 'e-dropping';
+/** @hidden */
+const TOGGLE_VISIBLE_CLASS = 'e-toggle-visible';
 /** @hidden */
 
 /** @hidden */
-const MULTI_CARD_WRAPPER = 'e-multi-card-wrapper';
+const MULTI_CARD_WRAPPER_CLASS = 'e-multi-card-wrapper';
 /** @hidden */
-const MULTI_ACTIVE = 'e-multi-active';
+const MULTI_ACTIVE_CLASS = 'e-multi-active';
 /** @hidden */
-const TARGET_MULTI_CLONE = 'e-target-multi-clone';
+const TARGET_MULTI_CLONE_CLASS = 'e-target-multi-clone';
 /** @hidden */
-const MULTI_COLUMN_KEY = 'e-column-key';
+const MULTI_COLUMN_KEY_CLASS = 'e-column-key';
 /** @hidden */
-const CARD_SELECTION = 'e-selection';
+const CARD_SELECTION_CLASS = 'e-selection';
 /** @hidden */
 const TOOLTIP_CLASS = 'e-kanban-tooltip';
 /** @hidden */
-const TOOLTIP_TEXT = 'e-tooltip-text';
+const TOOLTIP_TEXT_CLASS = 'e-tooltip-text';
 /** @hidden */
 
 /** @hidden */
-const SWIMLANE_HEADER = 'e-swimlane-header';
+const SWIMLANE_HEADER_CLASS = 'e-swimlane-header';
 /** @hidden */
-const SWIMLANE_HEADER_TOOLBAR = 'e-swimlane-header-toolbar';
+const SWIMLANE_HEADER_TOOLBAR_CLASS = 'e-swimlane-header-toolbar';
 /** @hidden */
-const TOOLBAR_MENU = 'e-toolbar-menu';
+const TOOLBAR_MENU_CLASS = 'e-toolbar-menu';
 /** @hidden */
-const TOOLBAR_MENU_ICON = 'e-icon-menu';
+const TOOLBAR_MENU_ICON_CLASS = 'e-icon-menu';
 /** @hidden */
-const TOOLBAR_LEVEL_TITLE = 'e-toolbar-level-title';
+const TOOLBAR_LEVEL_TITLE_CLASS = 'e-toolbar-level-title';
 /** @hidden */
-const TOOLBAR_SWIMLANE_NAME = 'e-toolbar-swimlane-name';
+const TOOLBAR_SWIMLANE_NAME_CLASS = 'e-toolbar-swimlane-name';
 /** @hidden */
-const SWIMLANE_OVERLAY = 'e-swimlane-overlay';
+const SWIMLANE_OVERLAY_CLASS = 'e-swimlane-overlay';
 /** @hidden */
-const SWIMLANE_CONTENT = 'e-swimlane-content';
+const SWIMLANE_CONTENT_CLASS = 'e-swimlane-content';
 /** @hidden */
-const SWIMLANE_RESOURCE = 'e-swimlane-resource';
+const SWIMLANE_RESOURCE_CLASS = 'e-swimlane-resource';
 /** @hidden */
-const SWIMLANE_TREE = 'e-swimlane-tree';
+const SWIMLANE_TREE_CLASS = 'e-swimlane-tree';
 /** @hidden */
 const LIMITS_CLASS = 'e-limits';
 /** @hidden */
@@ -381,9 +387,23 @@ const MAX_COUNT_CLASS = 'e-max-count';
 /** @hidden */
 const MIN_COUNT_CLASS = 'e-min-count';
 /** @hidden */
-const MAX_COLOR = 'e-max-color';
+const MAX_COLOR_CLASS = 'e-max-color';
 /** @hidden */
-const MIN_COLOR = 'e-min-color';
+const MIN_COLOR_CLASS = 'e-min-color';
+/** @hidden */
+
+/** @hidden */
+const POPUP_HEADER_CLASS = 'e-popup-header';
+/** @hidden */
+const CLOSE_CLASS = 'e-close';
+/** @hidden */
+const POPUP_CONTENT_CLASS = 'e-popup-content';
+/** @hidden */
+const POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
+/** @hidden */
+const CLOSE_ICON_CLASS = 'e-close-icon';
+/** @hidden */
+const POPUP_OPEN_CLASS = 'e-popup-open';
 
 /**
  * Action module is used to perform card actions.
@@ -396,7 +416,6 @@ class Action {
      */
     constructor(parent) {
         this.parent = parent;
-        this.swimlaneToggleArray = [];
         this.columnToggleArray = [];
         this.selectionArray = [];
         this.lastCardSelection = null;
@@ -406,14 +425,49 @@ class Action {
         this.selectedCardsData = [];
         this.hideColumnKeys = [];
     }
+    clickHandler(e) {
+        let elementSelector = '.' + CARD_CLASS + ',.' + HEADER_ICON_CLASS + ',.' + CONTENT_ROW_CLASS + '.' +
+            SWIMLANE_ROW_CLASS;
+        let target = closest(e.target, elementSelector);
+        if (!target) {
+            return;
+        }
+        if (target.classList.contains(CARD_CLASS)) {
+            this.cardClick(e);
+        }
+        else if (target.classList.contains(HEADER_ICON_CLASS)) {
+            this.columnExpandCollapse(e);
+        }
+        else if (target.classList.contains(CONTENT_ROW_CLASS) && target.classList.contains(SWIMLANE_ROW_CLASS)) {
+            this.rowExpandCollapse(e);
+        }
+    }
+    doubleClickHandler(e) {
+        let target = closest(e.target, '.' + CARD_CLASS);
+        if (target) {
+            this.cardDoubleClick(e);
+        }
+    }
     cardClick(e) {
         let target = closest(e.target, '.' + CARD_CLASS);
         let cardClickObj = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardClickObj, element: target };
-        let args = { data: cardClickObj, element: target, cancel: false };
+        let args = { data: cardClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardClick, args, (clickArgs) => {
             if (!clickArgs.cancel) {
-                this.cardSelection(target, e.ctrlKey, e.shiftKey);
+                if (target.classList.contains(CARD_SELECTION_CLASS)) {
+                    removeClass([target], CARD_SELECTION_CLASS);
+                }
+                else {
+                    let isCtrlKey = e.ctrlKey;
+                    if (this.parent.isAdaptive && this.parent.touchModule) {
+                        isCtrlKey = this.parent.touchModule.tabHold || e.ctrlKey;
+                    }
+                    this.cardSelection(target, isCtrlKey, e.shiftKey);
+                }
+                if (this.parent.isAdaptive && this.parent.touchModule) {
+                    this.parent.touchModule.updatePopupContent();
+                }
             }
         });
     }
@@ -421,28 +475,29 @@ class Action {
         let target = closest(e.target, '.' + CARD_CLASS);
         let cardDoubleClickObj = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
-        let args = { data: cardDoubleClickObj, element: target, cancel: false };
+        let args = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardDoubleClick, args);
     }
     rowExpandCollapse(e) {
-        let args = { cancel: false, target: e.target, requestType: 'rowExpandCollapse' };
+        let headerTarget = (e instanceof HTMLElement) ? e : e.target;
+        let args = { cancel: false, target: headerTarget, requestType: 'rowExpandCollapse' };
         this.parent.trigger(actionBegin, args, (actionArgs) => {
             if (!actionArgs.cancel) {
-                let target = closest(e.target, '.' + SWIMLANE_ROW_CLASS);
+                let target = closest(headerTarget, '.' + SWIMLANE_ROW_CLASS);
                 let tgtRow = this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + `:nth-child(${target.rowIndex + 2})`);
-                let targetIcon = target.querySelector('.' + SWIMLANE_ROW_EXPAND + ',.' + SWIMLANE_ROW_COLLAPSE);
+                let targetIcon = target.querySelector(`.${SWIMLANE_ROW_EXPAND_CLASS},.${SWIMLANE_ROW_COLLAPSE_CLASS}`);
                 if (target.classList.contains(COLLAPSED_CLASS)) {
                     removeClass([tgtRow, target], COLLAPSED_CLASS);
-                    classList(targetIcon, [SWIMLANE_ROW_EXPAND], [SWIMLANE_ROW_COLLAPSE]);
-                    this.swimlaneToggleArray.splice(this.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
+                    classList(targetIcon, [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
+                    this.parent.swimlaneToggleArray.splice(this.parent.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
                 }
                 else {
                     addClass([tgtRow, target], COLLAPSED_CLASS);
-                    classList(targetIcon, [SWIMLANE_ROW_COLLAPSE], [SWIMLANE_ROW_EXPAND]);
-                    this.swimlaneToggleArray.push(target.getAttribute('data-key'));
+                    classList(targetIcon, [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
+                    this.parent.swimlaneToggleArray.push(target.getAttribute('data-key'));
                 }
                 this.parent.notify(contentReady, {});
-                this.parent.trigger(actionComplete, { target: e.target, requestType: 'rowExpandCollapse' });
+                this.parent.trigger(actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
         });
     }
@@ -456,8 +511,8 @@ class Action {
                 this.columnToggle(target);
                 let collapsed = this.parent.element.querySelectorAll(`.${HEADER_CELLS_CLASS}.${COLLAPSED_CLASS}`).length;
                 if (collapsed === (this.parent.columns.length - this.hideColumnKeys.length)) {
-                    let nextColIndex = (colIndex + 1 === collapsed) ? 0 : colIndex + 1;
-                    let headerSelector = `.${HEADER_CELLS_CLASS}:not(.e-stacked-header-cell):nth-child(${nextColIndex + 1})`;
+                    let index = (colIndex + 1 === collapsed) ? 1 : colIndex + 2;
+                    let headerSelector = `.${HEADER_CELLS_CLASS}:not(.${STACKED_HEADER_CELL_CLASS}):nth-child(${index})`;
                     let nextCol = this.parent.element.querySelector(headerSelector);
                     addClass([nextCol], COLLAPSED_CLASS);
                     this.columnToggle(nextCol);
@@ -469,20 +524,21 @@ class Action {
     }
     columnToggle(target) {
         let colIndex = target.cellIndex;
-        let targetRow = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
-        let colSelector = `.e-header-table col:nth-child(${colIndex + 1}),.e-content-table col:nth-child(${colIndex + 1})`;
-        let targetIcon = target.querySelector('.' + COLUMN_EXPAND + ',.' + COLUMN_COLLAPSE);
+        let elementSelector = `.${CONTENT_ROW_CLASS}:not(.${SWIMLANE_ROW_CLASS})`;
+        let targetRow = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
+        let colSelector = `.${TABLE_CLASS} col:nth-child(${colIndex + 1})`;
+        let targetIcon = target.querySelector(`.${COLUMN_EXPAND_CLASS},.${COLUMN_COLLAPSE_CLASS}`);
         let colGroup = [].slice.call(this.parent.element.querySelectorAll(colSelector));
         if (target.classList.contains(COLLAPSED_CLASS)) {
             removeClass(colGroup, COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
                 colGroup.forEach((col) => col.style.width = formatUnit(this.parent.layoutModule.getWidth()));
             }
-            classList(targetIcon, [COLUMN_EXPAND], [COLUMN_COLLAPSE]);
+            classList(targetIcon, [COLUMN_EXPAND_CLASS], [COLUMN_COLLAPSE_CLASS]);
             for (let row of targetRow) {
                 let targetCol = row.querySelector(`.${CONTENT_CELLS_CLASS}:nth-child(${colIndex + 1})`);
                 removeClass([targetCol, target], COLLAPSED_CLASS);
-                remove(targetCol.querySelector('.' + COLLAPSE_HEADER_TEXT));
+                remove(targetCol.querySelector('.' + COLLAPSE_HEADER_TEXT_CLASS));
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
             this.parent.columns[colIndex].setProperties({ isExpanded: true }, true);
@@ -492,13 +548,13 @@ class Action {
             if (this.parent.isAdaptive) {
                 colGroup.forEach((col) => col.style.width = formatUnit(toggleWidth));
             }
-            classList(targetIcon, [COLUMN_COLLAPSE], [COLUMN_EXPAND]);
+            classList(targetIcon, [COLUMN_COLLAPSE_CLASS], [COLUMN_EXPAND_CLASS]);
             for (let row of targetRow) {
                 let key = target.getAttribute('data-key');
-                let targetCol = row.querySelector('.' + CONTENT_CELLS_CLASS + '[data-key="' + key + '"]');
+                let targetCol = row.querySelector(`.${CONTENT_CELLS_CLASS}[data-key="${key}"]`);
                 let index = targetCol.cellIndex;
                 targetCol.appendChild(createElement('div', {
-                    className: COLLAPSE_HEADER_TEXT,
+                    className: COLLAPSE_HEADER_TEXT_CLASS,
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], COLLAPSED_CLASS);
@@ -519,7 +575,7 @@ class Action {
                 return;
             }
             if (cards.length !== 0 && (!isCtrl || this.parent.cardSettings.selectionType === 'Single')) {
-                removeClass(cards, CARD_SELECTION);
+                removeClass(cards, CARD_SELECTION_CLASS);
                 cards.forEach((el) => {
                     this.selectionArray.splice(this.selectionArray.indexOf(el.getAttribute('data-id')), 1);
                     this.selectedCardsElement.splice(this.selectedCardsElement.indexOf(el), 1);
@@ -544,7 +600,7 @@ class Action {
                 }
                 for (i = start; i <= end; i++) {
                     let card = allCards[i];
-                    addClass([card], CARD_SELECTION);
+                    addClass([card], CARD_SELECTION_CLASS);
                     this.selectionArray.push(card.getAttribute('data-id'));
                     this.selectedCardsElement.push(card);
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
@@ -555,12 +611,19 @@ class Action {
                 }
             }
             else {
-                addClass([target], CARD_SELECTION);
+                addClass([target], CARD_SELECTION_CLASS);
                 this.selectionArray.push(target.getAttribute('data-id'));
                 this.selectedCardsElement.push(target);
                 this.selectedCardsData.push(this.parent.getCardDetails(target));
                 this.lastCard = this.lastCardSelection = target;
                 this.lastSelectionRow = closest(target, '.' + CONTENT_ROW_CLASS);
+                if (this.lastSelectionRow.previousElementSibling) {
+                    let elementSelector = `.${SWIMLANE_ROW_EXPAND_CLASS},.${SWIMLANE_ROW_COLLAPSE_CLASS}`;
+                    let parentEle = this.lastSelectionRow.previousElementSibling.querySelector(elementSelector);
+                    if (parentEle && parentEle.classList.contains(SWIMLANE_ROW_COLLAPSE_CLASS)) {
+                        this.rowExpandCollapse(parentEle);
+                    }
+                }
             }
         }
     }
@@ -650,10 +713,16 @@ class Crud {
         this.parent.trigger(actionBegin, args, (addArgs) => {
             if (!addArgs.cancel) {
                 let promise = null;
+                let modifiedData = [];
+                if (this.parent.cardSettings.priority) {
+                    cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
+                    modifiedData = this.priorityOrder(modifiedData, addArgs);
+                }
                 let editParms = {
-                    addedRecords: (cardData instanceof Array) ? cardData : [cardData], changedRecords: [], deletedRecords: []
+                    addedRecords: (cardData instanceof Array) ? cardData : [cardData],
+                    changedRecords: this.parent.cardSettings.priority ? modifiedData : [], deletedRecords: []
                 };
-                if (cardData instanceof Array) {
+                if (cardData instanceof Array || modifiedData.length > 0) {
                     promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery());
                 }
                 else {
@@ -675,6 +744,11 @@ class Crud {
         this.parent.trigger(actionBegin, args, (updateArgs) => {
             if (!updateArgs.cancel) {
                 let promise = null;
+                if (this.parent.cardSettings.priority) {
+                    let modifiedData = [];
+                    cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
+                    cardData = this.priorityOrder(modifiedData, updateArgs);
+                }
                 let editParms = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
@@ -721,6 +795,58 @@ class Crud {
             }
         });
     }
+    priorityOrder(cardData, args) {
+        let cardsId = cardData.map((obj) => obj[this.parent.cardSettings.headerField]);
+        let allModifiedKeys = cardData.map((obj) => obj[this.parent.keyField]);
+        let modifiedKey = allModifiedKeys.filter((key, index) => allModifiedKeys.indexOf(key) === index).sort();
+        let columnAllDatas;
+        let finalData = [];
+        for (let columnKey of modifiedKey) {
+            let keyData = cardData.filter((cardObj) => cardObj[this.parent.keyField] === columnKey);
+            columnAllDatas = this.parent.getColumnData(columnKey);
+            let customOrder = 1;
+            let initialOrder;
+            for (let data of keyData) {
+                let order;
+                if (data[this.parent.cardSettings.priority]) {
+                    order = data[this.parent.cardSettings.priority];
+                }
+                else {
+                    if (customOrder === 1) {
+                        initialOrder = columnAllDatas.slice(-1)[0][this.parent.cardSettings.priority];
+                    }
+                    order = data[this.parent.cardSettings.priority] = (customOrder > 1 ? initialOrder :
+                        columnAllDatas.slice(-1)[0][this.parent.cardSettings.priority]) + customOrder;
+                    customOrder++;
+                }
+                if (this.parent.swimlaneSettings.keyField) {
+                    let swimlaneDatas = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField]);
+                    columnAllDatas = this.parent.getColumnData(columnKey, swimlaneDatas);
+                }
+                let count = [];
+                for (let j = 0; j < columnAllDatas.length; j++) {
+                    if (columnAllDatas[j][this.parent.cardSettings.priority] === order) {
+                        count.push(j + 1);
+                        break;
+                    }
+                }
+                if (args.requestType === 'cardChange') {
+                    finalData.push(data);
+                }
+                let finalCardsId = finalData.map((obj) => obj[this.parent.cardSettings.headerField]);
+                for (let i = count[0]; i <= columnAllDatas.length; i++) {
+                    let dataObj = columnAllDatas[i - 1];
+                    let index = cardsId.indexOf(dataObj[this.parent.cardSettings.headerField]);
+                    if (index === -1 && order >= dataObj[this.parent.cardSettings.priority]) {
+                        dataObj[this.parent.cardSettings.priority] = ++order;
+                        let isData = finalCardsId.indexOf(dataObj[this.parent.cardSettings.headerField]);
+                        (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                    }
+                }
+            }
+        }
+        return finalData;
+    }
 }
 
 /**
@@ -737,7 +863,7 @@ class DragAndDrop {
         this.dragObj = {
             element: null, cloneElement: null,
             targetClone: null, draggedClone: null, targetCloneMulti: null,
-            selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: []
+            selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.dragEdges = { left: false, right: false, top: false, bottom: false };
     }
@@ -756,23 +882,30 @@ class DragAndDrop {
         });
     }
     dragHelper(e) {
-        this.dragObj.element = e.element;
+        if (this.parent.isAdaptive && this.parent.touchModule.mobilePopup &&
+            this.parent.touchModule.mobilePopup.element.classList.contains(POPUP_OPEN_CLASS)) {
+            this.parent.touchModule.mobilePopup.hide();
+        }
+        this.dragObj.element = closest(e.sender.target, '.' + CARD_CLASS);
+        if (isNullOrUndefined(this.dragObj.element)) {
+            return null;
+        }
         this.dragObj.element.style.width = formatUnit(this.dragObj.element.offsetWidth);
         let cloneWrapper = createElement('div', { innerHTML: this.dragObj.element.outerHTML });
-        this.dragObj.cloneElement = cloneWrapper.childNodes.item(0);
-        addClass([this.dragObj.cloneElement], ['e-cloned-card', 'duplicate']);
+        this.dragObj.cloneElement = cloneWrapper.children.item(0);
+        addClass([this.dragObj.cloneElement], CLONED_CARD_CLASS);
         this.dragObj.element.parentElement.appendChild(this.dragObj.cloneElement);
-        this.dragObj.targetCloneMulti = createElement('div', { className: TARGET_MULTI_CLONE });
+        this.dragObj.targetCloneMulti = createElement('div', { className: TARGET_MULTI_CLONE_CLASS });
         this.dragObj.targetClone = createElement('div', {
-            className: DROPPED_CLONE,
+            className: DROPPED_CLONE_CLASS,
             styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
         return this.dragObj.cloneElement;
     }
     dragStart(e) {
         this.dragObj.selectedCards = this.dragObj.element;
-        if (this.dragObj.element.classList.contains(CARD_SELECTION)) {
-            let className = '.' + CARD_CLASS + '.' + CARD_SELECTION + ':not(.duplicate)';
+        if (this.dragObj.element.classList.contains(CARD_SELECTION_CLASS)) {
+            let className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS + ':not(.' + CLONED_CARD_CLASS + ')';
             let closestEle = closest(this.dragObj.element, '.' + CONTENT_ROW_CLASS);
             this.dragObj.selectedCards = [].slice.call(closestEle.querySelectorAll(className));
             this.dragObj.selectedCards.forEach((element) => {
@@ -792,7 +925,7 @@ class DragAndDrop {
                 };
                 return;
             }
-            if (this.dragObj.element.classList.contains(CARD_SELECTION)) {
+            if (this.dragObj.element.classList.contains(CARD_SELECTION_CLASS)) {
                 this.dragObj.selectedCards.forEach((element) => { this.draggedClone(element); });
                 if (this.dragObj.selectedCards.length > 1) {
                     this.dragObj.cloneElement.innerHTML = '';
@@ -801,7 +934,7 @@ class DragAndDrop {
                         innerHTML: this.dragObj.selectedCards.length + ' Cards',
                     });
                     this.dragObj.cloneElement.appendChild(drag$$1);
-                    classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [CARD_SELECTION]);
+                    classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [CARD_SELECTION_CLASS]);
                     this.dragObj.cloneElement.style.width = '90px';
                 }
             }
@@ -813,11 +946,11 @@ class DragAndDrop {
     }
     draggedClone(element) {
         this.dragObj.draggedClone = createElement('div', {
-            className: DRAGGED_CLONE,
+            className: DRAGGED_CLONE_CLASS,
             styles: 'width:' + formatUnit(element.offsetWidth - 1) + ';height:' + formatUnit(element.offsetHeight)
         });
         element.insertAdjacentElement('afterend', this.dragObj.draggedClone);
-        addClass([element], DRAGGED_CARD);
+        addClass([element], DRAGGED_CARD_CLASS);
     }
     drag(e) {
         if (!e.target) {
@@ -856,12 +989,15 @@ class DragAndDrop {
                     offsetHeight -= limitEle.offsetHeight;
                 }
                 this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
-                addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER);
+                addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
                 contentCell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = 'auto';
                 contentCell.style.borderStyle = 'none';
                 this.removeElement(this.dragObj.targetClone);
                 for (let key of keys) {
-                    let colKey = createElement('div', { className: MULTI_COLUMN_KEY, attrs: { 'data-key': key.trim() } });
+                    let colKey = createElement('div', {
+                        className: MULTI_COLUMN_KEY_CLASS,
+                        attrs: { 'data-key': key.trim() }
+                    });
                     let text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
                     contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
                     colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
@@ -873,27 +1009,28 @@ class DragAndDrop {
         this.addDropping();
         let isCollapsed = false;
         if (contentCell) {
-            isCollapsed = contentCell.classList.contains(COLLAPSED_CLASS) && contentCell.classList.contains(DROPPING);
+            isCollapsed = contentCell.classList.contains(COLLAPSED_CLASS) && contentCell.classList.contains(DROPPING_CLASS);
         }
         if (isCollapsed) {
             this.toggleVisible(target, undefined);
-            addClass([contentCell], TOGGLE_VISIBLE);
+            addClass([contentCell], TOGGLE_VISIBLE_CLASS);
         }
-        let tColumn = [].slice.call(this.parent.element.querySelectorAll('.' + TOGGLE_VISIBLE));
-        if (tColumn.length > 0 && !target.classList.contains(TOGGLE_VISIBLE) && !closest(target, '.' + TOGGLE_VISIBLE)) {
+        let tColumn = [].slice.call(this.parent.element.querySelectorAll('.' + TOGGLE_VISIBLE_CLASS));
+        if (tColumn.length > 0 && !target.classList.contains(TOGGLE_VISIBLE_CLASS)
+            && !closest(target, '.' + TOGGLE_VISIBLE_CLASS)) {
             this.toggleVisible(target, tColumn.slice(-1)[0]);
-            removeClass(tColumn, TOGGLE_VISIBLE);
+            removeClass(tColumn, TOGGLE_VISIBLE_CLASS);
         }
         this.parent.notify(contentReady, {});
         let cloneCell = closest(target, '.' + CONTENT_CELLS_CLASS + ':not(.' + COLLAPSED_CLASS + ')');
         if (cloneCell) {
             this.dragObj.targetClone.style.width = formatUnit((cloneCell.offsetWidth - 2) - cardSpace);
         }
-        let multiKeyTarget = closest(target, '.' + MULTI_COLUMN_KEY);
+        let multiKeyTarget = closest(target, '.' + MULTI_COLUMN_KEY_CLASS);
         if (multiKeyTarget) {
-            let columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY)).filter((element) => this.getColumnKey(element) === this.getColumnKey(multiKeyTarget));
+            let columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS)).filter((element) => this.getColumnKey(element) === this.getColumnKey(multiKeyTarget));
             if (columnKeys.length > 0) {
-                addClass(columnKeys, MULTI_ACTIVE);
+                addClass(columnKeys, MULTI_ACTIVE_CLASS);
                 if (columnKeys[0].previousElementSibling) {
                     addClass([columnKeys[0].previousElementSibling], 'e-multi-bottom-border');
                 }
@@ -928,36 +1065,28 @@ class DragAndDrop {
     addDropping() {
         if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
             let className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + '):not(.' + COLLAPSED_CLASS + ')';
-            let rows = [].slice.call(this.parent.element.querySelectorAll(className));
-            rows.forEach((row) => addClass(row.childNodes, DROPPING));
+            let cells = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
+            cells.forEach((cell) => addClass([cell], DROPPING_CLASS));
         }
         else {
             let row = closest(this.dragObj.draggedClone, '.' + CONTENT_ROW_CLASS);
             if (row) {
-                [].slice.call(row.childNodes).forEach((cell) => addClass([cell], DROPPING));
+                [].slice.call(row.children).forEach((cell) => addClass([cell], DROPPING_CLASS));
             }
         }
         let cell = closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS);
         if (cell) {
-            removeClass([cell], DROPPING);
+            removeClass([cell], DROPPING_CLASS);
         }
     }
     dragStop(e) {
         let contentCell = closest(this.dragObj.targetClone, '.' + CONTENT_CELLS_CLASS);
         let columnKey;
-        if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE)) {
-            columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY);
+        if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
+            columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
         }
         let dragArgs = { cancel: false, data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(dragStop, dragArgs, (dragEventArgs) => {
-            this.removeElement(this.dragObj.draggedClone);
-            this.removeElement(this.dragObj.targetClone);
-            this.removeElement(this.dragObj.cloneElement);
-            let dragMultiClone = [].slice.call(this.parent.element.querySelectorAll('.' + DRAGGED_CLONE));
-            dragMultiClone.forEach((clone) => remove(clone));
-            removeClass([this.dragObj.element], DRAGGED_CARD);
-            clearInterval(this.dragObj.navigationInterval);
-            this.dragObj.navigationInterval = null;
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
                     let cardStatus;
@@ -976,18 +1105,30 @@ class DragAndDrop {
                             this.updateDroppedData(element, cardStatus, contentCell);
                         });
                     }
+                    if (this.parent.cardSettings.priority) {
+                        this.changeOrder(this.dragObj.modifiedData);
+                    }
+                    this.parent.crudModule.updateCard(this.dragObj.modifiedData);
                 }
             }
+            this.removeElement(this.dragObj.draggedClone);
+            this.removeElement(this.dragObj.targetClone);
+            this.removeElement(this.dragObj.cloneElement);
+            let dragMultiClone = [].slice.call(this.parent.element.querySelectorAll('.' + DRAGGED_CLONE_CLASS));
+            dragMultiClone.forEach((clone) => remove(clone));
+            removeClass([this.dragObj.element], DRAGGED_CARD_CLASS);
+            clearInterval(this.dragObj.navigationInterval);
+            this.dragObj.navigationInterval = null;
             if (document.body.style.cursor === 'not-allowed') {
                 document.body.style.cursor = '';
             }
             let className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')';
-            let rows = [].slice.call(this.parent.element.querySelectorAll(className));
-            rows.forEach((row) => removeClass(row.childNodes, DROPPING));
+            let cells = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
+            cells.forEach((cell) => removeClass([cell], DROPPING_CLASS));
             if (this.parent.isAdaptive) {
                 this.parent.touchModule.tabHold = false;
             }
-            this.dragObj.cardDetails = [];
+            this.dragObj.cardDetails = this.dragObj.modifiedData = [];
         });
     }
     updateDroppedData(element, cardStatus, contentCell) {
@@ -1005,7 +1146,34 @@ class DragAndDrop {
                 crudData[this.parent.swimlaneSettings.keyField] = this.getColumnKey(prev);
             }
         }
-        this.parent.crudModule.updateCard(crudData);
+        this.dragObj.modifiedData.push(crudData);
+    }
+    changeOrder(modifiedData) {
+        let prevEle = false;
+        let element = this.dragObj.targetClone.previousElementSibling;
+        if (element && !element.classList.contains(DRAGGED_CARD_CLASS) && !element.classList.contains(CLONED_CARD_CLASS)
+            && !element.classList.contains(DRAGGED_CLONE_CLASS)) {
+            prevEle = true;
+        }
+        else if (this.dragObj.targetClone.nextElementSibling) {
+            element = this.dragObj.targetClone.nextElementSibling;
+        }
+        else {
+            return;
+        }
+        let obj = this.parent.getCardDetails(element);
+        let index = obj[this.parent.cardSettings.priority];
+        modifiedData.forEach((data) => {
+            if (prevEle) {
+                data[this.parent.cardSettings.priority] = ++index;
+            }
+            else if (index !== 1 && index <= data[this.parent.cardSettings.priority]) {
+                data[this.parent.cardSettings.priority] = --index;
+            }
+            else if (index === 1) {
+                data[this.parent.cardSettings.priority] = 1;
+            }
+        });
     }
     toggleVisible(target, tColumn) {
         let lists = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_CELLS_CLASS));
@@ -1022,15 +1190,15 @@ class DragAndDrop {
         }
     }
     multiCloneRemove() {
-        let cloneMulti = [].slice.call(this.parent.element.querySelectorAll('.' + TARGET_MULTI_CLONE));
+        let cloneMulti = [].slice.call(this.parent.element.querySelectorAll('.' + TARGET_MULTI_CLONE_CLASS));
         if (cloneMulti.length > 0) {
-            let columnKey = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY));
+            let columnKey = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS));
             columnKey.forEach((node) => remove(node));
             cloneMulti.forEach((node) => {
                 let cell = closest(node, '.' + CONTENT_CELLS_CLASS);
                 if (cell) {
                     cell.style.borderStyle = '';
-                    removeClass([cell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER);
+                    removeClass([cell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
                 }
             });
             this.removeElement(this.dragObj.targetCloneMulti);
@@ -1159,6 +1327,9 @@ class Keyboard {
             multiSelectionByDownArrow: 'shift+40',
             multiSelectionByLeftArrow: 'shift+37',
             multiSelectionByRightArrow: 'shift+39',
+            shiftTab: 'shift+tab',
+            enter: '13',
+            tab: 'tab'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -1169,74 +1340,126 @@ class Keyboard {
         });
     }
     keyActionHandler(e) {
-        let selectedCard = this.parent.element.querySelectorAll('.e-card.e-selection').item(0);
-        if (!selectedCard && e.action !== 'firstCardSelection' && e.action !== 'lastCardSelection') {
+        let selectedCard = this.parent.element.querySelectorAll(`.${CARD_CLASS}.${CARD_SELECTION_CLASS}`).item(0);
+        if (!selectedCard && !closest(document.activeElement, `.${ROOT_CLASS}`)) {
             return;
         }
-        let key;
         switch (e.action) {
             case 'upArrow':
             case 'downArrow':
             case 'multiSelectionByUpArrow':
             case 'multiSelectionByDownArrow':
-                key = closest(this.parent.actionModule.lastCardSelection, '.e-content-cells').getAttribute('data-key');
-                let cardSelector = '.e-content-cells[data-key=' + key + '] .e-card';
-                let allCards = [].slice.call(this.parent.element.querySelectorAll(cardSelector));
-                let curId = this.parent.actionModule.lastCardSelection.getAttribute('data-id');
-                let curIndex = this.getCardId(allCards).indexOf(curId);
-                let isShift = ((e.action === 'multiSelectionByUpArrow' || e.action === 'multiSelectionByDownArrow')
-                    && this.parent.cardSettings.selectionType === 'Multiple');
-                let index = (e.action === 'upArrow' || e.action === 'multiSelectionByUpArrow') ? curIndex - 1 : curIndex + 1;
-                this.parent.actionModule.cardSelection(allCards[index], false, isShift);
+                this.processUpDownArrow(e.action, selectedCard);
                 break;
             case 'rightArrow':
             case 'leftArrow':
             case 'multiSelectionByLeftArrow':
             case 'multiSelectionByRightArrow':
-                this.moveCards(e.action, this.parent.actionModule.lastCardSelection);
+                this.processLeftRightArrow(e, selectedCard);
                 break;
             case 'firstCardSelection':
             case 'lastCardSelection':
-                if (selectedCard) {
-                    removeClass([selectedCard], 'e-selection');
-                    let selection = this.parent.actionModule.selectionArray;
-                    selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
-                }
-                let cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
-                let element = e.action === 'firstCardSelection' ? cards[0] : cards[cards.length - 1];
-                this.parent.actionModule.cardSelection(element, false, false);
+                this.processCardSelection(e.action, selectedCard);
                 break;
             case 'swimlaneExpandAll':
             case 'swimlaneCollapseAll':
             case 'selectedSwimlaneExpand':
             case 'selectedSwimlaneCollapse':
-                if (this.parent.swimlaneSettings.keyField) {
-                    this.swimlaneExpandCollapse(e.action);
-                }
+                this.processSwimlaneExpandCollapse(e.action);
                 break;
             case 'selectedColumnExpand':
             case 'selectedColumnCollapse':
-                key = selectedCard.getAttribute('data-key');
-                let cell = this.parent.element.querySelector('.e-header-cells[data-key=' + key + ']');
-                if (cell.classList.contains(HEADER_ROW_TOGGLE_CLASS)) {
-                    if ((cell.classList.contains('e-collapsed') && e.action === 'selectedColumnCollapse') ||
-                        (!cell.classList.contains('e-collapsed') && e.action === 'selectedColumnExpand')) {
-                        return;
-                    }
-                    else {
-                        this.parent.actionModule.columnExpandCollapse(cell);
-                    }
-                }
+                this.processColumnExpandcollapse(e.action, selectedCard);
+                break;
+            case 'enter':
+                this.processEnter(e, selectedCard);
+                break;
+            case 'tab':
+            case 'shiftTab':
+                this.processTab(e.action, selectedCard);
                 break;
         }
     }
-    swimlaneExpandCollapse(action) {
-        let className = '.e-card.e-selection';
+    processCardSelection(action, selectedCard) {
+        if (selectedCard) {
+            removeClass([selectedCard], CARD_SELECTION_CLASS);
+            let selection = this.parent.actionModule.selectionArray;
+            selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
+        }
+        let cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
+        let element = action === 'firstCardSelection' ? cards[0] : cards[cards.length - 1];
+        this.parent.actionModule.cardSelection(element, false, false);
+    }
+    processLeftRightArrow(e, selectedCard) {
+        let activeElement = document.activeElement;
+        if (!selectedCard && activeElement) {
+            if (activeElement.classList.contains(COLUMN_EXPAND_CLASS) || activeElement.classList.contains(COLUMN_COLLAPSE_CLASS)) {
+                this.parent.actionModule.columnExpandCollapse(activeElement);
+            }
+            else if (activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS) ||
+                activeElement.classList.contains(SWIMLANE_ROW_COLLAPSE_CLASS)) {
+                this.parent.actionModule.rowExpandCollapse(e);
+            }
+        }
+        if (selectedCard) {
+            this.processMoveCards(e.action, this.parent.actionModule.lastCardSelection);
+        }
+    }
+    processUpDownArrow(action, selectedCard) {
+        let card;
+        let isShift = false;
+        if (selectedCard) {
+            let key = closest(this.parent.actionModule.lastCardSelection, '.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
+            let cardSelector = `.${CONTENT_CELLS_CLASS}[data-key="${key}"] .${CARD_CLASS}`;
+            let allCards = [].slice.call(this.parent.element.querySelectorAll(cardSelector));
+            let curId = this.parent.actionModule.lastCardSelection.getAttribute('data-id');
+            let curIndex = this.getCardId(allCards).indexOf(curId);
+            isShift = ((action === 'multiSelectionByUpArrow' || action === 'multiSelectionByDownArrow')
+                && this.parent.cardSettings.selectionType === 'Multiple');
+            let index = (action === 'upArrow' || action === 'multiSelectionByUpArrow') ? curIndex - 1 : curIndex + 1;
+            card = allCards[index];
+        }
+        else if (action === 'downArrow' && document.activeElement) {
+            if (document.activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS)) {
+                let parentEle = closest(document.activeElement, '.' + SWIMLANE_ROW_CLASS);
+                card = parentEle.nextElementSibling.querySelector('.' + CARD_CLASS);
+            }
+            else if (document.activeElement.classList.contains(ROOT_CLASS) && !this.parent.swimlaneSettings.keyField) {
+                card = this.parent.element.querySelector('.' + CARD_CLASS);
+            }
+        }
+        else if (action === 'upArrow' && document.activeElement &&
+            document.activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS)) {
+            let parentEle = closest(document.activeElement, '.' + SWIMLANE_ROW_CLASS);
+            let allCards = [].slice.call(parentEle.previousElementSibling.querySelectorAll('.' + CARD_CLASS));
+            card = (allCards).slice(-1)[0];
+        }
+        this.parent.actionModule.cardSelection(card, false, isShift);
+        this.parent.element.focus();
+    }
+    processColumnExpandcollapse(action, selectedCard) {
+        let key = selectedCard.getAttribute('data-key');
+        let cell = this.parent.element.querySelector(`.${HEADER_CELLS_CLASS}[data-key="${key}"]`);
+        if (cell.classList.contains(HEADER_ROW_TOGGLE_CLASS)) {
+            if ((cell.classList.contains(COLLAPSED_CLASS) && action === 'selectedColumnCollapse') ||
+                (!cell.classList.contains(COLLAPSED_CLASS) && action === 'selectedColumnExpand')) {
+                return;
+            }
+            else {
+                this.parent.actionModule.columnExpandCollapse(cell);
+            }
+        }
+    }
+    processSwimlaneExpandCollapse(action) {
+        if (!this.parent.swimlaneSettings.keyField) {
+            return;
+        }
+        let className = `.${CARD_CLASS}.${CARD_SELECTION_CLASS}`;
         if (action === 'swimlaneExpandAll' || action === 'swimlaneCollapseAll') {
-            className = '.e-content-row.e-swimlane-row';
+            className = `.${CONTENT_ROW_CLASS}.${SWIMLANE_ROW_CLASS}`;
         }
         let element = [].slice.call(this.parent.element.querySelectorAll(className));
-        let collapseCount = this.parent.element.querySelectorAll(className + '.e-collapsed').length;
+        let collapseCount = this.parent.element.querySelectorAll(className + '.' + COLLAPSED_CLASS).length;
         if ((action === 'swimlaneCollapseAll' && element.length - collapseCount === 0) ||
             (action === 'swimlaneExpandAll' && element.length - collapseCount === element.length)) {
             return;
@@ -1244,14 +1467,18 @@ class Keyboard {
         element.forEach((ele) => {
             if (ele.classList.contains(CARD_CLASS)) {
                 ele = closest(ele, '.' + CONTENT_ROW_CLASS).previousElementSibling;
+                if ((!ele.classList.contains(COLLAPSED_CLASS) && action === 'selectedSwimlaneExpand') ||
+                    (ele.classList.contains(COLLAPSED_CLASS) && action === 'selectedSwimlaneCollapse')) {
+                    return;
+                }
             }
             if (ele.classList.contains(COLLAPSED_CLASS)) {
                 removeClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_EXPAND], [SWIMLANE_ROW_COLLAPSE]);
+                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
             }
             else if (!ele.classList.contains(COLLAPSED_CLASS)) {
                 addClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_COLLAPSE], [SWIMLANE_ROW_EXPAND]);
+                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
             }
         });
     }
@@ -1260,50 +1487,65 @@ class Keyboard {
         cardElements.forEach((el) => curCardId.push(el.getAttribute('data-id')));
         return curCardId;
     }
-    moveNextRow(row) {
+    processNextRow(row) {
         for (let i = 0; i < row.childElementCount; i++) {
             let nextCell = row.children[i];
             let nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
             if (nextCellCards.length > 0) {
                 this.parent.actionModule.cardSelection(nextCellCards[0], false, false);
-                if (row.classList.contains('e-collapsed')) {
-                    this.swimlaneExpandCollapse('selectedSwimlaneExpand');
+                if (row.classList.contains(COLLAPSED_CLASS)) {
+                    this.processSwimlaneExpandCollapse('selectedSwimlaneExpand');
                 }
                 break;
             }
         }
     }
-    movePreviousRow(row) {
+    processPreviousRow(row) {
         for (let i = (row.childElementCount - 1); i >= 0; i--) {
             let nextCell = row.children[i];
             let nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
             if (nextCellCards.length > 0) {
-                if (!row.classList.contains('e-collapsed')) {
-                    this.swimlaneExpandCollapse('selectedSwimlaneCollapse');
-                }
                 this.parent.actionModule.cardSelection(nextCellCards.slice(-1)[0], false, false);
                 break;
             }
         }
     }
-    cardIndex(isSame, nextCellCards, curIndex, action) {
+    processCards(isSame, nextCellCards, curIndex, action) {
         if (isSame) {
             let isShift = ((action === 'multiSelectionByRightArrow' || action === 'multiSelectionByLeftArrow')
                 && this.parent.cardSettings.selectionType === 'Multiple');
-            if (nextCellCards[curIndex]) {
-                this.parent.actionModule.cardSelection(nextCellCards[curIndex], false, isShift);
-            }
-            else {
-                this.parent.actionModule.cardSelection(nextCellCards.slice(-1)[0], false, isShift);
-            }
+            let processCard = nextCellCards[curIndex] || nextCellCards.slice(-1)[0];
+            this.parent.actionModule.cardSelection(processCard, false, isShift);
         }
     }
-    moveCards(action, card) {
+    processEnter(e, selectedCard) {
+        let element = (e.target);
+        if (element.classList.contains(HEADER_ICON_CLASS)) {
+            this.parent.actionModule.columnExpandCollapse(e);
+        }
+        if (element.classList.contains(SWIMLANE_ROW_EXPAND_CLASS) || element.classList.contains(SWIMLANE_ROW_COLLAPSE_CLASS)) {
+            this.parent.actionModule.rowExpandCollapse(e);
+        }
+        if (selectedCard) {
+            this.parent.actionModule.cardSelection(selectedCard, false, false);
+        }
+    }
+    processTab(action, selectedCard) {
+        if (selectedCard) {
+            let target = closest(selectedCard, '.' + CONTENT_ROW_CLASS);
+            let tabTarget = action === 'tab' ? target.previousElementSibling : target.nextElementSibling;
+            if (tabTarget) {
+                tabTarget.querySelector(`.${SWIMLANE_ROW_COLLAPSE_CLASS},.${SWIMLANE_ROW_EXPAND_CLASS}`).focus();
+            }
+            removeClass([selectedCard], CARD_SELECTION_CLASS);
+        }
+    }
+    processMoveCards(action, card) {
         let nextCell;
         let nextCellCards;
-        let curCell = closest(card, '.e-content-cells');
-        let curCellCards = [].slice.call(curCell.querySelectorAll('.e-card'));
-        let curRow = closest(curCell, '.e-content-row');
+        let curCell = closest(card, '.' + CONTENT_CELLS_CLASS);
+        let curCellCards = [].slice.call(curCell.querySelectorAll('.' + CARD_CLASS));
+        let curRow = closest(curCell, '.' + CONTENT_ROW_CLASS);
         let curIndex = this.getCardId(curCellCards).indexOf(card.getAttribute('data-id'));
         if (action === 'rightArrow' || action === 'multiSelectionByRightArrow') {
             if (curCell.cellIndex === (curRow.childElementCount - 1) && this.parent.swimlaneSettings.keyField
@@ -1312,8 +1554,8 @@ class Keyboard {
                     this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.nextElementSibling, false, false);
                 }
                 else if (curRow.rowIndex !== (this.parent.element.querySelectorAll('.' + CONTENT_ROW_CLASS).length - 1)) {
-                    let targetRow = this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + `:nth-child(${curRow.rowIndex + 3})`);
-                    this.moveNextRow(targetRow);
+                    let row = this.parent.element.querySelector(`.${CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex + 3})`);
+                    this.processNextRow(row);
                 }
             }
             else {
@@ -1326,7 +1568,7 @@ class Keyboard {
                         break;
                     }
                 }
-                this.cardIndex(isSame, nextCellCards, curIndex, action);
+                this.processCards(isSame, nextCellCards, curIndex, action);
             }
         }
         else {
@@ -1335,10 +1577,10 @@ class Keyboard {
                     this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.previousElementSibling, false, false);
                 }
                 else if (curRow.rowIndex > 1) {
-                    let className = '.' + CONTENT_ROW_CLASS + `:nth-child(${curRow.rowIndex - 1})` + ':not(.e-collapsed)';
+                    let className = `.${CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex - 1}):not(.${COLLAPSED_CLASS})`;
                     let targetRow = this.parent.element.querySelector(className);
                     if (targetRow) {
-                        this.movePreviousRow(targetRow);
+                        this.processPreviousRow(targetRow);
                     }
                 }
             }
@@ -1352,11 +1594,11 @@ class Keyboard {
                         break;
                     }
                     if (i === 0 && this.parent.swimlaneSettings.keyField) {
-                        let row = this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + `:nth-child(${curRow.rowIndex - 1})`);
-                        this.movePreviousRow(row);
+                        let row = this.parent.element.querySelector(`.${CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex - 1})`);
+                        this.processPreviousRow(row);
                     }
                 }
-                this.cardIndex(isSame, nextCellCards, curIndex, action);
+                this.processCards(isSame, nextCellCards, curIndex, action);
             }
         }
     }
@@ -1392,7 +1634,7 @@ class KanbanTooltip {
             offsetY: 5,
             position: 'BottomCenter',
             showTipPointer: true,
-            target: '.' + TOOLTIP_TEXT,
+            target: '.' + TOOLTIP_TEXT_CLASS,
             beforeRender: this.onBeforeRender.bind(this)
         });
         this.tooltipObj.appendTo(this.parent.element);
@@ -1436,11 +1678,98 @@ class KanbanTouch {
     }
     tapHoldHandler(e) {
         this.tabHold = true;
+        let target = closest(e.originalEvent.target, '.' + CARD_CLASS);
+        if (target && this.parent.cardSettings.selectionType === 'Multiple') {
+            this.parent.actionModule.cardSelection(target, true, false);
+            if (!this.mobilePopup) {
+                this.renderMobilePopup();
+                this.mobilePopup.show();
+            }
+            this.updatePopupContent();
+        }
+    }
+    renderMobilePopup() {
+        if (this.parent.cardSettings.selectionType === 'Multiple') {
+            let mobilePopupWrapper = createElement('div', {
+                className: POPUP_WRAPPER_CLASS + ' e-popup-close',
+                innerHTML: `<div class="${POPUP_HEADER_CLASS}"><button class="${CLOSE_CLASS}"></button></div>` +
+                    `<div class="${POPUP_CONTENT_CLASS}"></div>`
+            });
+            document.body.appendChild(mobilePopupWrapper);
+            addClass([mobilePopupWrapper], DEVICE_CLASS);
+            this.mobilePopup = new Popup(mobilePopupWrapper, {
+                targetType: 'container',
+                enableRtl: this.parent.enableRtl,
+                hideAnimation: { name: 'ZoomOut' },
+                showAnimation: { name: 'ZoomIn' },
+                collision: { X: 'fit', Y: 'fit' },
+                position: { X: 'left', Y: 'top' },
+                viewPortElement: document.body,
+                zIndex: 1004,
+                close: this.popupClose.bind(this)
+            });
+            let closeIcon = this.mobilePopup.element.querySelector('.' + CLOSE_CLASS);
+            let buttonObj = new Button({
+                cssClass: 'e-flat e-round e-small',
+                enableRtl: this.parent.enableRtl,
+                iconCss: ICON_CLASS + ' ' + CLOSE_ICON_CLASS
+            });
+            buttonObj.appendTo(closeIcon);
+            buttonObj.isStringTemplate = true;
+            EventHandler.add(closeIcon, 'click', this.closeClick, this);
+        }
+    }
+    getPopupContent() {
+        let popupContent;
+        let selectedCards = this.parent.getSelectedCards();
+        if (selectedCards.length > 1) {
+            popupContent = '(' + selectedCards.length + ') ' + this.parent.localeObj.getConstant('cardsSelected');
+        }
+        else if (selectedCards.length === 1) {
+            popupContent = ' ' + this.parent.getCardDetails(selectedCards[0])[this.parent.cardSettings.headerField];
+        }
+        return popupContent;
+    }
+    updatePopupContent() {
+        if (!this.mobilePopup) {
+            return;
+        }
+        let popupContent = this.getPopupContent();
+        if (popupContent) {
+            this.mobilePopup.element.querySelector('.' + POPUP_CONTENT_CLASS).textContent = popupContent;
+        }
+        else {
+            this.mobilePopup.hide();
+        }
+    }
+    closeClick() {
+        this.parent.touchModule.mobilePopup.hide();
+    }
+    popupClose() {
+        this.popupDestroy();
+    }
+    popupDestroy() {
+        if (this.mobilePopup && this.mobilePopup.element) {
+            let instance = this.mobilePopup.element.querySelector('.e-control.e-btn').ej2_instances[0];
+            if (instance) {
+                instance.destroy();
+            }
+            this.mobilePopup.destroy();
+            remove(this.mobilePopup.element);
+            this.mobilePopup = null;
+        }
+    }
+    unWireTouchEvents() {
+        if (this.touchObj) {
+            this.touchObj.destroy();
+        }
+        this.touchObj = null;
+        this.element = null;
     }
     destroy() {
-        this.touchObj.destroy();
+        this.popupDestroy();
+        this.unWireTouchEvents();
         this.tabHold = false;
-        this.element = null;
     }
 }
 
@@ -1455,26 +1784,26 @@ class MobileLayout {
         this.parent = parent;
     }
     renderSwimlaneHeader() {
-        let toolbarWrapper = createElement('div', { className: SWIMLANE_HEADER });
-        toolbarWrapper.innerHTML = '<div class="' + SWIMLANE_HEADER_TOOLBAR + '"><div class="' + TOOLBAR_MENU + '">' +
-            '<div class="e-icons ' + TOOLBAR_MENU_ICON + '"></div></div><div class="' + TOOLBAR_LEVEL_TITLE + '">' +
-            '<div class="' + TOOLBAR_SWIMLANE_NAME + '"></div></div></div>';
+        let toolbarWrapper = createElement('div', { className: SWIMLANE_HEADER_CLASS });
+        toolbarWrapper.innerHTML = '<div class="' + SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + TOOLBAR_MENU_CLASS + '">' +
+            '<div class="e-icons ' + TOOLBAR_MENU_ICON_CLASS + '"></div></div><div class="' + TOOLBAR_LEVEL_TITLE_CLASS + '">' +
+            '<div class="' + TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>';
         this.parent.element.appendChild(toolbarWrapper);
-        EventHandler.add(toolbarWrapper.querySelector('.' + TOOLBAR_MENU_ICON), 'click', this.menuClick, this);
+        EventHandler.add(toolbarWrapper.querySelector('.' + TOOLBAR_MENU_ICON_CLASS), 'click', this.menuClick, this);
     }
     renderSwimlaneTree() {
-        let height = this.parent.element.querySelector('.' + SWIMLANE_HEADER).offsetHeight;
+        let height = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS).offsetHeight;
         let treeHeight = window.innerHeight - height;
-        this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY, styles: 'height: ' + treeHeight + 'px;' });
-        let wrapper = createElement('div', { className: SWIMLANE_CONTENT, styles: 'top:' + height + 'px;' });
+        this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
+        let wrapper = createElement('div', { className: SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
         let treeWrapper = createElement('div', {
-            className: SWIMLANE_RESOURCE + ' e-popup-close',
+            className: SWIMLANE_RESOURCE_CLASS + ' e-popup-close',
             styles: 'height: ' + treeHeight + 'px;'
         });
         wrapper.appendChild(treeWrapper);
         wrapper.appendChild(this.popupOverlay);
         this.parent.element.appendChild(wrapper);
-        let swimlaneTree = createElement('div', { className: SWIMLANE_TREE });
+        let swimlaneTree = createElement('div', { className: SWIMLANE_TREE_CLASS });
         treeWrapper.appendChild(swimlaneTree);
         this.treeViewObj = new TreeView({
             cssClass: this.parent.cssClass,
@@ -1500,7 +1829,7 @@ class MobileLayout {
         });
     }
     menuClick(event) {
-        if (this.parent.element.querySelector('.' + SWIMLANE_RESOURCE).classList.contains('e-popup-open')) {
+        if (this.parent.element.querySelector('.' + SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
             this.treePopup.hide();
             removeClass([this.popupOverlay], 'e-enable');
         }
@@ -1540,7 +1869,8 @@ class LayoutRender extends MobileLayout {
         this.swimlaneIndex = 0;
         this.swimlaneData = {};
         this.scrollLeft = 0;
-        this.wireEvents();
+        this.parent.on(dataReady, this.initRender, this);
+        this.parent.on(contentReady, this.scrollUiUpdate, this);
     }
     initRender() {
         if (this.parent.columns.length === 0) {
@@ -1556,7 +1886,8 @@ class LayoutRender extends MobileLayout {
             }
         }
         this.destroy();
-        this.wireEvents();
+        this.parent.on(dataReady, this.initRender, this);
+        this.parent.on(contentReady, this.scrollUiUpdate, this);
         if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
             this.renderSwimlaneHeader();
         }
@@ -1566,12 +1897,8 @@ class LayoutRender extends MobileLayout {
         this.renderContent();
         this.renderCards();
         this.renderValidation();
-        if (this.parent.isAdaptive) {
-            this.parent.touchModule.wireTouchEvents();
-            let parent = this.parent.element.querySelector('.' + CONTENT_CLASS);
-            parent.scrollLeft = this.scrollLeft;
-        }
         this.parent.notify(contentReady, {});
+        this.wireEvents();
     }
     renderHeader(header) {
         let headerWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
@@ -1620,17 +1947,19 @@ class LayoutRender extends MobileLayout {
                     headerTitle.appendChild(header);
                     if (column.showItemCount) {
                         let itemCount = createElement('div', {
-                            className: CARD_ITEM_COUNT,
+                            className: CARD_ITEM_COUNT_CLASS,
                             innerHTML: '- ' + noOfCard.toString() + ' ' + this.parent.localeObj.getConstant('items')
                         });
                         headerTitle.appendChild(itemCount);
                     }
                 }
                 if (column.allowToggle) {
-                    let name = (column.isExpanded && index === -1) ? COLUMN_EXPAND : COLUMN_COLLAPSE;
-                    let icon = createElement('div', { className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name });
+                    let name = (column.isExpanded && index === -1) ? COLUMN_EXPAND_CLASS : COLUMN_COLLAPSE_CLASS;
+                    let icon = createElement('div', {
+                        className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name,
+                        attrs: { 'tabindex': '0' }
+                    });
                     headerWrapper.appendChild(icon);
-                    this.wireEvents(icon, 'columnExpandCollapse');
                 }
                 let dataObj = [{ keyField: column.keyField, textField: column.headerText }];
                 let args = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
@@ -1658,11 +1987,11 @@ class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive) {
             this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
             this.renderSwimlaneTree();
-            (this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME)).innerHTML = this.kanbanRows[this.swimlaneIndex].textField;
+            this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
         }
         for (let row of this.swimlaneRow) {
-            if (this.parent.swimlaneSettings.keyField && this.parent.actionModule.swimlaneToggleArray.length !== 0) {
-                let index = this.parent.actionModule.swimlaneToggleArray.indexOf(row.keyField);
+            if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneToggleArray.length !== 0) {
+                let index = this.parent.swimlaneToggleArray.indexOf(row.keyField);
                 isCollaspsed = index !== -1;
             }
             className = isCollaspsed ? CONTENT_ROW_CLASS + ' ' + COLLAPSED_CLASS : CONTENT_ROW_CLASS;
@@ -1679,7 +2008,7 @@ class LayoutRender extends MobileLayout {
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], COLLAPSED_CLASS);
-                        td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT, innerHTML: column.headerText }));
+                        td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
                     }
                     tr.appendChild(td);
                     let dataObj = [{ keyField: row.keyField, textField: row.textField }];
@@ -1692,7 +2021,6 @@ class LayoutRender extends MobileLayout {
                 }
             }
         }
-        this.wireEvents(content, 'scroll');
     }
     renderSwimlaneRow(tBody, row, isCollapsed) {
         let name = CONTENT_ROW_CLASS + ' ' + SWIMLANE_ROW_CLASS;
@@ -1703,10 +2031,10 @@ class LayoutRender extends MobileLayout {
             className: CONTENT_CELLS_CLASS,
             attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
         });
-        let swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER });
+        let swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER_CLASS });
         td.appendChild(swimlaneHeader);
-        let iconClass = isCollapsed ? SWIMLANE_ROW_COLLAPSE : SWIMLANE_ROW_EXPAND;
-        let iconDiv = createElement('div', { className: ICON_CLASS + ' ' + iconClass });
+        let iconClass = isCollapsed ? SWIMLANE_ROW_COLLAPSE_CLASS : SWIMLANE_ROW_EXPAND_CLASS;
+        let iconDiv = createElement('div', { className: ICON_CLASS + ' ' + iconClass, attrs: { 'tabindex': '0' } });
         swimlaneHeader.appendChild(iconDiv);
         let headerWrap = createElement('div', { className: HEADER_WRAP_CLASS });
         swimlaneHeader.appendChild(headerWrap);
@@ -1719,14 +2047,14 @@ class LayoutRender extends MobileLayout {
         }
         else {
             headerWrap.appendChild(createElement('div', {
-                className: SWIMLANE_ROW_TEXT,
+                className: SWIMLANE_ROW_TEXT_CLASS,
                 innerHTML: row.textField,
                 attrs: { 'data-role': row.textField }
             }));
         }
         if (this.parent.swimlaneSettings.showItemCount) {
             swimlaneHeader.appendChild(createElement('div', {
-                className: CARD_ITEM_COUNT,
+                className: CARD_ITEM_COUNT_CLASS,
                 innerHTML: `- ${cardCount.toString()} ${this.parent.localeObj.getConstant('items')}`
             }));
         }
@@ -1736,7 +2064,6 @@ class LayoutRender extends MobileLayout {
         this.parent.trigger(columnRendered, args, (columnArgs) => {
             if (!columnArgs.cancel) {
                 tBody.appendChild(tr);
-                this.wireEvents(tr, 'rowExpandCollapse');
             }
         });
     }
@@ -1758,7 +2085,7 @@ class LayoutRender extends MobileLayout {
                     for (let data of columnData) {
                         let cardText = data[this.parent.cardSettings.headerField];
                         let cardIndex = this.parent.actionModule.selectionArray.indexOf(cardText);
-                        let className = cardIndex === -1 ? '' : ' ' + CARD_SELECTION;
+                        let className = cardIndex === -1 ? '' : ' ' + CARD_SELECTION_CLASS;
                         let cardElement = createElement('div', {
                             className: CARD_CLASS + className,
                             attrs: { 'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField] }
@@ -1769,7 +2096,7 @@ class LayoutRender extends MobileLayout {
                             append(cardTemplate, cardElement);
                         }
                         else {
-                            let tooltipClass = this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT : '';
+                            let tooltipClass = this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT_CLASS : '';
                             if (this.parent.cardSettings.showHeader) {
                                 let cardHeader = createElement('div', { className: CARD_HEADER_CLASS });
                                 let cardCaption = createElement('div', { className: CARD_HEADER_TEXT_CLASS });
@@ -1791,10 +2118,6 @@ class LayoutRender extends MobileLayout {
                         this.parent.trigger(cardRendered, args, (cardArgs) => {
                             if (!cardArgs.cancel) {
                                 cardWrapper.appendChild(cardElement);
-                                this.wireEvents(cardElement, 'card');
-                                if (this.parent.allowDragAndDrop) {
-                                    this.parent.dragAndDropModule.wireDragEvents(cardElement);
-                                }
                             }
                         });
                     }
@@ -1833,7 +2156,7 @@ class LayoutRender extends MobileLayout {
         let kanbanRows = [];
         if (this.parent.swimlaneSettings.keyField) {
             this.parent.kanbanData.map((obj) => {
-                if (!this.parent.swimlaneSettings.showEmptyRow && this.parent.isAdaptive) {
+                if (!this.parent.swimlaneSettings.showEmptyRow) {
                     if (this.columnKeys.indexOf(obj[this.parent.keyField]) === -1) {
                         return;
                     }
@@ -1844,7 +2167,11 @@ class LayoutRender extends MobileLayout {
                 });
             });
             kanbanRows = kanbanRows.filter((item, index, arr) => index === arr.map((item) => item.keyField).indexOf(item.keyField));
-            kanbanRows.sort((a, b) => (a.textField > b.textField) ? 1 : ((b.textField > a.textField) ? -1 : 0));
+            kanbanRows.sort((firstRow, secondRow) => {
+                let first = firstRow.textField.toLowerCase();
+                let second = secondRow.textField.toLowerCase();
+                return (first > second) ? 1 : ((second > first) ? -1 : 0);
+            });
             if (this.parent.swimlaneSettings.sortBy === 'Descending') {
                 kanbanRows.reverse();
             }
@@ -1892,14 +2219,14 @@ class LayoutRender extends MobileLayout {
         let height = this.parent.element.offsetHeight - header.offsetHeight;
         if (this.parent.isAdaptive) {
             height = window.innerHeight - (header.offsetHeight + bottomSpace);
-            let swimlaneToolbar = this.parent.element.querySelector('.' + SWIMLANE_HEADER);
+            let swimlaneToolbar = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS);
             if (swimlaneToolbar) {
                 height -= swimlaneToolbar.offsetHeight;
             }
             let cardWrappers = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_CELLS_CLASS));
             cardWrappers.forEach((cell) => {
                 let cardWrapper = cell.querySelector('.' + CARD_WRAPPER_CLASS);
-                if (!cardWrapper.classList.contains(MULTI_CARD_WRAPPER)) {
+                if (!cardWrapper.classList.contains(MULTI_CARD_WRAPPER_CLASS)) {
                     cardWrapper.style.height = formatUnit(height);
                     EventHandler.add(cell, 'touchmove', this.onAdaptiveScroll, this);
                 }
@@ -1908,7 +2235,7 @@ class LayoutRender extends MobileLayout {
         if (this.parent.height !== 'auto' && this.parent.height !== '100%') {
             content.style.height = formatUnit(height);
         }
-        [].slice.call(header.childNodes).forEach((node) => {
+        [].slice.call(header.children).forEach((node) => {
             let paddingValue = 0;
             if ((content.offsetWidth - content.clientWidth) > 0) {
                 paddingValue = 17;
@@ -1929,7 +2256,7 @@ class LayoutRender extends MobileLayout {
         header.scrollLeft = e.target.scrollLeft;
     }
     onAdaptiveScroll(e) {
-        if (this.parent.touchModule.tabHold) {
+        if (this.parent.touchModule.tabHold && !this.parent.touchModule.mobilePopup) {
             e.preventDefault();
         }
     }
@@ -1965,10 +2292,10 @@ class LayoutRender extends MobileLayout {
         let getValidationClass = (column, count) => {
             let colorClass;
             if (column.maxCount && count > column.maxCount) {
-                colorClass = MAX_COLOR;
+                colorClass = MAX_COLOR_CLASS;
             }
             else if (column.minCount && count < column.minCount) {
-                colorClass = MIN_COLOR;
+                colorClass = MIN_COLOR_CLASS;
             }
             return colorClass;
         };
@@ -1981,7 +2308,7 @@ class LayoutRender extends MobileLayout {
             let headerCell = this.parent.element.querySelector(`.${HEADER_CELLS_CLASS + keySelector}`);
             let rowCells = [].slice.call(this.parent.element.querySelectorAll(`.${CONTENT_CELLS_CLASS + keySelector}`));
             if (this.parent.constraintType === 'Swimlane' && this.parent.swimlaneSettings.keyField) {
-                this.kanbanRows.forEach((row, index) => {
+                this.swimlaneRow.forEach((row, index) => {
                     this.renderLimits(column, rowCells[index]);
                     let rowCards = cardData.filter((card) => card[this.parent.swimlaneSettings.keyField] === row.keyField);
                     let colorClass = getValidationClass(column, rowCards.length);
@@ -2006,14 +2333,24 @@ class LayoutRender extends MobileLayout {
             let keyData = dataSource.filter((cardObj) => cardObj[this.parent.keyField] === key.trim());
             cardData = cardData.concat(keyData);
         }
+        if (this.parent.cardSettings.priority) {
+            cardData = cardData.sort((data1, data2) => parseInt(data1[this.parent.cardSettings.priority], 10) - parseInt(data2[this.parent.cardSettings.priority], 10));
+        }
         return cardData;
     }
-    getColumnCards() {
+    documentClick(args) {
+        if (closest(args.target, `.${ROOT_CLASS}`)) {
+            return;
+        }
+        let cards = [].slice.call(this.parent.element.querySelectorAll(`.${CARD_CLASS}.${CARD_SELECTION_CLASS}`));
+        removeClass(cards, CARD_SELECTION_CLASS);
+    }
+    getColumnCards(data) {
         let columnData = {};
         this.columnKeys = [];
         this.parent.columns.forEach((column) => {
             this.columnKeys = this.columnKeys.concat(column.keyField.split(',').map((e) => e.trim()));
-            let cardData = this.getColumnData(column.keyField);
+            let cardData = this.getColumnData(column.keyField, data);
             columnData[column.keyField] = cardData;
         });
         return columnData;
@@ -2026,48 +2363,6 @@ class LayoutRender extends MobileLayout {
         }
         return swimlaneData;
     }
-    wireEvents(element, action) {
-        switch (action) {
-            case 'card':
-                EventHandler.add(element, 'click', this.parent.actionModule.cardClick, this.parent.actionModule);
-                EventHandler.add(element, 'dblclick', this.parent.actionModule.cardDoubleClick, this.parent.actionModule);
-                break;
-            case 'rowExpandCollapse':
-                EventHandler.add(element, 'click', this.parent.actionModule.rowExpandCollapse, this.parent.actionModule);
-                break;
-            case 'columnExpandCollapse':
-                EventHandler.add(element, 'click', this.parent.actionModule.columnExpandCollapse, this.parent.actionModule);
-                break;
-            case 'scroll':
-                EventHandler.add(element, 'scroll', this.onContentScroll, this);
-                break;
-            default:
-                this.parent.on(dataReady, this.initRender, this);
-                this.parent.on(contentReady, this.scrollUiUpdate, this);
-                break;
-        }
-    }
-    unWireEvents(element, action) {
-        switch (action) {
-            case 'card':
-                EventHandler.remove(element, 'click', this.parent.actionModule.cardClick);
-                EventHandler.remove(element, 'dblclick', this.parent.actionModule.cardDoubleClick);
-                break;
-            case 'rowExpandCollapse':
-                EventHandler.remove(element, 'click', this.parent.actionModule.rowExpandCollapse);
-                break;
-            case 'columnExpandCollapse':
-                EventHandler.remove(element, 'click', this.parent.actionModule.columnExpandCollapse);
-                break;
-            case 'scroll':
-                EventHandler.remove(element, 'scroll', this.onContentScroll);
-                break;
-            default:
-                this.parent.off(dataReady, this.initRender);
-                this.parent.off(contentReady, this.scrollUiUpdate);
-                break;
-        }
-    }
     refreshHeaders() {
         let header = this.parent.element.querySelector('.' + HEADER_CLASS);
         [].slice.call(header.children).forEach((child) => remove(child));
@@ -2078,21 +2373,51 @@ class LayoutRender extends MobileLayout {
         cards.forEach((card) => remove(card));
         this.renderCards();
     }
+    wireEvents() {
+        EventHandler.add(this.parent.element, 'click', this.parent.actionModule.clickHandler, this.parent.actionModule);
+        EventHandler.add(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler, this.parent.actionModule);
+        EventHandler.add(document, Browser.touchStartEvent, this.documentClick, this);
+        let content = this.parent.element.querySelector('.' + CONTENT_CLASS);
+        EventHandler.add(content, 'scroll', this.onContentScroll, this);
+        if (this.parent.isAdaptive) {
+            this.parent.touchModule.wireTouchEvents();
+            content.scrollLeft = this.scrollLeft;
+        }
+        this.wireDragEvent();
+    }
+    unWireEvents() {
+        EventHandler.remove(this.parent.element, 'click', this.parent.actionModule.clickHandler);
+        EventHandler.remove(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler);
+        EventHandler.remove(document, Browser.touchStartEvent, this.documentClick);
+        let content = this.parent.element.querySelector('.' + CONTENT_CLASS);
+        if (content) {
+            EventHandler.remove(content, 'scroll', this.onContentScroll);
+            if (this.parent.allowDragAndDrop) {
+                this.unWireDragEvent();
+            }
+        }
+        if (this.parent.isAdaptive) {
+            this.parent.touchModule.unWireTouchEvents();
+        }
+    }
+    wireDragEvent() {
+        if (this.parent.allowDragAndDrop) {
+            this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
+        }
+    }
+    unWireDragEvent() {
+        this.parent.dragAndDropModule.unWireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
+    }
     destroy() {
+        this.parent.off(dataReady, this.initRender);
+        this.parent.off(contentReady, this.scrollUiUpdate);
         this.unWireEvents();
-        let cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
-        cards.forEach((card) => this.unWireEvents(card, 'card'));
-        let rows = [].slice.call(this.parent.element.querySelectorAll('.' + SWIMLANE_ROW_CLASS));
-        rows.forEach((row) => this.unWireEvents(row, 'rowExpandCollapse'));
-        let columns = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_ICON_CLASS));
-        columns.forEach((column) => this.unWireEvents(column, 'columnExpandCollapse'));
         let header = this.parent.element.querySelector('.' + HEADER_CLASS);
         if (header) {
             remove(header);
         }
         let content = this.parent.element.querySelector('.' + CONTENT_CLASS);
         if (content) {
-            this.unWireEvents(content, 'scroll');
             remove(content);
         }
         if (this.treeViewObj) {
@@ -2103,11 +2428,11 @@ class LayoutRender extends MobileLayout {
             this.treePopup.destroy();
             this.treePopup = null;
         }
-        let swimlaneToolBarEle = this.parent.element.querySelector('.' + SWIMLANE_HEADER);
+        let swimlaneToolBarEle = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS);
         if (swimlaneToolBarEle) {
             remove(swimlaneToolBarEle);
         }
-        let swimlaneContent = this.parent.element.querySelector('.' + SWIMLANE_CONTENT);
+        let swimlaneContent = this.parent.element.querySelector('.' + SWIMLANE_CONTENT_CLASS);
         if (swimlaneContent) {
             remove(swimlaneContent);
         }
@@ -2148,11 +2473,15 @@ let Kanban = class Kanban extends Component {
     preRender() {
         this.isAdaptive = Browser.isDevice;
         this.kanbanData = [];
+        if (!this.enablePersistence || !this.swimlaneToggleArray) {
+            this.swimlaneToggleArray = [];
+        }
         this.activeCardData = { data: null, element: null };
         let defaultLocale = {
             items: 'items',
             min: 'Min',
-            max: 'Max'
+            max: 'Max',
+            cardsSelected: 'Cards Selected'
         };
         this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
     }
@@ -2170,7 +2499,7 @@ let Kanban = class Kanban extends Component {
      * @private
      */
     getPersistData() {
-        return this.addOnPersist([]);
+        return this.addOnPersist(['columns', 'dataSource', 'swimlaneToggleArray']);
     }
     /**
      * Core method to return the component name.
@@ -2184,9 +2513,8 @@ let Kanban = class Kanban extends Component {
      * @private
      */
     render() {
-        let addClasses = [];
+        let addClasses = [ROOT_CLASS];
         let removeClasses = [];
-        addClasses.push(ROOT_CLASS);
         if (this.enableRtl) {
             addClasses.push(RTL_CLASS);
         }
@@ -2253,15 +2581,12 @@ let Kanban = class Kanban extends Component {
                     this.onCardSettingsPropertyChanged(newProp.cardSettings, oldProp.cardSettings);
                     break;
                 case 'allowDragAndDrop':
-                    let cards = [].slice.call(this.element.querySelectorAll('.' + CARD_CLASS));
-                    cards.forEach((card) => {
-                        if (newProp.allowDragAndDrop) {
-                            this.dragAndDropModule.wireDragEvents(card);
-                        }
-                        else {
-                            this.dragAndDropModule.unWireDragEvents(card);
-                        }
-                    });
+                    if (newProp.allowDragAndDrop) {
+                        this.layoutModule.wireDragEvent();
+                    }
+                    else {
+                        this.layoutModule.unWireDragEvent();
+                    }
                     break;
                 case 'enableTooltip':
                     if (this.tooltipModule) {
@@ -2316,7 +2641,7 @@ let Kanban = class Kanban extends Component {
                 case 'selectionType':
                     let cards = this.getSelectedCards();
                     if (cards.length > 0) {
-                        removeClass(cards, CARD_SELECTION);
+                        removeClass(cards, CARD_SELECTION_CLASS);
                     }
                     break;
             }
@@ -2383,12 +2708,30 @@ let Kanban = class Kanban extends Component {
         return cardObj;
     }
     /**
+     * Returns the column data based on column key input.
+     * @method getColumnData
+     * @param {string} columnKey Accepts the column key to get the objects.
+     * @returns {Object[]}
+     */
+    getColumnData(columnKey, dataSource) {
+        return this.layoutModule.getColumnCards(dataSource)[columnKey] || [];
+    }
+    /**
+     * Returns the swimlane column data based on swimlane keyField input.
+     * @method getSwimlaneData
+     * @param {string} keyField Accepts the swimlane keyField to get the objects.
+     * @returns {Object[]}
+     */
+    getSwimlaneData(keyField) {
+        return this.layoutModule.getSwimlaneCards()[keyField] || [];
+    }
+    /**
      * Gets the list of selected cards from the board.
      * @method getSelectedCards
      * @returns {HTMLElement[]}
      */
     getSelectedCards() {
-        return [].slice.call(this.element.querySelectorAll('.' + CARD_CLASS + '.' + CARD_SELECTION));
+        return [].slice.call(this.element.querySelectorAll('.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS));
     }
     /**
      * Allows you to show the spinner on Kanban at the required scenarios.
@@ -2408,7 +2751,7 @@ let Kanban = class Kanban extends Component {
     }
     /**
      * Adds the new card to the data source of Kanban and layout.
-     * @method addEvent
+     * @method addCard
      * @param {{[key: string]: Object}} cardData Single card objects to be added into Kanban.
      * @param {{[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
      * @returns {void}
@@ -2417,7 +2760,7 @@ let Kanban = class Kanban extends Component {
         this.crudModule.addCard(cardData);
     }
     /**
-     * Updates the changes made in the event object by passing it as a parameter to the data source.
+     * Updates the changes made in the card object by passing it as a parameter to the data source.
      * @method updateCard
      * @param {{[key: string]: Object}} cardData Single card object to be updated into Kanban.
      * @param {{[key: string]: Object}[]} cardData Collection of card objects to be updated into Kanban.
@@ -2482,13 +2825,13 @@ let Kanban = class Kanban extends Component {
      */
     destroy() {
         this.destroyModules();
-        super.destroy();
-        this.element.innerHTML = '';
+        [].slice.call(this.element.childNodes).forEach((node) => detach(node));
         let removeClasses = [ROOT_CLASS];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
+        super.destroy();
     }
 };
 __decorate([

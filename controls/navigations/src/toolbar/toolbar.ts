@@ -266,18 +266,11 @@ export class Item extends ChildProperty<Item>  {
 export class Toolbar extends Component<HTMLElement> implements INotifyPropertyChanged {
     private trgtEle: HTEle;
     private ctrlTem: HTEle;
-
-    /** @hidden */
     private popObj: Popup;
-    /** @hidden */
     private tbarEle: HTMLElement[];
-    /** @hidden */
     private tbarAlgEle: ToolbarItemAlignIn;
-    /** @hidden */
     private tbarAlign: boolean;
-    /** @hidden */
     private tbarEleMrgn: number;
-    /** @hidden */
     private tbResize: boolean;
     private offsetWid: number;
     private keyModule: KeyboardEvents;
@@ -802,7 +795,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     protected render(): void {
         this.initialize();
         this.renderControl();
-        this.separator();
         this.wireEvents();
         this.renderComplete();
     }
@@ -827,11 +819,16 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.trgtEle = (ele.children.length > 0 && (!isBlazor() && !this.isServerRendered)) ? <HTEle>ele.querySelector('div') : null;
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };
         this.renderItems();
+        this.renderLayout();
+    }
+
+    private renderLayout(): void {
         this.renderOverflowMode();
         if (this.tbarAlign) { this.itemPositioning(); }
-        if (this.popObj && this.popObj.element.childElementCount > 1 && this.checkPopupRefresh(ele, this.popObj.element)) {
+        if (this.popObj && this.popObj.element.childElementCount > 1 && this.checkPopupRefresh(this.element, this.popObj.element)) {
             this.popupRefresh(this.popObj.element, false);
         }
+        this.separator();
     }
 
     private itemsAlign(items: ItemModel[], itemEleDom: HTEle): void {
@@ -845,6 +842,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
                 let itemEleBlaDom: HTEle = this.element.querySelector('.' + BZ_ITEMS);
                 innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
+                if (!innerItem) {
+                    continue;
+                }
                 if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
                     this.popupPriCount++;
                 }
@@ -879,14 +879,16 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private serverItemsRerender(): void {
         this.destroyMode();
         this.resetServerItems();
-        this.itemsAlign(this.items, <HTEle>this.element.querySelector('.' + CLS_ITEMS));
-        this.renderOverflowMode();
-        if (this.tbarAlign) { this.itemPositioning(); }
-        if (this.popObj && this.popObj.element.childElementCount > 1 && this.checkPopupRefresh(this.element, this.popObj.element)) {
-            this.popupRefresh(this.popObj.element, false);
+        this.serverItemsRefresh();
+    }
+
+    private serverItemsRefresh(): void {
+        let wrapBlaEleDom: HTEle = <HTEle>this.element.querySelector('.' + BZ_ITEMS);
+        if (wrapBlaEleDom.children.length > 0) {
+            this.itemsAlign(this.items, this.element.querySelector('.' + CLS_ITEMS));
+            this.renderLayout();
+            this.refreshOverflow();
         }
-        this.separator();
-        this.refreshOverflow();
     }
 
     private resetServerItems(): void {
@@ -1616,14 +1618,14 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private renderItems(): void {
         let ele: HTEle = this.element;
-        let itemEleDom: HTEle;
         let items: Item[] = <Item[]>this.items;
-        if (ele && ele.children.length > 0) {
-            itemEleDom = <HTEle>ele.querySelector('.' + CLS_ITEMS);
-        }
         if (this.trgtEle != null) {
             this.ctrlTemplate();
         } else if (ele && items.length > 0) {
+            let itemEleDom: HTEle;
+            if (ele && ele.children.length > 0) {
+                itemEleDom = <HTEle>ele.querySelector('.' + CLS_ITEMS);
+            }
             if (!itemEleDom) {
                 itemEleDom = this.createElement('div', { className: CLS_ITEMS });
             }

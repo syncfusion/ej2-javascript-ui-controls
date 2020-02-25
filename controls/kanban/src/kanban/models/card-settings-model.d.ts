@@ -30,6 +30,12 @@ export interface CardSettingsModel {
     template?: string;
 
     /**
+     * Defines the card order
+     * @default null
+     */
+    priority?: string;
+
+    /**
      * Defines the card selection type.
      * @default 'Single'
      */

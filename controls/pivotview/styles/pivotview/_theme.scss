@@ -29,6 +29,21 @@
       font-weight: $pivotgrid-summary-font-weight;
     }
 
+    .e-pivot-conditional-empty-format {
+      margin: 10px;
+    }
+
+    .e-member-editor-dialog, 
+    .e-olap-editor-dialog {
+      visibility: hidden;
+    }
+
+    .e-pivot-format-dialog {
+      .e-pivot-format-table {
+        width: 100%;
+      }
+    }
+
     // sass-lint:disable-all
     .e-grid .e-rowsheader.e-active,
     .e-grid .e-rowsheader.e-cellselectionbackground,
@@ -759,6 +774,10 @@
     font-size: $pivotgrid-tooltip-fontsize;
     line-height: 21px;
     margin: 0;
+  }
+
+  .e-drillthrough-dialog {
+    visibility: hidden;
   }
 
   .e-pivottooltip p.e-tooltipcontent {

@@ -61,7 +61,7 @@ describe('FileManager control single selection Grid view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -251,6 +251,7 @@ describe('FileManager control single selection Grid view', () => {
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -274,7 +275,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -325,7 +325,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -375,7 +374,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -400,7 +398,6 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(accessData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeLi1: any = treeObj.element.querySelectorAll('li');
                     let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
@@ -432,7 +429,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -474,7 +470,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -526,7 +521,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -568,7 +562,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -594,7 +587,6 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(accessDetails1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
                     expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Downloads");
@@ -619,7 +611,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -671,7 +662,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -713,7 +703,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -739,7 +728,6 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(accessDetails1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
                     expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Downloads");
@@ -764,7 +752,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -813,7 +800,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -839,7 +825,6 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(accessData2)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeLi1: any = treeObj.element.querySelectorAll('li');
                     let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');

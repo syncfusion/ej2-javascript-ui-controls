@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-lineargauge/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-lineargauge)
-
 # ej2-lineargauge
 
 The linear gauge control is used to visualize numerical values of an axis in linear manner. All the linear gauge elements are rendered using Scalable Vector Graphics (SVG).

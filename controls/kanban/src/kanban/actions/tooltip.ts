@@ -23,7 +23,7 @@ export class KanbanTooltip {
             offsetY: 5,
             position: 'BottomCenter',
             showTipPointer: true,
-            target: '.' + cls.TOOLTIP_TEXT,
+            target: '.' + cls.TOOLTIP_TEXT_CLASS,
             beforeRender: this.onBeforeRender.bind(this)
         });
         this.tooltipObj.appendTo(this.parent.element);

@@ -8,6 +8,14 @@
   #{&}.e-grid,
   .e-grid-menu {
 
+    .e-group-animate .e-drag.e-icon-drag::before {
+      content: '\e7d6';
+    }
+
+    .e-group-animate .e-nextgroup.e-icon-next::before {
+      content: '\e76a';
+    }
+
     .e-icon-ascending::before {
       content: '\e7d1';
     }

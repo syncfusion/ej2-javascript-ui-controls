@@ -130,14 +130,14 @@ export class Marker {
                             this.maps.svgObject.appendChild(this.markerSVGObject);
                             this.maps.element.appendChild(this.maps.svgObject);
                             clusterTemplate(currentLayer, this.markerSVGObject,
-                                this.maps, layerIndex, this.markerSVGObject, layerElement, true);
+                                this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                         }
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             clusterTemplate(currentLayer, markerTemplateEle, this.maps,
-                                layerIndex, this.markerSVGObject, layerElement, false);
+                                layerIndex, this.markerSVGObject, layerElement, false, false);
                         }
                     }
                 });

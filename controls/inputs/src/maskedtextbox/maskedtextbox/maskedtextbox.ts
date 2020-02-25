@@ -93,6 +93,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * {% codeBlock src='maskedtextbox/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})
@@ -136,6 +137,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * For more information on mask, refer to
      * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
+     * {% codeBlock src='maskedtextbox/mask/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)
@@ -154,15 +156,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     /**
      * Gets or sets the value of the MaskedTextBox. It is a raw value of the MaskedTextBox excluding literals
      * and prompt characters. By using `getMaskedValue` property, you can get the value of MaskedTextBox with the masked format.
-     * ```html
-     * <input id="mask" type="text" />
-     * ```
-     * ```typescript
-     * <script>
-     * var maskObj = new MaskedTextBox({ mask: "(999) 9999-999", value: "8674321756" });
-     * maskObj.appendTo('#mask');
-     * </script>
-     * ```
+     * {% codeBlock src='maskedtextbox/value/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)
@@ -173,18 +167,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * which have been set in the mask of MaskedTextBox.
      * * In the below example, non-mask elements "P" accepts values
      * "P" , "A" , "p" , "a" and "M" accepts values "M", "m" mentioned in the custom characters collection.
-     * ```html
-     * <input id="mask" type="text" />
-     * ```
-     * ```typescript
-     * <script>
-     * var customChar = { P: 'P,A,p,a', M: 'M,m'};
-     * var maskObj = new MaskedTextBox({ mask: "99 : 99 PM", customCharacters: customChar });
-     * maskObj.appendTo('#mask');
-     * </script>
-     * ```
      * For more information on customCharacters, refer to
      * [customCharacters](../../maskedtextbox/mask-configuration/#custom-characters).
+     * {% codeBlock src='maskedtextbox/customCharacters/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property(null)
@@ -317,6 +302,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.setWidth(this.width);
             this.preEleVal = this.element.value;
             if (!Browser.isDevice && (Browser.info.version === '11.0' || Browser.info.name === 'edge')) {
+                this.element.blur();
+            }
+            if (Browser.isDevice && Browser.isIos) {
                 this.element.blur();
             }
             if (this.element.getAttribute('value') || this.value) {

@@ -41,8 +41,7 @@ export class DrillThroughDialog {
         this.removeDrillThroughDialog();
         let drillThroughDialog: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_drillthrough',
-            className: cls.DRILLTHROUGH_DIALOG,
-            styles: 'visibility:hidden;'
+            className: cls.DRILLTHROUGH_DIALOG
         });
         this.parent.element.appendChild(drillThroughDialog);
         this.dialogPopUp = new Dialog({

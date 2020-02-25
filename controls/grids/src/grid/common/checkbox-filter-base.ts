@@ -314,7 +314,9 @@ export class CheckBoxFilterBase {
     public closeDialog(): void {
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
             let filterTemplateCol: Column[] = (this.options.columns as Column[]).filter((col: Column) => col.getFilterItemTemplate());
-            if (filterTemplateCol.length) {
+            // tslint:disable-next-line:no-any
+            let registeredTemplate: any = (this.parent as any).registeredTemplate;
+            if (filterTemplateCol.length && !isNullOrUndefined(registeredTemplate) && registeredTemplate.filterItemTemplate) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
             this.parent.notify(events.filterMenuClose, { field: this.options.field });

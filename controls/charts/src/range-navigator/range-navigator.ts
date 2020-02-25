@@ -770,7 +770,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      * @private
      */
     public mouseMove(e: PointerEvent): boolean {
-        if (getElement(this.element.id + '_svg')) {
+        if (getElement(!this.stockChart ? this.element.id + '_svg' : this.element.id)) {
             this.mouseX = this.setMouseX(e);
             this.notify(Browser.touchMoveEvent, e);
         }
@@ -782,6 +782,10 @@ export class RangeNavigator extends Component<HTMLElement> {
      * @private
      */
     public mouseLeave(e: PointerEvent): boolean {
+        let rangeSlider: RangeSlider = this.rangeSlider;
+        if (rangeSlider.isDrag) {
+            rangeSlider.triggerEvent(this.chartSeries.xAxis.actualRange);
+        }
         let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.mouseX = this.setMouseX(e);
         this.notify(cancelEvent, e);

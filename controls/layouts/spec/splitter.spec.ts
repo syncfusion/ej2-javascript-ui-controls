@@ -5147,7 +5147,7 @@ describe('Splitter Control', () => {
         it('on left arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
             splitterObj.onMove(leftarrow);
-            expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('50%');
+            expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('49%');
         });
     });
 
@@ -5263,5 +5263,28 @@ describe('Splitter Control', () => {
             expect(splitterObj.allPanes[2].style.flexBasis).toBe('248px');
             splitterObj.destroy();
         });
+    });
+    describe('Script error throwed ', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{content:'<p  contenteditable="true">splitter</p>' }] });
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('check splitter values', function() {
+            let event : any = document.createEvent('HTMLEvents');
+            event.keyCode =13;
+            event.initEvent('keydown', false, true);
+            splitterObj.element.dispatchEvent(event);
+            expect(splitterObj.allPanes.length).toBe(1);
+            expect(isNullOrUndefined(splitterObj.previousPane)).toBe(true);
+            expect(isNullOrUndefined(splitterObj.nextPane)).toBe(true);
+         });
     });
  });

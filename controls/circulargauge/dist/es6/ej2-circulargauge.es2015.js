@@ -294,8 +294,8 @@ function getRoundedPath(start, end, outerOldEnd, innerOldEnd, outerOldStart, inn
  * @returns string
  * @private
  */
-function getCompleteArc(center, start, end, radius, innerRadius) {
-    end -= isCompleteAngle(start, end) ? 0.0001 : 0;
+function getCompleteArc(center, start, end, radius, innerRadius, checkMinValue) {
+    end -= isCompleteAngle(start, end) && !checkMinValue ? 0.0001 : 0;
     let degree = getDegree(start, end);
     return getCompletePath(center, getLocationFromAngle(start, radius, center), getLocationFromAngle(end, radius, center), radius, getLocationFromAngle(start, innerRadius, center), getLocationFromAngle(end, innerRadius, center), innerRadius, (degree < 180) ? 0 : 1);
 }
@@ -2263,15 +2263,17 @@ class PointerRenderer {
      * @private
      */
     setPointerValue(axis, pointer, value) {
+        let checkMinValue = value === axis.visibleRange.min && pointer.type === 'RangeBar';
         let location = this.gauge.midPoint;
         let isClockWise = axis.direction === 'ClockWise';
         let startAngle = getAngleFromValue(axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
         let endAngle = getAngleFromValue(value, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
         if (isClockWise) {
-            endAngle = startAngle === endAngle ? endAngle + 1 : endAngle;
+            endAngle = startAngle === endAngle && !checkMinValue ? endAngle + 1 : endAngle;
         }
         else {
-            endAngle = startAngle === endAngle ? [startAngle, startAngle = endAngle - 1][0] : [startAngle, startAngle = endAngle][0];
+            endAngle = startAngle === endAngle && !checkMinValue ? [startAngle, startAngle = endAngle - 1][0]
+                : [startAngle, startAngle = endAngle][0];
         }
         let roundStartAngle;
         let roundEndAngle;
@@ -2297,12 +2299,12 @@ class PointerRenderer {
         }
         pointer.pathElement.map((element) => {
             if (pointer.type === 'RangeBar') {
-                if (pointer.roundedCornerRadius && value) {
+                if (pointer.roundedCornerRadius && value && !checkMinValue) {
                     element.setAttribute('d', getRoundedPathArc(location, Math.floor(roundStartAngle), Math.ceil(roundEndAngle), oldStartValue, oldEndValue, pointer.currentRadius, pointer.pointerWidth, pointer.pointerWidth));
                     radius = 0;
                 }
                 else {
-                    element.setAttribute('d', getCompleteArc(location, startAngle, endAngle, pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth)));
+                    element.setAttribute('d', getCompleteArc(location, startAngle, endAngle, pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth), checkMinValue));
                 }
             }
             else {
@@ -2804,8 +2806,8 @@ class AxisLayoutPanel {
                 id: gauge.element.id + '_Axis_Group_' + index
             });
             renderer.drawAxisOuterLine(axis, index, element, gauge);
-            renderer.drawAxisLine(axis, index, element, gauge);
             renderer.drawAxisRange(axis, index, element, gauge);
+            renderer.drawAxisLine(axis, index, element, gauge);
             renderer.drawMajorTickLines(axis, index, element, gauge);
             renderer.drawMinorTickLines(axis, index, element, gauge);
             renderer.drawAxisLabels(axis, index, element, gauge);

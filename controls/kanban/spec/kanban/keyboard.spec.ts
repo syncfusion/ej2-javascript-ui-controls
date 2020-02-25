@@ -81,6 +81,7 @@ describe('Keyboard module', () => {
 
         it('ensure module name', () => {
             keyModule = kanbanObj.keyboardModule;
+            kanbanObj.element.focus();
             expect(keyModule.getModuleName()).toEqual('keyboard');
         });
 
@@ -246,6 +247,61 @@ describe('Keyboard module', () => {
             let leftCard: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
             expect(leftCard.classList.contains('e-selection')).toEqual(false);
         });
+        it('Tab selecting with downArrow', () => {
+            keyModule.keyActionHandler({ action: 'tab' });
+            expect(document.activeElement.classList.contains('e-swimlane-row-expand' || 'e-swimlane-row-collapse')).toEqual(true);
+            keyModule.keyActionHandler({ action: 'downArrow' });
+            let firstCard: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
+            expect(firstCard.classList.contains('e-selection')).toEqual(true);
+        });
+        it('Selecting card and ShiftTab', () => {
+            keyModule.keyActionHandler({ action: 'tab' });
+            let firstCard: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
+            expect(firstCard.classList.contains('e-selection')).toEqual(false);
+            keyModule.keyActionHandler({ action: 'shiftTab' });
+        });
+        it('ShiftTab and left Arrow', () => {
+            expect(document.activeElement.classList.contains('e-swimlane-row-expand')).toEqual(true);
+            let iconElement: Element = kanbanObj.element.querySelector('.e-content-row.e-swimlane-row .e-icons');
+            expect(iconElement.classList.contains('e-swimlane-row-expand')).toEqual(true);
+            expect(iconElement.classList.contains('e-swimlane-row-collapse')).toEqual(false);
+            keyModule.keyActionHandler({ action: 'enter', target: iconElement });
+            expect(iconElement.classList.contains('e-swimlane-row-expand')).toEqual(false);
+            expect(iconElement.classList.contains('e-swimlane-row-collapse')).toEqual(true);
+        });
+        it('enter key functionality', () => {
+            let iconElement: Element = kanbanObj.element.querySelector('.e-content-row.e-swimlane-row .e-icons');
+            expect(iconElement.classList.contains('e-swimlane-row-expand')).toEqual(false);
+            expect(iconElement.classList.contains('e-swimlane-row-collapse')).toEqual(true);
+            keyModule.keyActionHandler({ action: 'enter', target: iconElement });
+            expect(iconElement.classList.contains('e-swimlane-row-expand')).toEqual(true);
+            expect(iconElement.classList.contains('e-swimlane-row-collapse')).toEqual(false);
+        });
+        it('left key functionality with the tab', () => {
+            let iconElement: Element = kanbanObj.element.querySelector('.e-content-row.e-swimlane-row .e-icons');
+            expect(iconElement.classList.contains('e-swimlane-row-expand')).toEqual(true);
+            expect(iconElement.classList.contains('e-swimlane-row-collapse')).toEqual(false);
+            keyModule.keyActionHandler({ action: 'leftArrow', target: iconElement });
+            expect(iconElement.classList.contains('e-swimlane-row-expand')).toEqual(false);
+            expect(iconElement.classList.contains('e-swimlane-row-collapse')).toEqual(true);
+        });
+        it('right key functionality with the tab', () => {
+            let iconElement: Element = kanbanObj.element.querySelector('.e-content-row.e-swimlane-row .e-icons');
+            expect(iconElement.classList.contains('e-swimlane-row-expand')).toEqual(false);
+            expect(iconElement.classList.contains('e-swimlane-row-collapse')).toEqual(true);
+            keyModule.keyActionHandler({ action: 'rightArrow', target: iconElement });
+            expect(iconElement.classList.contains('e-swimlane-row-expand')).toEqual(true);
+            expect(iconElement.classList.contains('e-swimlane-row-collapse')).toEqual(false);
+        });
+        it('Shift tab and card selecting', () => {
+            keyModule.keyActionHandler({ action: 'downArrow' });
+            let firstCard: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
+            expect(firstCard.classList.contains('e-selection')).toEqual(true);
+        });
+        it('Shift tab for the header tab', () => {
+            let iconElement: Element = kanbanObj.element.querySelector('.e-content-row.e-swimlane-row .e-icons');
+            keyModule.keyActionHandler({ action: 'shiftTab', target: iconElement });
+        });
     });
 
     describe('Keyboard Interactions', () => {
@@ -276,6 +332,7 @@ describe('Keyboard module', () => {
 
         it('last card selection testing', () => {
             keyModule = kanbanObj.keyboardModule;
+            kanbanObj.element.focus();
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="54"]').item(0) as HTMLElement;
             expect(card.classList.contains('e-selection')).toEqual(false);
             keyModule.keyActionHandler({ action: 'lastCardSelection' });
@@ -339,6 +396,7 @@ describe('Keyboard module', () => {
 
         it('Click up arrow when no card is selected', () => {
             keyModule = kanbanObj.keyboardModule;
+            kanbanObj.element.focus();
             keyModule.keyActionHandler({ action: 'upArrow' });
             expect(kanbanObj.element.querySelectorAll('.e-card.e-selection').length).toEqual(0);
         });
@@ -353,14 +411,14 @@ describe('Keyboard module', () => {
             keyModule.keyActionHandler({ action: 'multiSelectionByLeftArrow' });
             let card1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="58"]').item(0) as HTMLElement;
             expect(card1.classList.contains('e-selection')).toEqual(true);
-            expect(swimlaneRow.classList.contains('e-collapsed')).toEqual(true);
+            expect(swimlaneRow.classList.contains('e-collapsed')).toEqual(false);
             expect(card.classList.contains('e-selection')).toEqual(false);
         });
         it('Multi selection with swimlane row to row using right arrow', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="58"]').item(0) as HTMLElement;
             expect(card.classList.contains('e-selection')).toEqual(true);
             let swimlaneRow: Element = kanbanObj.element.querySelectorAll('.e-swimlane-row').item(2);
-            expect(swimlaneRow.classList.contains('e-collapsed')).toEqual(true);
+            expect(swimlaneRow.classList.contains('e-collapsed')).toEqual(false);
             keyModule.keyActionHandler({ action: 'rightArrow' });
             let card1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="14"]').item(0) as HTMLElement;
             expect(card1.classList.contains('e-selection')).toEqual(true);
@@ -408,15 +466,14 @@ describe('Keyboard module', () => {
         });
         it('First cloumn card selection with left key functionalities moved to previous swimlane row', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="14"]').item(0) as HTMLElement;
-            util.triggerMouseEvent(card, 'click');
             expect(card.classList.contains('e-selection')).toEqual(true);
             keyModule.keyActionHandler({ action: 'leftArrow' });
             let card1: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="58"]').item(0) as HTMLElement;
             expect(card1.classList.contains('e-selection')).toEqual(true);
             let row1: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-row').item(4) as HTMLElement;
-            expect(row1.classList.contains('e-collapsed')).toEqual(true);
+            expect(row1.classList.contains('e-collapsed')).toEqual(false);
             let row2: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-row').item(5) as HTMLElement;
-            expect(row2.classList.contains('e-collapsed')).toEqual(true);
+            expect(row2.classList.contains('e-collapsed')).toEqual(false);
         });
         it('First cloumn card selection with left key functionalities moved to first card', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="51"]').item(0) as HTMLElement;
@@ -435,6 +492,7 @@ describe('Keyboard module', () => {
             expect(card1.classList.contains('e-selection')).toEqual(true);
         });
     });
+
 
     it('memory leak', () => {
         profile.sample();

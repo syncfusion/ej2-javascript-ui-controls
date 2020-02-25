@@ -136,9 +136,13 @@ export class BookmarkView {
                 this.treeObj.enableRtl = true;
             }
             this.treeObj.appendTo(this.bookmarkView);
-            ['mouseover', 'keydown'].forEach((evt: string) => this.bookmarkView.addEventListener(evt, (event: Event) => {
-                this.setHeight(event.target);
-            }));
+            // tslint:disable-next-line
+            let event: any = ['mouseover', 'keydown'];
+            for (let m: number = 0; m < event.length; m++) {
+                this.bookmarkView.addEventListener(event[m], (event: Event) => {
+                    this.setHeight(event.target);
+                });
+            }
             this.isBookmarkViewDiv = true;
         }
         this.bookmarkView.style.display = 'block';

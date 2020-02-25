@@ -453,6 +453,71 @@ describe('Sparkline Column and WinLoss series spec', () => {
             new RectOption('dasda', 'red', {color: 'blue', width: 2}, 1, new Rect(0, 0, 10, 20), 5, 5, 5, 5);
         });
     });
+    describe('Sparkline Column Series Special points Spec', () => {
+        let element: Element;
+        let sparkline: Sparkline;
+        let id: string = 'sparks';
+        let ele: Element;
+        let rect: Rect;
+        let d: string[];
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '400px';
+            (element as HTMLDivElement).style.height = '100px';
+            document.body.appendChild(element);
+            sparkline = new Sparkline({
+                height: "100px",
+                width: "170px",
+                lineWidth: 1,
+                type: "Column",
+                rangePadding: 'Normal',
+                fill: "#3C78EF",
+                valueType: "Category",
+                border: { color: "red", width: 1 },
+                dataLabelSettings: {
+                    visible: ["All"]
+                },
+                dataSource: [
+                    { xval: "Bob", yval: 30 },
+                    { xval: "Joe", yval: 31 },
+                    { xval: "Kurt", yval: 32 }
+                ],
+                tooltipSettings: {
+                    visible: true,
+                    format: '${xval} : ${yval}hrs'
+                },
+                xName: "xval",
+                yName: "yval"
+            });
+        });
+        afterAll(() => {
+            sparkline.destroy();
+            removeElement(id);
+        });
+        it('Sparkline Column with non-special point customization checking', () => {
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                args.sparkline.loaded = () => { /* null function */ };
+                ele = getIdElement(id + '_sparkline_column_1');
+                rect = getRect(ele);
+                expect(ele.getAttribute('fill')).toBe('#3C78EF');
+                expect(ele.getAttribute('stroke-width')).toBe('1');
+            };
+            sparkline.appendTo('#' + id);
+        });
+        it('Sparkline Column with non-special point customization checking', () => {
+            sparkline.rangePadding = 'Additional';
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                args.sparkline.loaded = () => { /* null function */ };
+                ele = getIdElement(id + '_sparkline_column_1');
+                rect = getRect(ele);
+                expect(ele.getAttribute('fill')).toBe('#3C78EF');
+                expect(ele.getAttribute('stroke-width')).toBe('1');
+                expect(rect.x).toBe(58);
+                expect(rect.y).toBe(50);
+            };
+            sparkline.appendTo('#' + id);
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

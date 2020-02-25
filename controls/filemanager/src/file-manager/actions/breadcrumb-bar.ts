@@ -176,6 +176,7 @@ export class BreadCrumbBar {
                         cssClass: 'e-caret-hide e-submenu',
                         iconCss: CLS.ICON_BREADCRUMB,
                         iconPosition: 'Top',
+                        enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                         beforeItemRender: this.addSubMenuAttributes.bind(this),
                         select: this.subMenuSelectOperations.bind(this)
                     });

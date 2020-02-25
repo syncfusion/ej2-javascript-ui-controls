@@ -1,6 +1,6 @@
 import { IElement, ISelectionChangeEventArgs, IConnectionChangeEventArgs } from '../objects/interface/IElement';
 import { IDragOverEventArgs, IBlazorConnectionChangeEventArgs, IBlazorSelectionChangeEventArgs } from '../objects/interface/IElement';
-import { ConnectorValue} from '../objects/interface/IElement';
+import { ConnectorValue } from '../objects/interface/IElement';
 import { DiagramEventObjectCollection } from '../objects/interface/IElement';
 import { IDropEventArgs, IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { Connector, getBezierPoints, isEmptyVector, BezierSegment, BpmnFlow } from '../objects/connector';
@@ -19,11 +19,11 @@ import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './../primitives/matrix';
 import { cloneObject as clone, cloneObject, getBounds, getFunction, getIndex } from './../utility/base-util';
 import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition } from './../utility/diagram-util';
-import { updatePathElement, cloneBlazorObject } from './../utility/diagram-util';
+import { updatePathElement, cloneBlazorObject, getUserHandlePosition } from './../utility/diagram-util';
 import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
 import { SelectorModel } from '../objects/node-model';
 import { Selector } from '../objects/node';
-import { hasSelection, isSelected, hasSingleConnection } from './actions';
+import { hasSelection, isSelected, hasSingleConnection, contains } from './actions';
 import { AlignmentOptions, DistributeOptions, SizingOptions, DiagramEvent, BoundaryConstraints, AlignmentMode } from '../enum/enum';
 import { BlazorAction } from '../enum/enum';
 import { HistoryEntry } from '../diagram/history';
@@ -38,7 +38,7 @@ import { Canvas } from '../core/containers/canvas';
 import { getDiagramElement, getAdornerLayerSvg, getHTMLLayer, getAdornerLayer } from '../utility/dom-util';
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
-import { getObjectType, getPoint, intersect2, getOffsetOfConnector } from './../utility/diagram-util';
+import { getObjectType, getPoint, intersect2, getOffsetOfConnector, canShowCorner } from './../utility/diagram-util';
 import { LayerModel } from '../diagram/layer-model';
 import { Layer } from '../diagram/layer';
 import { SelectorConstraints, Direction, DiagramConstraints } from '../enum/enum';
@@ -1402,7 +1402,21 @@ export class CommandHandler {
         }
         return arg;
     }
-
+    /** @private */
+    public isUserHandle(position: PointModel): boolean {
+        let handle: SelectorModel = this.diagram.selectedItems;
+        if (handle.wrapper && canShowCorner(handle.constraints, 'UserHandle')) {
+            for (let obj of handle.userHandles) {
+                if (obj.visible) {
+                    let paddedBounds: PointModel = getUserHandlePosition(handle, obj, this.diagram.scroller.transform);
+                    if (contains(position, paddedBounds, obj.size / (2 * this.diagram.scroller.transform.scale))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     /** @private */
     public selectObjects(
         obj: (NodeModel | ConnectorModel)[], multipleSelection?: boolean, oldValue?: (NodeModel | ConnectorModel)[]): void {

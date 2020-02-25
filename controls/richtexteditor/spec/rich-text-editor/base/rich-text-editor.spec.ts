@@ -3840,6 +3840,65 @@ describe('IFrame - Util - setEditFrameFocus method testing', function () {
         expect(document.activeElement.tagName).toEqual('BODY');
     });
 });
+describe('RTE content element height check-Pixel', function () {
+    let rteObj: any;
+    let elem: any;
+    beforeAll(function (done) {
+        elem = document.createElement('div');
+        elem.id = 'defaultRTE';
+        document.body.appendChild(elem);
+        document.getElementById('defaultRTE').style.display='none';
+        rteObj = new RichTextEditor({
+            height: '100px',
+            toolbarSettings :{
+                enable : false
+            }
+        });
+        rteObj.appendTo("#defaultRTE");
+       
+        done();
+    });
+    it('Check pixel', function (done) {
+        document.getElementById('defaultRTE').style.display='block';
+        setTimeout(() => {
+            expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('100px');
+            done();
+        }, 100);
+     
+    });
+    afterAll(function () {
+        destroy(rteObj);
+    });
+});
+describe('RTE content element height check-percentage', function () {
+    let rteObj: any;
+    let elem : any;
+    beforeAll(function (done) {
+        elem = document.createElement('div');
+        elem.id = 'defaultRTE';
+        document.body.appendChild(elem);
+        (document.getElementById('defaultRTE') as HTMLElement).style.display='none';
+        rteObj = new RichTextEditor({
+            height: '50%',
+            toolbarSettings :{
+                enable : false
+            }
+        });
+        rteObj.appendTo("#defaultRTE");
+        done();
+    });
+    it('check pecentage', function (done) {
+        document.getElementById('defaultRTE').style.display='block';
+        setTimeout(() => {
+            expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('50%');
+            done();
+        }, 100);
+     
+    });
+    afterAll(function () {
+        destroy(rteObj);
+    });
+});
 describe('Check destroy method', () => {
     let rteObj: RichTextEditor;
     beforeAll((done: Function) => {

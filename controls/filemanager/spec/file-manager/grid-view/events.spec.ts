@@ -17,6 +17,7 @@ describe('FileManager control Grid view', () => {
         let feObj: any;
         let ele: HTMLElement;
         let i: number = 0;
+        let originalTimeout: any;
         function clickFn(): void {
             i++;
         }
@@ -39,11 +40,14 @@ describe('FileManager control Grid view', () => {
                 originalEvent: mouseEventArgs,
                 tapCount: 1
             };
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach(() => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('for fileOpen', (done) => {
             let dblclickevent:any;
@@ -70,7 +74,6 @@ describe('FileManager control Grid view', () => {
                 'bubbles': true,
                 'cancelable': true
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.detailsviewModule.gridObj.selectRows([2]);
                 feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[2].firstElementChild.dispatchEvent(dblclickevent);
@@ -79,7 +82,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(doubleClickRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(i).toBe(1);
                     feObj.element.getElementsByClassName('e-address-list-item')[0].click();
@@ -88,7 +90,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(data1)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         expect(i).toBe(2);
                         let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
@@ -99,7 +100,6 @@ describe('FileManager control Grid view', () => {
                             status: 200,
                             responseText: JSON.stringify(doubleClickRead)
                         });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(function () {
                             expect(i).toBe(3);
                             done();
@@ -129,7 +129,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.detailsviewModule.gridObj.selectRows([1, 2, 3]);
                 let Li: Element = feObj.detailsviewModule.gridObj.getRowByIndex(1).getElementsByTagName('td')[2];
@@ -164,7 +163,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.detailsviewModule.gridObj.selectRows([1, 2, 3]);
                 let Li: Element = feObj.detailsviewModule.gridObj.getRowByIndex(1).getElementsByTagName('td')[2];
@@ -200,7 +198,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.detailsviewModule.gridObj.selectRows([1, 2, 3]);
                 feObj.element.querySelector('#file_tb_delete').click();
@@ -261,7 +258,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(i).toEqual(1);
                 done();
@@ -287,7 +283,6 @@ describe('FileManager control Grid view', () => {
                 status: 404,
                 responseText: "Not Found"
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(i).toEqual(1);
                 done();
@@ -309,7 +304,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(i).toEqual(1);
                 done();
@@ -331,7 +325,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(i).toEqual(1);
                 done();
@@ -358,7 +351,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(grid).toEqual(5);
                 expect(tree).toEqual(5);
@@ -417,7 +409,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let items: any = document.getElementsByClassName('e-toolbar-item');
                 items[11].click();
@@ -472,7 +463,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
                 let eventArgs: any = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -498,7 +488,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(noExtension)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.detailsviewModule.gridObj.selectRows([1]);
                 let items: any = document.getElementsByClassName('e-fe-rename');
@@ -525,13 +514,11 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(noExtensionRename)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(noExtensionSuccess)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                     expect(gridLi.length).toEqual(3);
@@ -549,6 +536,7 @@ describe('FileManager control Grid view', () => {
         let i: number = 0, j: number = 0, k: number = 0;
         let name: string = null;
         let dblclickevent: any;
+        let originalTimeout: any;
         beforeEach((done) => {
             i = j = k = 0; name = null;
             jasmine.Ajax.install();
@@ -584,7 +572,8 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             mouseEventArgs = {
                 preventDefault: (): void => { },
                 stopImmediatePropagation: (): void => { },
@@ -610,6 +599,7 @@ describe('FileManager control Grid view', () => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
 
         it('for BeforeOpen cancel testing', () => {
@@ -684,7 +674,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
@@ -698,7 +687,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(multiItemCopyRead3)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(6);
                     expect(document.getElementById('file_extn_dialog').querySelectorAll('button').length).toBe(3);
@@ -714,7 +702,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(multiItemCopyRead2)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(7);
                         expect(i).toBe(2);
@@ -743,7 +730,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(uploadData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                 expect((<any>feObj.detailsviewModule.gridObj.contentModule).rows.length).toBe(6);
@@ -754,7 +740,6 @@ describe('FileManager control Grid view', () => {
                     status: 400,
                     statusText: "File already exists",
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
                     expect((<any>feObj.extDialogObj).btnObj[1].element.textContent).toBe('Replace');
@@ -769,7 +754,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(uploadData1)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         name = 'Upload';
                         (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
@@ -793,7 +777,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(singleSelectionDetails)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(document.getElementById('file_dialog_title').textContent).toBe('Documents');
                 expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder');
@@ -816,7 +799,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(getMultipleDetails)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(document.getElementById('file_dialog_title').textContent).toBe('Documents, Employees');
                 expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder');
@@ -879,7 +861,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(i).toEqual(1);
                 item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
@@ -900,7 +881,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(i).toEqual(1);
                 item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');

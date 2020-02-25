@@ -545,6 +545,9 @@ export class DropDownList extends DropDownBase implements IInput {
                     let defaultAttr: string[] = ['title', 'id', 'placeholder', 'aria-placeholder',
                     'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck', 'minlength', 'maxlength'];
                     let validateAttr: string[] = ['name', 'required'];
+                    if (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox') {
+                        defaultAttr.push('tabindex');
+                    }
                     if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                     } else if (defaultAttr.indexOf(htmlAttr) > -1) {
@@ -1428,7 +1431,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 let selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
                 selectedElement.textContent = this.text;
                 selectedElement.setAttribute('value', this.value.toString());
-            } else {
+            } else if (!this.isServerBlazor) {
                 this.hiddenElement.innerHTML = '<option selected>' + this.text + '</option>';
                 let selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
                 selectedElement.setAttribute('value', this.value.toString());

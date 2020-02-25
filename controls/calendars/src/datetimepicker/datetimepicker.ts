@@ -79,7 +79,6 @@ export class DateTimePicker extends DatePicker {
     protected inputEvent: KeyboardEvents;
     private activeIndex: number;
     private valueWithMinutes: Date = null;
-    private previousDateTime: Date = null;
     private initValue: Date;
     protected tabIndex: string;
     private isValidState: boolean;
@@ -1062,7 +1061,7 @@ export class DateTimePicker extends DatePicker {
         return popupHeight > height ? height : popupHeight;
     }
     protected changeEvent(e: Event): void {
-        if (+ this.previousDateTime !== +this.value) {
+        if ((this.value && this.value.valueOf()) !== (this.previousDateTime && +this.previousDateTime.valueOf())) {
             super.changeEvent(e);
             this.inputElement.focus();
             this.valueWithMinutes = this.value;

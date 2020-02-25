@@ -25,7 +25,7 @@ let kanbanOptions: KanbanModel = {
         showHeader: true,
         contentField: 'Summary',
         headerField: 'Id',
-        selectionType: 'Single'
+        selectionType: 'Multiple'
     }
 };
 

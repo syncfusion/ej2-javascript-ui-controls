@@ -2000,8 +2000,7 @@ export class Selection implements IAction {
     }
 
     private setRowSelection(state: boolean): void {
-        let adaptorName: string = 'adaptorName';
-        if (!this.parent.getDataModule().isRemote() && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
+        if (!this.parent.getDataModule().isRemote() && !isBlazor()) {
             if (state) {
                 for (let data of this.getData()) {
                     this.selectedRowState[data[this.primaryKey]] = true;
@@ -2110,7 +2109,6 @@ export class Selection implements IAction {
 
     private updatePersistSelectedData(checkState: boolean): void {
         if (this.parent.isPersistSelection) {
-            let adaptorName: string = 'adaptorName';
             let rows: Element[] = this.parent.getRows();
             for (let i: number = 0; i < rows.length; i++) {
                 this.updatePersistCollection(rows[i], checkState);
@@ -2120,8 +2118,7 @@ export class Selection implements IAction {
                 this.persistSelectedData = this.parent.getDataModule().isRemote() ? this.persistSelectedData : [];
             } else if (this.parent.checkAllRows === 'Check') {
                 this.setRowSelection(true);
-                this.persistSelectedData = (!this.parent.getDataModule().isRemote() &&
-                    !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) ?
+                this.persistSelectedData = (!this.parent.getDataModule().isRemote() && !isBlazor()) ?
                     this.getData().slice() : this.persistSelectedData;
             }
         }

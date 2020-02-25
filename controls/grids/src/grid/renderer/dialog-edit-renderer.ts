@@ -60,8 +60,9 @@ export class DialogEditRender {
         //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
         this.dialogObj = new Dialog(extend(
             {
-                header: this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
-                    this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
+                header: gObj.editSettings.headerTemplate ? this.getDialogEditTemplateElement('HeaderTemplate', args) :
+                    this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
+                        this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
                 content: this.getEditElement(elements, args) as HTMLElement,
                 showCloseIcon: true,
                 allowDragging: true,
@@ -69,6 +70,7 @@ export class DialogEditRender {
                 close: this.dialogClose.bind(this),
                 closeOnEscape: true, width: gObj.editSettings.template ? 'auto' : '330px',
                 target: args.target ? args.target : document.body, animationSettings: { effect: 'None' },
+                footerTemplate: gObj.editSettings.footerTemplate ? this.getDialogEditTemplateElement('FooterTemplate', args) : null,
                 buttons: [{
                     click: this.btnClick.bind(this),
                     buttonModel: { content: this.l10n.getConstant('SaveButton'), cssClass: 'e-primary', isPrimary: true }
@@ -102,8 +104,14 @@ export class DialogEditRender {
     }
 
     private destroy(args?: { requestType: string }): void {
-        let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
-        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
+        let dialogEditTemplates: string[] = ['template', 'headerTemplate', 'footerTemplate'];
+        for (let i: number = 0; i < dialogEditTemplates.length; i++) {
+            if (this.parent.editSettings[dialogEditTemplates[i]]) {
+                let templateName: string = dialogEditTemplates[i].charAt(0).toUpperCase() + dialogEditTemplates[i].slice(1);
+                let editTemplateID: string = this.parent.element.id + 'editSettings' + templateName;
+                updateBlazorTemplate(editTemplateID, templateName, this.parent.editSettings);
+            }
+        }
         this.parent.notify(events.destroyForm, {});
         this.parent.isEdit = false;
         this.parent.notify(events.toolbarRefresh, {});
@@ -111,6 +119,15 @@ export class DialogEditRender {
             this.dialogObj.destroy();
             remove(this.dialog);
         }
+    }
+
+    private getDialogEditTemplateElement(dialogTemp: string, args: { rowData?: Object, form?: Element }): Element {
+        let tempDiv: Element = this.parent.createElement('div', { className: 'e-dialog' + dialogTemp });
+        let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
+        let templateID: string = this.parent.element.id + 'editSettings' + dialogTemp;
+        appendChildren(tempDiv, this.parent.getEditHeaderTemplate()(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
+        updateBlazorTemplate(templateID, dialogTemp, this.parent.editSettings);
+        return tempDiv;
     }
 
     private getEditElement(elements: Object, args: { rowData?: Object, form?: Element }): Element {

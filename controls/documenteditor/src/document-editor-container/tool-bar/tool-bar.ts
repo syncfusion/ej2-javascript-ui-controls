@@ -172,6 +172,9 @@ export class Toolbar {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
             this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
+        } else if (this.container.previousContext.indexOf('Header') >= 0
+            || this.container.previousContext.indexOf('Footer') >= 0) {
+            this.container.showHeaderProperties = !this.container.showHeaderProperties;
         } else {
             this.container.showPropertiesPane = false;
         }

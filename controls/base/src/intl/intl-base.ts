@@ -706,6 +706,7 @@ export namespace IntlBase {
         let pattern: string[] = format.match(customRegex);
         if (isNullOrUndefined(pattern) || (pattern[5] === '' && format !== 'N/A')) {
             cOptions.type = undefined;
+            return cOptions;
         }
         cOptions.nlead = pattern[1];
         cOptions.nend = pattern[10];

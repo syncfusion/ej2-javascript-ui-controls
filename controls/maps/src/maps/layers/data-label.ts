@@ -1,7 +1,7 @@
 //tslint:disable
 import { Maps } from '../../index';
 import {
-    findMidPointOfPolygon, Rect, filter, getTemplateFunction,
+    findMidPointOfPolygon, Rect, filter, getTemplateFunction, getZoomTranslate,
     getTranslate, RectOption, convertElementFromLabel, checkPropertyPath,
     Point, TextOption, renderTextElement, MapLocation, textTrim, Size, measureText, Internalize
 } from '../utils/helper';
@@ -79,7 +79,9 @@ export class DataLabel {
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
         let propertyPath: string; let isPoint : boolean = false;
         let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-        let translate: Object = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate);
+        let translate: Object = (this.maps.isTileMap) ? new Object() : ((this.maps.zoomSettings.zoomFactor > 1 &&
+            !isNullOrUndefined(this.maps.zoomModule)) ? getZoomTranslate(this.maps, layer, animate) :
+            getTranslate(this.maps, layer, animate));
         let scale: number = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
         let transPoint: Point = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'] as Point;
         let zoomTransPoint : Point = this.maps.zoomTranslatePoint; let shapeWidth: number;
@@ -326,7 +328,6 @@ export class DataLabel {
                     } else {
                         element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
                         + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
-                        location['y'] = location['y'] +  (elementSize.height / 4);
                     }
                     group.appendChild(element);
                 }

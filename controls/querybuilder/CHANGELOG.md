@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- #F151540 - Validation not working properly in templates has been fixed.
+
 ## 17.4.49 (2020-02-11)
 
 ### QueryBuilder

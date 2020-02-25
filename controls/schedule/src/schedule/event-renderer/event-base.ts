@@ -429,7 +429,12 @@ export class EventBase {
         let elementSelect: HTMLElement[] = [];
         let selectAppointments: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_BORDER)) as Element[];
         selectAppointments.filter((element: HTMLElement) => {
-            eventSelect.push(this.getEventByGuid(element.getAttribute('data-guid')));
+            let isAlreadyAdded: Object[] = eventSelect.filter((event: { [key: string]: Object }) => {
+                return event.Guid === element.getAttribute('data-guid');
+            });
+            if (isAlreadyAdded.length === 0) {
+                eventSelect.push(this.getEventByGuid(element.getAttribute('data-guid')));
+            }
             elementSelect.push(element);
         });
         return {

@@ -395,8 +395,8 @@ export class AxisLayoutPanel {
                 id: gauge.element.id + '_Axis_Group_' + index
             });
             renderer.drawAxisOuterLine(axis, index, element, gauge);
-            renderer.drawAxisLine(axis, index, element, gauge);
             renderer.drawAxisRange(axis, index, element, gauge);
+            renderer.drawAxisLine(axis, index, element, gauge);
             renderer.drawMajorTickLines(axis, index, element, gauge);
             renderer.drawMinorTickLines(axis, index, element, gauge);
             renderer.drawAxisLabels(axis, index, element, gauge);

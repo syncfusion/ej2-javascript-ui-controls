@@ -426,7 +426,8 @@ export class StickyNotesAnnotation {
         } else {
             let isAdded: boolean = false;
             for (let i: number = 0; i < newAnnotation.length; i++) {
-                if (excistingAnnotation.AnnotName === newAnnotation[i].AnnotName) {
+                // tslint:disable-next-line:max-line-length
+                if ((excistingAnnotation.AnnotName && newAnnotation[i].AnnotName) && (excistingAnnotation.AnnotName === newAnnotation[i].AnnotName)) {
                     isAdded = true;
                     break;
                 }

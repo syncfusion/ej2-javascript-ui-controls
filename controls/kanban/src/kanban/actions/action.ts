@@ -13,7 +13,6 @@ import * as cls from '../base/css-constant';
  */
 export class Action {
     private parent: Kanban;
-    public swimlaneToggleArray: string[];
     public columnToggleArray: string[];
     public selectionArray: string[];
     public lastCardSelection: Element;
@@ -28,7 +27,6 @@ export class Action {
      */
     constructor(parent: Kanban) {
         this.parent = parent;
-        this.swimlaneToggleArray = [];
         this.columnToggleArray = [];
         this.selectionArray = [];
         this.lastCardSelection = null;
@@ -39,44 +37,77 @@ export class Action {
         this.hideColumnKeys = [];
     }
 
-    public cardClick(e: KeyboardEvent): void {
+    public clickHandler(e: KeyboardEvent): void {
+        let elementSelector: string = '.' + cls.CARD_CLASS + ',.' + cls.HEADER_ICON_CLASS + ',.' + cls.CONTENT_ROW_CLASS + '.' +
+            cls.SWIMLANE_ROW_CLASS;
+        let target: Element = closest(e.target as Element, elementSelector);
+        if (!target) { return; }
+        if (target.classList.contains(cls.CARD_CLASS)) {
+            this.cardClick(e);
+        } else if (target.classList.contains(cls.HEADER_ICON_CLASS)) {
+            this.columnExpandCollapse(e);
+        } else if (target.classList.contains(cls.CONTENT_ROW_CLASS) && target.classList.contains(cls.SWIMLANE_ROW_CLASS)) {
+            this.rowExpandCollapse(e);
+        }
+    }
+
+    public doubleClickHandler(e: MouseEvent): void {
+        let target: Element = closest(e.target as Element, '.' + cls.CARD_CLASS);
+        if (target) {
+            this.cardDoubleClick(e);
+        }
+    }
+
+    private cardClick(e: KeyboardEvent): void {
         let target: Element = closest(e.target as Element, '.' + cls.CARD_CLASS);
         let cardClickObj: { [key: string]: Object } = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardClickObj, element: target };
-        let args: CardClickEventArgs = { data: cardClickObj, element: target, cancel: false };
+        let args: CardClickEventArgs = { data: cardClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(events.cardClick, args, (clickArgs: CardClickEventArgs) => {
             if (!clickArgs.cancel) {
-                this.cardSelection(target, e.ctrlKey, e.shiftKey);
+                if (target.classList.contains(cls.CARD_SELECTION_CLASS)) {
+                    removeClass([target], cls.CARD_SELECTION_CLASS);
+                } else {
+                    let isCtrlKey: boolean = e.ctrlKey;
+                    if (this.parent.isAdaptive && this.parent.touchModule) {
+                        isCtrlKey = this.parent.touchModule.tabHold || e.ctrlKey;
+                    }
+                    this.cardSelection(target, isCtrlKey, e.shiftKey);
+                }
+                if (this.parent.isAdaptive && this.parent.touchModule) {
+                    this.parent.touchModule.updatePopupContent();
+                }
             }
         });
     }
 
-    public cardDoubleClick(e: Event): void {
+    private cardDoubleClick(e: Event): void {
         let target: Element = closest(e.target as Element, '.' + cls.CARD_CLASS);
         let cardDoubleClickObj: { [key: string]: Object } = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
-        let args: CardClickEventArgs = { data: cardDoubleClickObj, element: target, cancel: false };
+        let args: CardClickEventArgs = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(events.cardDoubleClick, args);
     }
 
-    public rowExpandCollapse(e: Event): void {
-        let args: ActionEventArgs = { cancel: false, target: e.target as HTMLElement, requestType: 'rowExpandCollapse' };
+    public rowExpandCollapse(e: Event | HTMLElement): void {
+        let headerTarget: HTMLElement = (e instanceof HTMLElement) ? e : e.target as HTMLElement;
+        let args: ActionEventArgs = { cancel: false, target: headerTarget, requestType: 'rowExpandCollapse' };
         this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
-                let target: HTMLTableRowElement = closest(e.target as Element, '.' + cls.SWIMLANE_ROW_CLASS) as HTMLTableRowElement;
+                let target: HTMLTableRowElement = closest(headerTarget as Element, '.' + cls.SWIMLANE_ROW_CLASS) as HTMLTableRowElement;
                 let tgtRow: Element = this.parent.element.querySelector('.' + cls.CONTENT_ROW_CLASS + `:nth-child(${target.rowIndex + 2})`);
-                let targetIcon: Element = target.querySelector('.' + cls.SWIMLANE_ROW_EXPAND + ',.' + cls.SWIMLANE_ROW_COLLAPSE);
+                let targetIcon: Element = target.querySelector(`.${cls.SWIMLANE_ROW_EXPAND_CLASS},.${cls.SWIMLANE_ROW_COLLAPSE_CLASS}`);
                 if (target.classList.contains(cls.COLLAPSED_CLASS)) {
                     removeClass([tgtRow, target], cls.COLLAPSED_CLASS);
-                    classList(targetIcon, [cls.SWIMLANE_ROW_EXPAND], [cls.SWIMLANE_ROW_COLLAPSE]);
-                    this.swimlaneToggleArray.splice(this.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
+                    classList(targetIcon, [cls.SWIMLANE_ROW_EXPAND_CLASS], [cls.SWIMLANE_ROW_COLLAPSE_CLASS]);
+                    this.parent.swimlaneToggleArray.splice(this.parent.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
                 } else {
                     addClass([tgtRow, target], cls.COLLAPSED_CLASS);
-                    classList(targetIcon, [cls.SWIMLANE_ROW_COLLAPSE], [cls.SWIMLANE_ROW_EXPAND]);
-                    this.swimlaneToggleArray.push(target.getAttribute('data-key'));
+                    classList(targetIcon, [cls.SWIMLANE_ROW_COLLAPSE_CLASS], [cls.SWIMLANE_ROW_EXPAND_CLASS]);
+                    this.parent.swimlaneToggleArray.push(target.getAttribute('data-key'));
                 }
                 this.parent.notify(events.contentReady, {});
-                this.parent.trigger(events.actionComplete, { target: e.target as HTMLElement, requestType: 'rowExpandCollapse' });
+                this.parent.trigger(events.actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
         });
     }
@@ -91,8 +122,8 @@ export class Action {
                 this.columnToggle(target as HTMLTableHeaderCellElement);
                 let collapsed: number = this.parent.element.querySelectorAll(`.${cls.HEADER_CELLS_CLASS}.${cls.COLLAPSED_CLASS}`).length;
                 if (collapsed === (this.parent.columns.length - this.hideColumnKeys.length)) {
-                    let nextColIndex: number = (colIndex + 1 === collapsed) ? 0 : colIndex + 1;
-                    let headerSelector: string = `.${cls.HEADER_CELLS_CLASS}:not(.e-stacked-header-cell):nth-child(${nextColIndex + 1})`;
+                    let index: number = (colIndex + 1 === collapsed) ? 1 : colIndex + 2;
+                    let headerSelector: string = `.${cls.HEADER_CELLS_CLASS}:not(.${cls.STACKED_HEADER_CELL_CLASS}):nth-child(${index})`;
                     let nextCol: Element = this.parent.element.querySelector(headerSelector);
                     addClass([nextCol], cls.COLLAPSED_CLASS);
                     this.columnToggle(nextCol as HTMLTableHeaderCellElement);
@@ -105,20 +136,21 @@ export class Action {
 
     public columnToggle(target: HTMLTableHeaderCellElement): void {
         let colIndex: number = target.cellIndex;
-        let targetRow: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
-        let colSelector: string = `.e-header-table col:nth-child(${colIndex + 1}),.e-content-table col:nth-child(${colIndex + 1})`;
-        let targetIcon: Element = target.querySelector('.' + cls.COLUMN_EXPAND + ',.' + cls.COLUMN_COLLAPSE);
+        let elementSelector: string = `.${cls.CONTENT_ROW_CLASS}:not(.${cls.SWIMLANE_ROW_CLASS})`;
+        let targetRow: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
+        let colSelector: string = `.${cls.TABLE_CLASS} col:nth-child(${colIndex + 1})`;
+        let targetIcon: Element = target.querySelector(`.${cls.COLUMN_EXPAND_CLASS},.${cls.COLUMN_COLLAPSE_CLASS}`);
         let colGroup: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(colSelector));
         if (target.classList.contains(cls.COLLAPSED_CLASS)) {
             removeClass(colGroup, cls.COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
                 colGroup.forEach((col: HTMLElement) => col.style.width = formatUnit(this.parent.layoutModule.getWidth()));
             }
-            classList(targetIcon, [cls.COLUMN_EXPAND], [cls.COLUMN_COLLAPSE]);
+            classList(targetIcon, [cls.COLUMN_EXPAND_CLASS], [cls.COLUMN_COLLAPSE_CLASS]);
             for (let row of targetRow) {
                 let targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}:nth-child(${colIndex + 1})`);
                 removeClass([targetCol, target], cls.COLLAPSED_CLASS);
-                remove(targetCol.querySelector('.' + cls.COLLAPSE_HEADER_TEXT));
+                remove(targetCol.querySelector('.' + cls.COLLAPSE_HEADER_TEXT_CLASS));
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
             (this.parent.columns[colIndex] as Base<HTMLElement>).setProperties({ isExpanded: true }, true);
@@ -127,13 +159,13 @@ export class Action {
             if (this.parent.isAdaptive) {
                 colGroup.forEach((col: HTMLElement) => col.style.width = formatUnit(events.toggleWidth));
             }
-            classList(targetIcon, [cls.COLUMN_COLLAPSE], [cls.COLUMN_EXPAND]);
+            classList(targetIcon, [cls.COLUMN_COLLAPSE_CLASS], [cls.COLUMN_EXPAND_CLASS]);
             for (let row of targetRow) {
                 let key: string = target.getAttribute('data-key');
-                let targetCol: Element = row.querySelector('.' + cls.CONTENT_CELLS_CLASS + '[data-key="' + key + '"]');
+                let targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}[data-key="${key}"]`);
                 let index: number = (targetCol as HTMLTableCellElement).cellIndex;
                 targetCol.appendChild(createElement('div', {
-                    className: cls.COLLAPSE_HEADER_TEXT,
+                    className: cls.COLLAPSE_HEADER_TEXT_CLASS,
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], cls.COLLAPSED_CLASS);
@@ -155,7 +187,7 @@ export class Action {
                 return;
             }
             if (cards.length !== 0 && (!isCtrl || this.parent.cardSettings.selectionType === 'Single')) {
-                removeClass(cards, cls.CARD_SELECTION);
+                removeClass(cards, cls.CARD_SELECTION_CLASS);
                 cards.forEach((el: Element) => {
                     this.selectionArray.splice(this.selectionArray.indexOf(el.getAttribute('data-id')), 1);
                     this.selectedCardsElement.splice(this.selectedCardsElement.indexOf(el), 1);
@@ -176,7 +208,7 @@ export class Action {
                 }
                 for (i = start; i <= end; i++) {
                     let card: HTMLElement = allCards[i];
-                    addClass([card], cls.CARD_SELECTION);
+                    addClass([card], cls.CARD_SELECTION_CLASS);
                     this.selectionArray.push(card.getAttribute('data-id'));
                     this.selectedCardsElement.push(card);
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
@@ -186,12 +218,19 @@ export class Action {
                     }
                 }
             } else {
-                addClass([target], cls.CARD_SELECTION);
+                addClass([target], cls.CARD_SELECTION_CLASS);
                 this.selectionArray.push(target.getAttribute('data-id'));
                 this.selectedCardsElement.push(target);
                 this.selectedCardsData.push(this.parent.getCardDetails(target));
                 this.lastCard = this.lastCardSelection = target;
                 this.lastSelectionRow = closest(target, '.' + cls.CONTENT_ROW_CLASS) as HTMLTableRowElement;
+                if (this.lastSelectionRow.previousElementSibling) {
+                    let elementSelector: string = `.${cls.SWIMLANE_ROW_EXPAND_CLASS},.${cls.SWIMLANE_ROW_COLLAPSE_CLASS}`;
+                    let parentEle: HTMLElement = this.lastSelectionRow.previousElementSibling.querySelector(elementSelector);
+                    if (parentEle && parentEle.classList.contains(cls.SWIMLANE_ROW_COLLAPSE_CLASS)) {
+                        this.rowExpandCollapse(parentEle);
+                    }
+                }
             }
         }
     }

@@ -36,7 +36,7 @@ describe('FileManager control LargeIcons view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             mouseEventArgs = {
                 preventDefault: (): void => { },
                 stopImmediatePropagation: (): void => { },
@@ -61,7 +61,6 @@ describe('FileManager control LargeIcons view', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('upload process through context menu testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
                 let eventArgs: any = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -77,7 +76,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(uploadData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                 setTimeout(function () {
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
@@ -86,7 +84,6 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('set model process(multiple files) testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
                 let fileObj: File[] = [];
@@ -104,15 +101,16 @@ describe('FileManager control LargeIcons view', () => {
                     status: 403,
                     statusText: "File already exists",
                 });
-                (<HTMLElement>feObj.uploadDialogObj.element.querySelector('.e-file-remove-btn')).click();
-                (<HTMLElement>feObj.uploadDialogObj.element.querySelector('.e-file-remove-btn')).click();
-                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
-                expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
-                done();
+                setTimeout(function () {
+                    (<HTMLElement>feObj.uploadDialogObj.element.querySelector('.e-file-remove-btn')).click();
+                    (<HTMLElement>feObj.uploadDialogObj.element.querySelector('.e-file-remove-btn')).click();
+                    expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                    expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
+                    done();
+                }, 500);
             }, 500);
         });
         it('upload process(multiple files) testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
                 let fileObj: File[] = [];
@@ -135,7 +133,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(UploadData)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                 setTimeout(function () {
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
@@ -144,7 +141,6 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('upload process with duplicate item error message testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
             setTimeout(function () {
                 let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
@@ -161,7 +157,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(uploadData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
@@ -171,7 +166,6 @@ describe('FileManager control LargeIcons view', () => {
                         status: 400,
                         statusText: "File already exists",
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
                         done();
@@ -180,7 +174,6 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('upload process with duplicate item replace testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
             setTimeout(function () {
                 let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
@@ -197,7 +190,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(uploadData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
@@ -207,7 +199,6 @@ describe('FileManager control LargeIcons view', () => {
                         status: 400,
                         statusText: "File already exists",
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
                         expect(feObj.extDialogObj.btnObj[1].element.textContent).toBe('Replace');
@@ -222,7 +213,6 @@ describe('FileManager control LargeIcons view', () => {
                             status: 200,
                             responseText: JSON.stringify(uploadData1)
                         });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                         setTimeout(function () {
                             (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                             expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
@@ -234,7 +224,6 @@ describe('FileManager control LargeIcons view', () => {
         });
 
         it('multiple upload process with duplicate item rename testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
             setTimeout(function () {
                 let fileObj: File[] = [];
@@ -257,7 +246,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(UploadData)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
@@ -271,7 +259,6 @@ describe('FileManager control LargeIcons view', () => {
                         status: 400,
                         statusText: "File already exists"
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
                         expect(feObj.extDialogObj.btnObj[1].element.textContent).toBe('Replace');
@@ -292,7 +279,6 @@ describe('FileManager control LargeIcons view', () => {
                             status: 200,
                             responseText: JSON.stringify(UploadData)
                         });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                         setTimeout(function () {
                             expect(feObj.isRetryOpened).toBe(false);
                             (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
@@ -304,7 +290,6 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('upload process with duplicate item rename testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
             setTimeout(function () {
                 let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
@@ -321,7 +306,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(uploadData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
@@ -331,7 +315,6 @@ describe('FileManager control LargeIcons view', () => {
                         status: 400,
                         statusText: "File already exists",
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
                         expect(feObj.extDialogObj.btnObj[0].element.textContent).toBe('Keep both');
@@ -346,7 +329,6 @@ describe('FileManager control LargeIcons view', () => {
                             status: 200,
                             responseText: JSON.stringify(uploadData2)
                         });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                         setTimeout(function () {
                             (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                             expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
@@ -357,7 +339,6 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('multiple upload process with duplicate item rename testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
             setTimeout(function () {
                 let fileObj: File[] = [];
@@ -380,7 +361,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(UploadData)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
@@ -394,7 +374,6 @@ describe('FileManager control LargeIcons view', () => {
                         status: 400,
                         statusText: "File already exists"
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
                         expect(feObj.extDialogObj.btnObj[0].element.textContent).toBe('Keep both');
@@ -414,7 +393,6 @@ describe('FileManager control LargeIcons view', () => {
                             status: 200,
                             responseText: JSON.stringify(uploadData3)
                         });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                         setTimeout(function () {
                             expect(feObj.isRetryOpened).toBe(false);
                             (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
@@ -426,7 +404,6 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('mutiple upload process with duplicate item skip(unchecked) testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
             setTimeout(function () {
                 let fileObj: File[] = [];
@@ -449,7 +426,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(uploadData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
@@ -463,7 +439,6 @@ describe('FileManager control LargeIcons view', () => {
                         status: 400,
                         statusText: "File already exists"
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
                         expect(feObj.retryFiles.length).toBe(2);
@@ -476,7 +451,6 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('mutiple upload process with duplicate item skip(checked) testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
             setTimeout(function () {
                 let fileObj: File[] = [];
@@ -499,7 +473,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(uploadData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     (<HTMLElement>document.querySelector('.e-dlg-closeicon-btn')).click();
                     expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
@@ -513,7 +486,6 @@ describe('FileManager control LargeIcons view', () => {
                         status: 400,
                         statusText: "File already exists"
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
                         expect(feObj.retryFiles.length).toBe(2);
@@ -529,7 +501,6 @@ describe('FileManager control LargeIcons view', () => {
         it('upload process with allowedextensions testing', (done) => {
             feObj.uploadSettings.allowedExtensions = '.png';
             feObj.dataBind();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
                 let eventArgs: any = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -537,6 +508,359 @@ describe('FileManager control LargeIcons view', () => {
                 uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
                 expect(document.querySelector('.e-file-status').textContent).toBe('File type is not allowed');
                 done();
+            }, 500);
+        });
+    });
+
+    describe('Uploader testing with autoClose', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                uploadSettings: { autoClose: true },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            setTimeout(function () {
+                done();
+            }, 500);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('upload process through context menu testing', (done) => {
+            let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
+            let eventArgs: any = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            let uploadObj: any = document.querySelector('#' + feObj.element.id + '_upload');
+            uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(uploadData1)
+            });
+            setTimeout(function () {
+                expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
+                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                done();
+            }, 500);
+        });
+        it('set model process(multiple files) testing', (done) => {
+            expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
+            let fileObj: File[] = [];
+            fileObj[0] = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
+            fileObj[1] = new File(["Nice Demo"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs: any = { type: 'click', target: { files: fileObj }, preventDefault: (): void => { } };
+            let uploadObj: Uploader = (<any>document.querySelector('#' + feObj.element.id + '_upload')).ej2_instances[0];
+            (<any>uploadObj).onSelectFiles(eventArgs);
+            this.request = jasmine.Ajax.requests.filter('/Upload');
+            this.request[this.request.length - 2].respondWith({
+                status: 403,
+                statusText: "File already exists",
+            });
+            this.request[this.request.length - 1].respondWith({
+                status: 403,
+                statusText: "File already exists",
+            });
+            setTimeout(function () {
+                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(true);
+                (<HTMLElement>feObj.uploadDialogObj.element.querySelector('.e-file-remove-btn')).click();
+                (<HTMLElement>feObj.uploadDialogObj.element.querySelector('.e-file-remove-btn')).click();
+                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
+                done();
+            }, 500);
+        });
+        it('upload process(multiple files) testing', (done) => {
+            expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
+            let fileObj: File[] = [];
+            fileObj[0] = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
+            fileObj[1] = new File(["Nice Demo"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs: any = { type: 'click', target: { files: fileObj }, preventDefault: (): void => { } };
+            let uploadObj: any = document.querySelector('#' + feObj.element.id + '_upload');
+            uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+            this.request = jasmine.Ajax.requests.filter('/Upload');
+            this.request[this.request.length - 2].respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request[this.request.length - 1].respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(UploadData)
+            });
+            setTimeout(function () {
+                expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
+                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                done();
+            }, 500);
+        });
+        it('upload process with duplicate item replace testing', (done) => {
+            expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
+            let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
+            let eventArgs: any = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            let uploadObj: any = document.querySelector('#' + feObj.element.id + '_upload');
+            uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(uploadData1)
+            });
+            setTimeout(function () {
+                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
+                uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 400,
+                    statusText: "File already exists",
+                });
+                setTimeout(function () {
+                    expect((<FileManager>feObj).uploadDialogObj.visible).toBe(true);
+                    expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
+                    expect(feObj.extDialogObj.btnObj[1].element.textContent).toBe('Replace');
+                    feObj.extDialogObj.btnObj[1].element.click()
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify('')
+                    });
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(uploadData1)
+                    });
+                    setTimeout(function () {
+                        expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
+                        expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
+        it('multiple upload process with duplicate item rename testing', (done) => {
+            expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
+            let fileObj: File[] = [];
+            fileObj[0] = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
+            fileObj[1] = new File(["Nice Demo"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs: any = { type: 'click', target: { files: fileObj }, preventDefault: (): void => { } };
+            let uploadObj: any = document.querySelector('#' + feObj.element.id + '_upload');
+            uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+            this.request = jasmine.Ajax.requests.filter('/Upload');
+            this.request[this.request.length - 2].respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request[this.request.length - 1].respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(UploadData)
+            });
+            setTimeout(function () {
+                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
+                uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+                this.request = jasmine.Ajax.requests.filter('/Upload');
+                this.request[this.request.length - 2].respondWith({
+                    status: 400,
+                    statusText: "File already exists"
+                });
+                this.request[this.request.length - 1].respondWith({
+                    status: 400,
+                    statusText: "File already exists"
+                });
+                setTimeout(function () {
+                    expect((<FileManager>feObj).uploadDialogObj.visible).toBe(true);
+                    expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
+                    expect(feObj.extDialogObj.btnObj[1].element.textContent).toBe('Replace');
+                    feObj.extDialogObj.element.querySelector('.e-checkbox').click();
+                    feObj.extDialogObj.btnObj[1].element.click()
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request = jasmine.Ajax.requests.filter('/Upload');
+                    this.request[this.request.length - 2].respondWith({
+                        status: 200,
+                        responseText: JSON.stringify('')
+                    });
+                    this.request[this.request.length - 1].respondWith({
+                        status: 200,
+                        responseText: JSON.stringify('')
+                    });
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(UploadData)
+                    });
+                    setTimeout(function () {
+                        expect(feObj.isRetryOpened).toBe(false);
+                        expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
+                        expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+        it('upload process with duplicate item rename testing', (done) => {
+            expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
+            let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
+            let eventArgs: any = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            let uploadObj: any = document.querySelector('#' + feObj.element.id + '_upload');
+            uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(uploadData1)
+            });
+            setTimeout(function () {
+                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                expect(document.querySelectorAll('.e-large-icon').length).toBe(6);
+                uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 400,
+                    statusText: "File already exists",
+                });
+                setTimeout(function () {
+                    expect((<FileManager>feObj).uploadDialogObj.visible).toBe(true);
+                    expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
+                    expect(feObj.extDialogObj.btnObj[0].element.textContent).toBe('Keep both');
+                    feObj.extDialogObj.btnObj[0].element.click()
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify('')
+                    });
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(uploadData2)
+                    });
+                    setTimeout(function () {
+                        expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
+                        expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+        it('multiple upload process with duplicate item rename testing', (done) => {
+            expect(document.querySelectorAll('.e-large-icon').length).toBe(5);
+            let fileObj: File[] = [];
+            fileObj[0] = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
+            fileObj[1] = new File(["Nice Demo"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs: any = { type: 'click', target: { files: fileObj }, preventDefault: (): void => { } };
+            let uploadObj: any = document.querySelector('#' + feObj.element.id + '_upload');
+            uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+            this.request = jasmine.Ajax.requests.filter('/Upload');
+            this.request[this.request.length - 2].respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request[this.request.length - 1].respondWith({
+                status: 200,
+                responseText: JSON.stringify('')
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(UploadData)
+            });
+            setTimeout(function () {
+                expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                expect(document.querySelectorAll('.e-large-icon').length).toBe(7);
+                uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
+                this.request = jasmine.Ajax.requests.filter('/Upload');
+                this.request[this.request.length - 2].respondWith({
+                    status: 400,
+                    statusText: "File already exists"
+                });
+                this.request[this.request.length - 1].respondWith({
+                    status: 400,
+                    statusText: "File already exists"
+                });
+                setTimeout(function () {
+                    expect((<FileManager>feObj).uploadDialogObj.visible).toBe(true);
+                    expect(document.querySelector('.e-file-status').textContent).toBe('File already exists');
+                    expect(feObj.extDialogObj.btnObj[0].element.textContent).toBe('Keep both');
+                    feObj.extDialogObj.element.querySelector('.e-checkbox').click();
+                    feObj.extDialogObj.btnObj[0].element.click()
+                    this.request = jasmine.Ajax.requests.filter('/Upload');
+                    this.request[this.request.length - 2].respondWith({
+                        status: 200,
+                        responseText: JSON.stringify('')
+                    });
+                    this.request[this.request.length - 1].respondWith({
+                        status: 200,
+                        responseText: JSON.stringify('')
+                    });
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(uploadData3)
+                    });
+                    setTimeout(function () {
+                        expect(feObj.isRetryOpened).toBe(false);
+                        expect(document.querySelectorAll('.e-large-icon').length).toBe(9);
+                        expect((<FileManager>feObj).uploadDialogObj.visible).toBe(false);
+                        done();
+                    }, 500);
+                }, 500);
             }, 500);
         });
     });
@@ -567,7 +891,7 @@ describe('FileManager control LargeIcons view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             mouseEventArgs = {
                 preventDefault: (): void => { },
                 stopImmediatePropagation: (): void => { },
@@ -592,7 +916,6 @@ describe('FileManager control LargeIcons view', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('upload process with allowedextensions(initial) testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" })
                 let eventArgs: any = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };

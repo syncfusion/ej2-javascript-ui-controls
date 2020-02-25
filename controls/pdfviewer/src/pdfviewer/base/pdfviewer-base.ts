@@ -1319,9 +1319,9 @@ export class PdfViewerBase {
         window.sessionStorage.removeItem('currentDocument');
         window.sessionStorage.removeItem('serviceURL');
         window.sessionStorage.removeItem('unload');
-        this.sessionStorage.forEach((element: string) => {
-            window.sessionStorage.removeItem(element);
-        });
+        for (let i: number = 0; i < this.sessionStorage.length; i++) {
+            window.sessionStorage.removeItem(this.sessionStorage[i]);
+        }
     }
 
     private updateCommentPanel(): void {
@@ -2839,6 +2839,7 @@ export class PdfViewerBase {
             }
             let isPortrait: boolean = false;
             let isLandscape: boolean = false;
+            let differentPageSize: boolean = false;
             for (let i: number = 0; i < pageLimit; i++) {
                 let pageSize: string[] = pageValues.pageSizes[i].split(',');
                 if (pageValues.pageSizes[i - 1] !== null && i !== 0) {
@@ -2855,8 +2856,11 @@ export class PdfViewerBase {
                 if (this.pageSize[i].width > this.pageSize[i].height) {
                     isLandscape = true;
                 }
+                if (i > 0 && this.pageSize[i].width !== this.pageSize[i - 1].width) {
+                    differentPageSize = true;
+                }
             }
-            if (isPortrait && isLandscape) {
+            if ((isPortrait && isLandscape) || differentPageSize) {
                 this.isMixedSizeDocument = true;
             }
             let limit: number = this.pageCount < 10 ? this.pageCount : 10;
@@ -3681,7 +3685,8 @@ export class PdfViewerBase {
                     this.renderCountIncrement();
                 }
                 if (pageNumber < this.pageCount) {
-                    if (this.renderedPagesList.indexOf(pageNumber) === -1 && !this.getMagnified()) {
+                    // tslint:disable-next-line:max-line-length
+                    if (this.renderedPagesList.indexOf(next) !== -1 && this.renderedPagesList.indexOf(pageNumber) === -1 && !this.getMagnified()) {
                         this.createRequestForRender(pageNumber);
                         pageHeight = this.getPageHeight(pageNumber);
                         this.renderCountIncrement();
@@ -3691,7 +3696,8 @@ export class PdfViewerBase {
                 while (this.viewerContainer.clientHeight > pageHeight) {
                     next = next + 1;
                     if (next < this.pageCount) {
-                        if (this.renderedPagesList.indexOf(next) === -1 && !this.getMagnified()) {
+                        // tslint:disable-next-line:max-line-length
+                        if (this.renderedPagesList.indexOf(next - 1) !== -1 && this.renderedPagesList.indexOf(next) === -1 && !this.getMagnified()) {
                             this.renderPageElement(next);
                             this.createRequestForRender(next);
                             pageHeight += this.getPageHeight(next);
@@ -3804,6 +3810,8 @@ export class PdfViewerBase {
                 // tslint:disable-next-line
                 jsonObject['filePath'] = path;
             }
+            // tslint:disable-next-line
+            jsonObject['elementId'] = this.pdfViewer.element.id;
             // tslint:disable-next-line:max-line-length
             if (proxy.jsonDocumentId) {
                 // tslint:disable-next-line
@@ -3863,6 +3871,8 @@ export class PdfViewerBase {
         jsonObject.action = 'ImportFormFields';
         // tslint:disable-next-line
         jsonObject['hashId'] = proxy.hashId;
+        // tslint:disable-next-line
+        jsonObject['elementId'] = this.pdfViewer.element.id;
         // tslint:disable-next-line:max-line-length
         if (proxy.jsonDocumentId) {
             // tslint:disable-next-line
@@ -4167,7 +4177,8 @@ export class PdfViewerBase {
                         jsonObject = {
                             xCoordinate: x, yCoordinate: y, viwePortWidth: viewportWidth, viewportHeight: viewportHeight,
                             pageNumber: pageIndex, hashId: proxy.hashId, tilecount: tileCount,
-                            zoomFactor: zoomFactor, action: 'RenderPdfPages', uniqueId: this.documentId
+                           // tslint:disable-next-line:max-line-length
+                            zoomFactor: zoomFactor, action: 'RenderPdfPages', uniqueId: this.documentId, elementId: proxy.pdfViewer.element.id
                         };
                         if (this.jsonDocumentId) {
                             // tslint:disable-next-line
@@ -5236,6 +5247,10 @@ export class PdfViewerBase {
             }
             if (signObject) {
                 this.signatureModule.storeSignatureData(signObject.pageIndex, signObject);
+                // tslint:disable-next-line
+                let bounds: any = { left: signObject.bounds.x, top: signObject.bounds.y, width: signObject.bounds.width, height: signObject.bounds.height };
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.fireSignatureAdd(signObject.pageIndex, signObject.signatureName, signObject.shapeAnnotationType as AnnotationType, bounds, signObject.opacity, signObject.strokeColor, signObject.thickness);
             }
             this.isNewSignatureAdded = false;
         }
@@ -5363,7 +5378,7 @@ export class PdfViewerBase {
             // tslint:disable-next-line
             let jsonObject: any;
             // tslint:disable-next-line:max-line-length
-            jsonObject = { hashId: proxy.hashId, action: 'ExportAnnotations', pdfAnnotation: proxy.createAnnotationJsonData() };
+            jsonObject = { hashId: proxy.hashId, action: 'ExportAnnotations', pdfAnnotation: proxy.createAnnotationJsonData(), elementId: proxy.pdfViewer.element.id };
             proxy.pdfViewer.fireExportStart(jsonObject.pdfAnnotation);
             if (proxy.jsonDocumentId) {
                 // tslint:disable-next-line
@@ -5471,7 +5486,7 @@ export class PdfViewerBase {
         } else {
             proxy.pdfViewer.fireImportStart(importData);
             // tslint:disable-next-line:max-line-length
-            jsonObject = { fileName: importData, action: 'ImportAnnotations' };
+            jsonObject = { fileName: importData, action: 'ImportAnnotations', elementId: proxy.pdfViewer.element.id };
             if (proxy.jsonDocumentId) {
                 // tslint:disable-next-line
                 (jsonObject as any).document = proxy.jsonDocumentId;
@@ -6275,52 +6290,76 @@ export class PdfViewerBase {
         for (let i: number = 0; i < this.pageCount; i++) {
             if (newlyImportAnnotation[i]) {
                 if (excistingImportAnnotation[i]) {
-                    if (newlyImportAnnotation[i].textMarkupAnnotation.length !== 0) {
-                        // tslint:disable-next-line:max-line-length
-                        newlyImportAnnotation[i].textMarkupAnnotation = this.checkImportedData(excistingImportAnnotation[i].textMarkupAnnotation, newlyImportAnnotation[i].textMarkupAnnotation, i);
-                        if (newlyImportAnnotation[i].textMarkupAnnotation.length !== 0) {
+                    if (newlyImportAnnotation[i].textMarkupAnnotation && newlyImportAnnotation[i].textMarkupAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[i].textMarkupAnnotation) {
                             // tslint:disable-next-line:max-line-length
-                            excistingImportAnnotation[i].textMarkupAnnotation = excistingImportAnnotation[i].textMarkupAnnotation.concat(newlyImportAnnotation[i].textMarkupAnnotation);
+                            newlyImportAnnotation[i].textMarkupAnnotation = this.checkImportedData(excistingImportAnnotation[i].textMarkupAnnotation, newlyImportAnnotation[i].textMarkupAnnotation, i);
+                            if (newlyImportAnnotation[i].textMarkupAnnotation.length !== 0) {
+                                // tslint:disable-next-line:max-line-length
+                                excistingImportAnnotation[i].textMarkupAnnotation = excistingImportAnnotation[i].textMarkupAnnotation.concat(newlyImportAnnotation[i].textMarkupAnnotation);
+                            }
+                        } else {
+                            excistingImportAnnotation[i].textMarkupAnnotation = newlyImportAnnotation[i].textMarkupAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].shapeAnnotation.length !== 0) {
-                        // tslint:disable-next-line:max-line-length
-                        newlyImportAnnotation[i].shapeAnnotation = this.checkImportedData(excistingImportAnnotation[i].shapeAnnotation, newlyImportAnnotation[i].shapeAnnotation, i);
-                        if (newlyImportAnnotation[i].shapeAnnotation.length !== 0) {
+                    if (newlyImportAnnotation[i].shapeAnnotation && newlyImportAnnotation[i].shapeAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[i].shapeAnnotation) {
                             // tslint:disable-next-line:max-line-length
-                            excistingImportAnnotation[i].shapeAnnotation = excistingImportAnnotation[i].shapeAnnotation.concat(newlyImportAnnotation[i].shapeAnnotation);
+                            newlyImportAnnotation[i].shapeAnnotation = this.checkImportedData(excistingImportAnnotation[i].shapeAnnotation, newlyImportAnnotation[i].shapeAnnotation, i);
+                            if (newlyImportAnnotation[i].shapeAnnotation.length !== 0) {
+                                // tslint:disable-next-line:max-line-length
+                                excistingImportAnnotation[i].shapeAnnotation = excistingImportAnnotation[i].shapeAnnotation.concat(newlyImportAnnotation[i].shapeAnnotation);
+                            }
+                        } else {
+                            excistingImportAnnotation[i].shapeAnnotation = newlyImportAnnotation[i].shapeAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].measureShapeAnnotation.length !== 0) {
-                        // tslint:disable-next-line:max-line-length
-                        newlyImportAnnotation[i].measureShapeAnnotation = this.checkImportedData(excistingImportAnnotation[i].measureShapeAnnotation, newlyImportAnnotation[i].measureShapeAnnotation, i);
-                        if (newlyImportAnnotation[i].measureShapeAnnotation.length !== 0) {
+                    if (newlyImportAnnotation[i].measureShapeAnnotation && newlyImportAnnotation[i].measureShapeAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[i].measureShapeAnnotation) {
                             // tslint:disable-next-line:max-line-length
-                            excistingImportAnnotation[i].measureShapeAnnotation = excistingImportAnnotation[i].measureShapeAnnotation.concat(newlyImportAnnotation[i].measureShapeAnnotation);
+                            newlyImportAnnotation[i].measureShapeAnnotation = this.checkImportedData(excistingImportAnnotation[i].measureShapeAnnotation, newlyImportAnnotation[i].measureShapeAnnotation, i);
+                            if (newlyImportAnnotation[i].measureShapeAnnotation.length !== 0) {
+                                // tslint:disable-next-line:max-line-length
+                                excistingImportAnnotation[i].measureShapeAnnotation = excistingImportAnnotation[i].measureShapeAnnotation.concat(newlyImportAnnotation[i].measureShapeAnnotation);
+                            }
+                        } else {
+                            excistingImportAnnotation[i].measureShapeAnnotation = newlyImportAnnotation[i].measureShapeAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].stampAnnotations.length !== 0) {
-                        // tslint:disable-next-line:max-line-length
-                        newlyImportAnnotation[i].stampAnnotations = this.checkImportedData(excistingImportAnnotation[i].stampAnnotations, newlyImportAnnotation[i].stampAnnotations, i);
-                        if (newlyImportAnnotation[i].stampAnnotations.length !== 0) {
+                    if (newlyImportAnnotation[i].stampAnnotations && newlyImportAnnotation[i].stampAnnotations.length !== 0) {
+                        if (excistingImportAnnotation[i].stampAnnotations) {
                             // tslint:disable-next-line:max-line-length
-                            excistingImportAnnotation[i].stampAnnotations = excistingImportAnnotation[i].stampAnnotations.concat(newlyImportAnnotation[i].stampAnnotations);
+                            newlyImportAnnotation[i].stampAnnotations = this.checkImportedData(excistingImportAnnotation[i].stampAnnotations, newlyImportAnnotation[i].stampAnnotations, i);
+                            if (newlyImportAnnotation[i].stampAnnotations.length !== 0) {
+                                // tslint:disable-next-line:max-line-length
+                                excistingImportAnnotation[i].stampAnnotations = excistingImportAnnotation[i].stampAnnotations.concat(newlyImportAnnotation[i].stampAnnotations);
+                            }
+                        } else {
+                            excistingImportAnnotation[i].stampAnnotations = newlyImportAnnotation[i].stampAnnotations;
                         }
                     }
-                    if (newlyImportAnnotation[i].stickyNotesAnnotation.length !== 0) {
-                        // tslint:disable-next-line:max-line-length
-                        newlyImportAnnotation[i].stickyNotesAnnotation = this.checkImportedData(excistingImportAnnotation[i].stickyNotesAnnotation, newlyImportAnnotation[i].stickyNotesAnnotation, i);
-                        if (newlyImportAnnotation[i].stickyNotesAnnotation.length !== 0) {
+                    if (newlyImportAnnotation[i].stickyNotesAnnotation && newlyImportAnnotation[i].stickyNotesAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[i].stickyNotesAnnotation) {
                             // tslint:disable-next-line:max-line-length
-                            excistingImportAnnotation[i].stickyNotesAnnotation = excistingImportAnnotation[i].stickyNotesAnnotation.concat(newlyImportAnnotation[i].stickyNotesAnnotation);
+                            newlyImportAnnotation[i].stickyNotesAnnotation = this.checkImportedData(excistingImportAnnotation[i].stickyNotesAnnotation, newlyImportAnnotation[i].stickyNotesAnnotation, i);
+                            if (newlyImportAnnotation[i].stickyNotesAnnotation.length !== 0) {
+                                // tslint:disable-next-line:max-line-length
+                                excistingImportAnnotation[i].stickyNotesAnnotation = excistingImportAnnotation[i].stickyNotesAnnotation.concat(newlyImportAnnotation[i].stickyNotesAnnotation);
+                            }
+                        } else {
+                            excistingImportAnnotation[i].stickyNotesAnnotation = newlyImportAnnotation[i].stickyNotesAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].freeTextAnnotation.length !== 0) {
-                        // tslint:disable-next-line:max-line-length
-                        newlyImportAnnotation[i].freeTextAnnotation = this.checkImportedData(excistingImportAnnotation[i].freeTextAnnotation, newlyImportAnnotation[i].freeTextAnnotation, i);
-                        if (newlyImportAnnotation[i].freeTextAnnotation.length !== 0) {
+                    if (newlyImportAnnotation[i].freeTextAnnotation && newlyImportAnnotation[i].freeTextAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[i].freeTextAnnotation) {
                             // tslint:disable-next-line:max-line-length
-                            excistingImportAnnotation[i].freeTextAnnotation = excistingImportAnnotation[i].freeTextAnnotation.concat(newlyImportAnnotation[i].freeTextAnnotation);
+                            newlyImportAnnotation[i].freeTextAnnotation = this.checkImportedData(excistingImportAnnotation[i].freeTextAnnotation, newlyImportAnnotation[i].freeTextAnnotation, i);
+                            if (newlyImportAnnotation[i].freeTextAnnotation.length !== 0) {
+                                // tslint:disable-next-line:max-line-length
+                                excistingImportAnnotation[i].freeTextAnnotation = excistingImportAnnotation[i].freeTextAnnotation.concat(newlyImportAnnotation[i].freeTextAnnotation);
+                            }
+                        } else {
+                            excistingImportAnnotation[i].freeTextAnnotation = newlyImportAnnotation[i].freeTextAnnotation;
                         }
                     }
                 } else {

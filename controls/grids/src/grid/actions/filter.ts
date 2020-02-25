@@ -3,7 +3,7 @@ import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } fr
 import { remove, matches, isBlazor } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings, Grid } from '../base/grid';
-import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI } from '../base/interface';
 import * as events from '../base/constant';
 import { CellType } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
@@ -45,7 +45,8 @@ export class Filter implements IAction {
     private cellText: Object = {};
     private nextFlMenuOpen: string = '';
     private type: Object = { 'Menu': FilterMenuRenderer, 'CheckBox': CheckBoxFilter, 'Excel': ExcelFilter };
-    private filterModule: { openDialog: Function, closeDialog: Function, destroy: Function, isresetFocus: boolean };
+    private filterModule: { openDialog: Function, closeDialog: Function, destroy: Function,
+    isresetFocus: boolean, getFilterUIInfo: Function };
     /** @hidden */
     public filterOperators: IFilterOperator = {
         contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
@@ -193,18 +194,20 @@ export class Filter implements IAction {
      */
     public updateModel(): void {
         let col: Column = this.parent.getColumnByField(this.fieldName);
-        let field: string = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
-        this.currentFilterObject = {
-            field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
-            value: this.value as string, predicate: this.predicate,
-            matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
-        };
-
-        let index: number = this.getFilteredColsIndexByField(col);
-        if (index > -1) {
-            this.filterSettings.columns[index] = this.currentFilterObject;
-        } else {
-            this.filterSettings.columns.push(this.currentFilterObject);
+        let arrayVal: (string | number | Date | boolean)[] = Array.isArray(this.value) ? this.value : [this.value];
+        for (let i: number = 0, len: number = arrayVal.length; i < len; i++) {
+            let field: string = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
+            this.currentFilterObject = {
+                field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
+                value: arrayVal[i], predicate: this.predicate,
+                matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
+            };
+            let index: number = this.getFilteredColsIndexByField(col);
+            if (index > -1 && !Array.isArray(this.value)) {
+                this.filterSettings.columns[index] = this.currentFilterObject;
+            } else {
+                this.filterSettings.columns.push(this.currentFilterObject);
+            }
         }
         this.filterSettings.columns = this.filterSettings.columns;
         this.parent.dataBind();
@@ -291,6 +294,7 @@ export class Filter implements IAction {
         EventHandler.add(document, 'click', this.clickHandler, this);
         this.parent.on(events.filterOpen, this.columnMenuFilter, this);
         this.parent.on(events.click, this.filterIconClickHandler, this);
+        this.parent.on('persist-data-changed', this.initialEnd, this);
     }
     /**
      * @hidden
@@ -327,7 +331,8 @@ export class Filter implements IAction {
      * @return {void}
      */
     public filterByColumn(
-        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean, predicate?: string, matchCase?: boolean,
+        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean| number[]| string[]| Date[]| boolean[],
+        predicate?: string, matchCase?: boolean,
         ignoreAccent?: boolean, actualFilterValue?: Object, actualOperator?: Object): void {
         let gObj: IGrid = this.parent;
         let filterCell: HTMLInputElement;
@@ -349,11 +354,11 @@ export class Filter implements IAction {
             });
             return;
         }
-        this.value = filterValue;
+        this.predicate = predicate ? predicate : Array.isArray(filterValue) ? 'or' : 'and';
+        this.value = filterValue as string | number | Date | boolean;
         this.matchCase = matchCase || false;
         this.ignoreAccent = this.ignoreAccent = !isNullOrUndefined(ignoreAccent) ? ignoreAccent : this.parent.filterSettings.ignoreAccent;
         this.fieldName = fieldName;
-        this.predicate = predicate || 'and';
         this.operator = filterOperator;
         filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
         if (this.column.type === 'number' || this.column.type === 'date') {
@@ -1092,6 +1097,13 @@ export class Filter implements IAction {
         if (filterIconElement) {
             filterIconElement.classList.add('e-filtered');
         }
+    }
+
+    /**
+     * @hidden
+     */
+    public getFilterUIInfo(): FilterUI {
+        return this.filterModule ? this.filterModule.getFilterUIInfo() : {};
     }
 
 }

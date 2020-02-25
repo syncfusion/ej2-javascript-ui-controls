@@ -524,6 +524,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public themeStyle: IThemeStyle;
     /**
      * @private
+     * Stores the reset
+     */
+    public isReset: boolean;
+    /**
+     * @private
      * Stores the legend bounds
      */
     public totalRect: Rect;
@@ -592,6 +597,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public centerLatOfGivenLocation: number;
      /** @private */
     public centerLongOfGivenLocation: number;
+       /** @private */
+       public minLatOfGivenLocation: number;
+       /** @private */
+      public minLongOfGivenLocation: number;
+         /** @private */
+    public maxLatOfGivenLocation: number;
+    /** @private */
+   public maxLongOfGivenLocation: number;
     /** @private */
     public scaleOfGivenLocation: number;
     /** @private */
@@ -1587,10 +1600,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let isTwoCoordinates: boolean = false;
         if (isNullOrUndefined(maxLatitude) && isNullOrUndefined(maxLongitude)
             || isNullOrUndefined(minLatitude) && isNullOrUndefined(minLongitude)) {
-            maxLatitude = isNullOrUndefined(maxLatitude) ? 0 : maxLatitude;
-            maxLongitude = isNullOrUndefined(maxLongitude) ? 0 : maxLongitude;
             minLatitude = isNullOrUndefined(minLatitude) ? 0 : minLatitude;
             minLongitude = isNullOrUndefined(minLatitude) ? 0 : minLongitude;
+            maxLatitude = isNullOrUndefined(maxLatitude) ? minLatitude : maxLatitude;
+            maxLongitude = isNullOrUndefined(maxLongitude) ? minLongitude : maxLongitude;
             isTwoCoordinates = true;
         }
         if (minLatitude > maxLatitude) {
@@ -1608,9 +1621,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.centerLatOfGivenLocation = centerLatitude;
         this.centerLongOfGivenLocation = centerLongtitude;
+        this.minLatOfGivenLocation = minLatitude;
+        this.minLongOfGivenLocation = minLongitude;
+        this.maxLatOfGivenLocation = maxLatitude;
+        this.maxLongOfGivenLocation = maxLongitude;
+        this.zoomNotApplied = true;
         this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
                                                        this.mapAreaRect.width, this.mapAreaRect.height, this);
-        this.zoomNotApplied = true;
         this.refresh();
     }
 
@@ -1720,9 +1737,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
-                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (newLayerLength - 1));
+                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
                 } else {
-                    this.markerModule.markerRender(layerEle, (newLayerLength - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
+                    this.markerModule.markerRender(layerEle, (this.layers.length - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
                 }
             } else if (newProp.layers && isStaticMapType) {
                 this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);

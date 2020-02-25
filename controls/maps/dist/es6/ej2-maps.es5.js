@@ -626,24 +626,24 @@ function markerShapeChoose(eventArgs, data) {
     return eventArgs;
 }
 //tslint:disable
-function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerCollection, layerElement, check) {
-    var bounds = [];
+function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerCollection, layerElement, check, zoomCheck) {
+    var bounds1;
+    var bounds2;
     var colloideBounds = [];
+    var clusterColloideBounds = [];
     var tempX = 0;
     var tempY = 0;
     var data;
     var style = currentLayer.markerClusterSettings.labelStyle;
     var options;
     var textElement;
+    var tempElement1;
+    var tempElement;
     var postionY = (15 / 4);
     var m = 0;
     var indexCollection = [];
     var clusters = currentLayer.markerClusterSettings;
     var clusterGroup = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster' });
-    for (var n = 0; n < markerTemplate.childElementCount; n++) {
-        var tempElement = markerTemplate.childNodes[n];
-        bounds.push(tempElement.getBoundingClientRect());
-    }
     var eventArg = {
         cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
         width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
@@ -654,85 +654,122 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
         eventArg = blazorEventArgs;
     }
     maps.trigger('markerClusterRendering', eventArg, function (clusterargs) {
-        for (var o = 0; o < bounds.length; o++) {
-            if (!isNullOrUndefined(bounds[o])) {
-                for (var p = o + 1; p < bounds.length; p++) {
-                    if (!isNullOrUndefined(bounds[p])) {
-                        if (bounds[o].left > bounds[p].right || bounds[o].right < bounds[p].left
-                            || bounds[o].top > bounds[p].bottom || bounds[o].bottom < bounds[p].top) {
-                        }
-                        else {
-                            colloideBounds.push(bounds[p]);
-                        }
-                    }
-                }
-                tempX = bounds[o].left + bounds[o].width / 2;
-                tempY = bounds[o].top + bounds[o].height;
-                indexCollection = [];
-                for (var q = 0; q < colloideBounds.length; q++) {
-                    for (var k = 0; k < bounds.length; k++) {
-                        if (!isNullOrUndefined(bounds[k])) {
-                            if (colloideBounds[q]['left'] === bounds[k]['left']) {
-                                delete bounds[k];
-                                for (var r = 0; r < markerTemplate.childElementCount; r++) {
-                                    var tempElement = markerTemplate.childNodes[r];
-                                    if (colloideBounds[q]['left'] === tempElement.getBoundingClientRect()['left']) {
-                                        markerTemplate.childNodes[r]['style']['visibility'] = "hidden";
-                                        markerTemplate.childNodes[o]['style']['visibility'] = "hidden";
-                                        indexCollection.push(o);
-                                        indexCollection.push(r);
-                                    }
+        for (var o_1 = 0; o_1 < markerTemplate.childElementCount; o_1++) {
+            indexCollection = [];
+            if (markerTemplate.childNodes[o_1]['style']['visibility'] !== 'hidden') {
+                tempElement = markerTemplate.childNodes[o_1];
+                bounds1 = tempElement.getBoundingClientRect();
+                if (!isNullOrUndefined(bounds1)) {
+                    for (var p_1 = o_1 + 1; p_1 < markerTemplate.childElementCount; p_1++) {
+                        if (markerTemplate.childNodes[p_1]['style']['visibility'] !== 'hidden') {
+                            tempElement = markerTemplate.childNodes[p_1];
+                            bounds2 = tempElement.getBoundingClientRect();
+                            if (!isNullOrUndefined(bounds2)) {
+                                if (bounds1.left > bounds2.right || bounds1.right < bounds2.left
+                                    || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top) {
+                                }
+                                else {
+                                    colloideBounds.push(bounds2);
+                                    markerTemplate.childNodes[p_1]['style']['visibility'] = "hidden";
+                                    indexCollection.push(p_1);
                                 }
                             }
                         }
                     }
+                    tempX = bounds1.left + bounds1.width / 2;
+                    tempY = bounds1.top + bounds1.height;
+                    if (colloideBounds.length > 0) {
+                        indexCollection = indexCollection.filter(function (item, index, value) { return value.indexOf(item) === index; });
+                        var container = maps.element.getBoundingClientRect();
+                        tempX = Math.abs(container['left'] - tempX);
+                        tempY = Math.abs(container['top'] - tempY);
+                        var translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
+                        var transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
+                            maps.translatePoint : translate['location'];
+                        var dataIndex = parseInt(markerTemplate.childNodes[o_1]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                        var markerIndex = parseInt(markerTemplate.childNodes[o_1]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                        markerTemplate.childNodes[o_1]['style']['visibility'] = "hidden";
+                        var clusters_1 = currentLayer.markerClusterSettings;
+                        var shapeCustom = {
+                            size: new Size(clusters_1.width, clusters_1.height),
+                            fill: clusters_1.fill, borderColor: clusters_1.border.color,
+                            borderWidth: clusters_1.border.width, opacity: clusters_1.opacity,
+                            dashArray: clusters_1.dashArray
+                        };
+                        shapeCustom['fill'] = eventArg.fill;
+                        shapeCustom['size']['width'] = eventArg.width;
+                        shapeCustom['size']['height'] = eventArg.height;
+                        shapeCustom['imageUrl'] = eventArg.imageUrl;
+                        shapeCustom['shape'] = eventArg.shape;
+                        shapeCustom['borderColor'] = eventArg.border.color;
+                        shapeCustom['borderWidth'] = eventArg.border.width;
+                        tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
+                        tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
+                        var clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
+                        var labelID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
+                        m++;
+                        var imageShapeY = eventArg.shape === 'Image' ? eventArg.height / 2 : 0;
+                        var ele = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: imageShapeY }, clusterID, shapeCustom, markerCollection, maps);
+                        ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                        if (eventArg.shape === 'Balloon') {
+                            ele.children[0].innerHTML = indexCollection.toString();
+                        }
+                        else {
+                            ele.innerHTML = indexCollection.toString();
+                        }
+                        options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
+                        textElement = renderTextElement(options, style, style.color, markerCollection);
+                        textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                        clusterGroup.appendChild(textElement);
+                        clusterGroup.appendChild(ele);
+                    }
                 }
-                if (colloideBounds.length > 0) {
-                    indexCollection = indexCollection.filter(function (item, index, value) { return value.indexOf(item) === index; });
-                    var container = maps.element.getBoundingClientRect();
-                    tempX = Math.abs(container['left'] - tempX);
-                    tempY = Math.abs(container['top'] - tempY);
-                    var translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
-                    var transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
-                        maps.translatePoint : translate['location'];
-                    var dataIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-                    var markerIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
-                    var clusters_1 = currentLayer.markerClusterSettings;
-                    var shapeCustom = {
-                        size: new Size(clusters_1.width, clusters_1.height),
-                        fill: clusters_1.fill, borderColor: clusters_1.border.color,
-                        borderWidth: clusters_1.border.width, opacity: clusters_1.opacity,
-                        dashArray: clusters_1.dashArray
-                    };
-                    shapeCustom['fill'] = eventArg.fill;
-                    shapeCustom['size']['width'] = eventArg.width;
-                    shapeCustom['size']['height'] = eventArg.height;
-                    shapeCustom['imageUrl'] = eventArg.imageUrl;
-                    shapeCustom['shape'] = eventArg.shape;
-                    shapeCustom['borderColor'] = eventArg.border.color;
-                    shapeCustom['borderWidth'] = eventArg.border.width;
-                    tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
-                    tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
-                    var clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
-                    var labelID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
-                    m++;
-                    var imageShapeY = eventArg.shape === 'Image' ? eventArg.height / 2 : 0;
-                    var ele = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: imageShapeY }, clusterID, shapeCustom, markerCollection, maps);
-                    ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-                    if (eventArg.shape === 'Balloon') {
-                        ele.children[0].innerHTML = indexCollection.toString();
+                colloideBounds = [];
+            }
+        }
+        layerElement.appendChild(clusterGroup);
+        maps.svgObject.appendChild(layerElement);
+        maps.element.appendChild(maps.svgObject);
+        for (var o = 0; o < clusterGroup.childElementCount; o++) {
+            if (clusterGroup.childNodes[o]['style']['visibility'] !== 'hidden') {
+                tempElement = clusterGroup.childNodes[o];
+                bounds1 = tempElement.getBoundingClientRect();
+                if (!isNullOrUndefined(bounds1) && !(tempElement.id.indexOf('_datalabel_') > -1)) {
+                    for (var p = o + 1; p < clusterGroup.childElementCount; p++) {
+                        if (clusterGroup.childNodes[p]['style']['visibility'] !== 'hidden') {
+                            tempElement1 = clusterGroup.childNodes[p];
+                            bounds2 = tempElement1.getBoundingClientRect();
+                            if (!isNullOrUndefined(bounds2) && !(tempElement1.id.indexOf('_datalabel_') > -1)) {
+                                if (bounds1.left > bounds2.right || bounds1.right < bounds2.left
+                                    || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top) {
+                                }
+                                else {
+                                    clusterColloideBounds.push(tempElement1);
+                                    clusterColloideBounds.push(clusterGroup.childNodes[p - 1]);
+                                    clusterGroup.childNodes[p]['style']['visibility'] = "hidden";
+                                    clusterGroup.childNodes[p - 1]['style']['visibility'] = "hidden";
+                                    indexCollection.push(p);
+                                }
+                            }
+                        }
                     }
-                    else {
-                        ele.innerHTML = indexCollection.toString();
+                    if (clusterColloideBounds.length > 0) {
+                        tempElement = clusterGroup.childNodes[o];
+                        for (var i = 0; i < clusterColloideBounds.length; i++) {
+                            if (tempElement.tagName === 'g') {
+                                tempElement.childNodes[0].textContent = tempElement.childNodes[0].textContent + ',' +
+                                    clusterColloideBounds[i].textContent;
+                            }
+                            else {
+                                tempElement.textContent = tempElement.textContent + ',' + clusterColloideBounds[i].textContent;
+                            }
+                            clusterGroup.childNodes[o - 1].textContent = ((+(clusterGroup.childNodes[o - 1].textContent)) + (+(clusterColloideBounds[i + 1].textContent))).toString();
+                            i++;
+                        }
                     }
-                    options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
-                    textElement = renderTextElement(options, style, style.color, markerCollection);
-                    textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-                    clusterGroup.appendChild(textElement);
-                    clusterGroup.appendChild(ele);
+                    clusterColloideBounds = [];
                 }
             }
-            colloideBounds = [];
         }
         while (0 < clusterGroup.childNodes.length) {
             markerCollection.insertBefore(clusterGroup.childNodes[0], markerCollection.firstChild);
@@ -743,6 +780,10 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
         else {
             getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection);
             layerElement.appendChild(markerCollection);
+        }
+        document.getElementById(maps.element.id + '_LayerIndex_0_markerCluster').remove();
+        if (zoomCheck) {
+            document.getElementById(maps.element.id + '_Layer_Collections').appendChild(layerElement);
         }
     });
 }
@@ -884,6 +925,9 @@ function maintainSelection(elementId, elementClass, element, className) {
             if (element.getAttribute('id') === elementId[index]) {
                 if (isNullOrUndefined(getElement(elementClass.id)) || index === 0) {
                     document.body.appendChild(elementClass);
+                    if (element.id.indexOf('_MarkerIndex_') > -1 && element.childElementCount > 0) {
+                        element.children[0].setAttribute('class', className);
+                    }
                 }
                 element.setAttribute('class', className);
             }
@@ -1322,6 +1366,16 @@ function removeElement(id) {
     return element ? remove(element) : null;
 }
 /**
+ *  To calculate map center position from pixel values
+ */
+function calculateCenterFromPixel(mapObject, layer) {
+    var point1 = convertGeoToPoint(mapObject.minLatOfGivenLocation, mapObject.minLongOfGivenLocation, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
+    var point2 = convertGeoToPoint(mapObject.maxLatOfGivenLocation, mapObject.maxLongOfGivenLocation, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
+    var x = (point1.x + point2.x) / 2;
+    var y = (point1.y + point2.y) / 2;
+    return new Point(x, y);
+}
+/**
  * @private
  */
 function getTranslate(mapObject, layer, animate) {
@@ -1330,6 +1384,8 @@ function getTranslate(mapObject, layer, animate) {
     var center = mapObject.centerPosition;
     var centerLatitude = center.latitude;
     var centerLongitude = center.longitude;
+    var checkMethodeZoom = !isNullOrUndefined(mapObject.centerLatOfGivenLocation) &&
+        !isNullOrUndefined(mapObject.centerLongOfGivenLocation) && mapObject.zoomNotApplied;
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
         mapObject.mapScaleValue = zoomFactorValue;
     }
@@ -1344,9 +1400,7 @@ function getTranslate(mapObject, layer, animate) {
             centerLongitude = mapObject.markerCenterLongitude;
         }
     }
-    if (!isNullOrUndefined(mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(mapObject.centerLongOfGivenLocation) && mapObject.zoomNotApplied) {
-        centerLatitude = mapObject.centerLatOfGivenLocation;
-        centerLongitude = mapObject.centerLongOfGivenLocation;
+    if (checkMethodeZoom) {
         mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
     }
     var min = mapObject.baseMapRectBounds['min'];
@@ -1364,13 +1418,14 @@ function getTranslate(mapObject, layer, animate) {
     var mapHeight = Math.abs(min['y'] - max['y']);
     var factor = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
     var titleTextSize = measureText(mapObject.titleSettings.text, mapObject.titleSettings.textStyle);
-    if (!isNullOrUndefined(centerLongitude) && !isNullOrUndefined(centerLatitude)) {
-        var leftPosition = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
-        var topPosition = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
-        var point = convertGeoToPoint(centerLatitude, centerLongitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
+    if ((!isNullOrUndefined(centerLongitude) && !isNullOrUndefined(centerLatitude)) || checkMethodeZoom) {
+        var leftPosition = (((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) + mapObject.mapAreaRect.x) / factor;
+        var topPosition = (((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) + mapObject.mapAreaRect.y) / factor;
+        var point = checkMethodeZoom ? calculateCenterFromPixel(mapObject, layer) :
+            convertGeoToPoint(centerLatitude, centerLongitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
         if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
             x = -point.x + leftPosition;
-            y = -point.y + topPosition + (titleTextSize['height'] / 2);
+            y = -point.y + topPosition;
             scaleFactor = zoomFactor;
         }
         else {
@@ -1455,6 +1510,8 @@ function getZoomTranslate(mapObject, layer, animate) {
     var center = mapObject.centerPosition;
     var latitude = center.latitude;
     var longitude = center.longitude;
+    var checkZoomMethod = !isNullOrUndefined(mapObject.centerLongOfGivenLocation) &&
+        !isNullOrUndefined(mapObject.centerLatOfGivenLocation) && mapObject.zoomNotApplied;
     if (isNullOrUndefined(mapObject.previousCenterLatitude) &&
         isNullOrUndefined(mapObject.previousCenterLongitude)) {
         mapObject.previousCenterLatitude = mapObject.centerPosition.latitude;
@@ -1471,7 +1528,12 @@ function getZoomTranslate(mapObject, layer, animate) {
         mapObject.centerPositionChanged = false;
     }
     if (isNullOrUndefined(mapObject.mapScaleValue) || (zoomFactorValue > mapObject.mapScaleValue)) {
-        mapObject.mapScaleValue = zoomFactorValue;
+        if (mapObject.isReset && mapObject.mapScaleValue === 1) {
+            mapObject.mapScaleValue = mapObject.mapScaleValue;
+        }
+        else {
+            mapObject.mapScaleValue = zoomFactorValue;
+        }
     }
     mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor !== 1 &&
         mapObject.zoomSettings.zoomFactor ===
@@ -1486,9 +1548,7 @@ function getZoomTranslate(mapObject, layer, animate) {
             longitude = mapObject.markerCenterLongitude;
         }
     }
-    if (!isNullOrUndefined(mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(mapObject.centerLongOfGivenLocation) && mapObject.zoomNotApplied) {
-        latitude = mapObject.centerLatOfGivenLocation;
-        longitude = mapObject.centerLongOfGivenLocation;
+    if (checkZoomMethod) {
         mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
     }
     var zoomFactor = animate ? 1 : mapObject.mapScaleValue;
@@ -1500,10 +1560,11 @@ function getZoomTranslate(mapObject, layer, animate) {
     var factor = animate ? 1 : mapObject.mapScaleValue;
     var mapWidth = Math.abs(max['x'] - min['x']);
     var mapHeight = Math.abs(min['y'] - max['y']);
-    if (!isNullOrUndefined(longitude) && !isNullOrUndefined(latitude)) {
+    if ((!isNullOrUndefined(longitude) && !isNullOrUndefined(latitude)) || checkZoomMethod) {
         var topPosition = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
         var leftPosition = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
-        var point = convertGeoToPoint(latitude, longitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
+        var point = checkZoomMethod ? calculateCenterFromPixel(mapObject, layer) :
+            convertGeoToPoint(latitude, longitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
         if ((!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) && !mapObject.zoomNotApplied) {
             if (mapObject.previousProjection !== mapObject.projectionType) {
                 x = -point.x + leftPosition;
@@ -1516,8 +1577,8 @@ function getZoomTranslate(mapObject, layer, animate) {
             }
         }
         else {
-            x = -point.x + leftPosition;
-            y = -point.y + topPosition;
+            x = -point.x + leftPosition + mapObject.mapAreaRect.x / zoomFactor;
+            y = -point.y + topPosition + mapObject.mapAreaRect.y / zoomFactor;
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
             y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
@@ -2218,7 +2279,8 @@ function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeigh
     var latRatio;
     var lngRatio;
     var scaleFactor;
-    var maxZoomFact = 10;
+    var maxZoomFact = maps.zoomSettings.maxZoom;
+    var applyMethodeZoom;
     var latZoom;
     var lngZoom;
     var result;
@@ -2228,15 +2290,23 @@ function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeigh
     var minLatSin = Math.sin(minLat * Math.PI / 180);
     var minLatRad = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
     var minLatValue = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
+    if (maps.zoomNotApplied && !maps.isTileMap) {
+        var latiRatio = Math.abs((maps.baseMapBounds.latitude.max - maps.baseMapBounds.latitude.min) / (maxLat - minLat));
+        var longiRatio = Math.abs((maps.baseMapBounds.longitude.max - maps.baseMapBounds.longitude.min) / (maxLong - minLong));
+        applyMethodeZoom = Math.min(latiRatio, longiRatio);
+        var minLocation = convertGeoToPoint(minLat, minLong, 1, maps.layersCollection[0], maps);
+        var maxLocation = convertGeoToPoint(maxLat, maxLong, 1, maps.layersCollection[0], maps);
+    }
     latRatio = (maxLatValue - minLatValue) / Math.PI;
     var lngDiff = maxLong - minLong;
     lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
     var WORLD_PX_HEIGHT = 256;
     var WORLD_PX_WIDTH = 256;
-    latZoom = Math.floor(Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
-    lngZoom = Math.floor(Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
-    result = Math.min(latZoom, lngZoom);
-    scaleFactor = Math.min(result, maxZoomFact - 1);
+    latZoom = (Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
+    lngZoom = (Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
+    result = (maps.zoomNotApplied && !maps.isTileMap) ? applyMethodeZoom : Math.min(latZoom, lngZoom);
+    scaleFactor = Math.min(result, maxZoomFact);
+    scaleFactor = maps.isTileMap || !maps.zoomNotApplied ? Math.floor(scaleFactor) : scaleFactor;
     if (!maps.isTileMap) {
         compareZoomFactor(scaleFactor, maps);
     }
@@ -3689,13 +3759,13 @@ var Marker = /** @__PURE__ @class */ (function () {
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             _this.maps.svgObject.appendChild(_this.markerSVGObject);
                             _this.maps.element.appendChild(_this.maps.svgObject);
-                            clusterTemplate(currentLayer, _this.markerSVGObject, _this.maps, layerIndex, _this.markerSVGObject, layerElement, true);
+                            clusterTemplate(currentLayer, _this.markerSVGObject, _this.maps, layerIndex, _this.markerSVGObject, layerElement, true, false);
                         }
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount) && getElementByID(_this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(_this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
                         if (currentLayer.markerClusterSettings.allowClustering) {
-                            clusterTemplate(currentLayer, markerTemplateEle, _this.maps, layerIndex, _this.markerSVGObject, layerElement, false);
+                            clusterTemplate(currentLayer, markerTemplateEle, _this.maps, layerIndex, _this.markerSVGObject, layerElement, false, false);
                         }
                     }
                 });
@@ -4512,6 +4582,9 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             panel.mapObject.tileZoomLevel = zoomFactorValue;
             panel.mapObject.previousZoomFactor = zoomFactorValue;
         }
+        else if (this.mapObject.isReset && panel.mapObject.tileZoomLevel === 1 && !panel.mapObject.zoomSettings.shouldZoomInitially) {
+            panel.mapObject.tileZoomLevel = panel.mapObject.tileZoomLevel;
+        }
         else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
             panel.mapObject.tileZoomLevel = !panel.mapObject.zoomSettings.shouldZoomInitially
                 && !panel.mapObject.centerPositionChanged ?
@@ -4571,15 +4644,15 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     else if (layer.key && layer.key.length > 1) {
                         var proxy_1 = _this;
                         var bing_1 = new BingMap(_this.mapObject);
-                        var url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
+                        var bingType = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
+                        var url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
                         var ajax = new Ajax({
-                            url: url + '?output=json&include=ImageryProviders&key=' + layer.key
+                            url: url + '?output=json&include=ImageryProviders&urischeme=https&key=' + layer.key
                         });
                         ajax.onSuccess = function (json) {
                             var jsonObject = JSON.parse(json);
                             var resource = jsonObject['resourceSets'][0]['resources'][0];
                             var imageUrl = resource['imageUrl'];
-                            imageUrl = imageUrl.replace('http', 'https');
                             var subDomains = resource['imageUrlSubdomains'];
                             var maxZoom = resource['zoomMax'];
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing_1.imageUrl) {
@@ -5307,6 +5380,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         x = (factorX / 2) - (totalSize / 2);
         y = (factorY / 2) - (totalSize / 2);
         var position = convertTileLatLongToPoint(centerPosition, level, { x: x, y: y }, this.isMapCoordinates);
+        padding = this.mapObject.zoomNotApplied ? 0 : padding;
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
@@ -6576,10 +6650,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var isTwoCoordinates = false;
         if (isNullOrUndefined(maxLatitude) && isNullOrUndefined(maxLongitude)
             || isNullOrUndefined(minLatitude) && isNullOrUndefined(minLongitude)) {
-            maxLatitude = isNullOrUndefined(maxLatitude) ? 0 : maxLatitude;
-            maxLongitude = isNullOrUndefined(maxLongitude) ? 0 : maxLongitude;
             minLatitude = isNullOrUndefined(minLatitude) ? 0 : minLatitude;
             minLongitude = isNullOrUndefined(minLatitude) ? 0 : minLongitude;
+            maxLatitude = isNullOrUndefined(maxLatitude) ? minLatitude : maxLatitude;
+            maxLongitude = isNullOrUndefined(maxLongitude) ? minLongitude : maxLongitude;
             isTwoCoordinates = true;
         }
         if (minLatitude > maxLatitude) {
@@ -6598,8 +6672,12 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
         this.centerLatOfGivenLocation = centerLatitude;
         this.centerLongOfGivenLocation = centerLongtitude;
-        this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude, this.mapAreaRect.width, this.mapAreaRect.height, this);
+        this.minLatOfGivenLocation = minLatitude;
+        this.minLongOfGivenLocation = minLongitude;
+        this.maxLatOfGivenLocation = maxLatitude;
+        this.maxLongOfGivenLocation = maxLongitude;
         this.zoomNotApplied = true;
+        this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude, this.mapAreaRect.width, this.mapAreaRect.height, this);
         this.refresh();
     };
     /**
@@ -6707,10 +6785,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
-                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (newLayerLength - 1));
+                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
                 }
                 else {
-                    this.markerModule.markerRender(layerEle, (newLayerLength - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
+                    this.markerModule.markerRender(layerEle, (this.layers.length - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
                 }
             }
             else if (newProp.layers && isStaticMapType) {
@@ -7484,7 +7562,9 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         var propertyPath;
         var isPoint = false;
         var animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-        var translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
+        var translate = (this.maps.isTileMap) ? new Object() : ((this.maps.zoomSettings.zoomFactor > 1 &&
+            !isNullOrUndefined(this.maps.zoomModule)) ? getZoomTranslate(this.maps, layer, animate$$1) :
+            getTranslate(this.maps, layer, animate$$1));
         var scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
         var transPoint = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'];
         var zoomTransPoint = this.maps.zoomTranslatePoint;
@@ -7733,7 +7813,6 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                     else {
                         element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
                             + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
-                        location['y'] = location['y'] + (elementSize.height / 4);
                     }
                     group.appendChild(element);
                 }
@@ -10540,8 +10619,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
             this.getTileTranslatePosition(prevLevel, newZoomFactor, position);
             map.tileZoomLevel = newZoomFactor;
             map.scale = Math.pow(2, newZoomFactor - 1);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
             this.triggerZoomEvent(prevTilePoint, prevLevel);
             map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint);
         }
@@ -10586,7 +10665,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var size = map.availableSize;
         map.previousProjection = map.projectionType;
         var prevLevel = map.tileZoomLevel;
+        var prevTilePoint = map.tileTranslatePoint;
         var zoomRect = this.zoomingRect;
+        var maxZoom = map.zoomSettings.maxZoom;
+        var minZoom = map.zoomSettings.minZoom;
         if (zoomRect.height > 0 && zoomRect.width > 0) {
             var x = this.zoomingRect.x + (this.zoomingRect.width / 2);
             var y = this.zoomingRect.y + (this.zoomingRect.height / 2);
@@ -10599,18 +10681,22 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 var translatePointY = translatePoint.y - (((size.height / scale) - (size.height / zoomCalculationFactor)) / (size.height / y));
                 map.translatePoint = new Point(translatePointX, translatePointY);
                 map.scale = zoomCalculationFactor;
+                this.triggerZoomEvent(prevTilePoint, prevLevel);
             }
             else {
                 zoomCalculationFactor = prevLevel + (Math.round(prevLevel + (((size.width / zoomRect.width) + (size.height / zoomRect.height)) / 2)));
+                zoomCalculationFactor = (zoomCalculationFactor >= minZoom && zoomCalculationFactor <= maxZoom) ? zoomCalculationFactor : maxZoom;
                 this.getTileTranslatePosition(prevLevel, zoomCalculationFactor, { x: x, y: y });
                 map.tileZoomLevel = zoomCalculationFactor;
-                map.mapLayerPanel.generateTiles(zoomCalculationFactor, map.tileTranslatePoint);
                 map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * Math.pow(2, zoomCalculationFactor))) /
                     (Math.pow(2, zoomCalculationFactor));
                 map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, zoomCalculationFactor))) /
                     (Math.pow(2, zoomCalculationFactor));
                 map.scale = (Math.pow(2, zoomCalculationFactor));
+                this.triggerZoomEvent(prevTilePoint, prevLevel);
+                map.mapLayerPanel.generateTiles(zoomCalculationFactor, map.tileTranslatePoint);
             }
+            map.mapScaleValue = zoomCalculationFactor;
             this.applyTransform(true);
             this.maps.zoomNotApplied = false;
             this.zoomingRect = null;
@@ -10747,7 +10833,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             }
                         }
                         else if (currentEle.id.indexOf('_Markers_Group') > -1) {
-                            this.markerTranslates(currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate$$1);
+                            if (!this.isPanning) {
+                                this.markerTranslates(currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate$$1);
+                            }
                             currentEle = layerElement.childNodes[j];
                             if (!isNullOrUndefined(currentEle)) {
                                 for (var k = 0; k < currentEle.childElementCount; k++) {
@@ -10938,13 +11026,13 @@ var Zoom = /** @__PURE__ @class */ (function () {
                         if (currentLayers.markerClusterSettings.allowClustering) {
                             _this.maps.svgObject.appendChild(markerSVGObject);
                             _this.maps.element.appendChild(_this.maps.svgObject);
-                            clusterTemplate(currentLayers, markerSVGObject, _this.maps, layerIndex, markerSVGObject, layerElement, true);
+                            clusterTemplate(currentLayers, markerSVGObject, _this.maps, layerIndex, markerSVGObject, layerElement, true, true);
                         }
                     }
                     if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts) && getElementByID(_this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(_this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
                         if (currentLayers.markerClusterSettings.allowClustering) {
-                            clusterTemplate(currentLayers, markerTemplateElements, _this.maps, layerIndex, markerSVGObject, layerElement, false);
+                            clusterTemplate(currentLayers, markerTemplateElements, _this.maps, layerIndex, markerSVGObject, layerElement, false, true);
                         }
                     }
                 });
@@ -11008,8 +11096,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     var templateOffset = element.getBoundingClientRect();
                     var layerOffset = layerEle.getBoundingClientRect();
                     var elementOffset = element.parentElement.getBoundingClientRect();
-                    var x_2 = ((labelX) + (layerOffset.left - elementOffset.left) - (templateOffset.width / 2));
-                    var y_2 = ((labelY) + (layerOffset.top - elementOffset.top) - (templateOffset.height / 2));
+                    var x_2 = ((labelX) + (layerOffset.left - elementOffset.left));
+                    var y_2 = ((labelY) + (layerOffset.top - elementOffset.top));
                     element.style.left = x_2 + 'px';
                     element.style.top = y_2 + 'px';
                 }
@@ -11258,7 +11346,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         map.previousProjection = map.projectionType;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
+        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom || minZoom >= 1 && zoomFactor >= 1)) {
             var min = map.baseMapRectBounds['min'];
             var max = map.baseMapRectBounds['max'];
             var mapWidth = Math.abs(max['x'] - min['x']);
@@ -11275,7 +11363,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
             map.scale = zoomFactor;
             this.triggerZoomEvent(prevTilePoint, prevLevel);
         }
-        else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
+        else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom || minZoom >= 1 && zoomFactor >= 1)) {
             var tileZoomFactor = zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;
@@ -11846,5 +11934,5 @@ var Zoom = /** @__PURE__ @class */ (function () {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es5.js.map

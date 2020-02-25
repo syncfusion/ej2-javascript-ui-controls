@@ -302,6 +302,8 @@ const WORK_HOURS_CLASS = 'e-work-hours';
 /** @hidden */
 const POPUP_OPEN = 'e-popup-open';
 /** @hidden */
+const POPUP_CLOSE = 'e-popup-close';
+/** @hidden */
 const DATE_HEADER_WRAP_CLASS = 'e-date-header-wrap';
 /** @hidden */
 const DATE_HEADER_CONTAINER_CLASS = 'e-date-header-container';
@@ -4371,7 +4373,12 @@ class EventBase {
         let elementSelect = [];
         let selectAppointments = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_BORDER));
         selectAppointments.filter((element) => {
-            eventSelect.push(this.getEventByGuid(element.getAttribute('data-guid')));
+            let isAlreadyAdded = eventSelect.filter((event) => {
+                return event.Guid === element.getAttribute('data-guid');
+            });
+            if (isAlreadyAdded.length === 0) {
+                eventSelect.push(this.getEventByGuid(element.getAttribute('data-guid')));
+            }
             elementSelect.push(element);
         });
         return {
@@ -6060,8 +6067,11 @@ class QuickPopups {
             }
         });
     }
-    beforeQuickPopupOpen(target) {
-        this.updateQuickPopupTemplates();
+    beforeQuickPopupOpen(target, success) {
+        if (isBlazor() && this.isQuickInfoTemplates() && isNullOrUndefined(success)) {
+            this.updateQuickPopupTemplates(target);
+            return;
+        }
         let isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         let popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp = {
@@ -6077,6 +6087,7 @@ class QuickPopups {
                 }
                 this.resetQuickPopupTemplates();
                 removeChildren(this.quickPopup.element);
+                this.isMultipleEventSelect = false;
             }
             else {
                 let display = this.quickPopup.element.style.display;
@@ -6119,6 +6130,13 @@ class QuickPopups {
                 this.quickPopup.show();
             }
         });
+    }
+    isQuickInfoTemplates() {
+        if (!isNullOrUndefined(this.parent.quickInfoTemplates.header || this.parent.quickInfoTemplates.content
+            || this.parent.quickInfoTemplates.footer)) {
+            return true;
+        }
+        return false;
     }
     applyEventColor() {
         let colorField = '';
@@ -6167,26 +6185,49 @@ class QuickPopups {
             }
         }
     }
-    updateQuickPopupTemplates() {
+    updateQuickPopupTemplates(target) {
+        let templateReady = {
+            header: this.parent.quickInfoTemplates.header ? false : true,
+            content: this.parent.quickInfoTemplates.content ? false : true,
+            footer: this.parent.quickInfoTemplates.footer ? false : true
+        };
         if (this.parent.quickInfoTemplates.header) {
-            updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates, null, () => {
+                templateReady.header = true;
+                this.quickPopupShow(templateReady, target);
+            });
         }
         if (this.parent.quickInfoTemplates.content) {
-            updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates, null, () => {
+                templateReady.content = true;
+                this.quickPopupShow(templateReady, target);
+            });
         }
         if (this.parent.quickInfoTemplates.footer) {
-            updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates, null, () => {
+                templateReady.footer = true;
+                this.quickPopupShow(templateReady, target);
+            });
+        }
+    }
+    quickPopupShow(templateReady, target) {
+        if (templateReady.header && templateReady.content && templateReady.footer) {
+            this.beforeQuickPopupOpen(target, true);
         }
     }
     resetQuickPopupTemplates() {
-        if (this.parent.quickInfoTemplates.header) {
-            resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        if (isBlazor() && this.isQuickInfoTemplates()) {
+            removeClass([this.quickPopup.element], POPUP_OPEN);
+            addClass([this.quickPopup.element], POPUP_CLOSE);
+            if (this.parent.quickInfoTemplates.header) {
+                resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+            }
+            if (this.parent.quickInfoTemplates.content) {
+                resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+            }
+            if (this.parent.quickInfoTemplates.footer) {
+                resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+            }
         }
     }
     quickPopupClose() {
@@ -12915,9 +12956,9 @@ let Schedule = class Schedule extends Component {
     }
     /**
      * Imports the events from an .ics file downloaded from any of the calendars like Google or Outlook into the Scheduler.
-     * This method accepts the blob object of an .ics file to be imported as a mandatory argument.
+     * This method accepts the blob object or string format of an .ics file to be imported as a mandatory argument.
      * @method importICalendar
-     * @param {Blob} fileContent Accepts the file object.
+     * @param {Blob | string} fileContent Accepts the file object or string format of an .ics file.
      * @returns {void}
      */
     importICalendar(fileContent) {
@@ -13999,7 +14040,7 @@ class MonthEvent extends EventBase {
             let appTop = this.getRowTop(resIndex);
             let blockElement = this.createBlockAppointmentElement(event, resIndex);
             setStyleAttribute(blockElement, {
-                'width': appWidth + 'px', 'height': appHeight + 1 + 'px', 'left': appLeft + 'px',
+                'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px',
                 'right': appRight + 'px', 'top': appTop + 'px'
             });
             this.renderEventElement(event, blockElement, cellTd);
@@ -16310,7 +16351,6 @@ class DragAndDrop extends ActionBase {
             this.appendCloneElement(this.getEventWrapper(colIndex));
             dragStart$$1 = this.parent.getDateFromElement(td);
             dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes / heightPerMinute));
-            dragStart$$1 = this.calculateIntervalTime(dragStart$$1);
             dragEnd = new Date(dragStart$$1.getTime());
             if (this.actionObj.element.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
                 dragEnd.setMinutes(dragEnd.getMinutes() + this.actionObj.slotInterval);
@@ -16344,7 +16384,7 @@ class DragAndDrop extends ActionBase {
             datesCount = datesCount + this.verticalEvent.dateRender[i].length;
         }
         let dayIndex = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
-            : this.parent.getDateFromElement(this.actionObj.target).getDay();
+            : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], resetTime(this.parent.getDateFromElement(this.actionObj.target)));
         let record = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
         let eStart = record[this.verticalEvent.fields.startTime];
         let eEnd = record[this.verticalEvent.fields.endTime];
@@ -20023,6 +20063,7 @@ class YearEvent extends TimelineEvent {
             let monthStart = new Date(this.parent.selectedDate.getFullYear(), row, 1);
             let monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
             let dayIndex = monthStart.getDay();
+            let isSpannedCollection = [];
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 let leftValue;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
@@ -20047,12 +20088,14 @@ class YearEvent extends TimelineEvent {
                     let availedHeight = this.cellHeader + (this.eventHeight * (index + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                         let isRendered = this.renderedEvents.filter((eventObj) => eventObj.Guid === eventData.Guid);
-                        if (isRendered.length > 0) {
+                        let isSpanned = isSpannedCollection.filter((eventObj) => eventObj.Guid === eventData.Guid);
+                        if (isRendered.length > 0 || isSpanned.length > 0) {
                             continue;
                         }
                     }
                     if (this.cellHeight > availedHeight) {
                         this.renderEvent(eventWrapper, eventData, row, leftValue, overlapIndex, dayIndex);
+                        isSpannedCollection.push(eventData);
                     }
                     else {
                         let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
@@ -20061,6 +20104,7 @@ class YearEvent extends TimelineEvent {
                             for (let a = index; a < dayEvents.length; a++) {
                                 let moreData = extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
                                 this.renderedEvents.push(moreData);
+                                isSpannedCollection.push(eventData);
                             }
                         }
                         break;
@@ -20093,7 +20137,9 @@ class YearEvent extends TimelineEvent {
             if (!eventArgs.cancel) {
                 wrapper.appendChild(wrap);
                 this.wireAppointmentEvents(wrap, eventObj, true);
-                this.renderedEvents.push(extend({}, eventObj, null, true));
+                if (!eventObj.isSpanned.isRight) {
+                    this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
             }
         });
     }
@@ -20179,11 +20225,18 @@ class YearEvent extends TimelineEvent {
         let eventData = extend({}, eventObj, null, true);
         let eventStart = eventData[this.fields.startTime];
         let eventEnd = eventData[this.fields.endTime];
-        eventData.isSpanned = {
-            count: Math.ceil((eventEnd.getTime() - eventStart.getTime()) / MS_PER_DAY),
-            isLeft: eventStart.getTime() < monthStart.getTime(),
-            isRight: eventEnd.getTime() > monthEnd.getTime()
-        };
+        let isSpanned = { isLeft: false, isRight: false };
+        if (eventStart.getTime() < monthStart.getTime()) {
+            eventData[this.fields.startTime] = monthStart;
+            isSpanned.isLeft = true;
+        }
+        if (eventEnd.getTime() > monthEnd.getTime()) {
+            eventData[this.fields.endTime] = monthEnd;
+            isSpanned.isRight = true;
+        }
+        isSpanned.count = Math.ceil((eventData[this.fields.endTime].getTime() -
+            eventData[this.fields.startTime].getTime()) / MS_PER_DAY);
+        eventData.isSpanned = isSpanned;
         return eventData;
     }
     getOverlapEvents(date, appointments) {
@@ -20819,13 +20872,16 @@ class ICalendarImport {
         this.parent = parent;
     }
     initializeCalendarImport(fileContent) {
-        if (fileContent) {
+        if (fileContent && fileContent instanceof Blob) {
             let fileReader = new FileReader();
             fileReader.onload = (event) => {
                 let iCalString = fileReader.result;
                 this.iCalendarParser(iCalString);
             };
             fileReader.readAsText(fileContent, 'ISO-8859-8');
+        }
+        else if (fileContent && typeof fileContent === 'string') {
+            this.iCalendarParser(fileContent);
         }
     }
     iCalendarParser(iCalString) {

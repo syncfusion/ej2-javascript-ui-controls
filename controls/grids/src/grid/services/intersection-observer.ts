@@ -1,7 +1,7 @@
-import { EventHandler, Browser } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { debounce } from '@syncfusion/ej2-base';
 import { SentinelInfo, SentinelType } from '../base/type';
-import { InterSection } from '../base/interface';
+import { InterSection, IGrid } from '../base/interface';
 export type ScrollDirection = 'up' | 'down' | 'right' | 'left';
 /**
  * InterSectionObserver - class watch whether it enters the viewport.
@@ -13,6 +13,7 @@ export class InterSectionObserver {
     private fromWheel: boolean = false;
     private touchMove: boolean = false;
     private options: InterSection = {};
+    private parent: IGrid;
     public sentinelInfo: SentinelInfo = {
         'up': {
             check: (rect: ClientRect, info: SentinelType) => {
@@ -45,7 +46,8 @@ export class InterSectionObserver {
             }, axis: 'X'
         }
     };
-    constructor(element: HTMLElement, options: InterSection) {
+    constructor(parent: IGrid, element: HTMLElement, options: InterSection) {
+        this.parent = parent;
         this.element = element;
         this.options = options;
     }
@@ -79,7 +81,8 @@ export class InterSectionObserver {
             }
 
             let check: boolean = this.check(direction);
-            if (current.entered) {
+            if (current.entered && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered) ||
+            (isBlazor() && this.parent.isServerRendered && !this.parent.isWheelScrolled))) {
                 onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
             }
 
@@ -87,10 +90,13 @@ export class InterSectionObserver {
                 let fn: Function = debounced100;
                 //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
                 if (current.axis === 'X') { fn = debounced50; }
-                fn({
-                    direction: direction, sentinel: current, offset: { top: top, left: left },
-                    focusElement: document.activeElement
-                });
+                if (isBlazor() && this.parent.isServerRendered && this.parent.isWheelScrolled) {
+                    callback({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                        focusElement: document.activeElement});
+                } else {
+                    fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                        focusElement: document.activeElement});
+                }
             }
             this.fromWheel = false;
         };

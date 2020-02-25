@@ -3377,6 +3377,9 @@ let Tooltip = class Tooltip extends Component {
     }
     renderContent(target) {
         let tooltipContent = this.tooltipEle.querySelector('.' + CONTENT);
+        if (this.cssClass) {
+            addClass([this.tooltipEle], this.cssClass.split(' '));
+        }
         if (target && !isNullOrUndefined(target.getAttribute('title'))) {
             target.setAttribute('data-content', target.getAttribute('title'));
             target.removeAttribute('title');
@@ -3527,9 +3530,6 @@ let Tooltip = class Tooltip extends Component {
                         }, styles: 'width:' +
                             formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
                     });
-                    if (this.cssClass) {
-                        addClass([this.tooltipEle], this.cssClass.split(' '));
-                    }
                     this.beforeRenderBlazor(target, this);
                 }
                 if (!isBlazorTooltipRendered) {

@@ -224,6 +224,7 @@ export class CellColor {
         heatMap.emptyPointColor = heatMap.paletteSettings.emptyPointColor ? heatMap.paletteSettings.emptyPointColor :
             heatMap.themeStyle.emptyCellColor;
         let tempcolorMapping: PaletterColor = this.orderbyOffset(
+            this.heatMap.isColorRange ? heatMap.paletteSettings.palette :
             heatMap.paletteSettings.palette && heatMap.paletteSettings.palette.length > 1 ?
                 heatMap.paletteSettings.palette : heatMap.themeStyle.palette);
         if (!tempcolorMapping.isCompact) {

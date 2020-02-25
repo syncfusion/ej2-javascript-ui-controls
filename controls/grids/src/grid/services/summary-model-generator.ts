@@ -70,13 +70,18 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         let rows: Row<AggregateColumnModel>[] = [];
         let row: AggregateRowModel[] = (<AggregateRowModel[]>this.getData());
         for (let i: number = 0; i < row.length; i++) {
-            rows.push(this.getGeneratedRow(row[i], data[i], args ? (<SummaryData>args).level : undefined, start, end));
+            rows.push(
+                this.getGeneratedRow(
+                    row[i], data[i],
+                    args ? (<SummaryData>args).level : undefined, start, end,
+                    args ? (<SummaryData>args).parentUid : undefined));
         }
         return rows;
     }
 
-    public getGeneratedRow(summaryRow: AggregateRowModel, data: Object, raw: number, start: number, end: number):
-        Row<AggregateColumnModel> {
+    public getGeneratedRow(
+        summaryRow: AggregateRowModel,
+        data: Object, raw: number, start: number, end: number, parentUid?: string): Row<AggregateColumnModel> {
         let tmp: Cell<AggregateColumnModel>[] = [];
         let indents: string[] = this.getIndentByLevel(raw);
         let isDetailGridAlone: boolean = !isNullOrUndefined(this.parent.childGrid);
@@ -99,6 +104,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         let row: Row<AggregateColumnModel> = new Row<AggregateColumnModel>({ data: data, attributes: { class: 'e-summaryrow' } });
         row.cells = tmp;
         row.uid = getUid('grid-row');
+        row.parentUid = parentUid;
         row.visible = tmp.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell && cell.visible);
         return row;
     }
@@ -228,4 +234,5 @@ export class CaptionSummaryModelGenerator extends SummaryModelGenerator implemen
 interface SummaryData {
     aggregates?: Object;
     level?: number;
+    parentUid?: string;
 }

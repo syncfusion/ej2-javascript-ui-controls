@@ -14,15 +14,19 @@ describe('FileManager control single selection Gid view', () => {
     describe('property change testing', () => {
         let feObj: FileManager;
         let ele: HTMLElement;
+        let originalTimeout: any;
         beforeEach(() => {
             jasmine.Ajax.install();
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach(() => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('for cssClass', () => {
             feObj = new FileManager({
@@ -214,7 +218,6 @@ describe('FileManager control single selection Gid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.enableRtl = false;
                 feObj.dataBind();
@@ -223,7 +226,6 @@ describe('FileManager control single selection Gid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(feObj.element.classList.contains('e-rtl')).toEqual(false);
                     expect(feObj.element.querySelector('.e-treeview').classList.contains('e-rtl')).toEqual(false);
@@ -252,7 +254,6 @@ describe('FileManager control single selection Gid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(document.getElementById('file_tree').offsetWidth).toEqual(0);
                 feObj.navigationPaneSettings = { visible: true };
@@ -262,7 +263,6 @@ describe('FileManager control single selection Gid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(document.getElementById('file_tree').offsetWidth).not.toEqual(0);
                     feObj.navigationPaneSettings = { visible: false };
@@ -289,13 +289,11 @@ describe('FileManager control single selection Gid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data16)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -311,13 +309,11 @@ describe('FileManager control single selection Gid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(data17)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -346,13 +342,11 @@ describe('FileManager control single selection Gid view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(idData2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -373,13 +367,11 @@ describe('FileManager control single selection Gid view', () => {
                     status: 200,
                     responseText: JSON.stringify(idData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(idData4)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -414,7 +406,6 @@ describe('FileManager control single selection Gid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.selectedItems = ["Employees", "Nature"];
                 feObj.dataBind();
@@ -445,7 +436,6 @@ describe('FileManager control single selection Gid view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.selectedItems = ["6172", "6174"];
                 feObj.dataBind();
@@ -474,7 +464,6 @@ describe('FileManager control single selection Gid view', () => {
                 status: 404,
                 responseText: "Not Found"
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.ajaxSettings.url = "http://localhost/FileOperations";
                 feObj.ajaxSettings.uploadUrl = "http://localhost/uploadUrl";
@@ -486,7 +475,6 @@ describe('FileManager control single selection Gid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -522,13 +510,11 @@ describe('FileManager control single selection Gid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');

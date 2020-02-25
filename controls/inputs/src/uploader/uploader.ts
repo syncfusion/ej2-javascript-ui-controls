@@ -582,6 +582,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * {% codeBlock src='uploader/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})
@@ -633,6 +634,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * You can customize the default text of “browse, clear, and upload” buttons with plain text or HTML elements.
      * The buttons’ text can be customized from localization also. If you configured both locale and buttons property,
      * the uploader component considers the buttons property value.
+     * {% codeBlock src='uploader/buttons/index.md' %}{% endcodeBlock %}
      * @default { browse : 'Browse...', clear: 'Clear', upload: 'Upload' }
      */
     @Complex<ButtonsPropsModel>({}, ButtonsProps)
@@ -682,9 +684,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * * Size
      * * Type
      * 
-     * {% codeBlock src="uploader/files-api/index.ts" %}{% endcodeBlock %}
-     * 
-     * {% codeBlock src="uploader/files-api/index.html" %}{% endcodeBlock %}
+     * {% codeBlock src='uploader/files/index.md' %}{% endcodeBlock %}
      * @default { name: '', size: null, type: '' }
      */
     @Collection<FilesPropModel>([{}], FilesProp)

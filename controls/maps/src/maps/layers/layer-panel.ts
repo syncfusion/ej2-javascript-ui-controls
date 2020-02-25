@@ -129,6 +129,8 @@ export class LayerPanel {
         if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
             panel.mapObject.tileZoomLevel = zoomFactorValue;
             panel.mapObject.previousZoomFactor = zoomFactorValue;
+        }  else if (this.mapObject.isReset && panel.mapObject.tileZoomLevel === 1 && !panel.mapObject.zoomSettings.shouldZoomInitially) {
+            panel.mapObject.tileZoomLevel = panel.mapObject.tileZoomLevel;
         } else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
             panel.mapObject.tileZoomLevel = !panel.mapObject.zoomSettings.shouldZoomInitially
                 && !panel.mapObject.centerPositionChanged ?
@@ -192,15 +194,15 @@ export class LayerPanel {
                     } else if (layer.key && layer.key.length > 1) {
                         let proxy: LayerPanel = this;
                         let bing: BingMap = new BingMap(this.mapObject);
-                        let url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
+                        let bingType: string = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
+                        let url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
                         let ajax: Ajax = new Ajax({
-                            url: url + '?output=json&include=ImageryProviders&key=' + layer.key
+                            url: url + '?output=json&include=ImageryProviders&urischeme=https&key=' + layer.key
                         });
                         ajax.onSuccess = (json: string) => {
                             let jsonObject: object = JSON.parse(json);
                             let resource: object = jsonObject['resourceSets'][0]['resources'][0];
                             let imageUrl: string = <string>resource['imageUrl'];
-                            imageUrl = imageUrl.replace('http', 'https');
                             let subDomains: string[] = <string[]>resource['imageUrlSubdomains'];
                             let maxZoom: string = <string>resource['zoomMax'];
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
@@ -933,6 +935,7 @@ export class LayerPanel {
         y = (factorY / 2) - (totalSize / 2);
         let position: MapLocation = convertTileLatLongToPoint(
             centerPosition, level, { x: x, y: y }, this.isMapCoordinates);
+        padding = this.mapObject.zoomNotApplied ? 0 : padding;
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);

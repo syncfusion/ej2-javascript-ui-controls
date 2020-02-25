@@ -15,6 +15,7 @@ describe('FileManager control Grid view', () => {
         let mouseEventArgs: any, tapEvent: any;
         let feObj: any;
         let ele: HTMLElement;
+        let originalTimeout: any;
         beforeEach(() => {
             mouseEventArgs = {
                 preventDefault: (): void => { },
@@ -32,11 +33,14 @@ describe('FileManager control Grid view', () => {
             jasmine.Ajax.install();
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach(() => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('for cssClass', () => {
             feObj = new FileManager({
@@ -228,7 +232,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
             setTimeout(function () {
                 expect((<HTMLElement>document.querySelector("#file_tree  .e-text-content .e-list-text")).innerText).toEqual('My Drive');
                 feObj.rootAliasName = 'Test';
@@ -238,7 +241,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect((<HTMLElement>document.querySelector("#file_tree  .e-text-content .e-list-text")).innerText).toEqual('Test');
                     done();
@@ -260,7 +262,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.enableRtl = false;
                 feObj.dataBind();
@@ -269,7 +270,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(feObj.element.classList.contains('e-rtl')).toEqual(false);
                     expect(feObj.element.querySelector('.e-treeview').classList.contains('e-rtl')).toEqual(false);
@@ -297,7 +297,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(document.getElementById('file_tree').offsetWidth).toEqual(0);
                 feObj.navigationPaneSettings = { visible: true };
@@ -307,7 +306,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(document.getElementById('file_tree').offsetWidth).not.toEqual(0);
                     feObj.navigationPaneSettings = { visible: false };
@@ -332,7 +330,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.view = 'Details';
                 feObj.dataBind();
@@ -341,7 +338,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(feObj.element.querySelector('.e-grid').classList.contains('e-grid')).toEqual(true);
                     // expect(feObj.element.querySelector('.e-grid').offsetWidth !== 0).toEqual(true);
@@ -354,7 +350,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(data1)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         expect(feObj.element.querySelector('.e-large-icons').classList.contains('e-large-icons')).toEqual(true);
                         // expect(feObj.element.querySelector('.e-large-icons').offsetWidth !== 0).toEqual(true);
@@ -493,7 +488,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 // expect(document.querySelector('.e-rowcell .e-fe-image')).toBe(null)
                 feObj.showThumbnail = true;
@@ -503,7 +497,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     // expect(document.querySelector('.e-rowcell .e-fe-image')).toBe(null)
                     expect(feObj.showThumbnail).toEqual(true);
@@ -514,7 +507,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(data1)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         expect(document.querySelector('.e-rowcell .e-fe-image').classList.contains('e-fe-image')).toBe(true)
                         expect(feObj.showThumbnail).toEqual(false);
@@ -537,7 +529,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(document.querySelectorAll('.e-row .e-fe-text')[4].textContent).toBe("1.png")
                 feObj.showFileExtension = true;
@@ -547,7 +538,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(feObj.showFileExtension).toEqual(true);
                     expect(document.querySelectorAll('.e-fe-text')[4].textContent).toBe("1.png")
@@ -558,7 +548,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(data1)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         expect(feObj.showFileExtension).toEqual(false);
                         // expect(document.querySelectorAll('.e-row .e-fe-text')[4].textContent).toBe("1")
@@ -581,7 +570,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.showHiddenItems = true;
                 feObj.dataBind();
@@ -590,7 +578,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(feObj.showHiddenItems).toEqual(true);
                     expect(data1.files.length).toBe(5);
@@ -601,7 +588,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(dataHidden)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         expect(feObj.showHiddenItems).toEqual(false);
                         expect(dataHidden.files.length).toBe(6);
@@ -624,7 +610,6 @@ describe('FileManager control Grid view', () => {
                 status: 404,
                 responseText: "Not Found"
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.ajaxSettings.url = "http://localhost/FileOperations";
                 feObj.ajaxSettings.uploadUrl = "http://localhost/uploadUrl";
@@ -636,7 +621,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -671,13 +655,11 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -878,13 +860,11 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data16)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -903,13 +883,11 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(data17)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -939,13 +917,11 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(idData2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -966,13 +942,11 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(idData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(idData4)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -1006,7 +980,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.selectedItems = ["Employees", "Nature"];
                 feObj.dataBind();
@@ -1036,7 +1009,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.selectedItems = ["6172", "6174"];
                 feObj.dataBind();

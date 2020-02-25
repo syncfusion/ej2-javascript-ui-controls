@@ -40,6 +40,8 @@ export const beforeRequest: string = 'before-request';
 /** @hidden */
 export const upload: string = 'upload';
 /** @hidden */
+export const skipUpload: string = 'skip-upload';
+/** @hidden */
 export const afterRequest: string = 'after-request';
 /** @hidden */
 export const download: string = 'download';

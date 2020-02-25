@@ -57,7 +57,7 @@
       transform: rotate(90deg);
     }
 
-    .e-treerowexpanded {
+    .e-treerowexpanded:not(.e-hiddenrow) {
       display: table-row;
     }
 

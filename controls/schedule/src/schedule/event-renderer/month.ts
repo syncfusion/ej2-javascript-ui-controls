@@ -196,7 +196,7 @@ export class MonthEvent extends EventBase {
             let appTop: number = this.getRowTop(resIndex);
             let blockElement: HTMLElement = this.createBlockAppointmentElement(event, resIndex);
             setStyleAttribute(blockElement, {
-                'width': appWidth + 'px', 'height': appHeight + 1 + 'px', 'left': appLeft + 'px',
+                'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px',
                 'right': appRight + 'px', 'top': appTop + 'px'
             });
             this.renderEventElement(event, blockElement, cellTd);

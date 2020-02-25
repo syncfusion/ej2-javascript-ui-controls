@@ -1426,14 +1426,15 @@ export class Editor {
                     insertFormat.bidi = isBidi;
                 }
                 // tslint:disable-next-line:max-line-length
-                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && (!isBidi || (isBidi && insertLangId === inlineLangId))
-                    || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
+                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat)
+                    && (insertLangId === inlineLangId) || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                 } else {
                     let tempSpan: TextElementBox = new TextElementBox();
                     tempSpan.text = text;
                     tempSpan.line = inline.line;
                     tempSpan.characterFormat.copyFormat(insertFormat);
+
                     let insertIndex: number = inline.indexInOwner;
                     if (indexInInline === inline.length) {
                         let isParaBidi: boolean = inline.line.paragraph.bidi;
@@ -1441,7 +1442,8 @@ export class Editor {
                             inline = inline.fieldBegin;
                             insertIndex = inline.indexInOwner;
                         }
-                        inline.line.children.splice(isParaBidi ? insertIndex : insertIndex + 1, 0, tempSpan);
+                        let index: number = isParaBidi || inline instanceof EditRangeEndElementBox ? insertIndex : insertIndex + 1;
+                        inline.line.children.splice(index, 0, tempSpan);
                     } else if (indexInInline === 0) {
                         if (isRtl && !isBidi) {
                             inline.line.children.splice(insertIndex + 1, 0, tempSpan);
@@ -1939,8 +1941,9 @@ export class Editor {
             } else {
                 this.insertFieldEndText(element, selection, text, index);
             }
-        } else if (element instanceof BookmarkElementBox) {
-            this.insertBookMarkText(element, selection, text, index);
+        } else if (element instanceof BookmarkElementBox || element instanceof EditRangeStartElementBox
+            || element instanceof EditRangeEndElementBox) {
+            this.insertBookMarkText(element, text);
         }
     }
     private insertFieldBeginText(fieldBegin: FieldElementBox, selection: Selection, text: string, index: number): void {
@@ -1953,13 +1956,17 @@ export class Editor {
         spanObj.line = fieldBegin.line;
         this.documentHelper.layout.reLayoutParagraph(fieldBegin.line.paragraph, lineIndex, spanIndex);
     }
-    private insertBookMarkText(element: BookmarkElementBox, selection: Selection, text: string, index: number): void {
+    private insertBookMarkText(element: ElementBox, text: string): void {
         let spanObj: TextElementBox = new TextElementBox();
         spanObj.text = text;
         let lineIndex: number = element.line.paragraph.childWidgets.indexOf(element.line);
         let spanIndex: number = (element.line as LineWidget).children.indexOf(element);
         spanObj.characterFormat.copyFormat(element.characterFormat);
-        (element.line as LineWidget).children.splice(spanIndex, 0, spanObj);
+        if (element instanceof EditRangeEndElementBox || element instanceof BookmarkElementBox) {
+            (element.line as LineWidget).children.splice(spanIndex, 0, spanObj);
+        } else {
+            (element.line as LineWidget).children.splice(spanIndex + 1, 0, spanObj);
+        }
         spanObj.line = element.line;
         this.documentHelper.layout.reLayoutParagraph(element.line.paragraph, lineIndex, spanIndex);
     }

@@ -11,13 +11,13 @@ import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompi
 import { getRowHeight, setColumnIndex, Global } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';
 import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';
-import { HeaderCellInfoEventArgs, KeyboardEventArgs} from './interface';
+import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs } from './interface';
 import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';
 import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';
 import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel, NotifyArgs } from './interface';
@@ -46,8 +46,9 @@ import { FocusStrategy } from '../services/focus-strategy';
 import { SortSettingsModel, SelectionSettingsModel, FilterSettingsModel, SearchSettingsModel, EditSettingsModel } from './grid-model';
 import { SortDescriptorModel, PredicateModel, RowDropSettingsModel, GroupSettingsModel, TextWrapSettingsModel } from './grid-model';
 import { InfiniteScrollSettingsModel } from './grid-model';
-import { PageSettingsModel, AggregateRowModel } from '../models/models';
+import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';
 import { PageSettings } from '../models/page-settings';
+import { ColumnChooserSettings } from '../models/column-chooser-settings';
 import { Sort } from '../actions/sort';
 import { Page } from '../actions/page';
 import { Selection } from '../actions/selection';
@@ -567,6 +568,14 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
     @Property(true)
     public showDropArea: boolean;
 
+    /**
+     * If `allowGroupReordering` is set to true, Grid allows the grouped elements to be reordered.     
+     * @default false
+     */
+    /** @hidden */
+    @Property(false)
+    public allowGroupReordering: boolean;
+
     /**   
      * If `showToggleButton` set to true, then the toggle button will be showed in the column headers which can be used to group
      * or ungroup columns by clicking them.
@@ -615,7 +624,6 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
      */
     @Property()
     public captionTemplate: string;
-
 
 }
 
@@ -684,6 +692,22 @@ export class EditSettings extends ChildProperty<EditSettings> {
     @Property('')
     public template: string | Object;
 
+    /**
+     * Defines the custom edit elements for the dialog header template.
+     * @default ''
+     * @aspType string
+     */
+    @Property('')
+    public headerTemplate: string | Object;
+
+    /**
+     * Defines the custom edit elements for the dialog footer template.
+     * @default ''
+     * @aspType string
+     */
+    @Property('')
+    public footerTemplate: string | Object;
+
     /**   
      * Defines the position of adding a new row. The available position are:
      * * Top
@@ -727,6 +751,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private columnModel: Column[];
     private rowTemplateFn: Function;
     private editTemplateFn: Function;
+    private editHeaderTemplateFn: Function;
+    private editFooterTemplateFn: Function;
     private detailTemplateFn: Function;
     private sortedColumns: string[];
     private footerElement: Element;
@@ -737,6 +763,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private media: { [key: string]: MediaQueryList } = {};
     /** @hidden */
     public invokedFromMedia: boolean;
+    /** @hidden */
+    public allowGroupReordering: boolean;
     private dataBoundFunction: Function;
     private componentRefresh: Function = Component.prototype.refresh;
     /** @hidden */
@@ -774,6 +802,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public currentViewData: Object[] = [];
     /** @hidden */
+    /**
+     * Gets the parent Grid details.
+     */
+    @Property()
     public parentDetails: ParentDetails;
     /** @hidden */
     public isEdit: boolean;
@@ -803,6 +835,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public isAutoGen: boolean = false;
     private mediaBindInstance: Object = {};
+    /** @hidden */
+    public isWheelScrolled: boolean;
 
     //Module Declarations
     /**
@@ -1229,6 +1263,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(false)
     public showColumnChooser: boolean;
+    /**     
+     * Configures the column chooser in the Grid.
+     * @default { columnChooserOperator: 'startsWith' }     
+     */
+    @Complex<ColumnChooserSettingsModel>({}, ColumnChooserSettings)
+    public columnChooserSettings: ColumnChooserSettingsModel;
 
     /**
      * If `enableHeaderFocus` set to true, then header element will be focused when focus moves to grid.
@@ -1564,6 +1604,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Event()
     public recordDoubleClick: EmitType<RecordDoubleClickEventArgs>;
+
+    /** 
+     * Triggers when record is clicked.
+     * @event 
+     * @blazorProperty 'OnRecordClick'
+     */
+    @Event()
+    public recordClick: EmitType<RecordClickEventArgs>;
 
     /** 
      * Triggers before row selection occurs.
@@ -2033,7 +2081,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * @hidden
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['pageSettings', 'sortSettings',
@@ -2218,9 +2265,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.isInitialLoad = false;
         this.allowServerDataBinding = false;
         this.ignoreCollectionWatch = true;
-        if (this.enableVirtualization || this.enableColumnVirtualization) {            
-            this.isServerRendered = false; //NEW
-        }
         this.mergeCells = {};
         this.isEdit = false;
         this.checkAllRows = 'None';
@@ -2394,8 +2438,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (!(isBlazor() && this.isServerRendered)) {
             this.getMediaColumns();
+            setColumnIndex(this.columns as Column[]);
         }
-        setColumnIndex(this.columns as Column[]);
         this.checkLockColumns(this.columns as Column[]);
         this.getColumns();
         this.processModel();
@@ -3195,7 +3239,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let dRows: Element[] = [];
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
             if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
-                dRows.push(rows[i] as Element);
+                if (this.isCollapseStateEnabled()) {
+					dRows[parseInt(rows[i].getAttribute("aria-rowindex"))] = rows[i];
+				} else {
+					dRows.push(rows[i] as Element);
+				}
             }
         }
         return dRows;
@@ -3609,6 +3657,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * Gets a compiled dialog edit header template.
+     * @private
+     * @return {Function}
+     */
+    public getEditHeaderTemplate(): Function {
+        return this.editHeaderTemplateFn;
+    }
+
+    /**
+     * Gets a compiled dialog edit footer template.
+     * @private
+     * @return {Function}
+     */
+    public getEditFooterTemplate(): Function {
+        return this.editFooterTemplateFn;
+    }
+
+    /**
      * Get the names of the primary key columns of the Grid. 
      * @return {string[]}
      */
@@ -3713,6 +3779,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getVisibleFrozenColumns(): number {
         return this.getVisibleFrozenColumnsCount() + this.getVisibleFrozenCount(this.columns as Column[], 0);
+    }
+
+    /**
+     * Get the current Filter operator and field.
+     * @return {Object}
+     */
+    public getFilterUIInfo(): FilterUI {
+        return this.filterModule? this.filterModule.getFilterUIInfo() : {};
     }
 
     private getVisibleFrozenColumnsCount(): number {
@@ -3824,7 +3898,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public filterByColumn(
-        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean, predicate?: string, matchCase?: boolean,
+        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean| number[]| string[]| Date[]| boolean[],
+        predicate?: string, matchCase?: boolean,
         ignoreAccent?: boolean, actualFilterValue?: string, actualOperator?: string): void {
         if (this.filterModule) {
             this.filterModule.filterByColumn(
@@ -4294,6 +4369,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.rowTemplateFn = templateCompiler(this.rowTemplate);
         this.detailTemplateFn = templateCompiler(this.detailTemplate);
         this.editTemplateFn = templateCompiler(this.editSettings.template as string);
+        this.editHeaderTemplateFn = templateCompiler(this.editSettings.headerTemplate as string);
+        this.editFooterTemplateFn = templateCompiler(this.editSettings.footerTemplate as string);
         if (!isNullOrUndefined(this.parentDetails)) {
             let value: string = isNullOrUndefined(this.parentDetails.parentKeyFieldValue) ? 'undefined' :
                 this.parentDetails.parentKeyFieldValue;
@@ -4702,6 +4779,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (parentsUntil(e.target as Element, 'e-gridheader') && this.allowRowDragAndDrop) {
             e.preventDefault();
         }
+        let args: RecordClickEventArgs = this.getRowInfo(e.target as Element) as RecordClickEventArgs;
+        let cancel: string = 'cancel';
+        args[cancel] = false;
+        let isDataRow: boolean = false;
+        let tr: Element = closest(<Node>e.target, 'tr');
+        if (tr && tr.getAttribute('data-uid')) {
+            let rowObj: Row<Column> = this.getRowObjectFromUID(tr.getAttribute('data-uid'))
+            isDataRow = rowObj ? rowObj.isDataRow : false;
+        }
+        if (isBlazor()) {
+            let clonedColumn: Column = extend({}, args.column) as Column;
+            args = { rowData: args.rowData, rowIndex: args.rowIndex,
+                 cellIndex: args.cellIndex, column: clonedColumn };
+        }
+        if (isDataRow) {
+            this.trigger(events.recordClick, args);
+        }
         this.notify(events.click, e);
     }
 
@@ -4768,10 +4862,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return false;
     }
 
-    private mergePersistGridData(): void {
+    /**
+     * hidden
+     */
+    public mergePersistGridData(persistedData?: Object): void {
         let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
-        if (!(isNullOrUndefined(data) || (data === ''))) {
-            let dataObj: Grid = JSON.parse(data);
+        if (!(isNullOrUndefined(data) || (data === ''))|| !isNullOrUndefined(persistedData)) {
+            let dataObj: Grid = !isNullOrUndefined(persistedData) ? persistedData: JSON.parse(data);
             if (this.enableVirtualization) {
                 dataObj.pageSettings.currentPage = 1;
             }
@@ -4780,7 +4877,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (let key of keys) {
                 if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
                     if (Array.isArray(this[key]) && key === 'columns') {
-                        setColumnIndex(<Column[]>this[key]);
+                        if (!(isBlazor() && this.isServerRendered)) {
+                            setColumnIndex(<Column[]>this[key]);
+                        }
                         this.mergeColumns(<Column[]>dataObj[key], <Column[]>this[key]);
                         this[key] = dataObj[key];
                     } else {
@@ -4806,6 +4905,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     if (isBlazor()) {
                         let guid: string = 'guid';
                         storedColumns[i][guid] = localCol[guid];
+                        storedColumns[i].uid = localCol.uid;
                     }
                     storedColumns[i] = <Column>extend(localCol, storedColumns[i], true);
                 }
@@ -4883,7 +4983,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private updateColumnObject(): void {
         prepareColumns(this.columns, this.enableColumnVirtualization);
-        setColumnIndex(this.columns as Column[]);
+        if (!(isBlazor() && this.isServerRendered)) {
+            setColumnIndex(this.columns as Column[]);
+        }
         this.initForeignColumn();
         this.notify(events.autoCol, {});
     }
@@ -5447,6 +5549,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return height;
     }
+    
+    /**
+     *To perform aggregate operation on a column.
+     *@param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
+     *@param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
+     * */
+    public getSummaryValues(summaryCol: AggregateColumnModel, summaryData: Object): number {
+        return DataUtil.aggregates[(summaryCol.type as string).toLowerCase()](summaryData, summaryCol.field);
 
+    }
+
+    /**
+     * @hidden
+     */
+    public isCollapseStateEnabled(): boolean {
+        let isExpanded: string = 'isExpanded';
+        return this[isExpanded];
+    }
 
 }

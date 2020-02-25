@@ -21,7 +21,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private observers: TreeInterSectionObserver;
     private translateY: number = 0;
     private maxiPage: number = 0;
-    private startIndex: number = -1;
+    /** @hidden */
+    public startIndex: number = -1;
     private endIndex: number = -1;
     private totalRecords: number;
     private contents: HTMLElement;

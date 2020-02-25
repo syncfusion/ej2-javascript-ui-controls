@@ -674,11 +674,12 @@ export class ContextMenu {
         let restartAt: HTMLElement = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         let autoFitTable: HTMLElement = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
         let addComment: HTMLElement = document.getElementById(id + CONTEXTMENU_ADD_COMMENT);
-
+        let isDialogHidden: boolean = false;
         cut.style.display = 'none';
         paste.style.display = 'none';
         (paste.nextSibling as HTMLElement).style.display = 'none';
         hyperlink.style.display = 'none';
+        (font.previousSibling as HTMLElement).style.display = 'none';
         openHyperlink.style.display = 'none';
         copyHyperlink.style.display = 'none';
         editHyperlink.style.display = 'none';
@@ -756,9 +757,12 @@ export class ContextMenu {
                 }
                 removeHyperlink.style.display = 'block';
                 (removeHyperlink.nextSibling as HTMLElement).style.display = 'block';
+                isDialogHidden = true;
             } else {
                 if (owner.hyperlinkDialogModule) {
                     hyperlink.style.display = 'block';
+                    (font.previousSibling as HTMLElement).style.display = 'block';
+                    isDialogHidden = true;
                 }
             }
         }
@@ -777,10 +781,11 @@ export class ContextMenu {
         } else {
             if (this.documentHelper.owner.fontDialogModule) {
                 font.style.display = 'block';
-                (font.previousSibling as HTMLElement).style.display = 'block';
             }
             if (this.documentHelper.owner.paragraphDialogModule) {
                 paragraph.style.display = 'block';
+            } else if (!isDialogHidden && !this.documentHelper.owner.fontDialogModule && !isHideComment) {
+                (addComment.nextSibling as HTMLElement).style.display = 'none';
             }
         }
         if (selection.contextType === 'Image') {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.50 (2020-02-18)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#262932` - Now the pivot table is rendering properly while the filter settings contains unavailable member(s).
+
 ## 17.4.47 (2020-02-05)
 
 ### Pivot Table

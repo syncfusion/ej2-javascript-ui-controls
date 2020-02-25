@@ -177,7 +177,7 @@ export class WorkbookFormula {
     private updateSheetInfo(): void {
         this.sheetInfo = [];
         this.parent.sheets.forEach((sheet: SheetModel, idx: number) => {
-            this.sheetInfo.push({ visibleName: sheet.name, sheet: sheet.name, index: idx });
+            this.sheetInfo.push({ visibleName: sheet.name, sheet: 'Sheet' + sheet.id, index: idx });
         });
     }
 
@@ -295,15 +295,28 @@ export class WorkbookFormula {
     }
 
     private parseSheetRef(value: string): string {
-        let sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
+        let regx: RegExp;
+        let escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,.{}|\":<>~_-]', 'g');
+        let i: number = 0;
         let sheetCount: number = this.parent.sheets.length;
-        for (let j: number = 0; j < sheetCount; j++) {
-            if (sheetInfo[j].sheet.toUpperCase() !== sheetInfo[j].visibleName.toUpperCase()) {
-                let name: string = sheetInfo[j].visibleName.toUpperCase();
-                if (value.toUpperCase().indexOf(name) > -1) {
-                    value = value.toUpperCase().split(name).join(sheetInfo[j].sheet);
+        let temp: number[] = [];
+        temp.length = 0;
+        let sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
+        let exp: string = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
+        for (i = 0; i < sheetCount; i++) {
+            if (sheetInfo[i].sheet !== sheetInfo[i].visibleName) {
+                regx = new RegExp(sheetInfo[i].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
+                if (value.match(regx)) {
+                    value = value.replace(regx, i + '/');
+                    temp.push(i);
                 }
             }
+        }
+        i = 0;
+        while (i < temp.length) {
+            regx = new RegExp(temp[i] + '/' + exp, 'gi');
+            value = value.replace(regx, sheetInfo[temp[i]].sheet);
+            i++;
         }
         return value;
     }

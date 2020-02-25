@@ -77,6 +77,7 @@ export class YearEvent extends TimelineEvent {
             let monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), row, 1);
             let monthEnd: Date = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
             let dayIndex: number = monthStart.getDay();
+            let isSpannedCollection: Object[] = [];
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 let leftValue: number;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
@@ -101,10 +102,13 @@ export class YearEvent extends TimelineEvent {
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                         let isRendered: Object[] = this.renderedEvents.filter((eventObj: { [key: string]: Object }) =>
                             eventObj.Guid === eventData.Guid);
-                        if (isRendered.length > 0) { continue; }
+                        let isSpanned: Object[] = isSpannedCollection.filter((eventObj: { [key: string]: Object }) =>
+                            eventObj.Guid === eventData.Guid);
+                        if (isRendered.length > 0 || isSpanned.length > 0) { continue; }
                     }
                     if (this.cellHeight > availedHeight) {
                         this.renderEvent(eventWrapper, eventData, row, leftValue, overlapIndex, dayIndex);
+                        isSpannedCollection.push(eventData);
                     } else {
                         let moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
                         this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, dayEvents);
@@ -113,6 +117,7 @@ export class YearEvent extends TimelineEvent {
                                 let moreData: { [key: string]: Object } =
                                     extend({}, dayEvents[a], { Index: overlapIndex + a }, true) as { [key: string]: Object };
                                 this.renderedEvents.push(moreData);
+                                isSpannedCollection.push(eventData);
                             }
                         }
                         break;
@@ -145,7 +150,9 @@ export class YearEvent extends TimelineEvent {
             if (!eventArgs.cancel) {
                 wrapper.appendChild(wrap);
                 this.wireAppointmentEvents(wrap, eventObj, true);
-                this.renderedEvents.push(extend({}, eventObj, null, true));
+                if (!(eventObj.isSpanned as { [key: string]: Object }).isRight) {
+                    this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
             }
         });
     }
@@ -231,11 +238,18 @@ export class YearEvent extends TimelineEvent {
         let eventData: { [key: string]: Object } = extend({}, eventObj, null, true) as { [key: string]: Object };
         let eventStart: Date = eventData[this.fields.startTime] as Date;
         let eventEnd: Date = eventData[this.fields.endTime] as Date;
-        eventData.isSpanned = {
-            count: Math.ceil((eventEnd.getTime() - eventStart.getTime()) / util.MS_PER_DAY),
-            isLeft: eventStart.getTime() < monthStart.getTime(),
-            isRight: eventEnd.getTime() > monthEnd.getTime()
-        };
+        let isSpanned: { [key: string]: Object } = { isLeft: false, isRight: false };
+        if (eventStart.getTime() < monthStart.getTime()) {
+            eventData[this.fields.startTime] = monthStart;
+            isSpanned.isLeft = true;
+        }
+        if (eventEnd.getTime() > monthEnd.getTime()) {
+            eventData[this.fields.endTime] = monthEnd;
+            isSpanned.isRight = true;
+        }
+        isSpanned.count = Math.ceil(((eventData[this.fields.endTime] as Date).getTime() -
+            (eventData[this.fields.startTime] as Date).getTime()) / util.MS_PER_DAY);
+        eventData.isSpanned = isSpanned;
         return eventData;
     }
 

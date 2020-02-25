@@ -7700,7 +7700,7 @@ export class Selection {
         if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
             (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + (page.boundingRectangle.width * this.documentHelper.zoomFactor)) && this.viewer instanceof PageLayoutViewer) {
             return true;
-        // tslint:disable-next-line:max-line-length
+            // tslint:disable-next-line:max-line-length
         } else if ((this.viewer.containerLeft + point.x) >= page.boundingRectangle.x &&
             (this.viewer.containerLeft + point.x) <= (page.boundingRectangle.x + page.boundingRectangle.width)) {
             return true;
@@ -8101,7 +8101,8 @@ export class Selection {
         }
     }
     private highlightEditRegions(editRangeStart: EditRangeStartElementBox, startPosition: TextPosition, endPosition: TextPosition): void {
-        if (!editRangeStart.line.paragraph.isInsideTable) {
+        if (!editRangeStart.line.paragraph.isInsideTable
+            || (editRangeStart.line.paragraph.isInsideTable && !editRangeStart.editRangeEnd.line.paragraph.isInsideTable)) {
             this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
             if (this.isHighlightNext) {
                 this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
@@ -8111,13 +8112,15 @@ export class Selection {
         } else {
             let row: TableRowWidget = editRangeStart.line.paragraph.associatedCell.ownerRow as TableRowWidget;
             let cell: TableCellWidget = row.childWidgets[editRangeStart.columnFirst] as TableCellWidget;
-            for (let i: number = 0; i < cell.childWidgets.length; i++) {
-                if (cell.childWidgets[i] instanceof ParagraphWidget) {
-                    this.highlight(cell.childWidgets[i] as ParagraphWidget, startPosition, endPosition);
-                    if (this.isHighlightNext) {
-                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
-                        this.isHighlightNext = false;
-                        this.hightLightNextParagraph = undefined;
+            if (cell) {
+                for (let i: number = 0; i < cell.childWidgets.length; i++) {
+                    if (cell.childWidgets[i] instanceof ParagraphWidget) {
+                        this.highlight(cell.childWidgets[i] as ParagraphWidget, startPosition, endPosition);
+                        if (this.isHighlightNext) {
+                            this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                            this.isHighlightNext = false;
+                            this.hightLightNextParagraph = undefined;
+                        }
                     }
                 }
             }

@@ -1,4 +1,3 @@
-
 import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '@syncfusion/ej2-base';
 import { MultiSelect, ISelectAllEventArgs } from '../../src/multi-select/index';
 import { FilteringEventArgs } from '../../src/drop-down-base';
@@ -1606,7 +1605,45 @@ describe('MultiSelect', () => {
             expect((<any>listObj).liCollections.length).toBe(2);
         });
     });
+    describe('EJ2-31766 - Performance issue arises while clearing ', () => {
+        let listObj: MultiSelect;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
 
+        let sportsData: any[] =  [
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            for (let i: number =0; i < 100; i++) {
+                sportsData.push({Game: "Cricket" + i, Id: "Game" + i });
+            }
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('larger number of selected items using a clear button', () => {
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Game' },
+                mode: 'CheckBox', 
+                showSelectAll: true,
+                showDropDownIcon: true
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            listObj.hidePopup();
+            listObj.selectAll(true);
+            mouseEventArgs.target = (listObj as any).componentWrapper.querySelector('.e-chips-close.e-close-hooker');
+            (<any>listObj).ClearAll(mouseEventArgs);
+            expect((<any>listObj).value.length).toBe(0);
+        });
+    });
     describe('EJ2-35010 - Maximum call stack size exceeded issue occurs when setting custom value with no datasource ', () => {
         let listObj: MultiSelect;
         let originalTimeout: number;

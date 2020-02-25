@@ -9,7 +9,8 @@ import { RectangleF, SizeF, PointF } from './../../drawing/pdf-drawing';
 import { PdfPage } from './../../pages/pdf-page';
 import { PdfLayoutElement } from './../../graphics/figures/layout-element';
 import { PdfLayoutResult, PdfLayoutParams, PdfLayoutFormat } from './../../graphics/figures/base/element-layouter';
-import { PdfGridStyle } from './styles/style';
+import { PdfGridStyle , PdfGridCellStyle} from './styles/style';
+import { PdfBorders} from './styles/pdf-borders';
 import { PdfGraphics } from './../../graphics/pdf-graphics';
 import { PdfGridLayouter, PdfGridLayoutResult  } from './../../structured-elements/grid/layout/grid-layouter';
 import { PdfGridBeginCellDrawEventArgs, PdfGridEndCellDrawEventArgs} from '../../structured-elements/grid/layout/grid-layouter';
@@ -419,16 +420,18 @@ export class PdfGrid extends PdfLayoutElement {
      * @private
      */
     protected layout(param : PdfLayoutParams) : PdfLayoutResult {
-        // if (this.rows.count !== 0) {
-        //     if (this.rows.getRow(0).cells.getCell(0).style.borders.left.width !== 1) {
-        //         let x : number = this.rows.getRow(0).cells.getCell(0).style.borders.left.width / 2;
-        //         let y : number = this.rows.getRow(0).cells.getCell(0).style.borders.top.width / 2;
-        //         if (param.bounds.x === PdfBorders.default.right.width / 2 && param.bounds.y === PdfBorders.default.right.width / 2) {
-        //             let newBound : RectangleF = new RectangleF(x, y, this.gridSize.width, this.gridSize.height);
-        //             param.bounds = newBound;
-        //         }
-        //     }
-        // }
+        if (this.rows.count !== 0) {
+            let currentRow : PdfGridCellStyle = this.rows.getRow(0).cells.getCell(0).style;
+            if (currentRow.borders != null && (( currentRow.borders.left != null && currentRow.borders.left.width !== 1) ||
+                   (currentRow.borders.top != null && currentRow.borders.top.width !== 1))) {
+                let x : number = currentRow.borders.left.width / 2;
+                let y : number = currentRow.borders.top.width / 2;
+                if (param.bounds.x === PdfBorders.default.right.width / 2 && param.bounds.y === PdfBorders.default.right.width / 2) {
+                    let newBound : RectangleF = new RectangleF(x, y, this.gridSize.width, this.gridSize.height);
+                    param.bounds = newBound;
+                }
+            }
+        }
         this.setSpan();
         this.checkSpan();
         this.layoutFormat = param.format;

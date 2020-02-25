@@ -223,6 +223,30 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('Testing the long spanned event in timeline year view horizontal orientation', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let yearData: Object[] = [{ Id: 1, StartTime: new Date(2019, 1, 1, 10, 0, 0), EndTime: new Date(2019, 5, 1, 10, 0, 0), IsAllDay: true }];
+            let model: ScheduleModel = {
+                width: '500px', selectedDate: new Date(2019, 0, 1),
+                views: [
+                    // { option: 'Day' }, { option: 'Year', isSelected: true },
+                    { option: 'TimelineYear', displayName: 'Horizontal' }
+                ]
+            };
+            schObj = util.createSchedule(model, yearData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Testing long spanned event in horizontal year view'), () => {
+            expect(schObj.element.querySelectorAll('[data-id="Appointment_1"]').length).toEqual(4);
+        };
+    });
+
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

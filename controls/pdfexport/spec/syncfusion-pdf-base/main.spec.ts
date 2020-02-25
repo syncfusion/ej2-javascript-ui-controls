@@ -1,9 +1,9 @@
 ﻿/**
  * spec document for Main.ts class
  */
-import { PdfDocument, PdfGraphics, PdfPage, PdfTextWebLink, PdfColor, SizeF, PdfLayoutBreakType, PdfLayoutType, PdfPen, PdfPaddings } from './../../src/index';
+import { PdfDocument, PdfGraphics, PdfPage, PdfTextWebLink, PdfColor, PdfBorders, SizeF, PdfLayoutBreakType, PdfLayoutType, PdfPen, PdfPaddings } from './../../src/index';
 import { PdfGridLayoutFormat, PdfStringFormat, PdfFont, PdfStandardFont, PdfTextAlignment } from './../../src/index';
-import { PdfGrid,  PdfSolidBrush, PdfNumberStyle,PdfGridRow } from './../../src/index';
+import { PdfGrid,  PdfSolidBrush, PdfNumberStyle,PdfGridRow, PdfGridCell, PdfGridCellStyle } from './../../src/index';
 import { PdfPageSize, PdfPageRotateAngle, RectangleF, PointF, PdfPageTemplateElement,PdfBorderOverlapStyle } from './../../src/index';
 import { PdfHorizontalOverflowType, PdfPageOrientation, PdfFontFamily, PdfFontStyle, PdfPageNumberField, PdfBitmap } from './../../src/index';
 import { PdfPageCountField } from './../../src/implementation/document/automatic-fields/page-count-field';
@@ -12,6 +12,1140 @@ import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { PdfTextElement, PdfLayoutResult } from './../../src/index';
 import { Utils } from './utils.spec';
 
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_Header_NoBorder', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+        document.pageSettings.orientation = PdfPageOrientation.Landscape;
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Thomas c";
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+        // save the document
+        
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_Header_NoBorder.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_Header_BorderAll', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let border : PdfBorders = new PdfBorders();
+        border.all = new PdfPen(new PdfColor(0,0,255), 10);
+        pdfGridHeader.style.setBorder(border);
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_Header_BorderAll.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersBottom_Header', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let border : PdfBorders = new PdfBorders();
+        border.bottom = new PdfPen(new PdfColor(0,0,255), 10);
+        pdfGridHeader.style.setBorder(border);
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+       
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersBottom_Header.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersRight_Header', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let border : PdfBorders = new PdfBorders();
+        border.right = new PdfPen(new PdfColor(0,0,255), 10);
+
+        pdfGridHeader.style.setBorder(border);
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+       
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersRight_Header.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersLeft_Header', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let border : PdfBorders = new PdfBorders();
+        border.left = new PdfPen(new PdfColor(0,0,255), 10);
+
+        pdfGridHeader.style.setBorder(border);
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+      
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersLeft_Header.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersTop_Header', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let border : PdfBorders = new PdfBorders();
+        border.top = new PdfPen(new PdfColor(0,0,255), 10);
+
+        pdfGridHeader.style.setBorder(border);
+      
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+       
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersTop_Header.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersAll_RowandHeader', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        // add rows
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Paine";
+
+        // add rows
+        let pdfGridRow3 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow3.cells.getCell(0).value = "E3";
+        pdfGridRow3.cells.getCell(1).value = "Adam";
+
+        let border : PdfBorders = new PdfBorders();
+        border.all = new PdfPen(new PdfColor(0,0,255), 10);
+
+        pdfGridHeader.style.setBorder(border);
+        
+        pdfGridRow2.style.setBorder(border);
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+       
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersAll_RowandHeader.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersAll_Row', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Thomas";
+
+        let pdfGridRow3 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow3.cells.getCell(0).value = "E3";
+        pdfGridRow3.cells.getCell(1).value = "Adam";
+
+        let border : PdfBorders = new PdfBorders();
+        border.all = new PdfPen(new PdfColor(0,0,255), 10);
+
+        let border1 : PdfBorders = new PdfBorders();
+        border1.all = new PdfPen(new PdfColor(0,255,255), 20);
+
+        pdfGridRow1.style.setBorder(border);
+        pdfGridRow3.style.setBorder(border1);
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document     
+
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersAll_Row.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+       // destroy the document
+       document.destroy();
+    });
+});
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersTop_EntireRow', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(3);
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+        pdfGridRow1.cells.getCell(2).value = "500";
+
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Thomas";
+        pdfGridRow2.cells.getCell(2).value = "800";
+
+        let pdfGridRow3 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow3.cells.getCell(0).value = "E3";
+        pdfGridRow3.cells.getCell(1).value = "Adam";
+        pdfGridRow3.cells.getCell(2).value = "1000";
+
+        let border : PdfBorders = new PdfBorders();
+        border.top = new PdfPen(new PdfColor(0,0,255), 10);
+
+
+        let border1 : PdfBorders = new PdfBorders();
+        border1.top = new PdfPen(new PdfColor(0,255,255), 20);
+
+        let border2 : PdfBorders = new PdfBorders();
+        border2.top = new PdfPen(new PdfColor(0,255,255), 30);
+
+        pdfGridRow1.style.setBorder(border);
+        pdfGridRow2.style.setBorder(border2);
+        pdfGridRow3.style.setBorder(border1);
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersTop_EntireRow.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersTop_Row', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(3);
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+        pdfGridRow1.cells.getCell(2).value = "500";
+
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Thomas";
+        pdfGridRow2.cells.getCell(2).value = "800";
+
+        let pdfGridRow3 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow3.cells.getCell(0).value = "E3";
+        pdfGridRow3.cells.getCell(1).value = "Adam";
+        pdfGridRow3.cells.getCell(2).value = "1000";
+
+        let border2 : PdfBorders = new PdfBorders();
+        border2.top = new PdfPen(new PdfColor(0,255,255), 30);
+
+        pdfGridRow3.style.setBorder(border2);
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+      
+
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersTop_Row.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersLeft_Row', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Thomas";
+        let pdfGridRow3 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow3.cells.getCell(0).value = "E3";
+        pdfGridRow3.cells.getCell(1).value = "Adam";
+
+        let border : PdfBorders = new PdfBorders();
+        border.left = new PdfPen(new PdfColor(0,0,255), 10);
+
+        let border1 : PdfBorders = new PdfBorders();
+        border1.left = new PdfPen(new PdfColor(0,255,255), 20);
+
+        pdfGridRow1.style.setBorder(border);
+
+        pdfGridRow3.style.setBorder(border1);
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+       
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersLeft_Row.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersLeft_Entirerow', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Thomas";
+        let pdfGridRow3 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow3.cells.getCell(0).value = "E3";
+        pdfGridRow3.cells.getCell(1).value = "Adam";
+
+        let border : PdfBorders = new PdfBorders();
+        border.left = new PdfPen(new PdfColor(0,0,255), 10);
+
+        pdfGridRow1.style.setBorder(border);
+
+        let border1 : PdfBorders = new PdfBorders();
+        border1.left = new PdfPen(new PdfColor(0,0,255), 20);
+
+        pdfGridRow2.style.setBorder(border1);
+        let border2 : PdfBorders = new PdfBorders();
+        border2.left = new PdfPen(new PdfColor(0,0,255), 30);
+
+        pdfGridRow3.style.setBorder(border2);
+       
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+        
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersLeft_Entirerow.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersRight_row', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        let border : PdfBorders = new PdfBorders();
+        border.right = new PdfPen(new PdfColor(0,0,255), 10);
+
+        pdfGridRow1.style.setBorder(border);
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+        
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersRight_row.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_BordersBottom_row', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);    
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+
+        // add rows
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Adam";
+        
+       
+        let border : PdfBorders = new PdfBorders();
+        border.bottom = new PdfPen(new PdfColor(0,0,255), 10);
+
+        pdfGridRow2.style.setBorder(border);
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 0));
+
+        // save the document
+        
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_BordersBottom_row.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_Point1', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+        document.pageSettings.orientation = PdfPageOrientation.Landscape;
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Thomas c";
+
+        // specify the style for the PdfGridCell.
+        let pdfGridCellStyle : PdfGridCellStyle = new PdfGridCellStyle();
+        pdfGridCellStyle.textPen = new PdfPen(new PdfColor(0, 0, 153));
+        pdfGridCellStyle.backgroundBrush = new PdfSolidBrush(new PdfColor(275, 255, 224));
+        let pdfGridCell : PdfGridCell = pdfGridHeader.cells.getCell(0);
+        // apply style
+        pdfGridCell.style = pdfGridCellStyle;
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(20, 0));
+
+        // save the document
+
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_Point1.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_Point2', (done) => {
+        // create a new PDF document
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+        document.pageSettings.orientation = PdfPageOrientation.Landscape;
+
+        // create a PdfGrid
+        let pdfGrid : PdfGrid = new PdfGrid();
+        // add two columns
+        pdfGrid.columns.add(2);
+        // add header
+        pdfGrid.headers.add(1);
+        let pdfGridHeader : PdfGridRow = pdfGrid.headers.getHeader(0);
+        pdfGridHeader.cells.getCell(0).value = "ID";
+        pdfGridHeader.cells.getCell(1).value = "Employee";
+
+        // add rows
+        let pdfGridRow1 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow1.cells.getCell(0).value = "E1";
+        pdfGridRow1.cells.getCell(1).value = "Clay";
+        let pdfGridRow2 : PdfGridRow = pdfGrid.rows.addRow();
+        pdfGridRow2.cells.getCell(0).value = "E2";
+        pdfGridRow2.cells.getCell(1).value = "Thomas c";
+
+        // specify the style for the PdfGridCell.
+        let pdfGridCellStyle : PdfGridCellStyle = new PdfGridCellStyle();
+        pdfGridCellStyle.textPen = new PdfPen(new PdfColor(0, 0, 153));
+        pdfGridCellStyle.backgroundBrush = new PdfSolidBrush(new PdfColor(275, 255, 224));
+        let pdfGridCell : PdfGridCell = pdfGridHeader.cells.getCell(0);
+        // apply style
+        pdfGridCell.style = pdfGridCellStyle;
+
+        // drawing a grid
+        pdfGrid.draw(page1, new PointF(0, 20));
+
+        // save the document
+
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_Point2.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_Nested', (done) => {
+        let document : PdfDocument = new PdfDocument();
+
+        let page1 : PdfPage = document.pages.add();
+
+        let parentGrid : PdfGrid = new PdfGrid();
+
+        parentGrid.columns.add(4);
+        parentGrid.columns.getColumn(0).width=50;
+
+        parentGrid.columns.getColumn(2).width=50;
+
+        let pdfGridRow1 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow2 : PdfGridRow = parentGrid.rows.addRow();
+        let pdfGridRow3 : PdfGridRow = parentGrid.rows.addRow();
+
+        let childPdfGrid : PdfGrid = new PdfGrid();
+
+        childPdfGrid.columns.add(3); 
+        childPdfGrid.columns.getColumn(0).width=30;
+
+        childPdfGrid.columns.getColumn(2).width=50;
+        let childpdfGridRow1 :PdfGridRow;
+        let childpdfGridRow2 :PdfGridRow;
+        childpdfGridRow1 = childPdfGrid.rows.addRow();
+        childpdfGridRow2 = childPdfGrid.rows.addRow();
+
+        childpdfGridRow1.cells.getCell(0).value = "the value is 0 0 points are equal then point 5";
+        childpdfGridRow1.cells.getCell(1).value = "1 1";
+        childpdfGridRow1.cells.getCell(2).value = "2 2";
+        childpdfGridRow2.cells.getCell(0).value = "3 3";
+        childpdfGridRow2.cells.getCell(1).value = "the Cell value is 4 4 nested grid ";
+        childpdfGridRow2.cells.getCell(2).value = "the Cell value is 5 6";
+        pdfGridRow2.cells.getCell(0).rowSpan = 2;
+        pdfGridRow1.cells.getCell(0).value="nested grid";
+
+        pdfGridRow1.cells.getCell(1).value=childPdfGrid;
+        pdfGridRow2.cells.getCell(1).value="hello";
+        pdfGridRow2.cells.getCell(2).value="Fixed width";
+        pdfGridRow3.cells.getCell(3).value=childPdfGrid;
+        // drawing a grid
+        parentGrid.draw(page1, new PointF(0,0));
+  
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_Nested.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });       
+        document.destroy();
+    });
+});
+
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_FitPage', (done) => {
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+        // create a PdfGrid
+        let parentGrid : PdfGrid = new PdfGrid();        
+        
+        //add column        
+        parentGrid.columns.add(3);
+       
+        parentGrid.allowRowBreakAcrossPages = true;
+        let pdfGridRow1 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow2 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow3 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow4 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow5 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow6 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow7 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow8 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow9 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow10 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow11 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow12 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow13 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow14 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow15 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow16 : PdfGridRow = parentGrid.rows.addRow();        
+        
+        pdfGridRow1.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow1.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow1.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+
+        pdfGridRow2.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow2.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow2.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow3.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow3.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow3.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow4.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow4.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow4.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow5.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow5.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow5.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow6.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow6.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow6.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow7.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow7.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow7.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+
+        pdfGridRow8.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow8.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow8.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow9.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow9.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow9.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow10.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow10.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow10.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow11.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow11.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow11.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow12.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow12.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow12.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow13.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow13.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow13.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow14.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow14.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow15.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow16.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+
+
+        let layoutFormat : PdfGridLayoutFormat  = new PdfGridLayoutFormat();
+        layoutFormat.break = PdfLayoutBreakType.FitPage;
+        layoutFormat.layout = PdfLayoutType.Paginate;
+        let border : PdfBorders = new PdfBorders();
+        border.all = new PdfPen(new PdfColor(0,0,255), 10);
+  
+   
+        pdfGridRow9.style.setBorder(border);
+        pdfGridRow10.style.setBorder(border);
+        pdfGridRow11.style.setBorder(border);
+        pdfGridRow12.style.setBorder(border);
+        pdfGridRow13.style.setBorder(border);
+        pdfGridRow14.style.setBorder(border);
+        pdfGridRow15.style.setBorder(border);
+        // drawing a grid           
+        parentGrid.draw(page1, new PointF(0,0),layoutFormat);
+
+        // save the document
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_FitPage.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        // destroy the document
+        document.destroy();
+    });
+});
+describe('Manual testing',()=>{
+    it('-EJ2_36243_PDFGrid_FitElement', (done) => {
+        let document : PdfDocument = new PdfDocument();
+        // add a page
+        let page1 : PdfPage = document.pages.add();
+        // create a PdfGrid
+        let parentGrid : PdfGrid = new PdfGrid();        
+        
+        //add column        
+        parentGrid.columns.add(3);
+       
+        parentGrid.allowRowBreakAcrossPages = true;
+        let pdfGridRow1 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow2 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow3 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow4 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow5 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow6 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow7 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow8 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow9 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow10 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow11 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow12 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow13 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow14 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow15 : PdfGridRow = parentGrid.rows.addRow(); 
+        let pdfGridRow16 : PdfGridRow = parentGrid.rows.addRow();        
+        
+        pdfGridRow1.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow1.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow1.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+
+        pdfGridRow2.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow2.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow2.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow3.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow3.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow3.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow4.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow4.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow4.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow5.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow5.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow5.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow6.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow6.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow6.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow7.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow7.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow7.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+
+        pdfGridRow8.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow8.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow8.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow9.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow9.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow9.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow10.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow10.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow10.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow11.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow11.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow11.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow12.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow12.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow12.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow13.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow13.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow13.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow14.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";               
+        pdfGridRow14.cells.getCell(1).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow15.cells.getCell(0).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+        pdfGridRow16.cells.getCell(2).value="the Cell value is Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDF Complete all the pending works in nested grid for PDFComplete all the pending works in nested grid for PDF";
+
+
+        let layoutFormat : PdfGridLayoutFormat  = new PdfGridLayoutFormat();
+        layoutFormat.break = PdfLayoutBreakType.FitElement;
+        layoutFormat.layout = PdfLayoutType.Paginate;
+        let border : PdfBorders = new PdfBorders();
+        border.all = new PdfPen(new PdfColor(0,0,255), 10);
+        pdfGridRow9.style.setBorder(border);
+        pdfGridRow10.style.setBorder(border);
+        pdfGridRow11.style.setBorder(border);
+        pdfGridRow12.style.setBorder(border);
+        pdfGridRow13.style.setBorder(border);
+        pdfGridRow14.style.setBorder(border);
+        pdfGridRow15.style.setBorder(border);
+        // drawing a grid           
+        parentGrid.draw(page1, new PointF(0,0),layoutFormat);
+  
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_36243_PDFGrid_FitElement.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });       
+        document.destroy();
+    });
+});
 describe('Manual testing',()=>{
     it('-Cell Padding1', (done) => {
         let document : PdfDocument = new PdfDocument();
@@ -2488,4 +3622,3 @@ describe('Manual testing',()=>{
         document.destroy();             
     })
 })
-

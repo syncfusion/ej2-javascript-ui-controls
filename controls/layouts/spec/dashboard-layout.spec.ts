@@ -3712,11 +3712,14 @@ describe('GridLayout', () => {
             expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
             expect(gridLayOut.element.childElementCount == 6).toBe(true);
             expect(gridLayOut.draggableHandle).toBe('.e-panel-container');
+            expect((<HTMLElement>gridLayOut.element.querySelector('.e-panel-container')).classList.contains('e-drag')).toBe(true);
 
             // Onproperty test case 
             gridLayOut.draggableHandle = 'e-panel';
             gridLayOut.dataBind();
             expect(gridLayOut.draggableHandle).toBe('e-panel');
+            expect((<HTMLElement>gridLayOut.element.querySelector('.e-panel-container')).classList.contains('e-drag')).toBe(false);
+            expect((<HTMLElement>gridLayOut.element.querySelector('.e-panel')).classList.contains('e-drag')).toBe(true);
         });
 
         it('enable Resize  test case', () => {

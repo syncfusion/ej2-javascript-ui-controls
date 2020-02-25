@@ -4,6 +4,7 @@ import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@s
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
+import { VirtualInfo } from '../base/interface';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
@@ -31,6 +32,10 @@ export class ContentRender implements IRenderer {
     private rowElements: Element[];
     private freezeRowElements: Element[] = [];
     private index: number;
+    /** @hidden */
+    public prevInfo: VirtualInfo;
+    /** @hidden */
+    public currentInfo: VirtualInfo = {};
     public colgroup: Element;
     private isLoaded: boolean = true;
     private tbody: HTMLElement;
@@ -145,7 +150,8 @@ export class ContentRender implements IRenderer {
         let contentDiv: Element = this.getPanel();
         let virtualTable: Element = contentDiv.querySelector('.e-virtualtable');
         let virtualTrack: Element = contentDiv.querySelector('.e-virtualtrack');
-        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)) {
+        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)
+            && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered))) {
             remove(virtualTable);
             remove(virtualTrack);
         }
@@ -229,6 +235,11 @@ export class ContentRender implements IRenderer {
         let isServerRendered: string = 'isServerRendered';
         if (isBlazor() && this.parent[isServerRendered]) {
             modelData = this.generator.generateRows(dataSource, args);
+            if (this.parent.enableVirtualization) {
+                this.prevInfo = this.prevInfo ? this.prevInfo : args.virtualInfo;
+                this.prevInfo = args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
+                                this.currentInfo.page !== args.virtualInfo.page ? this.currentInfo : args.virtualInfo;
+            }
             this.rows = modelData;
             this.freezeRows = modelData;
             this.rowElements = <Element[]>[].slice.call(this.getTable().querySelectorAll('tr.e-row[data-uid]'));

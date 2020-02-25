@@ -1,7 +1,7 @@
 import { isNullOrUndefined, getValue, L10n, remove, isBlazor } from '@syncfusion/ej2-base';
 import { Browser, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
-import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance } from '../base/interface';
+import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance, FilterUI } from '../base/interface';
 import { PredicateModel } from '../base/grid-model';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
@@ -285,5 +285,12 @@ export class FilterMenuRenderer {
 
     public destroy(): void {
         this.closeDialog();
+    }
+
+    /**
+     * @hidden
+     */
+    public getFilterUIInfo(): FilterUI {
+        return { field: this.col.field, operator: this.flMuiObj.getFlOperator()};
     }
 }

@@ -171,8 +171,8 @@ export class ConditionalFormatting {
             let outerDiv: HTMLElement = this.createDialogElements();
             let element: HTMLElement = createElement('p', {
                 id: this.parentID + 'emptyFormat',
+                className: cls.EMPTY_FORMAT,
                 innerHTML: this.parent.localeObj.getConstant('emptyFormat'),
-                styles: 'margin: 10px'
             });
             outerDiv.appendChild(element);
             format.appendChild(outerDiv);

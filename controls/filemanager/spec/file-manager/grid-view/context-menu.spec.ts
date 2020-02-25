@@ -40,7 +40,7 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
                 menuObj.animationSettings = { effect: 'None' };
@@ -110,7 +110,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data11)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 let el: any = document.getElementById(feObj.element.id + '_contextmenu');
                 feObj.detailsviewModule.gridObj.selectRows([1]);
@@ -245,7 +244,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                     let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-row');
@@ -311,7 +309,7 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(dataContextMenu)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             mouseEventArgs = {
                 preventDefault: (): void => { },
                 stopImmediatePropagation: (): void => { },
@@ -354,7 +352,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
             setTimeout(function () {
                 let li1: any = document.getElementById('file_grid_content_table').querySelectorAll('tr');
                 expect(li1.length).toBe(5);
@@ -427,7 +424,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 let li1: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');;
                 expect(li1.length).toBe(5);
@@ -459,7 +455,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -494,13 +489,11 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(folderRename)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(rename)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                 let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');;
@@ -532,7 +525,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(singleSelectionDetails)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                 let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');;
@@ -564,7 +556,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(singleSelectionDetails)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                 let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');;
@@ -604,13 +595,11 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data5)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                 let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');;
@@ -652,7 +641,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                     let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');;
@@ -718,7 +706,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(document.getElementById('file_grid').offsetWidth == 0).toEqual(true);
                 expect(document.getElementById('file_grid').offsetWidth == 0).toEqual(true);
@@ -756,7 +743,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(dataSortbySize)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                 let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');;
@@ -981,6 +967,7 @@ describe('access control context menu testing', () => {
         ele = createElement('div', { id: 'file' });
         document.body.appendChild(ele);
         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
     });
     afterEach((): void => {
         jasmine.Ajax.uninstall();
@@ -1006,7 +993,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
             let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -1026,7 +1012,6 @@ describe('access control context menu testing', () => {
                     status: 200,
                     responseText: JSON.stringify(accessSearchData)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     gridLi = document.getElementById('file_grid').querySelectorAll('.e-row');
                     expect(gridLi.length).toEqual(3);
@@ -1065,7 +1050,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1115,7 +1099,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1164,7 +1147,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1189,7 +1171,6 @@ describe('access control context menu testing', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
@@ -1220,7 +1201,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1261,7 +1241,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1312,7 +1291,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1353,7 +1331,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1379,7 +1356,6 @@ describe('access control context menu testing', () => {
                 status: 200,
                 responseText: JSON.stringify(accessDetails1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
                 expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Downloads");
@@ -1403,7 +1379,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1454,7 +1429,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1495,7 +1469,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1521,7 +1494,6 @@ describe('access control context menu testing', () => {
                 status: 200,
                 responseText: JSON.stringify(accessDetails2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
                 expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Downloads, Music.png");
@@ -1544,7 +1516,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1592,7 +1563,6 @@ describe('access control context menu testing', () => {
             status: 200,
             responseText: JSON.stringify(accessData1)
         });
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(function () {
             let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
             menuObj.animationSettings = { effect: 'None' };
@@ -1618,7 +1588,6 @@ describe('access control context menu testing', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');

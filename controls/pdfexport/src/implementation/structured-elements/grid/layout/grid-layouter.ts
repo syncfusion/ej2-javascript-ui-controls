@@ -491,6 +491,15 @@ export class PdfGridLayouter extends ElementLayouter {
             let drawHeader : boolean;
             for (let i : number = 0; i < this.Grid.headers.count; i++) {
                 let row : PdfGridRow = this.Grid.headers.getHeader(i);                
+                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
+                                 || (row.style.border.top != null && row.style.border.top.width !== 1))) {
+                    let headerX : number = row.style.border.left.width / 2;
+                    let headerY : number = row.style.border.top.width / 2;
+                    if (this.currentBounds.x === PdfBorders.default.right.width / 2 && this.currentBounds.y === PdfBorders.default.right.width / 2) {
+                        let headerBound : RectangleF = new RectangleF(headerX, headerY, this.currentBounds.width, this.currentBounds.height);
+                        this.currentBounds = headerBound;
+                    }
+                }
                 let headerHeight : number = this.currentBounds.y;
                 // RowLayoutResult
                 
@@ -514,6 +523,14 @@ export class PdfGridLayouter extends ElementLayouter {
             //Draw row by row with the specified cell range.
             for (let j : number = 0; j < this.Grid.rows.count; j++) {
                 let row : PdfGridRow = this.Grid.rows.getRow(j);
+                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
+                                 || (row.style.border.top != null && row.style.border.top.width !== 1))) {
+                    let x : number = row.style.border.left.width / 2;
+                    if (this.currentBounds.x === PdfBorders.default.right.width / 2) {
+                        let rowBound : RectangleF = new RectangleF(x, this.currentBounds.y, this.currentBounds.width, this.currentBounds.height);
+                        this.currentBounds = rowBound;
+                    }
+                }
                 i++;
                 this.currentRowIndex = i - 1;
                 let originalHeight : number = this.currentBounds.y;
@@ -673,11 +690,11 @@ export class PdfGridLayouter extends ElementLayouter {
                             this.currentPage = this.getNextPageformat(format);
                             originalHeight = this.currentBounds.y;
                             let location : PointF = new PointF(PdfBorders.default.right.width / 2, PdfBorders.default.top.width / 2);
-                            // if (format.paginateBounds == new RectangleF(0,0,0,0) && this.startLocation == location)
-                            // {
-                            //     this.currentBounds.x += this.startLocation.x;
-                            //     this.currentBounds.y += this.startLocation.y;
-                            // }
+                            if ((format.paginateBounds.x === 0  && format.paginateBounds.y === 0 && format.paginateBounds.width === 0 && 
+                                    format.paginateBounds.height === 0 ) && (this.startLocation.x === location.x && this.startLocation.y === location.y)) {
+                                this.currentBounds.x += this.startLocation.x;
+                                this.currentBounds.y += this.startLocation.y;
+                            }
                             if (this.Grid.isChildGrid && row.grid.ParentCell != null)
                             {
                                 if (this.Grid.ParentCell.row.grid.style.cellPadding != null)
@@ -744,7 +761,15 @@ export class PdfGridLayouter extends ElementLayouter {
                                 if(row.grid.splitChildRowIndex != -1){
                                     row.grid.isGridSplit = true;                                
                                 }
-                                this.currentBounds.y = 0.50;
+                                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
+                                            || (row.style.border.top != null && row.style.border.top.width !== 1))) {
+                                    let x : number = row.style.border.left.width / 2;
+                                    let y : number = row.style.border.top.width / 2;
+                                    if (this.currentBounds.x === PdfBorders.default.right.width / 2 && this.currentBounds.y === PdfBorders.default.right.width / 2) {
+                                        let newBound : RectangleF = new RectangleF(x, y, this.currentBounds.width, this.currentBounds.height);
+                                        this.currentBounds = newBound;
+                                    }
+                                }
                                 if (this.Grid.repeatHeader) {
                                     for (let j : number = 0; j < this.Grid.headers.count; j++) {
                                         let headerRepeat : PdfGridRow = this.Grid.headers.getHeader(j);

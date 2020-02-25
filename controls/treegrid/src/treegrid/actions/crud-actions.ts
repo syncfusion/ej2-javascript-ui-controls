@@ -212,7 +212,9 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
     if ((control.editSettings.newRowPosition === 'Above' || control.editSettings.newRowPosition === 'Below')
         && ((action === 'add' || action === 'batchsave')) && !isNullOrUndefined(child.parentItem)) {
         let parentData: ITreeData = getParentData(control, child.parentItem.uniqueID);
+        if (parentData.childRecords.indexOf(child) === -1) {
         parentData.childRecords.push(child);
+        }
     } else {
         let currentRecords: ITreeData[] = control.grid.getCurrentViewRecords();
         let index: number;

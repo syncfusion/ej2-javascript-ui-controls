@@ -7,6 +7,7 @@ import { PdfViewerBase, PdfViewer } from '../pdfviewer';
 import { PdfAnnotationBaseModel, PdfBoundsModel } from './pdf-annotation-model';
 import { ZOrderPageTable } from './pdf-annotation';
 import { isPointOverConnector } from './connector-util';
+import { LineTool, NodeDrawingTool } from './tools';
 
 /** @private */
 export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfViewerBase, pdfViewer: PdfViewer): IElement {
@@ -57,9 +58,10 @@ export function findObjectUnderMouse(
         offsetY = !isNaN(event.offsetY) ? event.offsetY : (event.position ? event.position.y : 0);
     }
     let offsetForSelector: number = 5;
+    let boundsDiff: number = 0;
     for (let i: number = 0; i < objects.length; i++) {
         // tslint:disable-next-line:max-line-length
-        if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead')) {
+        if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead' || pdfBase.tool instanceof LineTool)) {
             let bounds: PdfBoundsModel = objects[i].wrapper.bounds;
             let rotationValue: number = 0;
             if (objects[i].shapeAnnotationType === 'Stamp') {
@@ -68,8 +70,24 @@ export function findObjectUnderMouse(
             // tslint:disable-next-line:max-line-length
             if ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < offsetX) && (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > offsetX) &&
                 (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < offsetY) && (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
-                actualTarget = objects[i];
-                break;
+                if (pdfBase.tool instanceof NodeDrawingTool) {
+                    actualTarget = objects[i];
+                } else {
+                    if (!boundsDiff) {
+                        actualTarget = objects[i];
+                        // tslint:disable-next-line:max-line-length
+                        boundsDiff = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) + (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
+                        (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) + (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
+                    } else {
+                        // tslint:disable-next-line:max-line-length
+                        let objectBounds: number = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) + (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
+                        (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) + (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
+                        if (boundsDiff > objectBounds) {
+                            actualTarget = objects[i];
+                            boundsDiff = objectBounds;
+                        }
+                    }
+                }
             }
         } else {
             let pt: PointModel = { x: offsetX / pdfBase.getZoomFactor(), y: offsetY / pdfBase.getZoomFactor() };
@@ -87,7 +105,6 @@ export function findObjectUnderMouse(
             }
             if (obj && isOver) {
                 actualTarget = objects[i];
-                break;
             }
         }
     }
@@ -194,7 +211,7 @@ export function findObjects(region: PointModel, objCollection: (PdfAnnotationBas
     for (let obj of objCollection) {
         if (findElementUnderMouse(obj as IElement, region, 10) ||
             (obj.shapeAnnotationType === 'Stamp' && findElementUnderMouse(obj as IElement, region, 40))) {
-            insertObject(obj, 'Zindex', objects);
+            insertObject(obj, 'zIndex', objects);
         }
     }
     return objects;

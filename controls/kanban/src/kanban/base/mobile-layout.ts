@@ -21,27 +21,27 @@ export class MobileLayout {
     }
 
     public renderSwimlaneHeader(): void {
-        let toolbarWrapper: HTMLElement = createElement('div', { className: cls.SWIMLANE_HEADER });
-        toolbarWrapper.innerHTML = '<div class="' + cls.SWIMLANE_HEADER_TOOLBAR + '"><div class="' + cls.TOOLBAR_MENU + '">' +
-            '<div class="e-icons ' + cls.TOOLBAR_MENU_ICON + '"></div></div><div class="' + cls.TOOLBAR_LEVEL_TITLE + '">' +
-            '<div class="' + cls.TOOLBAR_SWIMLANE_NAME + '"></div></div></div>';
+        let toolbarWrapper: HTMLElement = createElement('div', { className: cls.SWIMLANE_HEADER_CLASS });
+        toolbarWrapper.innerHTML = '<div class="' + cls.SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + cls.TOOLBAR_MENU_CLASS + '">' +
+            '<div class="e-icons ' + cls.TOOLBAR_MENU_ICON_CLASS + '"></div></div><div class="' + cls.TOOLBAR_LEVEL_TITLE_CLASS + '">' +
+            '<div class="' + cls.TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>';
         this.parent.element.appendChild(toolbarWrapper);
-        EventHandler.add(toolbarWrapper.querySelector('.' + cls.TOOLBAR_MENU_ICON), 'click', this.menuClick, this);
+        EventHandler.add(toolbarWrapper.querySelector('.' + cls.TOOLBAR_MENU_ICON_CLASS), 'click', this.menuClick, this);
     }
 
     public renderSwimlaneTree(): void {
-        let height: number = (this.parent.element.querySelector('.' + cls.SWIMLANE_HEADER) as HTMLElement).offsetHeight;
+        let height: number = (this.parent.element.querySelector('.' + cls.SWIMLANE_HEADER_CLASS) as HTMLElement).offsetHeight;
         let treeHeight: number = window.innerHeight - height;
-        this.popupOverlay = createElement('div', { className: cls.SWIMLANE_OVERLAY, styles: 'height: ' + treeHeight + 'px;' });
-        let wrapper: HTMLElement = createElement('div', { className: cls.SWIMLANE_CONTENT, styles: 'top:' + height + 'px;' });
+        this.popupOverlay = createElement('div', { className: cls.SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
+        let wrapper: HTMLElement = createElement('div', { className: cls.SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
         let treeWrapper: HTMLElement = createElement('div', {
-            className: cls.SWIMLANE_RESOURCE + ' e-popup-close',
+            className: cls.SWIMLANE_RESOURCE_CLASS + ' e-popup-close',
             styles: 'height: ' + treeHeight + 'px;'
         });
         wrapper.appendChild(treeWrapper);
         wrapper.appendChild(this.popupOverlay);
         this.parent.element.appendChild(wrapper);
-        let swimlaneTree: HTMLElement = createElement('div', { className: cls.SWIMLANE_TREE });
+        let swimlaneTree: HTMLElement = createElement('div', { className: cls.SWIMLANE_TREE_CLASS });
         treeWrapper.appendChild(swimlaneTree);
         this.treeViewObj = new TreeView({
             cssClass: this.parent.cssClass,
@@ -68,7 +68,7 @@ export class MobileLayout {
     }
 
     private menuClick(event: Event): void {
-        if (this.parent.element.querySelector('.' + cls.SWIMLANE_RESOURCE).classList.contains('e-popup-open')) {
+        if (this.parent.element.querySelector('.' + cls.SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
             this.treePopup.hide();
             removeClass([this.popupOverlay], 'e-enable');
         } else {

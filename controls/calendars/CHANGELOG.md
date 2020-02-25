@@ -4,6 +4,12 @@
 
 ## 17.4.50 (2020-02-18)
 
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#256702` - Issue with "consecutive month is displayed while drill down the left or right calendar" has been resolved.
+
 ### Calendar
 
 #### Bug Fixes

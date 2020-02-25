@@ -560,23 +560,26 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private onMove(event: KeyboardEvent): void {
-        let index: number = this.getSeparatorIndex(this.currentSeparator);
-        let isPrevpaneCollapsed: boolean = this.previousPane.classList.contains(COLLAPSE_PANE);
-        let isPrevpaneExpanded: boolean = this.previousPane.classList.contains(EXPAND_PANE);
-        let isNextpaneCollapsed: boolean = this.nextPane.classList.contains(COLLAPSE_PANE);
-        if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' && event.keyCode === 39) ||
-        (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
-            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed) &&
-            document.activeElement.classList.contains(SPLIT_BAR)) {
-        this.checkPaneSize(event);
-        this.triggerResizing(event);
-        } else if (event.keyCode === 13 && this.paneSettings[index].collapsible && document.activeElement.classList.contains(SPLIT_BAR)) {
-            if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
-                this.collapse(index);
-                addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
-            } else {
-                this.expand(index);
-                addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
+        if (this.allPanes.length > 1) {
+            let index: number = this.getSeparatorIndex(this.currentSeparator);
+            let isPrevpaneCollapsed: boolean = this.previousPane.classList.contains(COLLAPSE_PANE);
+            let isPrevpaneExpanded: boolean = this.previousPane.classList.contains(EXPAND_PANE);
+            let isNextpaneCollapsed: boolean = this.nextPane.classList.contains(COLLAPSE_PANE);
+            if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' &&
+            event.keyCode === 39) ||
+            (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
+            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)
+            && (this.paneSettings[index].resizable && this.paneSettings[index + 1].resizable)) {
+            this.checkPaneSize(event);
+            this.triggerResizing(event);
+            } else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+                if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+                    this.collapse(index);
+                    addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
+                } else {
+                    this.expand(index);
+                    addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
+                }
             }
         }
     };

@@ -1372,6 +1372,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.legendModule && this.legendSettings.visible) {
             this.legendModule.getLegendOptions(this.visibleSeries, this);
         }
+        /**
+         * I264230, EJ2-36761
+         * Issue: Tooltip doesnot appears after zooming and hovering on same point
+         * Root cause: While performing zoom, previous points in tooltip restore.
+         * Fix: previous points set to empty array
+         */
+        if (this.tooltip.enable && this.tooltipModule) {
+            this.tooltipModule.previousPoints = [];
+        }
 
         this.calculateStackValues();
 
@@ -3169,6 +3178,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         this.processData(false);
                         refreshBounds = true;
                         break;
+                    case 'enableCanvas':
+                        this.refresh();
+                        break;
                     case 'series':
                         let len: number = this.series.length;
                         let seriesRefresh: boolean = false;
@@ -3176,8 +3188,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         let blazorProp: boolean;
                         for (let i: number = 0; i < len; i++) {
                             series = newProp.series[i];
-                            if (this.isBlazor && (series.isClosed || series.marker ||
-                                series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
+                            // I264774 blazor series visible property binding not working issue fixed.
+                            if (this.isBlazor && series && ((series.visible !== oldProp.series[i].visible) || series.isClosed ||
+                            series.marker || series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
                                     blazorProp = true;
                             }
                             if (series && (series.dataSource || series.query || series.xName || series.yName || series.size ||

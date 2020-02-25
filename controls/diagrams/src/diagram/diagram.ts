@@ -86,7 +86,7 @@ import { BeforeOpenCloseMenuEventArgs, MenuEventArgs, EJ2Instance } from '@syncf
 import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex } from './utility/dom-util';
 import { getDiagramElement, getScrollerWidth, getHTMLLayer } from './utility/dom-util';
 import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg } from './utility/dom-util';
-import { getPortLayerSvg, getDiagramLayerSvg } from './utility/dom-util';
+import { getPortLayerSvg, getDiagramLayerSvg, applyStyleAgainstCsp } from './utility/dom-util';
 import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';
 import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel, ContextMenuSettingsModel } from './diagram/keyboard-commands-model';
@@ -4903,7 +4903,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.element.appendChild(this.diagramCanvas);
         } else {
             this.diagramCanvas = element;
-            this.diagramCanvas.setAttribute('style', style);
+            applyStyleAgainstCsp(this.diagramCanvas, style);
         }
         this.diagramCanvas.style.background = this.backgroundColor as string;
     }
@@ -4918,7 +4918,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private renderBackgroundLayer(bounds: ClientRect, commonStyle: string): void {
         let bgLayer: SVGElement = this.createSvg(this.element.id + '_backgroundLayer_svg', bounds.width, bounds.height);
-        bgLayer.setAttribute('style', commonStyle);
+        applyStyleAgainstCsp(bgLayer, commonStyle);
         let backgroundImage: SVGElement = createSvgElement('g', {
             'id': this.element.id + '_backgroundImageLayer',
             'class': 'e-background-image-layer'
@@ -4956,18 +4956,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.diagramLayerDiv = createHtmlElement('div', attributes);
         if (this.mode === 'SVG') {
             let diagramSvg: SVGElement = this.createSvg(this.element.id + '_diagramLayer_svg', bounds.width, bounds.height);
-            diagramSvg.setAttribute('style', ' pointer-events: none; ');
+            diagramSvg.style['pointer-events'] = 'none';
             diagramSvg.setAttribute('class', 'e-diagram-layer');
             let diagramLayer: SVGElement = createSvgElement('g', { 'id': this.element.id + '_diagramLayer' });
             let transformationLayer: SVGElement = createSvgElement('g', {});
             this.diagramLayer = diagramLayer as SVGGElement;
-            diagramLayer.setAttribute('style', 'pointer-events: all;');
+            diagramSvg.style['pointer-events'] = 'all';
             transformationLayer.appendChild(diagramLayer);
             diagramSvg.appendChild(transformationLayer);
             this.diagramLayerDiv.appendChild(diagramSvg);
         } else {
             this.diagramLayer = CanvasRenderer.createCanvas(this.element.id + '_diagram', bounds.width, bounds.height);
-            this.diagramLayer.setAttribute('style', 'position:absolute;left:0px;top:0px;');
+            applyStyleAgainstCsp(this.diagramLayer, 'position:absolute;left:0px;top:0px;');
             this.diagramLayerDiv.appendChild(this.diagramLayer);
         }
         this.diagramCanvas.appendChild(this.diagramLayerDiv);
@@ -5005,9 +5005,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         });
         let svgAdornerSvg: SVGElement = this.createSvg(this.element.id + '_diagramAdorner_svg', bounds.width, bounds.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer');
-        svgAdornerSvg.setAttribute('style', 'pointer-events:none;');
+        svgAdornerSvg.style['pointer-events'] = 'none';
         this.adornerLayer = createSvgElement('g', { 'id': this.element.id + '_diagramAdorner' });
-        this.adornerLayer.setAttribute('style', ' pointer-events: all; ');
+        this.adornerLayer.style[' pointer-events'] = 'all';
         svgAdornerSvg.appendChild(this.adornerLayer);
         divElement.appendChild(svgAdornerSvg);
         this.diagramCanvas.appendChild(divElement);
@@ -8440,8 +8440,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             childTable = sourceElement[childtable];
                             let wrapper: DiagramElement = (obj.wrapper.children[0] as Container).children[0];
                             if (sourceElement[selectedSymbols] instanceof Node) {
-                                (clonedObject as Node).offsetX = position.x + 5 + ((clonedObject as Node).width || wrapper.actualSize.width) / 2;
-                                (clonedObject as Node).offsetY = position.y + ((clonedObject as Node).height || wrapper.actualSize.height) / 2;
+                                if (((obj as Node).shape as BpmnShape).shape === 'TextAnnotation') {
+                                    (clonedObject as Node).offsetX = position.x + 11 + ((clonedObject as Node).width || wrapper.actualSize.width) / 2;
+                                    (clonedObject as Node).offsetY = position.y + 11 + ((clonedObject as Node).height || wrapper.actualSize.height) / 2;
+                                } else {
+                                    (clonedObject as Node).offsetX = position.x + 5 + ((clonedObject as Node).width || wrapper.actualSize.width) / 2;
+                                    (clonedObject as Node).offsetY = position.y + ((clonedObject as Node).height || wrapper.actualSize.height) / 2;
+                                }
                                 let newNode: Node = new Node(this, 'nodes', clonedObject as NodeModel, true);
                                 if (newNode.shape.type === 'Bpmn' && (newNode.shape as BpmnShape).activity.subProcess.processes
                                     && (newNode.shape as BpmnShape).activity.subProcess.processes.length) {
@@ -8452,7 +8457,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 paletteDragSize = sourceElement['symbolDragSize'];
                                 let palettePreview: SymbolSizeModel = sourceElement['symbolPreview'];
                                 newNode.width = nodeDragSize.width || paletteDragSize.width || nodePreviewSize.width || palettePreview.width || newNode.width;
-                                newNode.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height || palettePreview.height ||  newNode.height;
+                                newNode.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height || palettePreview.height || newNode.height;
                                 if (newNode.shape.type === 'SwimLane') {
                                     this.diagramActions |= DiagramAction.PreventHistory;
                                     if ((newNode.shape as SwimLane).isLane) {
@@ -8560,7 +8565,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 nodePreviewSize = newObj.previewSize;
                                 paletteDragSize = sourceElement['symbolDragSize'];
                                 laneObj.width = nodeDragSize.width || paletteDragSize.width || nodePreviewSize.width || laneObj.width;
-                                laneObj.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height ||  laneObj.height;
+                                laneObj.height = nodeDragSize.height || paletteDragSize.height || nodePreviewSize.height || laneObj.height;
                                 if (isHorizontal) {
                                     header.width = laneObj.header.width;
                                     header.height = laneObj.height;

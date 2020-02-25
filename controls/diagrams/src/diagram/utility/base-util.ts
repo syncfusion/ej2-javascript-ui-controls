@@ -7,7 +7,7 @@ import { Matrix, identityMatrix, transformPointByMatrix, rotateMatrix } from '..
 import { TextAlign, TextWrap, WhiteSpace, TextDecoration } from '../enum/enum';
 import { getValue } from '@syncfusion/ej2-base';
 import { TextAttributes } from '../rendering/canvas-interface';
-import { getChildNode } from './dom-util';
+import { getChildNode, applyStyleAgainstCsp } from './dom-util';
 import { Diagram } from '../diagram';
 import { Node, BasicShape, Shape, Native, BpmnShape, BpmnActivity, BpmnTask, BpmnSubProcess } from '../objects/node';
 import { IconShape } from '../objects/icon';
@@ -403,7 +403,7 @@ export function bBoxText(textContent: string, options: TextAttributes): number {
     let svg: SVGElement = window[measureElement].children[2];
     let text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
     text.textContent = textContent;
-    text.setAttribute('style', 'font-size:' + options.fontSize + 'px; font-family:'
+    applyStyleAgainstCsp(text, 'font-size:' + options.fontSize + 'px; font-family:'
         + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
     let bBox: number = text.getBBox().width;
     window[measureElement].style.visibility = 'hidden';

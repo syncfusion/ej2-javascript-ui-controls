@@ -3165,6 +3165,9 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             if (!Browser.isDevice && (Browser.info.version === '11.0' || Browser.info.name === 'edge')) {
                 this.element.blur();
             }
+            if (Browser.isDevice && Browser.isIos) {
+                this.element.blur();
+            }
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
@@ -4311,9 +4314,11 @@ let Slider = class Slider extends Component {
             this.tooltipCollidedPosition !== args.collidedPosition) {
             if (this.isMaterialTooltip) {
                 let tooltipClass = this.tooltipPositionCalculation(args.collidedPosition);
-                args.element.classList.remove(this.previousTooltipClass);
-                args.element.classList.add(tooltipClass);
-                this.previousTooltipClass = tooltipClass;
+                if (tooltipClass !== undefined) {
+                    args.element.classList.remove(this.previousTooltipClass);
+                    args.element.classList.add(tooltipClass);
+                    this.previousTooltipClass = tooltipClass;
+                }
                 if (args.element.style.transform && args.element.classList.contains(classNames.materialTooltipOpen) &&
                     args.element.firstElementChild.innerText.length <= 4) {
                     args.element.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;

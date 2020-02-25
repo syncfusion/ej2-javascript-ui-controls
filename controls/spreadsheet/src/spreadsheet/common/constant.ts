@@ -188,6 +188,7 @@ export let defaultLocale: object = {
     SUBTOTAL: 'Returns subtotal for a range using the given function number.',
     RADIANS: 'Converts degrees into radians.',
     MATCH: 'Returns the relative position of a specified value in given range.',
+    LN: 'Returns the natural logarithm of a number',
     DefineNameExists: 'This name already exists, try different name.',
     CircularReference: 'When a formula refers to one or more circular references, this may result in an incorrect calculation.',
     ShowRowsWhere: 'Show rows where:',

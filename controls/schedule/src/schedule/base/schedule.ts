@@ -2204,12 +2204,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Imports the events from an .ics file downloaded from any of the calendars like Google or Outlook into the Scheduler. 
-     * This method accepts the blob object of an .ics file to be imported as a mandatory argument.
+     * This method accepts the blob object or string format of an .ics file to be imported as a mandatory argument.
      * @method importICalendar
-     * @param {Blob} fileContent Accepts the file object.
+     * @param {Blob | string} fileContent Accepts the file object or string format of an .ics file.
      * @returns {void}
      */
-    public importICalendar(fileContent: Blob): void {
+    public importICalendar(fileContent: Blob | string): void {
         if (this.iCalendarImportModule) {
             this.iCalendarImportModule.initializeCalendarImport(fileContent);
         } else {

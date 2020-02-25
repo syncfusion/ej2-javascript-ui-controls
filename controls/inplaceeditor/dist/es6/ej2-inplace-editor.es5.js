@@ -304,7 +304,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderInitialValue();
+        this.textOption === 'Never' ?
+            this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+            : this.renderInitialValue();
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -478,7 +480,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     InPlaceEditor.prototype.showDropDownPopup = function () {
         if (this.type === 'DropDownList') {
-            this.componentObj.focusIn();
+            if (!this.model.allowFiltering) {
+                this.componentObj.focusIn();
+            }
             this.componentObj.showPopup();
         }
         else {
@@ -1350,10 +1354,12 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderInitialValue();
+                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                        : this.renderInitialValue();
                     break;
                 case 'emptyText':
-                    this.renderInitialValue();
+                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                        : this.renderInitialValue();
                     break;
                 case 'template':
                     this.checkIsTemplate();
@@ -1419,6 +1425,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property('Click')
     ], InPlaceEditor.prototype, "editableOn", void 0);
+    __decorate$1([
+        Property('Never')
+    ], InPlaceEditor.prototype, "textOption", void 0);
     __decorate$1([
         Property('Submit')
     ], InPlaceEditor.prototype, "actionOnBlur", void 0);

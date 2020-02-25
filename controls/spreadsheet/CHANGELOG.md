@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### Spreadsheet
+
+#### New Features
+
+`#I258049`- Provided LN formula support in Spreadsheet.
+
 ## 17.4.50 (2020-02-18)
 
 ### Spreadsheet

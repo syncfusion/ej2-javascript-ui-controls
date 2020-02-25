@@ -142,8 +142,7 @@ export class Zoom {
         let argsData: IZoomCompleteEventArgs;
         let zoomingEventArgs: IZoomingEventArgs;
         let zoomedAxisCollection: IAxisData[] = [];
-        for (let i: number = 0; i < axes.length; i++) {
-            let axis: Axis = axes[i] as Axis;
+        for (let axis of (axes as Axis[])) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -248,8 +247,7 @@ export class Zoom {
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let onZoomingEventArg: IZoomingEventArgs;
         let zoomedAxisCollections: IAxisData[] = [];
-        for (let j: number = 0; j < axes.length; j++) {
-            let axis: Axis = axes[j] as Axis;
+        for (let axis of (axes as Axis[])) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -309,8 +307,7 @@ export class Zoom {
         let argsData: IZoomCompleteEventArgs;
         let onZoomingEventArgs: IZoomingEventArgs;
         let zoomedAxisCollection: IAxisData[] = [];
-        for (let k: number = 0; k < axes.length; k++) {
-            let axis: Axis = axes[k] as Axis;
+        for (let axis of (axes as Axis[])) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -479,8 +476,7 @@ export class Zoom {
         let yAxisLoc: number;
         let element: Element;
         if (transX !== null && transY !== null) {
-            for (let i: number = 0; i < chart.visibleSeries.length; i++) {
-                let value: Series = chart.visibleSeries[i];
+            for (let value of chart.visibleSeries) {
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -644,8 +640,7 @@ export class Zoom {
      */
     public isAxisZoomed(axes: AxisModel[]): boolean {
         let showToolkit: boolean = false;
-        for (let k: number = 0; k < axes.length; k++) {
-            let axis: Axis = axes[k] as Axis;
+        for (let axis of (axes as Axis[])) {
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
         }
         return showToolkit;

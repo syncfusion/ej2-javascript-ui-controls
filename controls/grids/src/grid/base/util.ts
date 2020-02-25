@@ -2,7 +2,10 @@ import { ChildProperty, compile as baseTemplateComplier, setValue, International
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
 import { isObject, IKeyValue, isBlazor } from '@syncfusion/ej2-base';
-import { IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow } from './interface';
+import {
+    IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow, PdfExportProperties,
+    ExcelExportProperties
+} from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { DataUtil, Query, DataManager, Predicate } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
@@ -63,6 +66,36 @@ export function getUpdateUsingRaf<T>(updateFunction: Function, callBack: Functio
         }
     });
 }
+
+/**
+ * @hidden
+ */
+
+export function isExportColumns(exportProperties: PdfExportProperties | ExcelExportProperties): boolean {
+
+    return !isNullOrUndefined(exportProperties) &&
+        !isNullOrUndefined(exportProperties.columns) && exportProperties.columns.length > 0;
+}
+
+/**
+ * @hidden
+ */
+export function updateColumnTypeForExportColumns(exportProperties: PdfExportProperties | ExcelExportProperties, gObj: IGrid): void {
+    let exportColumns: Column[] = exportProperties.columns;
+    let gridColumns: Column[] = gObj.columns as Column[];
+    for (let i: number = 0; i < exportColumns.length; i++) {
+        if (gridColumns.length - 1 >= i) {
+            if (gridColumns[i].columns) {
+                for (let j: number = 0; j < gridColumns[i].columns.length; j++) {
+                    (exportColumns[i].columns[j] as Column).type = (gridColumns[i].columns[j] as Column).type;
+                }
+            } else {
+                exportColumns[i].type = gridColumns[i].type;
+            }
+        }
+    }
+}
+
 /**
  * @hidden
  */

@@ -511,7 +511,7 @@ export class Image {
                 };
                 this.deleteImg(event);
             }
-            if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+            if (this.parent.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                 this.remvoeResizEle();
             }
         }
@@ -1239,21 +1239,21 @@ export class Image {
         this.imagDialog(e);
         if (!isNullOrUndefined(this.dialogObj)) {
             this.dialogObj.element.style.maxHeight = 'inherit';
-            let dialogContent : HTMLElement = this.dialogObj.element.querySelector('.e-img-content');
+            let dialogContent: HTMLElement = this.dialogObj.element.querySelector('.e-img-content');
             if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
-            || this.parent.editorMode === 'HTML') {
-            (dialogContent.querySelector('#' + this.rteID + '_insertImage') as HTMLElement).focus();
-        } else {
-            (dialogContent.querySelector('.e-img-url') as HTMLElement).focus();
-        }
+                || this.parent.editorMode === 'HTML') {
+                (dialogContent.querySelector('#' + this.rteID + '_insertImage') as HTMLElement).focus();
+            } else {
+                (dialogContent.querySelector('.e-img-url') as HTMLElement).focus();
+            }
         }
     }
 
     private imgUpload(e: IImageNotifyArgs): HTMLElement {
         let save: NodeSelection; let selectParent: Node[]; let proxy: this = this;
         let iframe: boolean = proxy.parent.iframeSettings.enable;
-        if (proxy.parent.editorMode === 'HTML' &&
-            (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))
+        if (proxy.parent.editorMode === 'HTML' && (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' +
+            this.parent.contentModule.getPanel().id))
             || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
             (this.contentModule.getEditPanel() as HTMLElement).focus();
             let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());

@@ -52,7 +52,8 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     }
 
-    protected generateRow(data: Object, index: number, cssClass?: string, indent?: number, pid?: number, tIndex?: number): Row<Column> {
+    protected generateRow(
+        data: Object, index: number, cssClass?: string, indent?: number, pid?: number, tIndex?: number, parentUid?: string): Row<Column> {
         let options: IRow<Column> = {};
         options.foreignKeyData = {};
         let isServerRendered: string = 'isServerRendered';
@@ -63,6 +64,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         options.tIndex = tIndex;
         options.isDataRow = true;
         options.parentGid = pid;
+        options.parentUid = parentUid;
         if (this.parent.isPrinting) {
             if (this.parent.hierarchyPrintMode === 'All') {
                 options.isExpand = true;

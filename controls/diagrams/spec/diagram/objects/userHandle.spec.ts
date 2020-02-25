@@ -149,7 +149,7 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 75, 50);
             let eventhandler: any = diagram['eventHandler'];
             let action: any = eventhandler['action'];
-            expect(diagram.selectedItems.nodes.length === 0).toBe(true);
+            expect(diagram.selectedItems.nodes.length === 1).toBe(true);
             done();
         });
 

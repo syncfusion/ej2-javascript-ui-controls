@@ -38,27 +38,33 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
             this.getGroupedRecords(0, data[i], (<Group>data).level, i, undefined, this.rows.length);
         }
         this.index = 0;
+        if (this.parent.isCollapseStateEnabled()) {
+            this.ensureRowVisibility();
+        }
         return this.rows;
     }
 
-    private getGroupedRecords(index: number, data: GroupedData, raw?: Object, parentid?: number, childId?: number, tIndex?: number): void {
+    private getGroupedRecords(
+        index: number, data: GroupedData, raw?: Object, parentid?: number, childId?: number, tIndex?: number, parentUid?: string): void {
         let level: number = <number>raw;
         if (isNullOrUndefined(data.items)) {
             if (isNullOrUndefined(data.GroupGuid)) {
-                this.rows = this.rows.concat(this.generateDataRows((data as Object[]), index, parentid, this.rows.length));
+                this.rows = this.rows.concat(this.generateDataRows((data as Object[]), index, parentid, this.rows.length, parentUid));
             } else {
                 for (let j: number = 0, len: number = (data as Object[]).length; j < len; j++) {
-                    this.getGroupedRecords(index, data[j], data.level, parentid, index, this.rows.length);
+                    this.getGroupedRecords(index, data[j], data.level, parentid, index, this.rows.length, parentUid);
                 }
             }
         } else {
-            this.rows = this.rows.concat(this.generateCaptionRow(data, index, parentid, childId, tIndex));
+            let captionRow: Row<Column> = this.generateCaptionRow(data, index, parentid, childId, tIndex, parentUid);
+            this.rows = this.rows.concat(captionRow);
             if (data.items && (data.items as Object[]).length) {
-                this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length);
+                this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length, captionRow.uid);
             }
             if (this.parent.aggregates.length) {
                 let rowCnt: number = this.rows.length;
-                this.rows.push(...(<Row<Column>[]>this.summaryModelGen.generateRows(<Object>data, { level: level })));
+                this.rows.push(
+                    ...(<Row<Column>[]>this.summaryModelGen.generateRows(<Object>data, { level: level, parentUid: captionRow.uid })));
                 for (let i: number = rowCnt - 1; i >= 0; i--) {
                     if (this.rows[i].isCaptionRow) {
                         this.rows[i].aggregatesCount = this.rows.length - rowCnt;
@@ -120,7 +126,8 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         return cells;
     }
 
-    private generateCaptionRow(data: GroupedData, indent: number, parentID?: number, childID?: number, tIndex?: number): Row<Column> {
+    private generateCaptionRow(
+        data: GroupedData, indent: number, parentID?: number, childID?: number, tIndex?: number, parentUid?: string): Row<Column> {
         let options: IRow<Column> = {};
         let tmp: Cell<Column>[] = [];
         let records: string = 'records';
@@ -130,11 +137,12 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
             (<GroupedData>options.data).field = data.field;
         }
         options.isDataRow = false;
-        options.isExpand = true;
+        options.isExpand = !this.parent.isCollapseStateEnabled();
         options.parentGid = parentID;
         options.childGid = childID;
         options.tIndex = tIndex;
         options.isCaptionRow = true;
+        options.parentUid = parentUid;
         options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : (<Object[]>data.items).length;
         options.uid = isBlazor() && this.parent.isServerRendered ? this.parent.getRowUid('grid-row') : getUid('grid-row');
         let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options);
@@ -158,10 +166,10 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         }
     }
 
-    private generateDataRows(data: Object[], indent: number, childID?: number, tIndex?: number): Row<Column>[] {
+    private generateDataRows(data: Object[], indent: number, childID?: number, tIndex?: number, parentUid?: string): Row<Column>[] {
         let rows: Row<Column>[] = []; let indexes: number[] = this.parent.getColumnIndexesInView();
         for (let i: number = 0, len: number = data.length; i < len; i++ , tIndex++) {
-            rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex);
+            rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex, parentUid);
             for (let j: number = 0; j < indent; j++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(indent) === -1) { continue; }
                 rows[i].cells.unshift(this.generateIndentCell());
@@ -191,6 +199,19 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         }
         return input;
     }
+
+    public ensureRowVisibility(): void {
+        for (let i: number = 0; i < this.rows.length; i++) {
+            let row: Row<object> = this.rows[i];
+            if (!row.isCaptionRow) { continue; }
+            for (let j: number = i + 1; j < this.rows.length; j++) {
+                let childRow: Row<object> = this.rows[j];
+                if (row.uid === childRow.parentUid) {
+                    this.rows[j].visible = row.isExpand;
+                }
+            }
+        }
+}
 
 }
 

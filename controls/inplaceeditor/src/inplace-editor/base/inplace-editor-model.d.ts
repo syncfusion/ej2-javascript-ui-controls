@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption, Predicate } from '@syncfusion/ej2-data';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';import { DatePicker, DatePickerModel, DateTimePicker, DateRange } from '@syncfusion/ej2-calendars';import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';import { Rte } from '../modules/rte';import { Slider } from '../modules/slider';import { ComboBox } from '../modules/combo-box';import { TimePicker } from '../modules/time-picker';import { MultiSelect } from '../modules/multi-select';import { ColorPicker } from '../modules/color-picker';import { AutoComplete } from '../modules/auto-complete';import { DateRangePicker } from '../modules/date-range-picker';import * as events from './events';import * as classes from './classes';import { PopupSettings, modulesList, localeConstant } from './models';import { PopupSettingsModel } from './models-model';import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton, BeginEditEventArgs } from './interface';import { parseValue, getCompValue } from './util';
-import {RenderMode,AdaptorType,InputType,EditableType,ActionBlur,BeforeSanitizeHtmlArgs} from "./inplace-editor";
+import {RenderMode,AdaptorType,InputType,EditableType,textOptionType,ActionBlur,BeforeSanitizeHtmlArgs} from "./inplace-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -92,6 +92,17 @@ export interface InPlaceEditorModel extends ComponentModel{
      * @default 'Click'
      */
     editableOn?: EditableType;
+
+    /**
+     * Specifies the option to be set on initial rendering. It is applicable for DropDownList,
+     * AutoComplete, ComboBox, and MultiSelect component types.
+     * The possible options are:
+     * 
+     * - `Never`: The corresponding field value will never be set initially in the component.
+     * - `Always`: The corresponding field value will be set initially in the component.
+     * @default 'Never'
+     */
+    textOption?: textOptionType;
 
     /**
      * Specifies the action to be perform when user clicks outside the container, that is focus out of editable content.

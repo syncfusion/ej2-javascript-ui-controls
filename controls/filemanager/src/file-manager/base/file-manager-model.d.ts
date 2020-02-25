@@ -50,7 +50,7 @@ export interface FileManagerModel extends ComponentModel{
      * Specifies the details view settings of the file manager.
      * @default {     
      * columns: [{
-     * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', template: '<span class="e-fe-text">${name}</span>',
+     * field: 'name', headerText: 'Name', minWidth: 120, template: '<span class="e-fe-text">${name}</span>',
      * customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified',
      * minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
      * template: '<span class="e-fe-size">${size}</span>' }
@@ -58,6 +58,12 @@ export interface FileManagerModel extends ComponentModel{
      * }
      */
     detailsViewSettings?: DetailsViewSettingsModel;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * Enables or disables persisting component's state between page reloads. If enabled, the following APIs will persist:
@@ -155,7 +161,8 @@ export interface FileManagerModel extends ComponentModel{
      *  autoUpload: true,
      *  minFileSize: 0,
      *  maxFileSize: 30000000,
-     *  allowedExtensions: ''
+     *  allowedExtensions: '',
+     *  autoClose: false
      * }
      */
     uploadSettings?: UploadSettingsModel;

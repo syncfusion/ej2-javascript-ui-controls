@@ -1,6 +1,7 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, extend, formatUnit, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Button } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
 
 /**
@@ -218,6 +219,9 @@ var CardSettings = /** @__PURE__ @class */ (function (_super) {
         Property()
     ], CardSettings.prototype, "template", void 0);
     __decorate$2([
+        Property()
+    ], CardSettings.prototype, "priority", void 0);
+    __decorate$2([
         Property('Single')
     ], CardSettings.prototype, "selectionType", void 0);
     return CardSettings;
@@ -363,13 +367,13 @@ var CONTENT_ROW_CLASS = 'e-content-row';
 /** @hidden */
 var SWIMLANE_ROW_CLASS = 'e-swimlane-row';
 /** @hidden */
-var SWIMLANE_ROW_EXPAND = 'e-swimlane-row-expand';
+var SWIMLANE_ROW_EXPAND_CLASS = 'e-swimlane-row-expand';
 /** @hidden */
-var SWIMLANE_ROW_COLLAPSE = 'e-swimlane-row-collapse';
+var SWIMLANE_ROW_COLLAPSE_CLASS = 'e-swimlane-row-collapse';
 /** @hidden */
-var SWIMLANE_ROW_TEXT = 'e-swimlane-text';
+var SWIMLANE_ROW_TEXT_CLASS = 'e-swimlane-text';
 /** @hidden */
-var CARD_ITEM_COUNT = 'e-item-count';
+var CARD_ITEM_COUNT_CLASS = 'e-item-count';
 /** @hidden */
 var CARD_WRAPPER_CLASS = 'e-card-wrapper';
 /** @hidden */
@@ -383,11 +387,11 @@ var CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
 /** @hidden */
 var CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
 /** @hidden */
-var COLUMN_EXPAND = 'e-column-expand';
+var COLUMN_EXPAND_CLASS = 'e-column-expand';
 /** @hidden */
-var COLUMN_COLLAPSE = 'e-column-collapse';
+var COLUMN_COLLAPSE_CLASS = 'e-column-collapse';
 /** @hidden */
-var COLLAPSE_HEADER_TEXT = 'e-collapse-header-text';
+var COLLAPSE_HEADER_TEXT_CLASS = 'e-collapse-header-text';
 /** @hidden */
 var COLLAPSED_CLASS = 'e-collapsed';
 /** @hidden */
@@ -403,53 +407,55 @@ var COLLAPSED_CLASS = 'e-collapsed';
 /** @hidden */
 
 /** @hidden */
-var DRAGGED_CLONE = 'e-target-dragged-clone';
+var DRAGGED_CLONE_CLASS = 'e-target-dragged-clone';
 /** @hidden */
-var DRAGGED_CARD = 'e-kanban-dragged-card';
+var CLONED_CARD_CLASS = 'e-cloned-card';
 /** @hidden */
-var DROPPED_CLONE = 'e-target-dropped-clone';
+var DRAGGED_CARD_CLASS = 'e-kanban-dragged-card';
 /** @hidden */
-var DROPPING = 'e-dropping';
+var DROPPED_CLONE_CLASS = 'e-target-dropped-clone';
 /** @hidden */
-var TOGGLE_VISIBLE = 'e-toggle-visible';
+var DROPPING_CLASS = 'e-dropping';
+/** @hidden */
+var TOGGLE_VISIBLE_CLASS = 'e-toggle-visible';
 /** @hidden */
 
 /** @hidden */
-var MULTI_CARD_WRAPPER = 'e-multi-card-wrapper';
+var MULTI_CARD_WRAPPER_CLASS = 'e-multi-card-wrapper';
 /** @hidden */
-var MULTI_ACTIVE = 'e-multi-active';
+var MULTI_ACTIVE_CLASS = 'e-multi-active';
 /** @hidden */
-var TARGET_MULTI_CLONE = 'e-target-multi-clone';
+var TARGET_MULTI_CLONE_CLASS = 'e-target-multi-clone';
 /** @hidden */
-var MULTI_COLUMN_KEY = 'e-column-key';
+var MULTI_COLUMN_KEY_CLASS = 'e-column-key';
 /** @hidden */
-var CARD_SELECTION = 'e-selection';
+var CARD_SELECTION_CLASS = 'e-selection';
 /** @hidden */
 var TOOLTIP_CLASS = 'e-kanban-tooltip';
 /** @hidden */
-var TOOLTIP_TEXT = 'e-tooltip-text';
+var TOOLTIP_TEXT_CLASS = 'e-tooltip-text';
 /** @hidden */
 
 /** @hidden */
-var SWIMLANE_HEADER = 'e-swimlane-header';
+var SWIMLANE_HEADER_CLASS = 'e-swimlane-header';
 /** @hidden */
-var SWIMLANE_HEADER_TOOLBAR = 'e-swimlane-header-toolbar';
+var SWIMLANE_HEADER_TOOLBAR_CLASS = 'e-swimlane-header-toolbar';
 /** @hidden */
-var TOOLBAR_MENU = 'e-toolbar-menu';
+var TOOLBAR_MENU_CLASS = 'e-toolbar-menu';
 /** @hidden */
-var TOOLBAR_MENU_ICON = 'e-icon-menu';
+var TOOLBAR_MENU_ICON_CLASS = 'e-icon-menu';
 /** @hidden */
-var TOOLBAR_LEVEL_TITLE = 'e-toolbar-level-title';
+var TOOLBAR_LEVEL_TITLE_CLASS = 'e-toolbar-level-title';
 /** @hidden */
-var TOOLBAR_SWIMLANE_NAME = 'e-toolbar-swimlane-name';
+var TOOLBAR_SWIMLANE_NAME_CLASS = 'e-toolbar-swimlane-name';
 /** @hidden */
-var SWIMLANE_OVERLAY = 'e-swimlane-overlay';
+var SWIMLANE_OVERLAY_CLASS = 'e-swimlane-overlay';
 /** @hidden */
-var SWIMLANE_CONTENT = 'e-swimlane-content';
+var SWIMLANE_CONTENT_CLASS = 'e-swimlane-content';
 /** @hidden */
-var SWIMLANE_RESOURCE = 'e-swimlane-resource';
+var SWIMLANE_RESOURCE_CLASS = 'e-swimlane-resource';
 /** @hidden */
-var SWIMLANE_TREE = 'e-swimlane-tree';
+var SWIMLANE_TREE_CLASS = 'e-swimlane-tree';
 /** @hidden */
 var LIMITS_CLASS = 'e-limits';
 /** @hidden */
@@ -457,9 +463,23 @@ var MAX_COUNT_CLASS = 'e-max-count';
 /** @hidden */
 var MIN_COUNT_CLASS = 'e-min-count';
 /** @hidden */
-var MAX_COLOR = 'e-max-color';
+var MAX_COLOR_CLASS = 'e-max-color';
 /** @hidden */
-var MIN_COLOR = 'e-min-color';
+var MIN_COLOR_CLASS = 'e-min-color';
+/** @hidden */
+
+/** @hidden */
+var POPUP_HEADER_CLASS = 'e-popup-header';
+/** @hidden */
+var CLOSE_CLASS = 'e-close';
+/** @hidden */
+var POPUP_CONTENT_CLASS = 'e-popup-content';
+/** @hidden */
+var POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
+/** @hidden */
+var CLOSE_ICON_CLASS = 'e-close-icon';
+/** @hidden */
+var POPUP_OPEN_CLASS = 'e-popup-open';
 
 /**
  * Action module is used to perform card actions.
@@ -472,7 +492,6 @@ var Action = /** @__PURE__ @class */ (function () {
      */
     function Action(parent) {
         this.parent = parent;
-        this.swimlaneToggleArray = [];
         this.columnToggleArray = [];
         this.selectionArray = [];
         this.lastCardSelection = null;
@@ -482,15 +501,50 @@ var Action = /** @__PURE__ @class */ (function () {
         this.selectedCardsData = [];
         this.hideColumnKeys = [];
     }
+    Action.prototype.clickHandler = function (e) {
+        var elementSelector = '.' + CARD_CLASS + ',.' + HEADER_ICON_CLASS + ',.' + CONTENT_ROW_CLASS + '.' +
+            SWIMLANE_ROW_CLASS;
+        var target = closest(e.target, elementSelector);
+        if (!target) {
+            return;
+        }
+        if (target.classList.contains(CARD_CLASS)) {
+            this.cardClick(e);
+        }
+        else if (target.classList.contains(HEADER_ICON_CLASS)) {
+            this.columnExpandCollapse(e);
+        }
+        else if (target.classList.contains(CONTENT_ROW_CLASS) && target.classList.contains(SWIMLANE_ROW_CLASS)) {
+            this.rowExpandCollapse(e);
+        }
+    };
+    Action.prototype.doubleClickHandler = function (e) {
+        var target = closest(e.target, '.' + CARD_CLASS);
+        if (target) {
+            this.cardDoubleClick(e);
+        }
+    };
     Action.prototype.cardClick = function (e) {
         var _this = this;
         var target = closest(e.target, '.' + CARD_CLASS);
         var cardClickObj = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardClickObj, element: target };
-        var args = { data: cardClickObj, element: target, cancel: false };
+        var args = { data: cardClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardClick, args, function (clickArgs) {
             if (!clickArgs.cancel) {
-                _this.cardSelection(target, e.ctrlKey, e.shiftKey);
+                if (target.classList.contains(CARD_SELECTION_CLASS)) {
+                    removeClass([target], CARD_SELECTION_CLASS);
+                }
+                else {
+                    var isCtrlKey = e.ctrlKey;
+                    if (_this.parent.isAdaptive && _this.parent.touchModule) {
+                        isCtrlKey = _this.parent.touchModule.tabHold || e.ctrlKey;
+                    }
+                    _this.cardSelection(target, isCtrlKey, e.shiftKey);
+                }
+                if (_this.parent.isAdaptive && _this.parent.touchModule) {
+                    _this.parent.touchModule.updatePopupContent();
+                }
             }
         });
     };
@@ -498,29 +552,30 @@ var Action = /** @__PURE__ @class */ (function () {
         var target = closest(e.target, '.' + CARD_CLASS);
         var cardDoubleClickObj = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
-        var args = { data: cardDoubleClickObj, element: target, cancel: false };
+        var args = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardDoubleClick, args);
     };
     Action.prototype.rowExpandCollapse = function (e) {
         var _this = this;
-        var args = { cancel: false, target: e.target, requestType: 'rowExpandCollapse' };
+        var headerTarget = (e instanceof HTMLElement) ? e : e.target;
+        var args = { cancel: false, target: headerTarget, requestType: 'rowExpandCollapse' };
         this.parent.trigger(actionBegin, args, function (actionArgs) {
             if (!actionArgs.cancel) {
-                var target = closest(e.target, '.' + SWIMLANE_ROW_CLASS);
+                var target = closest(headerTarget, '.' + SWIMLANE_ROW_CLASS);
                 var tgtRow = _this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + (":nth-child(" + (target.rowIndex + 2) + ")"));
-                var targetIcon = target.querySelector('.' + SWIMLANE_ROW_EXPAND + ',.' + SWIMLANE_ROW_COLLAPSE);
+                var targetIcon = target.querySelector("." + SWIMLANE_ROW_EXPAND_CLASS + ",." + SWIMLANE_ROW_COLLAPSE_CLASS);
                 if (target.classList.contains(COLLAPSED_CLASS)) {
                     removeClass([tgtRow, target], COLLAPSED_CLASS);
-                    classList(targetIcon, [SWIMLANE_ROW_EXPAND], [SWIMLANE_ROW_COLLAPSE]);
-                    _this.swimlaneToggleArray.splice(_this.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
+                    classList(targetIcon, [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
+                    _this.parent.swimlaneToggleArray.splice(_this.parent.swimlaneToggleArray.indexOf(target.getAttribute('data-key')), 1);
                 }
                 else {
                     addClass([tgtRow, target], COLLAPSED_CLASS);
-                    classList(targetIcon, [SWIMLANE_ROW_COLLAPSE], [SWIMLANE_ROW_EXPAND]);
-                    _this.swimlaneToggleArray.push(target.getAttribute('data-key'));
+                    classList(targetIcon, [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
+                    _this.parent.swimlaneToggleArray.push(target.getAttribute('data-key'));
                 }
                 _this.parent.notify(contentReady, {});
-                _this.parent.trigger(actionComplete, { target: e.target, requestType: 'rowExpandCollapse' });
+                _this.parent.trigger(actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
         });
     };
@@ -535,8 +590,8 @@ var Action = /** @__PURE__ @class */ (function () {
                 _this.columnToggle(target);
                 var collapsed = _this.parent.element.querySelectorAll("." + HEADER_CELLS_CLASS + "." + COLLAPSED_CLASS).length;
                 if (collapsed === (_this.parent.columns.length - _this.hideColumnKeys.length)) {
-                    var nextColIndex = (colIndex + 1 === collapsed) ? 0 : colIndex + 1;
-                    var headerSelector = "." + HEADER_CELLS_CLASS + ":not(.e-stacked-header-cell):nth-child(" + (nextColIndex + 1) + ")";
+                    var index = (colIndex + 1 === collapsed) ? 1 : colIndex + 2;
+                    var headerSelector = "." + HEADER_CELLS_CLASS + ":not(." + STACKED_HEADER_CELL_CLASS + "):nth-child(" + index + ")";
                     var nextCol = _this.parent.element.querySelector(headerSelector);
                     addClass([nextCol], COLLAPSED_CLASS);
                     _this.columnToggle(nextCol);
@@ -549,21 +604,22 @@ var Action = /** @__PURE__ @class */ (function () {
     Action.prototype.columnToggle = function (target) {
         var _this = this;
         var colIndex = target.cellIndex;
-        var targetRow = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
-        var colSelector = ".e-header-table col:nth-child(" + (colIndex + 1) + "),.e-content-table col:nth-child(" + (colIndex + 1) + ")";
-        var targetIcon = target.querySelector('.' + COLUMN_EXPAND + ',.' + COLUMN_COLLAPSE);
+        var elementSelector = "." + CONTENT_ROW_CLASS + ":not(." + SWIMLANE_ROW_CLASS + ")";
+        var targetRow = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
+        var colSelector = "." + TABLE_CLASS + " col:nth-child(" + (colIndex + 1) + ")";
+        var targetIcon = target.querySelector("." + COLUMN_EXPAND_CLASS + ",." + COLUMN_COLLAPSE_CLASS);
         var colGroup = [].slice.call(this.parent.element.querySelectorAll(colSelector));
         if (target.classList.contains(COLLAPSED_CLASS)) {
             removeClass(colGroup, COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
                 colGroup.forEach(function (col) { return col.style.width = formatUnit(_this.parent.layoutModule.getWidth()); });
             }
-            classList(targetIcon, [COLUMN_EXPAND], [COLUMN_COLLAPSE]);
+            classList(targetIcon, [COLUMN_EXPAND_CLASS], [COLUMN_COLLAPSE_CLASS]);
             for (var _i = 0, targetRow_1 = targetRow; _i < targetRow_1.length; _i++) {
                 var row = targetRow_1[_i];
                 var targetCol = row.querySelector("." + CONTENT_CELLS_CLASS + ":nth-child(" + (colIndex + 1) + ")");
                 removeClass([targetCol, target], COLLAPSED_CLASS);
-                remove(targetCol.querySelector('.' + COLLAPSE_HEADER_TEXT));
+                remove(targetCol.querySelector('.' + COLLAPSE_HEADER_TEXT_CLASS));
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
             this.parent.columns[colIndex].setProperties({ isExpanded: true }, true);
@@ -573,14 +629,14 @@ var Action = /** @__PURE__ @class */ (function () {
             if (this.parent.isAdaptive) {
                 colGroup.forEach(function (col) { return col.style.width = formatUnit(toggleWidth); });
             }
-            classList(targetIcon, [COLUMN_COLLAPSE], [COLUMN_EXPAND]);
+            classList(targetIcon, [COLUMN_COLLAPSE_CLASS], [COLUMN_EXPAND_CLASS]);
             for (var _a = 0, targetRow_2 = targetRow; _a < targetRow_2.length; _a++) {
                 var row = targetRow_2[_a];
                 var key = target.getAttribute('data-key');
-                var targetCol = row.querySelector('.' + CONTENT_CELLS_CLASS + '[data-key="' + key + '"]');
+                var targetCol = row.querySelector("." + CONTENT_CELLS_CLASS + "[data-key=\"" + key + "\"]");
                 var index = targetCol.cellIndex;
                 targetCol.appendChild(createElement('div', {
-                    className: COLLAPSE_HEADER_TEXT,
+                    className: COLLAPSE_HEADER_TEXT_CLASS,
                     innerHTML: this.parent.columns[index].headerText
                 }));
                 addClass([targetCol, target], COLLAPSED_CLASS);
@@ -602,7 +658,7 @@ var Action = /** @__PURE__ @class */ (function () {
                 return;
             }
             if (cards.length !== 0 && (!isCtrl || this.parent.cardSettings.selectionType === 'Single')) {
-                removeClass(cards, CARD_SELECTION);
+                removeClass(cards, CARD_SELECTION_CLASS);
                 cards.forEach(function (el) {
                     _this.selectionArray.splice(_this.selectionArray.indexOf(el.getAttribute('data-id')), 1);
                     _this.selectedCardsElement.splice(_this.selectedCardsElement.indexOf(el), 1);
@@ -627,7 +683,7 @@ var Action = /** @__PURE__ @class */ (function () {
                 }
                 for (i = start; i <= end; i++) {
                     var card = allCards[i];
-                    addClass([card], CARD_SELECTION);
+                    addClass([card], CARD_SELECTION_CLASS);
                     this.selectionArray.push(card.getAttribute('data-id'));
                     this.selectedCardsElement.push(card);
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
@@ -638,12 +694,19 @@ var Action = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                addClass([target], CARD_SELECTION);
+                addClass([target], CARD_SELECTION_CLASS);
                 this.selectionArray.push(target.getAttribute('data-id'));
                 this.selectedCardsElement.push(target);
                 this.selectedCardsData.push(this.parent.getCardDetails(target));
                 this.lastCard = this.lastCardSelection = target;
                 this.lastSelectionRow = closest(target, '.' + CONTENT_ROW_CLASS);
+                if (this.lastSelectionRow.previousElementSibling) {
+                    var elementSelector = "." + SWIMLANE_ROW_EXPAND_CLASS + ",." + SWIMLANE_ROW_COLLAPSE_CLASS;
+                    var parentEle = this.lastSelectionRow.previousElementSibling.querySelector(elementSelector);
+                    if (parentEle && parentEle.classList.contains(SWIMLANE_ROW_COLLAPSE_CLASS)) {
+                        this.rowExpandCollapse(parentEle);
+                    }
+                }
             }
         }
     };
@@ -736,10 +799,16 @@ var Crud = /** @__PURE__ @class */ (function () {
         this.parent.trigger(actionBegin, args, function (addArgs) {
             if (!addArgs.cancel) {
                 var promise = null;
+                var modifiedData = [];
+                if (_this.parent.cardSettings.priority) {
+                    cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
+                    modifiedData = _this.priorityOrder(modifiedData, addArgs);
+                }
                 var editParms = {
-                    addedRecords: (cardData instanceof Array) ? cardData : [cardData], changedRecords: [], deletedRecords: []
+                    addedRecords: (cardData instanceof Array) ? cardData : [cardData],
+                    changedRecords: _this.parent.cardSettings.priority ? modifiedData : [], deletedRecords: []
                 };
-                if (cardData instanceof Array) {
+                if (cardData instanceof Array || modifiedData.length > 0) {
                     promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
                 }
                 else {
@@ -762,6 +831,11 @@ var Crud = /** @__PURE__ @class */ (function () {
         this.parent.trigger(actionBegin, args, function (updateArgs) {
             if (!updateArgs.cancel) {
                 var promise = null;
+                if (_this.parent.cardSettings.priority) {
+                    var modifiedData = [];
+                    cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
+                    cardData = _this.priorityOrder(modifiedData, updateArgs);
+                }
                 var editParms = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
@@ -811,6 +885,65 @@ var Crud = /** @__PURE__ @class */ (function () {
             }
         });
     };
+    Crud.prototype.priorityOrder = function (cardData, args) {
+        var _this = this;
+        var cardsId = cardData.map(function (obj) { return obj[_this.parent.cardSettings.headerField]; });
+        var allModifiedKeys = cardData.map(function (obj) { return obj[_this.parent.keyField]; });
+        var modifiedKey = allModifiedKeys.filter(function (key, index) { return allModifiedKeys.indexOf(key) === index; }).sort();
+        var columnAllDatas;
+        var finalData = [];
+        var _loop_1 = function (columnKey) {
+            var keyData = cardData.filter(function (cardObj) { return cardObj[_this.parent.keyField] === columnKey; });
+            columnAllDatas = this_1.parent.getColumnData(columnKey);
+            var customOrder = 1;
+            var initialOrder = void 0;
+            for (var _i = 0, _a = keyData; _i < _a.length; _i++) {
+                var data = _a[_i];
+                var order = void 0;
+                if (data[this_1.parent.cardSettings.priority]) {
+                    order = data[this_1.parent.cardSettings.priority];
+                }
+                else {
+                    if (customOrder === 1) {
+                        initialOrder = columnAllDatas.slice(-1)[0][this_1.parent.cardSettings.priority];
+                    }
+                    order = data[this_1.parent.cardSettings.priority] = (customOrder > 1 ? initialOrder :
+                        columnAllDatas.slice(-1)[0][this_1.parent.cardSettings.priority]) + customOrder;
+                    customOrder++;
+                }
+                if (this_1.parent.swimlaneSettings.keyField) {
+                    var swimlaneDatas = this_1.parent.getSwimlaneData(data[this_1.parent.swimlaneSettings.keyField]);
+                    columnAllDatas = this_1.parent.getColumnData(columnKey, swimlaneDatas);
+                }
+                var count = [];
+                for (var j = 0; j < columnAllDatas.length; j++) {
+                    if (columnAllDatas[j][this_1.parent.cardSettings.priority] === order) {
+                        count.push(j + 1);
+                        break;
+                    }
+                }
+                if (args.requestType === 'cardChange') {
+                    finalData.push(data);
+                }
+                var finalCardsId = finalData.map(function (obj) { return obj[_this.parent.cardSettings.headerField]; });
+                for (var i = count[0]; i <= columnAllDatas.length; i++) {
+                    var dataObj = columnAllDatas[i - 1];
+                    var index = cardsId.indexOf(dataObj[this_1.parent.cardSettings.headerField]);
+                    if (index === -1 && order >= dataObj[this_1.parent.cardSettings.priority]) {
+                        dataObj[this_1.parent.cardSettings.priority] = ++order;
+                        var isData = finalCardsId.indexOf(dataObj[this_1.parent.cardSettings.headerField]);
+                        (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                    }
+                }
+            }
+        };
+        var this_1 = this;
+        for (var _i = 0, modifiedKey_1 = modifiedKey; _i < modifiedKey_1.length; _i++) {
+            var columnKey = modifiedKey_1[_i];
+            _loop_1(columnKey);
+        }
+        return finalData;
+    };
     return Crud;
 }());
 
@@ -828,7 +961,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.dragObj = {
             element: null, cloneElement: null,
             targetClone: null, draggedClone: null, targetCloneMulti: null,
-            selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: []
+            selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.dragEdges = { left: false, right: false, top: false, bottom: false };
     }
@@ -847,15 +980,22 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         });
     };
     DragAndDrop.prototype.dragHelper = function (e) {
-        this.dragObj.element = e.element;
+        if (this.parent.isAdaptive && this.parent.touchModule.mobilePopup &&
+            this.parent.touchModule.mobilePopup.element.classList.contains(POPUP_OPEN_CLASS)) {
+            this.parent.touchModule.mobilePopup.hide();
+        }
+        this.dragObj.element = closest(e.sender.target, '.' + CARD_CLASS);
+        if (isNullOrUndefined(this.dragObj.element)) {
+            return null;
+        }
         this.dragObj.element.style.width = formatUnit(this.dragObj.element.offsetWidth);
         var cloneWrapper = createElement('div', { innerHTML: this.dragObj.element.outerHTML });
-        this.dragObj.cloneElement = cloneWrapper.childNodes.item(0);
-        addClass([this.dragObj.cloneElement], ['e-cloned-card', 'duplicate']);
+        this.dragObj.cloneElement = cloneWrapper.children.item(0);
+        addClass([this.dragObj.cloneElement], CLONED_CARD_CLASS);
         this.dragObj.element.parentElement.appendChild(this.dragObj.cloneElement);
-        this.dragObj.targetCloneMulti = createElement('div', { className: TARGET_MULTI_CLONE });
+        this.dragObj.targetCloneMulti = createElement('div', { className: TARGET_MULTI_CLONE_CLASS });
         this.dragObj.targetClone = createElement('div', {
-            className: DROPPED_CLONE,
+            className: DROPPED_CLONE_CLASS,
             styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
         return this.dragObj.cloneElement;
@@ -863,8 +1003,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
     DragAndDrop.prototype.dragStart = function (e) {
         var _this = this;
         this.dragObj.selectedCards = this.dragObj.element;
-        if (this.dragObj.element.classList.contains(CARD_SELECTION)) {
-            var className = '.' + CARD_CLASS + '.' + CARD_SELECTION + ':not(.duplicate)';
+        if (this.dragObj.element.classList.contains(CARD_SELECTION_CLASS)) {
+            var className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS + ':not(.' + CLONED_CARD_CLASS + ')';
             var closestEle = closest(this.dragObj.element, '.' + CONTENT_ROW_CLASS);
             this.dragObj.selectedCards = [].slice.call(closestEle.querySelectorAll(className));
             this.dragObj.selectedCards.forEach(function (element) {
@@ -884,7 +1024,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 };
                 return;
             }
-            if (_this.dragObj.element.classList.contains(CARD_SELECTION)) {
+            if (_this.dragObj.element.classList.contains(CARD_SELECTION_CLASS)) {
                 _this.dragObj.selectedCards.forEach(function (element) { _this.draggedClone(element); });
                 if (_this.dragObj.selectedCards.length > 1) {
                     _this.dragObj.cloneElement.innerHTML = '';
@@ -893,7 +1033,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                         innerHTML: _this.dragObj.selectedCards.length + ' Cards',
                     });
                     _this.dragObj.cloneElement.appendChild(drag$$1);
-                    classList(_this.dragObj.cloneElement, ['e-multi-card-clone'], [CARD_SELECTION]);
+                    classList(_this.dragObj.cloneElement, ['e-multi-card-clone'], [CARD_SELECTION_CLASS]);
                     _this.dragObj.cloneElement.style.width = '90px';
                 }
             }
@@ -905,11 +1045,11 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
     };
     DragAndDrop.prototype.draggedClone = function (element) {
         this.dragObj.draggedClone = createElement('div', {
-            className: DRAGGED_CLONE,
+            className: DRAGGED_CLONE_CLASS,
             styles: 'width:' + formatUnit(element.offsetWidth - 1) + ';height:' + formatUnit(element.offsetHeight)
         });
         element.insertAdjacentElement('afterend', this.dragObj.draggedClone);
-        addClass([element], DRAGGED_CARD);
+        addClass([element], DRAGGED_CARD_CLASS);
     };
     DragAndDrop.prototype.drag = function (e) {
         var _this = this;
@@ -949,13 +1089,16 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                     offsetHeight -= limitEle.offsetHeight;
                 }
                 this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
-                addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER);
+                addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
                 contentCell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = 'auto';
                 contentCell.style.borderStyle = 'none';
                 this.removeElement(this.dragObj.targetClone);
                 for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
                     var key = keys_1[_i];
-                    var colKey = createElement('div', { className: MULTI_COLUMN_KEY, attrs: { 'data-key': key.trim() } });
+                    var colKey = createElement('div', {
+                        className: MULTI_COLUMN_KEY_CLASS,
+                        attrs: { 'data-key': key.trim() }
+                    });
                     var text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
                     contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
                     colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
@@ -967,27 +1110,28 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.addDropping();
         var isCollapsed = false;
         if (contentCell) {
-            isCollapsed = contentCell.classList.contains(COLLAPSED_CLASS) && contentCell.classList.contains(DROPPING);
+            isCollapsed = contentCell.classList.contains(COLLAPSED_CLASS) && contentCell.classList.contains(DROPPING_CLASS);
         }
         if (isCollapsed) {
             this.toggleVisible(target, undefined);
-            addClass([contentCell], TOGGLE_VISIBLE);
+            addClass([contentCell], TOGGLE_VISIBLE_CLASS);
         }
-        var tColumn = [].slice.call(this.parent.element.querySelectorAll('.' + TOGGLE_VISIBLE));
-        if (tColumn.length > 0 && !target.classList.contains(TOGGLE_VISIBLE) && !closest(target, '.' + TOGGLE_VISIBLE)) {
+        var tColumn = [].slice.call(this.parent.element.querySelectorAll('.' + TOGGLE_VISIBLE_CLASS));
+        if (tColumn.length > 0 && !target.classList.contains(TOGGLE_VISIBLE_CLASS)
+            && !closest(target, '.' + TOGGLE_VISIBLE_CLASS)) {
             this.toggleVisible(target, tColumn.slice(-1)[0]);
-            removeClass(tColumn, TOGGLE_VISIBLE);
+            removeClass(tColumn, TOGGLE_VISIBLE_CLASS);
         }
         this.parent.notify(contentReady, {});
         var cloneCell = closest(target, '.' + CONTENT_CELLS_CLASS + ':not(.' + COLLAPSED_CLASS + ')');
         if (cloneCell) {
             this.dragObj.targetClone.style.width = formatUnit((cloneCell.offsetWidth - 2) - cardSpace);
         }
-        var multiKeyTarget = closest(target, '.' + MULTI_COLUMN_KEY);
+        var multiKeyTarget = closest(target, '.' + MULTI_COLUMN_KEY_CLASS);
         if (multiKeyTarget) {
-            var columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY)).filter(function (element) { return _this.getColumnKey(element) === _this.getColumnKey(multiKeyTarget); });
+            var columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS)).filter(function (element) { return _this.getColumnKey(element) === _this.getColumnKey(multiKeyTarget); });
             if (columnKeys.length > 0) {
-                addClass(columnKeys, MULTI_ACTIVE);
+                addClass(columnKeys, MULTI_ACTIVE_CLASS);
                 if (columnKeys[0].previousElementSibling) {
                     addClass([columnKeys[0].previousElementSibling], 'e-multi-bottom-border');
                 }
@@ -1022,37 +1166,29 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
     DragAndDrop.prototype.addDropping = function () {
         if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
             var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + '):not(.' + COLLAPSED_CLASS + ')';
-            var rows = [].slice.call(this.parent.element.querySelectorAll(className));
-            rows.forEach(function (row) { return addClass(row.childNodes, DROPPING); });
+            var cells = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
+            cells.forEach(function (cell) { return addClass([cell], DROPPING_CLASS); });
         }
         else {
             var row = closest(this.dragObj.draggedClone, '.' + CONTENT_ROW_CLASS);
             if (row) {
-                [].slice.call(row.childNodes).forEach(function (cell) { return addClass([cell], DROPPING); });
+                [].slice.call(row.children).forEach(function (cell) { return addClass([cell], DROPPING_CLASS); });
             }
         }
         var cell = closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS);
         if (cell) {
-            removeClass([cell], DROPPING);
+            removeClass([cell], DROPPING_CLASS);
         }
     };
     DragAndDrop.prototype.dragStop = function (e) {
         var _this = this;
         var contentCell = closest(this.dragObj.targetClone, '.' + CONTENT_CELLS_CLASS);
         var columnKey;
-        if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE)) {
-            columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY);
+        if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
+            columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
         }
         var dragArgs = { cancel: false, data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
-            _this.removeElement(_this.dragObj.draggedClone);
-            _this.removeElement(_this.dragObj.targetClone);
-            _this.removeElement(_this.dragObj.cloneElement);
-            var dragMultiClone = [].slice.call(_this.parent.element.querySelectorAll('.' + DRAGGED_CLONE));
-            dragMultiClone.forEach(function (clone) { return remove(clone); });
-            removeClass([_this.dragObj.element], DRAGGED_CARD);
-            clearInterval(_this.dragObj.navigationInterval);
-            _this.dragObj.navigationInterval = null;
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
                     var cardStatus_1;
@@ -1071,18 +1207,30 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                             _this.updateDroppedData(element, cardStatus_1, contentCell);
                         });
                     }
+                    if (_this.parent.cardSettings.priority) {
+                        _this.changeOrder(_this.dragObj.modifiedData);
+                    }
+                    _this.parent.crudModule.updateCard(_this.dragObj.modifiedData);
                 }
             }
+            _this.removeElement(_this.dragObj.draggedClone);
+            _this.removeElement(_this.dragObj.targetClone);
+            _this.removeElement(_this.dragObj.cloneElement);
+            var dragMultiClone = [].slice.call(_this.parent.element.querySelectorAll('.' + DRAGGED_CLONE_CLASS));
+            dragMultiClone.forEach(function (clone) { return remove(clone); });
+            removeClass([_this.dragObj.element], DRAGGED_CARD_CLASS);
+            clearInterval(_this.dragObj.navigationInterval);
+            _this.dragObj.navigationInterval = null;
             if (document.body.style.cursor === 'not-allowed') {
                 document.body.style.cursor = '';
             }
             var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')';
-            var rows = [].slice.call(_this.parent.element.querySelectorAll(className));
-            rows.forEach(function (row) { return removeClass(row.childNodes, DROPPING); });
+            var cells = [].slice.call(_this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
+            cells.forEach(function (cell) { return removeClass([cell], DROPPING_CLASS); });
             if (_this.parent.isAdaptive) {
                 _this.parent.touchModule.tabHold = false;
             }
-            _this.dragObj.cardDetails = [];
+            _this.dragObj.cardDetails = _this.dragObj.modifiedData = [];
         });
     };
     DragAndDrop.prototype.updateDroppedData = function (element, cardStatus, contentCell) {
@@ -1100,7 +1248,35 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 crudData[this.parent.swimlaneSettings.keyField] = this.getColumnKey(prev);
             }
         }
-        this.parent.crudModule.updateCard(crudData);
+        this.dragObj.modifiedData.push(crudData);
+    };
+    DragAndDrop.prototype.changeOrder = function (modifiedData) {
+        var _this = this;
+        var prevEle = false;
+        var element = this.dragObj.targetClone.previousElementSibling;
+        if (element && !element.classList.contains(DRAGGED_CARD_CLASS) && !element.classList.contains(CLONED_CARD_CLASS)
+            && !element.classList.contains(DRAGGED_CLONE_CLASS)) {
+            prevEle = true;
+        }
+        else if (this.dragObj.targetClone.nextElementSibling) {
+            element = this.dragObj.targetClone.nextElementSibling;
+        }
+        else {
+            return;
+        }
+        var obj = this.parent.getCardDetails(element);
+        var index = obj[this.parent.cardSettings.priority];
+        modifiedData.forEach(function (data) {
+            if (prevEle) {
+                data[_this.parent.cardSettings.priority] = ++index;
+            }
+            else if (index !== 1 && index <= data[_this.parent.cardSettings.priority]) {
+                data[_this.parent.cardSettings.priority] = --index;
+            }
+            else if (index === 1) {
+                data[_this.parent.cardSettings.priority] = 1;
+            }
+        });
     };
     DragAndDrop.prototype.toggleVisible = function (target, tColumn) {
         var _this = this;
@@ -1118,15 +1294,15 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         }
     };
     DragAndDrop.prototype.multiCloneRemove = function () {
-        var cloneMulti = [].slice.call(this.parent.element.querySelectorAll('.' + TARGET_MULTI_CLONE));
+        var cloneMulti = [].slice.call(this.parent.element.querySelectorAll('.' + TARGET_MULTI_CLONE_CLASS));
         if (cloneMulti.length > 0) {
-            var columnKey = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY));
+            var columnKey = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS));
             columnKey.forEach(function (node) { return remove(node); });
             cloneMulti.forEach(function (node) {
                 var cell = closest(node, '.' + CONTENT_CELLS_CLASS);
                 if (cell) {
                     cell.style.borderStyle = '';
-                    removeClass([cell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER);
+                    removeClass([cell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
                 }
             });
             this.removeElement(this.dragObj.targetCloneMulti);
@@ -1257,6 +1433,9 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             multiSelectionByDownArrow: 'shift+40',
             multiSelectionByLeftArrow: 'shift+37',
             multiSelectionByRightArrow: 'shift+39',
+            shiftTab: 'shift+tab',
+            enter: '13',
+            tab: 'tab'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -1267,74 +1446,126 @@ var Keyboard = /** @__PURE__ @class */ (function () {
         });
     }
     Keyboard.prototype.keyActionHandler = function (e) {
-        var selectedCard = this.parent.element.querySelectorAll('.e-card.e-selection').item(0);
-        if (!selectedCard && e.action !== 'firstCardSelection' && e.action !== 'lastCardSelection') {
+        var selectedCard = this.parent.element.querySelectorAll("." + CARD_CLASS + "." + CARD_SELECTION_CLASS).item(0);
+        if (!selectedCard && !closest(document.activeElement, "." + ROOT_CLASS)) {
             return;
         }
-        var key;
         switch (e.action) {
             case 'upArrow':
             case 'downArrow':
             case 'multiSelectionByUpArrow':
             case 'multiSelectionByDownArrow':
-                key = closest(this.parent.actionModule.lastCardSelection, '.e-content-cells').getAttribute('data-key');
-                var cardSelector = '.e-content-cells[data-key=' + key + '] .e-card';
-                var allCards = [].slice.call(this.parent.element.querySelectorAll(cardSelector));
-                var curId = this.parent.actionModule.lastCardSelection.getAttribute('data-id');
-                var curIndex = this.getCardId(allCards).indexOf(curId);
-                var isShift = ((e.action === 'multiSelectionByUpArrow' || e.action === 'multiSelectionByDownArrow')
-                    && this.parent.cardSettings.selectionType === 'Multiple');
-                var index = (e.action === 'upArrow' || e.action === 'multiSelectionByUpArrow') ? curIndex - 1 : curIndex + 1;
-                this.parent.actionModule.cardSelection(allCards[index], false, isShift);
+                this.processUpDownArrow(e.action, selectedCard);
                 break;
             case 'rightArrow':
             case 'leftArrow':
             case 'multiSelectionByLeftArrow':
             case 'multiSelectionByRightArrow':
-                this.moveCards(e.action, this.parent.actionModule.lastCardSelection);
+                this.processLeftRightArrow(e, selectedCard);
                 break;
             case 'firstCardSelection':
             case 'lastCardSelection':
-                if (selectedCard) {
-                    removeClass([selectedCard], 'e-selection');
-                    var selection = this.parent.actionModule.selectionArray;
-                    selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
-                }
-                var cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
-                var element = e.action === 'firstCardSelection' ? cards[0] : cards[cards.length - 1];
-                this.parent.actionModule.cardSelection(element, false, false);
+                this.processCardSelection(e.action, selectedCard);
                 break;
             case 'swimlaneExpandAll':
             case 'swimlaneCollapseAll':
             case 'selectedSwimlaneExpand':
             case 'selectedSwimlaneCollapse':
-                if (this.parent.swimlaneSettings.keyField) {
-                    this.swimlaneExpandCollapse(e.action);
-                }
+                this.processSwimlaneExpandCollapse(e.action);
                 break;
             case 'selectedColumnExpand':
             case 'selectedColumnCollapse':
-                key = selectedCard.getAttribute('data-key');
-                var cell = this.parent.element.querySelector('.e-header-cells[data-key=' + key + ']');
-                if (cell.classList.contains(HEADER_ROW_TOGGLE_CLASS)) {
-                    if ((cell.classList.contains('e-collapsed') && e.action === 'selectedColumnCollapse') ||
-                        (!cell.classList.contains('e-collapsed') && e.action === 'selectedColumnExpand')) {
-                        return;
-                    }
-                    else {
-                        this.parent.actionModule.columnExpandCollapse(cell);
-                    }
-                }
+                this.processColumnExpandcollapse(e.action, selectedCard);
+                break;
+            case 'enter':
+                this.processEnter(e, selectedCard);
+                break;
+            case 'tab':
+            case 'shiftTab':
+                this.processTab(e.action, selectedCard);
                 break;
         }
     };
-    Keyboard.prototype.swimlaneExpandCollapse = function (action) {
-        var className = '.e-card.e-selection';
+    Keyboard.prototype.processCardSelection = function (action, selectedCard) {
+        if (selectedCard) {
+            removeClass([selectedCard], CARD_SELECTION_CLASS);
+            var selection = this.parent.actionModule.selectionArray;
+            selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
+        }
+        var cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
+        var element = action === 'firstCardSelection' ? cards[0] : cards[cards.length - 1];
+        this.parent.actionModule.cardSelection(element, false, false);
+    };
+    Keyboard.prototype.processLeftRightArrow = function (e, selectedCard) {
+        var activeElement = document.activeElement;
+        if (!selectedCard && activeElement) {
+            if (activeElement.classList.contains(COLUMN_EXPAND_CLASS) || activeElement.classList.contains(COLUMN_COLLAPSE_CLASS)) {
+                this.parent.actionModule.columnExpandCollapse(activeElement);
+            }
+            else if (activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS) ||
+                activeElement.classList.contains(SWIMLANE_ROW_COLLAPSE_CLASS)) {
+                this.parent.actionModule.rowExpandCollapse(e);
+            }
+        }
+        if (selectedCard) {
+            this.processMoveCards(e.action, this.parent.actionModule.lastCardSelection);
+        }
+    };
+    Keyboard.prototype.processUpDownArrow = function (action, selectedCard) {
+        var card;
+        var isShift = false;
+        if (selectedCard) {
+            var key = closest(this.parent.actionModule.lastCardSelection, '.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
+            var cardSelector = "." + CONTENT_CELLS_CLASS + "[data-key=\"" + key + "\"] ." + CARD_CLASS;
+            var allCards = [].slice.call(this.parent.element.querySelectorAll(cardSelector));
+            var curId = this.parent.actionModule.lastCardSelection.getAttribute('data-id');
+            var curIndex = this.getCardId(allCards).indexOf(curId);
+            isShift = ((action === 'multiSelectionByUpArrow' || action === 'multiSelectionByDownArrow')
+                && this.parent.cardSettings.selectionType === 'Multiple');
+            var index = (action === 'upArrow' || action === 'multiSelectionByUpArrow') ? curIndex - 1 : curIndex + 1;
+            card = allCards[index];
+        }
+        else if (action === 'downArrow' && document.activeElement) {
+            if (document.activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS)) {
+                var parentEle = closest(document.activeElement, '.' + SWIMLANE_ROW_CLASS);
+                card = parentEle.nextElementSibling.querySelector('.' + CARD_CLASS);
+            }
+            else if (document.activeElement.classList.contains(ROOT_CLASS) && !this.parent.swimlaneSettings.keyField) {
+                card = this.parent.element.querySelector('.' + CARD_CLASS);
+            }
+        }
+        else if (action === 'upArrow' && document.activeElement &&
+            document.activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS)) {
+            var parentEle = closest(document.activeElement, '.' + SWIMLANE_ROW_CLASS);
+            var allCards = [].slice.call(parentEle.previousElementSibling.querySelectorAll('.' + CARD_CLASS));
+            card = (allCards).slice(-1)[0];
+        }
+        this.parent.actionModule.cardSelection(card, false, isShift);
+        this.parent.element.focus();
+    };
+    Keyboard.prototype.processColumnExpandcollapse = function (action, selectedCard) {
+        var key = selectedCard.getAttribute('data-key');
+        var cell = this.parent.element.querySelector("." + HEADER_CELLS_CLASS + "[data-key=\"" + key + "\"]");
+        if (cell.classList.contains(HEADER_ROW_TOGGLE_CLASS)) {
+            if ((cell.classList.contains(COLLAPSED_CLASS) && action === 'selectedColumnCollapse') ||
+                (!cell.classList.contains(COLLAPSED_CLASS) && action === 'selectedColumnExpand')) {
+                return;
+            }
+            else {
+                this.parent.actionModule.columnExpandCollapse(cell);
+            }
+        }
+    };
+    Keyboard.prototype.processSwimlaneExpandCollapse = function (action) {
+        if (!this.parent.swimlaneSettings.keyField) {
+            return;
+        }
+        var className = "." + CARD_CLASS + "." + CARD_SELECTION_CLASS;
         if (action === 'swimlaneExpandAll' || action === 'swimlaneCollapseAll') {
-            className = '.e-content-row.e-swimlane-row';
+            className = "." + CONTENT_ROW_CLASS + "." + SWIMLANE_ROW_CLASS;
         }
         var element = [].slice.call(this.parent.element.querySelectorAll(className));
-        var collapseCount = this.parent.element.querySelectorAll(className + '.e-collapsed').length;
+        var collapseCount = this.parent.element.querySelectorAll(className + '.' + COLLAPSED_CLASS).length;
         if ((action === 'swimlaneCollapseAll' && element.length - collapseCount === 0) ||
             (action === 'swimlaneExpandAll' && element.length - collapseCount === element.length)) {
             return;
@@ -1342,14 +1573,18 @@ var Keyboard = /** @__PURE__ @class */ (function () {
         element.forEach(function (ele) {
             if (ele.classList.contains(CARD_CLASS)) {
                 ele = closest(ele, '.' + CONTENT_ROW_CLASS).previousElementSibling;
+                if ((!ele.classList.contains(COLLAPSED_CLASS) && action === 'selectedSwimlaneExpand') ||
+                    (ele.classList.contains(COLLAPSED_CLASS) && action === 'selectedSwimlaneCollapse')) {
+                    return;
+                }
             }
             if (ele.classList.contains(COLLAPSED_CLASS)) {
                 removeClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_EXPAND], [SWIMLANE_ROW_COLLAPSE]);
+                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
             }
             else if (!ele.classList.contains(COLLAPSED_CLASS)) {
                 addClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_COLLAPSE], [SWIMLANE_ROW_EXPAND]);
+                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
             }
         });
     };
@@ -1358,50 +1593,65 @@ var Keyboard = /** @__PURE__ @class */ (function () {
         cardElements.forEach(function (el) { return curCardId.push(el.getAttribute('data-id')); });
         return curCardId;
     };
-    Keyboard.prototype.moveNextRow = function (row) {
+    Keyboard.prototype.processNextRow = function (row) {
         for (var i = 0; i < row.childElementCount; i++) {
             var nextCell = row.children[i];
             var nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
             if (nextCellCards.length > 0) {
                 this.parent.actionModule.cardSelection(nextCellCards[0], false, false);
-                if (row.classList.contains('e-collapsed')) {
-                    this.swimlaneExpandCollapse('selectedSwimlaneExpand');
+                if (row.classList.contains(COLLAPSED_CLASS)) {
+                    this.processSwimlaneExpandCollapse('selectedSwimlaneExpand');
                 }
                 break;
             }
         }
     };
-    Keyboard.prototype.movePreviousRow = function (row) {
+    Keyboard.prototype.processPreviousRow = function (row) {
         for (var i = (row.childElementCount - 1); i >= 0; i--) {
             var nextCell = row.children[i];
             var nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
             if (nextCellCards.length > 0) {
-                if (!row.classList.contains('e-collapsed')) {
-                    this.swimlaneExpandCollapse('selectedSwimlaneCollapse');
-                }
                 this.parent.actionModule.cardSelection(nextCellCards.slice(-1)[0], false, false);
                 break;
             }
         }
     };
-    Keyboard.prototype.cardIndex = function (isSame, nextCellCards, curIndex, action) {
+    Keyboard.prototype.processCards = function (isSame, nextCellCards, curIndex, action) {
         if (isSame) {
             var isShift = ((action === 'multiSelectionByRightArrow' || action === 'multiSelectionByLeftArrow')
                 && this.parent.cardSettings.selectionType === 'Multiple');
-            if (nextCellCards[curIndex]) {
-                this.parent.actionModule.cardSelection(nextCellCards[curIndex], false, isShift);
-            }
-            else {
-                this.parent.actionModule.cardSelection(nextCellCards.slice(-1)[0], false, isShift);
-            }
+            var processCard = nextCellCards[curIndex] || nextCellCards.slice(-1)[0];
+            this.parent.actionModule.cardSelection(processCard, false, isShift);
         }
     };
-    Keyboard.prototype.moveCards = function (action, card) {
+    Keyboard.prototype.processEnter = function (e, selectedCard) {
+        var element = (e.target);
+        if (element.classList.contains(HEADER_ICON_CLASS)) {
+            this.parent.actionModule.columnExpandCollapse(e);
+        }
+        if (element.classList.contains(SWIMLANE_ROW_EXPAND_CLASS) || element.classList.contains(SWIMLANE_ROW_COLLAPSE_CLASS)) {
+            this.parent.actionModule.rowExpandCollapse(e);
+        }
+        if (selectedCard) {
+            this.parent.actionModule.cardSelection(selectedCard, false, false);
+        }
+    };
+    Keyboard.prototype.processTab = function (action, selectedCard) {
+        if (selectedCard) {
+            var target = closest(selectedCard, '.' + CONTENT_ROW_CLASS);
+            var tabTarget = action === 'tab' ? target.previousElementSibling : target.nextElementSibling;
+            if (tabTarget) {
+                tabTarget.querySelector("." + SWIMLANE_ROW_COLLAPSE_CLASS + ",." + SWIMLANE_ROW_EXPAND_CLASS).focus();
+            }
+            removeClass([selectedCard], CARD_SELECTION_CLASS);
+        }
+    };
+    Keyboard.prototype.processMoveCards = function (action, card) {
         var nextCell;
         var nextCellCards;
-        var curCell = closest(card, '.e-content-cells');
-        var curCellCards = [].slice.call(curCell.querySelectorAll('.e-card'));
-        var curRow = closest(curCell, '.e-content-row');
+        var curCell = closest(card, '.' + CONTENT_CELLS_CLASS);
+        var curCellCards = [].slice.call(curCell.querySelectorAll('.' + CARD_CLASS));
+        var curRow = closest(curCell, '.' + CONTENT_ROW_CLASS);
         var curIndex = this.getCardId(curCellCards).indexOf(card.getAttribute('data-id'));
         if (action === 'rightArrow' || action === 'multiSelectionByRightArrow') {
             if (curCell.cellIndex === (curRow.childElementCount - 1) && this.parent.swimlaneSettings.keyField
@@ -1410,8 +1660,8 @@ var Keyboard = /** @__PURE__ @class */ (function () {
                     this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.nextElementSibling, false, false);
                 }
                 else if (curRow.rowIndex !== (this.parent.element.querySelectorAll('.' + CONTENT_ROW_CLASS).length - 1)) {
-                    var targetRow = this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + (":nth-child(" + (curRow.rowIndex + 3) + ")"));
-                    this.moveNextRow(targetRow);
+                    var row = this.parent.element.querySelector("." + CONTENT_ROW_CLASS + ":nth-child(" + (curRow.rowIndex + 3) + ")");
+                    this.processNextRow(row);
                 }
             }
             else {
@@ -1424,7 +1674,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
                         break;
                     }
                 }
-                this.cardIndex(isSame, nextCellCards, curIndex, action);
+                this.processCards(isSame, nextCellCards, curIndex, action);
             }
         }
         else {
@@ -1433,10 +1683,10 @@ var Keyboard = /** @__PURE__ @class */ (function () {
                     this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.previousElementSibling, false, false);
                 }
                 else if (curRow.rowIndex > 1) {
-                    var className = '.' + CONTENT_ROW_CLASS + (":nth-child(" + (curRow.rowIndex - 1) + ")") + ':not(.e-collapsed)';
+                    var className = "." + CONTENT_ROW_CLASS + ":nth-child(" + (curRow.rowIndex - 1) + "):not(." + COLLAPSED_CLASS + ")";
                     var targetRow = this.parent.element.querySelector(className);
                     if (targetRow) {
-                        this.movePreviousRow(targetRow);
+                        this.processPreviousRow(targetRow);
                     }
                 }
             }
@@ -1450,11 +1700,11 @@ var Keyboard = /** @__PURE__ @class */ (function () {
                         break;
                     }
                     if (i === 0 && this.parent.swimlaneSettings.keyField) {
-                        var row = this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + (":nth-child(" + (curRow.rowIndex - 1) + ")"));
-                        this.movePreviousRow(row);
+                        var row = this.parent.element.querySelector("." + CONTENT_ROW_CLASS + ":nth-child(" + (curRow.rowIndex - 1) + ")");
+                        this.processPreviousRow(row);
                     }
                 }
-                this.cardIndex(isSame, nextCellCards, curIndex, action);
+                this.processCards(isSame, nextCellCards, curIndex, action);
             }
         }
     };
@@ -1491,7 +1741,7 @@ var KanbanTooltip = /** @__PURE__ @class */ (function () {
             offsetY: 5,
             position: 'BottomCenter',
             showTipPointer: true,
-            target: '.' + TOOLTIP_TEXT,
+            target: '.' + TOOLTIP_TEXT_CLASS,
             beforeRender: this.onBeforeRender.bind(this)
         });
         this.tooltipObj.appendTo(this.parent.element);
@@ -1536,11 +1786,98 @@ var KanbanTouch = /** @__PURE__ @class */ (function () {
     };
     KanbanTouch.prototype.tapHoldHandler = function (e) {
         this.tabHold = true;
+        var target = closest(e.originalEvent.target, '.' + CARD_CLASS);
+        if (target && this.parent.cardSettings.selectionType === 'Multiple') {
+            this.parent.actionModule.cardSelection(target, true, false);
+            if (!this.mobilePopup) {
+                this.renderMobilePopup();
+                this.mobilePopup.show();
+            }
+            this.updatePopupContent();
+        }
+    };
+    KanbanTouch.prototype.renderMobilePopup = function () {
+        if (this.parent.cardSettings.selectionType === 'Multiple') {
+            var mobilePopupWrapper = createElement('div', {
+                className: POPUP_WRAPPER_CLASS + ' e-popup-close',
+                innerHTML: "<div class=\"" + POPUP_HEADER_CLASS + "\"><button class=\"" + CLOSE_CLASS + "\"></button></div>" +
+                    ("<div class=\"" + POPUP_CONTENT_CLASS + "\"></div>")
+            });
+            document.body.appendChild(mobilePopupWrapper);
+            addClass([mobilePopupWrapper], DEVICE_CLASS);
+            this.mobilePopup = new Popup(mobilePopupWrapper, {
+                targetType: 'container',
+                enableRtl: this.parent.enableRtl,
+                hideAnimation: { name: 'ZoomOut' },
+                showAnimation: { name: 'ZoomIn' },
+                collision: { X: 'fit', Y: 'fit' },
+                position: { X: 'left', Y: 'top' },
+                viewPortElement: document.body,
+                zIndex: 1004,
+                close: this.popupClose.bind(this)
+            });
+            var closeIcon = this.mobilePopup.element.querySelector('.' + CLOSE_CLASS);
+            var buttonObj = new Button({
+                cssClass: 'e-flat e-round e-small',
+                enableRtl: this.parent.enableRtl,
+                iconCss: ICON_CLASS + ' ' + CLOSE_ICON_CLASS
+            });
+            buttonObj.appendTo(closeIcon);
+            buttonObj.isStringTemplate = true;
+            EventHandler.add(closeIcon, 'click', this.closeClick, this);
+        }
+    };
+    KanbanTouch.prototype.getPopupContent = function () {
+        var popupContent;
+        var selectedCards = this.parent.getSelectedCards();
+        if (selectedCards.length > 1) {
+            popupContent = '(' + selectedCards.length + ') ' + this.parent.localeObj.getConstant('cardsSelected');
+        }
+        else if (selectedCards.length === 1) {
+            popupContent = ' ' + this.parent.getCardDetails(selectedCards[0])[this.parent.cardSettings.headerField];
+        }
+        return popupContent;
+    };
+    KanbanTouch.prototype.updatePopupContent = function () {
+        if (!this.mobilePopup) {
+            return;
+        }
+        var popupContent = this.getPopupContent();
+        if (popupContent) {
+            this.mobilePopup.element.querySelector('.' + POPUP_CONTENT_CLASS).textContent = popupContent;
+        }
+        else {
+            this.mobilePopup.hide();
+        }
+    };
+    KanbanTouch.prototype.closeClick = function () {
+        this.parent.touchModule.mobilePopup.hide();
+    };
+    KanbanTouch.prototype.popupClose = function () {
+        this.popupDestroy();
+    };
+    KanbanTouch.prototype.popupDestroy = function () {
+        if (this.mobilePopup && this.mobilePopup.element) {
+            var instance = this.mobilePopup.element.querySelector('.e-control.e-btn').ej2_instances[0];
+            if (instance) {
+                instance.destroy();
+            }
+            this.mobilePopup.destroy();
+            remove(this.mobilePopup.element);
+            this.mobilePopup = null;
+        }
+    };
+    KanbanTouch.prototype.unWireTouchEvents = function () {
+        if (this.touchObj) {
+            this.touchObj.destroy();
+        }
+        this.touchObj = null;
+        this.element = null;
     };
     KanbanTouch.prototype.destroy = function () {
-        this.touchObj.destroy();
+        this.popupDestroy();
+        this.unWireTouchEvents();
         this.tabHold = false;
-        this.element = null;
     };
     return KanbanTouch;
 }());
@@ -1556,26 +1893,26 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
         this.parent = parent;
     }
     MobileLayout.prototype.renderSwimlaneHeader = function () {
-        var toolbarWrapper = createElement('div', { className: SWIMLANE_HEADER });
-        toolbarWrapper.innerHTML = '<div class="' + SWIMLANE_HEADER_TOOLBAR + '"><div class="' + TOOLBAR_MENU + '">' +
-            '<div class="e-icons ' + TOOLBAR_MENU_ICON + '"></div></div><div class="' + TOOLBAR_LEVEL_TITLE + '">' +
-            '<div class="' + TOOLBAR_SWIMLANE_NAME + '"></div></div></div>';
+        var toolbarWrapper = createElement('div', { className: SWIMLANE_HEADER_CLASS });
+        toolbarWrapper.innerHTML = '<div class="' + SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + TOOLBAR_MENU_CLASS + '">' +
+            '<div class="e-icons ' + TOOLBAR_MENU_ICON_CLASS + '"></div></div><div class="' + TOOLBAR_LEVEL_TITLE_CLASS + '">' +
+            '<div class="' + TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>';
         this.parent.element.appendChild(toolbarWrapper);
-        EventHandler.add(toolbarWrapper.querySelector('.' + TOOLBAR_MENU_ICON), 'click', this.menuClick, this);
+        EventHandler.add(toolbarWrapper.querySelector('.' + TOOLBAR_MENU_ICON_CLASS), 'click', this.menuClick, this);
     };
     MobileLayout.prototype.renderSwimlaneTree = function () {
-        var height = this.parent.element.querySelector('.' + SWIMLANE_HEADER).offsetHeight;
+        var height = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS).offsetHeight;
         var treeHeight = window.innerHeight - height;
-        this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY, styles: 'height: ' + treeHeight + 'px;' });
-        var wrapper = createElement('div', { className: SWIMLANE_CONTENT, styles: 'top:' + height + 'px;' });
+        this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
+        var wrapper = createElement('div', { className: SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
         var treeWrapper = createElement('div', {
-            className: SWIMLANE_RESOURCE + ' e-popup-close',
+            className: SWIMLANE_RESOURCE_CLASS + ' e-popup-close',
             styles: 'height: ' + treeHeight + 'px;'
         });
         wrapper.appendChild(treeWrapper);
         wrapper.appendChild(this.popupOverlay);
         this.parent.element.appendChild(wrapper);
-        var swimlaneTree = createElement('div', { className: SWIMLANE_TREE });
+        var swimlaneTree = createElement('div', { className: SWIMLANE_TREE_CLASS });
         treeWrapper.appendChild(swimlaneTree);
         this.treeViewObj = new TreeView({
             cssClass: this.parent.cssClass,
@@ -1601,7 +1938,7 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
         });
     };
     MobileLayout.prototype.menuClick = function (event) {
-        if (this.parent.element.querySelector('.' + SWIMLANE_RESOURCE).classList.contains('e-popup-open')) {
+        if (this.parent.element.querySelector('.' + SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
             this.treePopup.hide();
             removeClass([this.popupOverlay], 'e-enable');
         }
@@ -1656,7 +1993,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         _this.swimlaneIndex = 0;
         _this.swimlaneData = {};
         _this.scrollLeft = 0;
-        _this.wireEvents();
+        _this.parent.on(dataReady, _this.initRender, _this);
+        _this.parent.on(contentReady, _this.scrollUiUpdate, _this);
         return _this;
     }
     LayoutRender.prototype.initRender = function () {
@@ -1673,7 +2011,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.destroy();
-        this.wireEvents();
+        this.parent.on(dataReady, this.initRender, this);
+        this.parent.on(contentReady, this.scrollUiUpdate, this);
         if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
             this.renderSwimlaneHeader();
         }
@@ -1683,12 +2022,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         this.renderContent();
         this.renderCards();
         this.renderValidation();
-        if (this.parent.isAdaptive) {
-            this.parent.touchModule.wireTouchEvents();
-            var parent_2 = this.parent.element.querySelector('.' + CONTENT_CLASS);
-            parent_2.scrollLeft = this.scrollLeft;
-        }
         this.parent.notify(contentReady, {});
+        this.wireEvents();
     };
     LayoutRender.prototype.renderHeader = function (header) {
         var headerWrap = createElement('div', { className: this.parent.swimlaneSettings.keyField ? SWIMLANE_CLASS : '' });
@@ -1737,17 +2072,19 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     headerTitle.appendChild(header_1);
                     if (column.showItemCount) {
                         var itemCount = createElement('div', {
-                            className: CARD_ITEM_COUNT,
+                            className: CARD_ITEM_COUNT_CLASS,
                             innerHTML: '- ' + noOfCard.toString() + ' ' + this_1.parent.localeObj.getConstant('items')
                         });
                         headerTitle.appendChild(itemCount);
                     }
                 }
                 if (column.allowToggle) {
-                    var name_1 = (column.isExpanded && index === -1) ? COLUMN_EXPAND : COLUMN_COLLAPSE;
-                    var icon = createElement('div', { className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name_1 });
+                    var name_1 = (column.isExpanded && index === -1) ? COLUMN_EXPAND_CLASS : COLUMN_COLLAPSE_CLASS;
+                    var icon = createElement('div', {
+                        className: HEADER_ICON_CLASS + ' ' + ICON_CLASS + ' ' + name_1,
+                        attrs: { 'tabindex': '0' }
+                    });
                     headerWrapper.appendChild(icon);
-                    this_1.wireEvents(icon, 'columnExpandCollapse');
                 }
                 var dataObj = [{ keyField: column.keyField, textField: column.headerText }];
                 var args = { data: dataObj, element: tr, cancel: false, requestType: 'headerRow' };
@@ -1780,11 +2117,11 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive) {
             this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
             this.renderSwimlaneTree();
-            (this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME)).innerHTML = this.kanbanRows[this.swimlaneIndex].textField;
+            this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
         }
         var _loop_2 = function (row) {
-            if (this_2.parent.swimlaneSettings.keyField && this_2.parent.actionModule.swimlaneToggleArray.length !== 0) {
-                var index = this_2.parent.actionModule.swimlaneToggleArray.indexOf(row.keyField);
+            if (this_2.parent.swimlaneSettings.keyField && this_2.parent.swimlaneToggleArray.length !== 0) {
+                var index = this_2.parent.swimlaneToggleArray.indexOf(row.keyField);
                 isCollaspsed = index !== -1;
             }
             className = isCollaspsed ? CONTENT_ROW_CLASS + ' ' + COLLAPSED_CLASS : CONTENT_ROW_CLASS;
@@ -1802,7 +2139,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], COLLAPSED_CLASS);
-                        td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT, innerHTML: column.headerText }));
+                        td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
                     }
                     tr.appendChild(td);
                     var dataObj = [{ keyField: row.keyField, textField: row.textField }];
@@ -1820,10 +2157,8 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             var row = _a[_i];
             _loop_2(row);
         }
-        this.wireEvents(content, 'scroll');
     };
     LayoutRender.prototype.renderSwimlaneRow = function (tBody, row, isCollapsed) {
-        var _this = this;
         var name = CONTENT_ROW_CLASS + ' ' + SWIMLANE_ROW_CLASS;
         var className = isCollapsed ? ' ' + COLLAPSED_CLASS : '';
         var tr = createElement('tr', { className: name + className, attrs: { 'data-key': row.keyField } });
@@ -1832,10 +2167,10 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             className: CONTENT_CELLS_CLASS,
             attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
         });
-        var swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER });
+        var swimlaneHeader = createElement('div', { className: SWIMLANE_HEADER_CLASS });
         td.appendChild(swimlaneHeader);
-        var iconClass = isCollapsed ? SWIMLANE_ROW_COLLAPSE : SWIMLANE_ROW_EXPAND;
-        var iconDiv = createElement('div', { className: ICON_CLASS + ' ' + iconClass });
+        var iconClass = isCollapsed ? SWIMLANE_ROW_COLLAPSE_CLASS : SWIMLANE_ROW_EXPAND_CLASS;
+        var iconDiv = createElement('div', { className: ICON_CLASS + ' ' + iconClass, attrs: { 'tabindex': '0' } });
         swimlaneHeader.appendChild(iconDiv);
         var headerWrap = createElement('div', { className: HEADER_WRAP_CLASS });
         swimlaneHeader.appendChild(headerWrap);
@@ -1848,14 +2183,14 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             headerWrap.appendChild(createElement('div', {
-                className: SWIMLANE_ROW_TEXT,
+                className: SWIMLANE_ROW_TEXT_CLASS,
                 innerHTML: row.textField,
                 attrs: { 'data-role': row.textField }
             }));
         }
         if (this.parent.swimlaneSettings.showItemCount) {
             swimlaneHeader.appendChild(createElement('div', {
-                className: CARD_ITEM_COUNT,
+                className: CARD_ITEM_COUNT_CLASS,
                 innerHTML: "- " + cardCount.toString() + " " + this.parent.localeObj.getConstant('items')
             }));
         }
@@ -1865,7 +2200,6 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         this.parent.trigger(columnRendered, args, function (columnArgs) {
             if (!columnArgs.cancel) {
                 tBody.appendChild(tr);
-                _this.wireEvents(tr, 'rowExpandCollapse');
             }
         });
     };
@@ -1888,7 +2222,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     var _loop_4 = function (data) {
                         var cardText = data[_this.parent.cardSettings.headerField];
                         var cardIndex = _this.parent.actionModule.selectionArray.indexOf(cardText);
-                        var className = cardIndex === -1 ? '' : ' ' + CARD_SELECTION;
+                        var className = cardIndex === -1 ? '' : ' ' + CARD_SELECTION_CLASS;
                         var cardElement = createElement('div', {
                             className: CARD_CLASS + className,
                             attrs: { 'data-id': data[_this.parent.cardSettings.headerField], 'data-key': data[_this.parent.keyField] }
@@ -1899,7 +2233,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                             append(cardTemplate, cardElement);
                         }
                         else {
-                            var tooltipClass = _this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT : '';
+                            var tooltipClass = _this.parent.enableTooltip ? ' ' + TOOLTIP_TEXT_CLASS : '';
                             if (_this.parent.cardSettings.showHeader) {
                                 var cardHeader = createElement('div', { className: CARD_HEADER_CLASS });
                                 var cardCaption = createElement('div', { className: CARD_HEADER_TEXT_CLASS });
@@ -1921,10 +2255,6 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                         _this.parent.trigger(cardRendered, args, function (cardArgs) {
                             if (!cardArgs.cancel) {
                                 cardWrapper_1.appendChild(cardElement);
-                                _this.wireEvents(cardElement, 'card');
-                                if (_this.parent.allowDragAndDrop) {
-                                    _this.parent.dragAndDropModule.wireDragEvents(cardElement);
-                                }
                             }
                         });
                     };
@@ -1973,7 +2303,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         var kanbanRows = [];
         if (this.parent.swimlaneSettings.keyField) {
             this.parent.kanbanData.map(function (obj) {
-                if (!_this.parent.swimlaneSettings.showEmptyRow && _this.parent.isAdaptive) {
+                if (!_this.parent.swimlaneSettings.showEmptyRow) {
                     if (_this.columnKeys.indexOf(obj[_this.parent.keyField]) === -1) {
                         return;
                     }
@@ -1986,7 +2316,11 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             kanbanRows = kanbanRows.filter(function (item, index, arr) {
                 return index === arr.map(function (item) { return item.keyField; }).indexOf(item.keyField);
             });
-            kanbanRows.sort(function (a, b) { return (a.textField > b.textField) ? 1 : ((b.textField > a.textField) ? -1 : 0); });
+            kanbanRows.sort(function (firstRow, secondRow) {
+                var first = firstRow.textField.toLowerCase();
+                var second = secondRow.textField.toLowerCase();
+                return (first > second) ? 1 : ((second > first) ? -1 : 0);
+            });
             if (this.parent.swimlaneSettings.sortBy === 'Descending') {
                 kanbanRows.reverse();
             }
@@ -2036,14 +2370,14 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         var height = this.parent.element.offsetHeight - header.offsetHeight;
         if (this.parent.isAdaptive) {
             height = window.innerHeight - (header.offsetHeight + bottomSpace);
-            var swimlaneToolbar = this.parent.element.querySelector('.' + SWIMLANE_HEADER);
+            var swimlaneToolbar = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS);
             if (swimlaneToolbar) {
                 height -= swimlaneToolbar.offsetHeight;
             }
             var cardWrappers = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_CELLS_CLASS));
             cardWrappers.forEach(function (cell) {
                 var cardWrapper = cell.querySelector('.' + CARD_WRAPPER_CLASS);
-                if (!cardWrapper.classList.contains(MULTI_CARD_WRAPPER)) {
+                if (!cardWrapper.classList.contains(MULTI_CARD_WRAPPER_CLASS)) {
                     cardWrapper.style.height = formatUnit(height);
                     EventHandler.add(cell, 'touchmove', _this.onAdaptiveScroll, _this);
                 }
@@ -2052,7 +2386,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.height !== 'auto' && this.parent.height !== '100%') {
             content.style.height = formatUnit(height);
         }
-        [].slice.call(header.childNodes).forEach(function (node) {
+        [].slice.call(header.children).forEach(function (node) {
             var paddingValue = 0;
             if ((content.offsetWidth - content.clientWidth) > 0) {
                 paddingValue = 17;
@@ -2073,7 +2407,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         header.scrollLeft = e.target.scrollLeft;
     };
     LayoutRender.prototype.onAdaptiveScroll = function (e) {
-        if (this.parent.touchModule.tabHold) {
+        if (this.parent.touchModule.tabHold && !this.parent.touchModule.mobilePopup) {
             e.preventDefault();
         }
     };
@@ -2111,10 +2445,10 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         var getValidationClass = function (column, count) {
             var colorClass;
             if (column.maxCount && count > column.maxCount) {
-                colorClass = MAX_COLOR;
+                colorClass = MAX_COLOR_CLASS;
             }
             else if (column.minCount && count < column.minCount) {
-                colorClass = MIN_COLOR;
+                colorClass = MIN_COLOR_CLASS;
             }
             return colorClass;
         };
@@ -2127,7 +2461,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             var headerCell = _this.parent.element.querySelector("." + (HEADER_CELLS_CLASS + keySelector));
             var rowCells = [].slice.call(_this.parent.element.querySelectorAll("." + (CONTENT_CELLS_CLASS + keySelector)));
             if (_this.parent.constraintType === 'Swimlane' && _this.parent.swimlaneSettings.keyField) {
-                _this.kanbanRows.forEach(function (row, index) {
+                _this.swimlaneRow.forEach(function (row, index) {
                     _this.renderLimits(column, rowCells[index]);
                     var rowCards = cardData.filter(function (card) {
                         return card[_this.parent.swimlaneSettings.keyField] === row.keyField;
@@ -2153,24 +2487,34 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         var cardData = [];
         var columnKeys = columnValue.split(',');
         var _loop_5 = function (key) {
-            var keyData = dataSource.filter(function (cardObj) {
-                return cardObj[_this.parent.keyField] === key.trim();
-            });
+            var keyData = dataSource.filter(function (cardObj) { return cardObj[_this.parent.keyField] === key.trim(); });
             cardData = cardData.concat(keyData);
         };
         for (var _i = 0, columnKeys_1 = columnKeys; _i < columnKeys_1.length; _i++) {
             var key = columnKeys_1[_i];
             _loop_5(key);
         }
+        if (this.parent.cardSettings.priority) {
+            cardData = cardData.sort(function (data1, data2) {
+                return parseInt(data1[_this.parent.cardSettings.priority], 10) - parseInt(data2[_this.parent.cardSettings.priority], 10);
+            });
+        }
         return cardData;
     };
-    LayoutRender.prototype.getColumnCards = function () {
+    LayoutRender.prototype.documentClick = function (args) {
+        if (closest(args.target, "." + ROOT_CLASS)) {
+            return;
+        }
+        var cards = [].slice.call(this.parent.element.querySelectorAll("." + CARD_CLASS + "." + CARD_SELECTION_CLASS));
+        removeClass(cards, CARD_SELECTION_CLASS);
+    };
+    LayoutRender.prototype.getColumnCards = function (data) {
         var _this = this;
         var columnData = {};
         this.columnKeys = [];
         this.parent.columns.forEach(function (column) {
             _this.columnKeys = _this.columnKeys.concat(column.keyField.split(',').map(function (e) { return e.trim(); }));
-            var cardData = _this.getColumnData(column.keyField);
+            var cardData = _this.getColumnData(column.keyField, data);
             columnData[column.keyField] = cardData;
         });
         return columnData;
@@ -2188,48 +2532,6 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         }
         return swimlaneData;
     };
-    LayoutRender.prototype.wireEvents = function (element, action) {
-        switch (action) {
-            case 'card':
-                EventHandler.add(element, 'click', this.parent.actionModule.cardClick, this.parent.actionModule);
-                EventHandler.add(element, 'dblclick', this.parent.actionModule.cardDoubleClick, this.parent.actionModule);
-                break;
-            case 'rowExpandCollapse':
-                EventHandler.add(element, 'click', this.parent.actionModule.rowExpandCollapse, this.parent.actionModule);
-                break;
-            case 'columnExpandCollapse':
-                EventHandler.add(element, 'click', this.parent.actionModule.columnExpandCollapse, this.parent.actionModule);
-                break;
-            case 'scroll':
-                EventHandler.add(element, 'scroll', this.onContentScroll, this);
-                break;
-            default:
-                this.parent.on(dataReady, this.initRender, this);
-                this.parent.on(contentReady, this.scrollUiUpdate, this);
-                break;
-        }
-    };
-    LayoutRender.prototype.unWireEvents = function (element, action) {
-        switch (action) {
-            case 'card':
-                EventHandler.remove(element, 'click', this.parent.actionModule.cardClick);
-                EventHandler.remove(element, 'dblclick', this.parent.actionModule.cardDoubleClick);
-                break;
-            case 'rowExpandCollapse':
-                EventHandler.remove(element, 'click', this.parent.actionModule.rowExpandCollapse);
-                break;
-            case 'columnExpandCollapse':
-                EventHandler.remove(element, 'click', this.parent.actionModule.columnExpandCollapse);
-                break;
-            case 'scroll':
-                EventHandler.remove(element, 'scroll', this.onContentScroll);
-                break;
-            default:
-                this.parent.off(dataReady, this.initRender);
-                this.parent.off(contentReady, this.scrollUiUpdate);
-                break;
-        }
-    };
     LayoutRender.prototype.refreshHeaders = function () {
         var header = this.parent.element.querySelector('.' + HEADER_CLASS);
         [].slice.call(header.children).forEach(function (child) { return remove(child); });
@@ -2240,22 +2542,51 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         cards.forEach(function (card) { return remove(card); });
         this.renderCards();
     };
+    LayoutRender.prototype.wireEvents = function () {
+        EventHandler.add(this.parent.element, 'click', this.parent.actionModule.clickHandler, this.parent.actionModule);
+        EventHandler.add(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler, this.parent.actionModule);
+        EventHandler.add(document, Browser.touchStartEvent, this.documentClick, this);
+        var content = this.parent.element.querySelector('.' + CONTENT_CLASS);
+        EventHandler.add(content, 'scroll', this.onContentScroll, this);
+        if (this.parent.isAdaptive) {
+            this.parent.touchModule.wireTouchEvents();
+            content.scrollLeft = this.scrollLeft;
+        }
+        this.wireDragEvent();
+    };
+    LayoutRender.prototype.unWireEvents = function () {
+        EventHandler.remove(this.parent.element, 'click', this.parent.actionModule.clickHandler);
+        EventHandler.remove(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler);
+        EventHandler.remove(document, Browser.touchStartEvent, this.documentClick);
+        var content = this.parent.element.querySelector('.' + CONTENT_CLASS);
+        if (content) {
+            EventHandler.remove(content, 'scroll', this.onContentScroll);
+            if (this.parent.allowDragAndDrop) {
+                this.unWireDragEvent();
+            }
+        }
+        if (this.parent.isAdaptive) {
+            this.parent.touchModule.unWireTouchEvents();
+        }
+    };
+    LayoutRender.prototype.wireDragEvent = function () {
+        if (this.parent.allowDragAndDrop) {
+            this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
+        }
+    };
+    LayoutRender.prototype.unWireDragEvent = function () {
+        this.parent.dragAndDropModule.unWireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
+    };
     LayoutRender.prototype.destroy = function () {
-        var _this = this;
+        this.parent.off(dataReady, this.initRender);
+        this.parent.off(contentReady, this.scrollUiUpdate);
         this.unWireEvents();
-        var cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
-        cards.forEach(function (card) { return _this.unWireEvents(card, 'card'); });
-        var rows = [].slice.call(this.parent.element.querySelectorAll('.' + SWIMLANE_ROW_CLASS));
-        rows.forEach(function (row) { return _this.unWireEvents(row, 'rowExpandCollapse'); });
-        var columns = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_ICON_CLASS));
-        columns.forEach(function (column) { return _this.unWireEvents(column, 'columnExpandCollapse'); });
         var header = this.parent.element.querySelector('.' + HEADER_CLASS);
         if (header) {
             remove(header);
         }
         var content = this.parent.element.querySelector('.' + CONTENT_CLASS);
         if (content) {
-            this.unWireEvents(content, 'scroll');
             remove(content);
         }
         if (this.treeViewObj) {
@@ -2266,11 +2597,11 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             this.treePopup.destroy();
             this.treePopup = null;
         }
-        var swimlaneToolBarEle = this.parent.element.querySelector('.' + SWIMLANE_HEADER);
+        var swimlaneToolBarEle = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS);
         if (swimlaneToolBarEle) {
             remove(swimlaneToolBarEle);
         }
-        var swimlaneContent = this.parent.element.querySelector('.' + SWIMLANE_CONTENT);
+        var swimlaneContent = this.parent.element.querySelector('.' + SWIMLANE_CONTENT_CLASS);
         if (swimlaneContent) {
             remove(swimlaneContent);
         }
@@ -2326,11 +2657,15 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     Kanban.prototype.preRender = function () {
         this.isAdaptive = Browser.isDevice;
         this.kanbanData = [];
+        if (!this.enablePersistence || !this.swimlaneToggleArray) {
+            this.swimlaneToggleArray = [];
+        }
         this.activeCardData = { data: null, element: null };
         var defaultLocale = {
             items: 'items',
             min: 'Min',
-            max: 'Max'
+            max: 'Max',
+            cardsSelected: 'Cards Selected'
         };
         this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
     };
@@ -2348,7 +2683,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Kanban.prototype.getPersistData = function () {
-        return this.addOnPersist([]);
+        return this.addOnPersist(['columns', 'dataSource', 'swimlaneToggleArray']);
     };
     /**
      * Core method to return the component name.
@@ -2362,9 +2697,8 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Kanban.prototype.render = function () {
-        var addClasses = [];
+        var addClasses = [ROOT_CLASS];
         var removeClasses = [];
-        addClasses.push(ROOT_CLASS);
         if (this.enableRtl) {
             addClasses.push(RTL_CLASS);
         }
@@ -2392,7 +2726,6 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Kanban.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var _this = this;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -2433,15 +2766,12 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                     this.onCardSettingsPropertyChanged(newProp.cardSettings, oldProp.cardSettings);
                     break;
                 case 'allowDragAndDrop':
-                    var cards = [].slice.call(this.element.querySelectorAll('.' + CARD_CLASS));
-                    cards.forEach(function (card) {
-                        if (newProp.allowDragAndDrop) {
-                            _this.dragAndDropModule.wireDragEvents(card);
-                        }
-                        else {
-                            _this.dragAndDropModule.unWireDragEvents(card);
-                        }
-                    });
+                    if (newProp.allowDragAndDrop) {
+                        this.layoutModule.wireDragEvent();
+                    }
+                    else {
+                        this.layoutModule.unWireDragEvent();
+                    }
                     break;
                 case 'enableTooltip':
                     if (this.tooltipModule) {
@@ -2498,7 +2828,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
                 case 'selectionType':
                     var cards = this.getSelectedCards();
                     if (cards.length > 0) {
-                        removeClass(cards, CARD_SELECTION);
+                        removeClass(cards, CARD_SELECTION_CLASS);
                     }
                     break;
             }
@@ -2568,12 +2898,30 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
         return cardObj;
     };
     /**
+     * Returns the column data based on column key input.
+     * @method getColumnData
+     * @param {string} columnKey Accepts the column key to get the objects.
+     * @returns {Object[]}
+     */
+    Kanban.prototype.getColumnData = function (columnKey, dataSource) {
+        return this.layoutModule.getColumnCards(dataSource)[columnKey] || [];
+    };
+    /**
+     * Returns the swimlane column data based on swimlane keyField input.
+     * @method getSwimlaneData
+     * @param {string} keyField Accepts the swimlane keyField to get the objects.
+     * @returns {Object[]}
+     */
+    Kanban.prototype.getSwimlaneData = function (keyField) {
+        return this.layoutModule.getSwimlaneCards()[keyField] || [];
+    };
+    /**
      * Gets the list of selected cards from the board.
      * @method getSelectedCards
      * @returns {HTMLElement[]}
      */
     Kanban.prototype.getSelectedCards = function () {
-        return [].slice.call(this.element.querySelectorAll('.' + CARD_CLASS + '.' + CARD_SELECTION));
+        return [].slice.call(this.element.querySelectorAll('.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS));
     };
     /**
      * Allows you to show the spinner on Kanban at the required scenarios.
@@ -2593,7 +2941,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Adds the new card to the data source of Kanban and layout.
-     * @method addEvent
+     * @method addCard
      * @param {{[key: string]: Object}} cardData Single card objects to be added into Kanban.
      * @param {{[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
      * @returns {void}
@@ -2602,7 +2950,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
         this.crudModule.addCard(cardData);
     };
     /**
-     * Updates the changes made in the event object by passing it as a parameter to the data source.
+     * Updates the changes made in the card object by passing it as a parameter to the data source.
      * @method updateCard
      * @param {{[key: string]: Object}} cardData Single card object to be updated into Kanban.
      * @param {{[key: string]: Object}[]} cardData Collection of card objects to be updated into Kanban.
@@ -2667,13 +3015,13 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      */
     Kanban.prototype.destroy = function () {
         this.destroyModules();
-        _super.prototype.destroy.call(this);
-        this.element.innerHTML = '';
+        [].slice.call(this.element.childNodes).forEach(function (node) { return detach(node); });
         var removeClasses = [ROOT_CLASS];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
+        _super.prototype.destroy.call(this);
     };
     __decorate([
         Property()

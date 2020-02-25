@@ -2,7 +2,7 @@ import { Component, EventHandler, Property, Event, EmitType, Complex, Collection
 import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper   } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Tooltip, Position, TooltipEventArgs, getZindexPartial } from '@syncfusion/ej2-popups';
 import { SliderModel, TicksDataModel, TooltipDataModel, LimitDataModel, ColorRangeDataModel } from './slider-model';
 
@@ -563,10 +563,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Property('')
     public cssClass: string;
-   /**
-    * Defines whether to allow the cross-scripting site or not.
-    * @default false
-    */
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
     @Property(false)
     public enableHtmlSanitizer: boolean;
     /**
@@ -1276,9 +1276,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.tooltipCollidedPosition !== args.collidedPosition) {
             if (this.isMaterialTooltip) {
                 let tooltipClass: string = this.tooltipPositionCalculation(args.collidedPosition);
-                args.element.classList.remove(this.previousTooltipClass);
-                args.element.classList.add(tooltipClass);
-                this.previousTooltipClass = tooltipClass;
+                if (tooltipClass !== undefined) {
+                    args.element.classList.remove(this.previousTooltipClass);
+                    args.element.classList.add(tooltipClass);
+                    this.previousTooltipClass = tooltipClass;
+                }
                 if (args.element.style.transform && args.element.classList.contains(classNames.materialTooltipOpen) &&
                     (args.element.firstElementChild as HTMLElement).innerText.length <= 4) {
                     args.element.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
@@ -1310,7 +1312,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             beforeOpen: this.tooltipBeforeOpen.bind(this),
             beforeCollision: this.checkTooltipPosition.bind(this),
             beforeClose: this.tooltipBeforeClose.bind(this),
-            enableHtmlSanitizer:  this.enableHtmlSanitizer
+            enableHtmlSanitizer: this.enableHtmlSanitizer
         });
         this.tooltipObj.appendTo(this.firstHandle);
         this.initializeTooltipProps();

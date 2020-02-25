@@ -428,7 +428,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game1';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -484,7 +484,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game1';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -540,7 +540,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game1';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -596,7 +596,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game1';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -635,11 +635,11 @@ describe('DropDownList Control', () => {
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             editorObj.emptyText = 'Enter some text';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -665,7 +665,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game2';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game2');
-            expect(valueEle.innerHTML).toEqual('Basketball');
+            expect(valueEle.innerHTML).toEqual('game2');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -858,6 +858,7 @@ describe('DropDownList Control', () => {
         it('With Fields - String - Local Data - Array of Object', (done: Function) => {
             editorObj = renderEditor({
                 type: 'DropDownList',
+                textOption: 'Always',
                 mode: 'Inline',
                 value: 'game3',
                 model: {
@@ -888,6 +889,7 @@ describe('DropDownList Control', () => {
         it('With Fields - String - Local Data - Array of Complex Object', (done: Function) => {
             editorObj = renderEditor({
                 type: 'DropDownList',
+                textOption: 'Always',
                 mode: 'Inline',
                 value: 'DK',
                 model: {
@@ -903,6 +905,7 @@ describe('DropDownList Control', () => {
         it('With Fields - String - Remote Data', (done: Function) => {
             editorObj = renderEditor({
                 type: 'DropDownList',
+                textOption: 'Always',
                 mode: 'Inline',
                 value: 'ALFKI',
                 model: {
@@ -933,6 +936,7 @@ describe('DropDownList Control', () => {
                 }
             });
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'DropDownList',
                 mode: 'Inline',
                 value: 'ALFKI',
@@ -973,6 +977,7 @@ describe('DropDownList Control', () => {
         });
         it('With Fields - Number - Local Data - Array of Object', (done: Function) => {
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'DropDownList',
                 mode: 'Inline',
                 value: 2,
@@ -1003,6 +1008,7 @@ describe('DropDownList Control', () => {
         });
         it('With Fields - Number - Local Data - Array of Complex Object', (done: Function) => {
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'DropDownList',
                 mode: 'Inline',
                 value: 12,

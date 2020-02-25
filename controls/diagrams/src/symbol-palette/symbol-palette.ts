@@ -10,7 +10,7 @@ import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel, SymbolDragSizeMod
 import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';
 import { SvgRenderer } from '../diagram/rendering/svg-renderer';
 import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';
-import { removeElementsByClass } from '../diagram/utility/dom-util';
+import { removeElementsByClass, applyStyleAgainstCsp } from '../diagram/utility/dom-util';
 import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults, updateDefaultValues } from '../diagram/utility/diagram-util';
 import { getFunction, randomId } from '../diagram/utility/base-util';
 import { getOuterBounds } from '../diagram/utility/connector';
@@ -89,7 +89,7 @@ export class Palette extends ChildProperty<Palette> {
 export class SymbolDragSize extends ChildProperty<SymbolDragSize> {
 
     /**
-     * Defines diagram symbol width.
+     * Sets the drag width of the symbols
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -98,7 +98,7 @@ export class SymbolDragSize extends ChildProperty<SymbolDragSize> {
     public width: number;
 
     /**
-     * Defines diagram symbol height.
+     * Sets the drag height of the symbols
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -308,7 +308,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     public symbolPreview: SymbolPreviewModel;
 
     /**
-     * Defines the symbol drag size that drops to the diagram and its applicable for all symbols in SymbolPalette.
+     * Defines the size of a drop symbol
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -993,7 +993,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let content: DiagramElement = (symbol.wrapper.children[0] as Container).children[0];
         let symbolPreview: SymbolSizeModel = (symbol as Node).previewSize;
         if ((symbol && (symbolPreview.width || symbolPreview.height)) ||
-        this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
+            this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
             symbolPreviewWidth = (symbolPreview.width || this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
             symbolPreviewHeight = (symbolPreview.height || this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
             sw = symbolPreviewWidth / content.actualSize.width;
@@ -1021,10 +1021,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                id: symbol.id + '_preview',
-                width: Math.ceil(symbolPreviewWidth) + 1,
-                height: Math.ceil(symbolPreviewHeight) + 1
-            });
+                    id: symbol.id + '_preview',
+                    width: Math.ceil(symbolPreviewWidth) + 1,
+                    height: Math.ceil(symbolPreviewHeight) + 1
+                });
             let gElement: SVGElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             previewContainer.appendChild(canvas);
@@ -1051,8 +1051,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 this.diagramRenderer.renderElement(content, canvas, undefined);
             }
         }
-        ((div && (symbol.shape.type === 'HTML' || (symbol as NodeModel).children
-            && (symbol as NodeModel).children.length > 0)) ? div : canvas).setAttribute('style', style);
+        applyStyleAgainstCsp(
+            ((div && (symbol.shape.type === 'HTML' || (symbol as NodeModel).children
+                && (symbol as NodeModel).children.length > 0)) ? div : canvas),
+            style);
         content.offsetX = prevPosition.x;
         content.offsetY = prevPosition.y;
         return previewContainer;
@@ -1090,10 +1092,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let height: number = size.height + 1;
         let container: HTMLElement = createHtmlElement(
             'div', {
-            id: symbol.id + '_container',
-            style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
-            title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
-        });
+                id: symbol.id + '_container',
+                style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
+                title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
+            });
         parentDiv.appendChild(container);
         let canvas: HTMLCanvasElement | SVGElement;
         let gElement: SVGElement;
@@ -1101,10 +1103,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                id: symbol.id,
-                width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
-                height: Math.ceil(symbol.wrapper.actualSize.height) + 1
-            });
+                    id: symbol.id,
+                    width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
+                    height: Math.ceil(symbol.wrapper.actualSize.height) + 1
+                });
             gElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             container.appendChild(canvas);
@@ -1155,8 +1157,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (canvas instanceof HTMLCanvasElement) {
                 style += 'transform:scale(.5,.5);';
             }
-            ((div && (symbol.shape.type === 'HTML' || (symbol as NodeModel).children &&
-                (symbol as NodeModel).children.length > 0)) ? div : canvas).setAttribute('style', style);
+            applyStyleAgainstCsp(
+                ((div && (symbol.shape.type === 'HTML' || (symbol as NodeModel).children &&
+                    (symbol as NodeModel).children.length > 0)) ? div : canvas),
+                style);
             container.classList.add('e-symbol-draggable');
             return container;
         }
@@ -1170,17 +1174,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             'div', { 'id': item.id + (isPreview ? '_html_div_preview' : '_html_div') });
         let htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-            'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-            'class': 'e-html-layer'
-        });
+                'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+                'class': 'e-html-layer'
+            });
         let htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-            'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-        });
+                'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+            });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(
@@ -1197,22 +1201,22 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     ): HTMLElement {
         let div: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
-        }
+                'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
+            }
         );
         let htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-            'class': 'e-html-layer'
-        });
+                'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+                'class': 'e-html-layer'
+            });
         let htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-        });
+                'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+            });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(
@@ -1566,13 +1570,15 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     private createTextbox(): void {
         let searchDiv: HTMLElement = createHtmlElement('div', { id: this.element.id + '_search' });
-        searchDiv.setAttribute('style', 'backgroundColor:white;height:30px');
+        applyStyleAgainstCsp(searchDiv, 'backgroundColor:white;height:30px');
+        //  searchDiv.setAttribute('style', 'backgroundColor:white;height:30px');
         searchDiv.className = 'e-input-group';
         this.element.appendChild(searchDiv);
         let textBox: HTMLInputElement = createHtmlElement('input', {}) as HTMLInputElement;
         textBox.placeholder = 'Search Shapes';
         textBox.id = 'textEnter';
-        textBox.setAttribute('style', 'width:100%;height:auto');
+        applyStyleAgainstCsp(textBox, 'width:100%;height:auto');
+        //textBox.setAttribute('style', 'width:100%;height:auto');
         textBox.className = 'e-input';
         searchDiv.appendChild(textBox);
         let span: HTMLElement = createHtmlElement('span', { id: 'iconSearch', className: 'e-input-group-icon e-search e-icons' });

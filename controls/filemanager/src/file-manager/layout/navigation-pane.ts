@@ -33,6 +33,7 @@ export class NavigationPane {
     private dragObj: Draggable;
     private isPathDragged: boolean = false;
     private isRenameParent: boolean = false;
+    private isRightClick: boolean = false;
     private renameParent: string = null;
     /**
      * Constructor for the TreeView module
@@ -74,6 +75,7 @@ export class NavigationPane {
                 dataSource: [rootData], id: '_fm_id', parentID: '_fm_pId', expanded: '_fm_expanded', selected: '_fm_selected', text: 'name',
                 hasChildren: 'hasChild', iconCss: '_fm_icon', htmlAttributes: '_fm_htmlAttr', tooltip: 'name'
             },
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             nodeSelected: this.onNodeSelected.bind(this),
             nodeExpanding: this.onNodeExpand.bind(this),
             nodeClicked: this.onNodeClicked.bind(this),
@@ -178,7 +180,7 @@ export class NavigationPane {
             this.parent.isFiltered = false;
         }
         this.parent.searchedItems = [];
-        if (!args.isInteracted && !this.isPathDragged && !this.isRenameParent) { return; }
+        if (!args.isInteracted && !this.isRightClick && !this.isPathDragged && !this.isRenameParent) { return; }
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
         let nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
@@ -196,7 +198,7 @@ export class NavigationPane {
         }
         read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
         this.parent.visitedItem = args.node;
-        this.isPathDragged = this.isRenameParent = false;
+        this.isPathDragged = this.isRenameParent = this.isRightClick = false;
     }
     /* istanbul ignore next */
     private onPathDrag(args: object[]): void {
@@ -228,6 +230,10 @@ export class NavigationPane {
     private onNodeClicked(args: NodeClickEventArgs): void {
         this.parent.activeModule = 'navigationpane';
         this.activeNode = args.node;
+        if ((args.event.which === 3) && (args.node.getAttribute('data-uid') !== this.treeObj.selectedNodes[0])) {
+            this.isRightClick = true;
+            this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
+        }
     }
 
     /* istanbul ignore next */

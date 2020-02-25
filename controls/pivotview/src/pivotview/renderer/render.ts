@@ -1361,8 +1361,9 @@ export class Render {
                     let horizontalOverflow: boolean = contentWidth < tableWidth;
                     let verticalOverflow: boolean = contentHeight < tableHeight;
                     let commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
+                    let fixedOverflow: boolean = gridHeight <= (this.engine.valueContent.length * this.gridSettings.rowHeight);
                     if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
-                        !verticalOverflow && !commonOverflow) {
+                        !verticalOverflow && !commonOverflow && !fixedOverflow) {
                         this.parent.grid.height = 'auto';
                     } else {
                         this.parent.grid.height = gridHeight;

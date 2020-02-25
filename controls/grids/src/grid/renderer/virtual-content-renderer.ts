@@ -15,7 +15,7 @@ import { InterSectionObserver } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
 import { isGroupAdaptive, getTransformValues } from '../base/util';
-import { setStyleAttribute } from '@syncfusion/ej2-base';
+import { isBlazor, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
 /**
  * VirtualContentRenderer
@@ -27,13 +27,20 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private maxBlock: number;
     private prevHeight: number = 0;
     private observer: InterSectionObserver;
-    private prevInfo: VirtualInfo;
-    private currentInfo: VirtualInfo = {};
     /**
      * @hidden
      */
     public vgenerator: VirtualRowModelGenerator;
-    private header: VirtualHeaderRenderer;
+    /** @hidden */
+    public header: VirtualHeaderRenderer;
+    /** @hidden */
+    public startIndex: number = 0;
+    private preStartIndex: number = 0;
+    private preEndIndex: number;
+    /** @hidden */
+    public startColIndex: number;
+    /** @hidden */
+    public endColIndex: number;
     private locator: ServiceLocator;
     private preventEvent: boolean = false;
     private actions: string[] = ['filtering', 'searching', 'grouping', 'ungrouping'];
@@ -76,7 +83,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
-        this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
+        this.observer = new InterSectionObserver(this.parent, this.virtualEle.wrapper, opt);
     }
 
     public renderEmpty(tbody: HTMLElement): void {
@@ -109,7 +116,13 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.refreshMvTbalTransform();
         }
         let info: SentinelType = scrollArgs.sentinel;
+        let pStartIndex: number = this.preStartIndex;
+        let previousColIndexes: number[] = this.parent.getColumnIndexesInView();
         let viewInfo: VirtualInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
+        if (isBlazor() && this.parent.isServerRendered) {
+            this.parent.notify('update-virtual-view', { previousColIndexes: previousColIndexes, preStartIndex: this.preStartIndex,
+                pStartIndex: pStartIndex, viewInfo: viewInfo});
+        }
         if (isGroupAdaptive(this.parent)) {
             if ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
                 && scrollArgs.direction === 'up' && viewInfo.blockIndexes[viewInfo.blockIndexes.length - 1] !== 2) {
@@ -125,15 +138,22 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 return;
             }
         }
-        if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
-            || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
-            if (Browser.isIE) {
-                this.parent.hideSpinner();
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
+                || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
+                if (Browser.isIE) {
+                    this.parent.hideSpinner();
+                }
+                return;
             }
-            return;
         }
+
         this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
-        this.parent.pageSettings.currentPage = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            this.parent.pageSettings.currentPage = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+        } else if (isBlazor() && this.parent.isServerRendered && this.preStartIndex !== pStartIndex) {
+            this.parent.notify('refresh-virtual-indices', { viewInfo: viewInfo });
+        }
         if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
             let lastPage: number = Math.ceil(this.getTotalBlocks() / 2);
             if (this.parent.pageSettings.currentPage === lastPage && scrollArgs.sentinel.axis === 'Y') {
@@ -148,7 +168,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 }
             }
         }
-        this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo,
+            focusElement: scrollArgs.focusElement });
+        } else if (this.preStartIndex !== pStartIndex) {
+            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo });
+        }
     }
 
     private block(blk: number): boolean {
@@ -158,7 +183,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private getInfoFromView(direction: string, info: SentinelType, e: Offsets): VirtualInfo {
         let isBlockAdded: boolean = false;
         let tempBlocks: number[] = [];
-        let infoType: VirtualInfo = { direction: direction, sentinelInfo: info, offsets: e };
+        let infoType: VirtualInfo = { direction: direction, sentinelInfo: info, offsets: e,
+            startIndex: this.preStartIndex, endIndex: this.preEndIndex };
         let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
         infoType.page = this.getPageFromTop(e.top + vHeight, infoType);
@@ -189,6 +215,41 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         infoType.columnIndexes = info.axis === 'X' ? this.vgenerator.getColumnIndexes() : this.parent.getColumnIndexesInView();
         if (this.parent.enableColumnVirtualization && info.axis === 'X') {
             infoType.event = refreshVirtualBlock;
+        }
+        if (isBlazor() && this.parent.isServerRendered) {
+            let rowHeight: number = this.parent.getRowHeight();
+            let exactTopIndex: number = e.top / rowHeight;
+            let noOfInViewIndexes: number = vHeight / rowHeight;
+            let pageSizeBy4: number = this.parent.pageSettings.pageSize / 4;
+            if (infoType.direction === 'down') {
+                let sIndex: number = Math.round(exactTopIndex) + Math.round(noOfInViewIndexes) - Math.round((pageSizeBy4));
+                if (isNullOrUndefined(infoType.startIndex) || (exactTopIndex + noOfInViewIndexes) >
+                (infoType.startIndex + Math.round((this.parent.pageSettings.pageSize / 2 + pageSizeBy4)))) {
+                    infoType.startIndex = sIndex >= 0 ? Math.round(sIndex) : 0;
+                    let eIndex: number = infoType.startIndex + this.parent.pageSettings.pageSize;
+                    infoType.endIndex =  eIndex < this.count ? eIndex : this.count;
+                    infoType.startIndex = eIndex >= this.count ?
+                    infoType.endIndex - this.parent.pageSettings.pageSize : infoType.startIndex;
+                    infoType.currentPage = Math.ceil(infoType.endIndex / this.parent.pageSettings.pageSize);
+                }
+            } else if (infoType.direction === 'up') {
+                if (infoType.startIndex && infoType.endIndex) {
+                    let loadAtIndex: number = Math.round(((infoType.startIndex * rowHeight) + (pageSizeBy4 * rowHeight)) / rowHeight);
+                    if (exactTopIndex < loadAtIndex) {
+                        let idxAddedToExactTop: number = (pageSizeBy4) > noOfInViewIndexes ? pageSizeBy4 :
+                        (noOfInViewIndexes + noOfInViewIndexes / 4);
+                        let eIndex: number = Math.round(exactTopIndex + idxAddedToExactTop);
+                        infoType.endIndex = eIndex < this.count ? eIndex : this.count;
+                        let sIndex: number = infoType.endIndex - this.parent.pageSettings.pageSize;
+                        infoType.startIndex = sIndex > 0 ? sIndex : 0;
+                        infoType.endIndex = sIndex < 0 ? this.parent.pageSettings.pageSize : infoType.endIndex;
+                        infoType.currentPage = Math.ceil(infoType.startIndex / this.parent.pageSettings.pageSize);
+                    }
+                }
+            }
+            this.preStartIndex = this.startIndex = infoType.startIndex;
+            this.preEndIndex = infoType.endIndex;
+            infoType.event = (infoType.currentPage !== this.parent.pageSettings.currentPage) ? modelChanged : refreshVirtualBlock;
         }
         return infoType;
     }
@@ -445,7 +506,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             let height: number = this.content.getBoundingClientRect().height;
             let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);
             let y: number = this.getTranslateY(e.top, height, xAxis && top === e.top ? this.prevInfo : undefined, true);
-            this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
+            if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered) || (isBlazor() && this.parent.isServerRendered && !xAxis)) {
+                this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
+            } else {
+                this.parent.notify('setcolumnstyles', {});
+            }
             if (this.parent.getFrozenColumns() && !xAxis) {
                 let left: number = this.parent.getMovableVirtualContent().scrollLeft;
                 if (this.parent.enableColumnVirtualization && left > 0) {
@@ -456,7 +521,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     fvTable.style.transform = `translate(${x}px, ${Math.min(y, this.offsets[this.maxBlock])}px)`;
                 }
             }
-            if (this.parent.enableColumnVirtualization) {
+            if (this.parent.enableColumnVirtualization && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered ))) {
                 this.header.virtualEle.adjustTable(x, 0);
             }
         };
@@ -599,7 +664,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     public getRowCollection(index: number, isMovable: boolean): Element {
         let prev: number[] = this.prevInfo.blockIndexes;
-        let startIdx: number = (prev[0] - 1) * this.getBlockSize();
+        let startIdx: number = (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) ?
+        (prev[0] - 1) * this.getBlockSize() : this.startIndex;
         let rowCollection: Element[] = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
         let selectedRow: Element = rowCollection[index - startIdx];
         if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
@@ -650,6 +716,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
+        if (isBlazor() && gObj.isServerRendered) {
+            this.parent.notify('setvisibility', columns);
+        }
         let rows: Row<Column>[] = [];
         rows = <Row<Column>[]>this.getRows();
         let testRow: Row<Column>;
@@ -728,6 +797,13 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
     public renderTable(): void {
         this.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(<HTMLElement>this.getPanel().querySelector('.e-headercontent')));
+        if (isBlazor() && this.parent.isServerRendered) {
+            let adaptor: string = 'interopAdaptor';
+            let invokeMethodAsync: string = 'invokeMethodAsync';
+            this.parent[adaptor][invokeMethodAsync]('SetColumnIndex',
+                                                    (<VirtualContentRenderer>this.parent.contentModule).startColIndex,
+                                                    (<VirtualContentRenderer>this.parent.contentModule).endColIndex);
+        }
         super.renderTable();
         this.virtualEle.table = <HTMLElement>this.getTable();
         this.virtualEle.content = <HTMLElement>this.getPanel().querySelector('.e-headercontent');
@@ -805,13 +881,25 @@ export class VirtualElementHandler {
     public table: HTMLElement;
 
     public renderWrapper(height?: number): void {
-        this.wrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}` });
+        if (isBlazor()) {
+            this.wrapper = this.content.querySelector('.e-virtualtable') ? this.content.querySelector('.e-virtualtable') :
+            createElement('div', { className: 'e-virtualtable'});
+            this.wrapper.setAttribute('styles', `min-height:${formatUnit(height)}`);
+        } else {
+            this.wrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}` });
+        }
         this.wrapper.appendChild(this.table);
         this.content.appendChild(this.wrapper);
     }
 
     public renderPlaceHolder(position: string = 'relative'): void {
-        this.placeholder = createElement('div', { className: 'e-virtualtrack', styles: `position:${position}` });
+        if (isBlazor()) {
+            this.placeholder = this.content.querySelector('.e-virtualtrack') ? this.content.querySelector('.e-virtualtrack') :
+            createElement('div', { className: 'e-virtualtrack' });
+            this.placeholder.setAttribute('styles', `position:${position}`);
+        } else {
+            this.placeholder = createElement('div', { className: 'e-virtualtrack', styles: `position:${position}` });
+        }
         this.content.appendChild(this.placeholder);
     }
 

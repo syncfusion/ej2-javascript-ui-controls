@@ -16056,7 +16056,7 @@ class Image {
                 };
                 this.deleteImg(event);
             }
-            if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+            if (this.parent.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                 this.remvoeResizEle();
             }
         }
@@ -16789,9 +16789,9 @@ class Image {
         let selectParent;
         let proxy = this;
         let iframe = proxy.parent.iframeSettings.enable;
-        if (proxy.parent.editorMode === 'HTML' &&
-            (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))
-                || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
+        if (proxy.parent.editorMode === 'HTML' && (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' +
+            this.parent.contentModule.getPanel().id))
+            || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
             this.contentModule.getEditPanel().focus();
             let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
@@ -20305,10 +20305,19 @@ let RichTextEditor = class RichTextEditor extends Component {
     setContentHeight(target, isExpand) {
         let heightValue;
         let topValue = 0;
+        let rteHeightPercent;
+        let heightPercent;
         let cntEle = (this.sourceCodeModule.getPanel() &&
             this.sourceCodeModule.getPanel().parentElement.style.display === 'block') ? this.sourceCodeModule.getPanel().parentElement :
             this.contentModule.getPanel();
         let rteHeight = this.element.offsetHeight;
+        if (this.element.offsetHeight === 0 && this.height !== 'auto' && !this.getToolbar()) {
+            rteHeight = parseInt(this.height, 10);
+            heightPercent = typeof (this.height) === 'string' && this.height.indexOf('%') > -1;
+            if (heightPercent) {
+                rteHeightPercent = this.height;
+            }
+        }
         let tbHeight = this.getToolbar() ? this.toolbarModule.getToolbarHeight() : 0;
         let rzHeight = this.enableResize ?
             this.element.querySelector('.' + CLS_RTE_RES_HANDLE).offsetHeight + 8 : 0;
@@ -20322,7 +20331,7 @@ let RichTextEditor = class RichTextEditor extends Component {
                 heightValue = 'auto';
             }
             else {
-                heightValue = rteHeight - (tbHeight + rzHeight) + 'px';
+                heightValue = heightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
             }
         }
         setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });

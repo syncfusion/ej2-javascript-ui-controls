@@ -48,6 +48,7 @@ export class DetailsView {
     private count: number = 0;
     private isRendered: boolean = true;
     private isLoaded: boolean = false;
+    private isNameWidth: boolean = false;
 
     /* public variable */
     public gridObj: Grid;
@@ -109,6 +110,7 @@ export class DetailsView {
         if (this.parent.view === 'Details') {
             removeClass([this.parent.element], CLS.MULTI_SELECT);
             let items: Object[] = getSortedData(this.parent, args.files);
+            this.checkNameWidth();
             let columns: ColumnModel[] = this.getColumns();
             let sortSettings: SortDescriptorModel[];
             if (this.parent.isMobile) {
@@ -152,7 +154,19 @@ export class DetailsView {
         }
     }
 
+    private checkNameWidth(): void {
+        let initialColumn: ColumnModel[] = this.parent.detailsViewSettings.columns;
+        this.isNameWidth = false;
+        for (let i: number = 0; i < initialColumn.length; i++) {
+            if (initialColumn[i].field === 'name') {
+                this.isNameWidth = !isNOU(initialColumn[i].width);
+                return;
+            }
+        }
+    }
+
     private adjustWidth(columns: ColumnModel[], fieldName: string): void {
+        if (this.isNameWidth && (fieldName === 'name')) { return; }
         for (let i: number = 0; i < columns.length; i++) {
             if (columns[i].field === fieldName) {
                 let nameWidth: string;
@@ -201,6 +215,9 @@ export class DetailsView {
             } else {
                 columns.unshift(cBox);
             }
+        }
+        for (let i: number = 0, len: number = columns.length; i < len; i++) {
+            columns[i].disableHtmlEncode = !this.parent.enableHtmlSanitizer;
         }
         return columns;
     }
@@ -454,6 +471,7 @@ export class DetailsView {
                     break;
                 case 'detailsViewSettings':
                     if (!isNullOrUndefined(this.gridObj)) {
+                        this.checkNameWidth();
                         let columns: ColumnModel[] = this.getColumns();
                         this.gridObj.columns = columns;
                         this.gridObj.allowResizing = this.parent.detailsViewSettings.columnResizing;
@@ -885,7 +903,7 @@ export class DetailsView {
                 <HTMLElement>this.gridObj.getContent().querySelector('.e-content .e-table').children[0];
             let gridHeaderColNames: ColumnModel[] = this.gridObj.getColumns();
             for (let i: number = 0; i < gridHeaderColNames.length; i++) {
-                if (gridHeaderColNames[i].field === 'name' || gridHeaderColNames[i].field === 'filterPath') {
+                if ((!this.isNameWidth && gridHeaderColNames[i].field === 'name') || gridHeaderColNames[i].field === 'filterPath') {
                     if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                         if (this.element.clientWidth <= 500) {
                             gridHeaderColGroup.children[i].setAttribute('style', 'width: 120px');

@@ -1282,21 +1282,7 @@ export class DateRangePicker extends CalendarBase {
         EventHandler.clearEvents(this.rightCalNextIcon);
     }
     private updateNavIcons(): void {
-        if (this.isPopupOpen() && this.depth === this.currentView()) {
-            let leftDate: Date = new Date(this.checkValue(this.leftCalCurrentDate));
-            let iconState: boolean = false;
-            if (this.currentView() === 'Year') {
-                iconState = (this.compareYears(leftDate, this.rightCalCurrentDate) < 1);
-            } else if (this.currentView() === 'Decade') {
-                iconState = (this.compareDecades(leftDate, this.rightCalCurrentDate) < 1);
-            } else if (this.currentView() === 'Month') {
-                iconState = (this.compareMonths(leftDate, this.rightCalCurrentDate) < 1);
-            }
-            this.previousIcon = this.rightCalPrevIcon;
-            this.nextIcon = this.leftCalNextIcon;
-            this.nextIconHandler(iconState);
-            this.previousIconHandler(iconState);
-        }
+        super.iconHandler();
     }
     private calendarIconEvent(): void {
         this.clearCalendarEvents();
@@ -2488,7 +2474,6 @@ export class DateRangePicker extends CalendarBase {
         } else {
             this.leftCalCurrentDate = new Date(+this.currentDate);
         }
-        this.updateNavIcons();
         this.calendarIconEvent();
         if ((((this.depth === 'Month')
             && this.leftCalendar.querySelector('.e-content').classList.contains('e-month')
@@ -2516,56 +2501,6 @@ export class DateRangePicker extends CalendarBase {
             this.updateMinMaxDays(ele);
         }
         this.updateControl(ele);
-    }
-    private compareMonths(start: Date, end: Date): number {
-        let result: number;
-        if (start.getFullYear() === end.getFullYear() &&
-            (this.currentView() === 'Year' || this.currentView() === 'Decade')) {
-            result = -1;
-        } else if (start.getFullYear() > end.getFullYear()) {
-            result = -1;
-        } else if (start.getFullYear() < end.getFullYear()) {
-            if (start.getFullYear() + 1 === end.getFullYear() && start.getMonth() === 11 && end.getMonth() === 0) {
-                result = -1;
-            } else {
-                result = 1;
-            }
-        } else {
-            result = start.getMonth() === end.getMonth() ? 0 : start.getMonth() + 1 === end.getMonth() ? -1 : 1;
-        }
-        return result;
-    }
-    private compareYears(start: Date, end: Date): number {
-        let result: number;
-        if (start.getFullYear() === end.getFullYear()) {
-            result = -1;
-        } else if (start.getFullYear() > end.getFullYear()) {
-            result = -1;
-        } else {
-            if (start.getFullYear() + 1 === end.getFullYear()) {
-                result = -1;
-            } else {
-                result = 1;
-            }
-        }
-        return result;
-    }
-    private compareDecades(start: Date, end: Date): number {
-        let result: number;
-        if (start.getFullYear() === end.getFullYear()) {
-            result = -1;
-        } else if (start.getFullYear() > end.getFullYear()) {
-            result = -1;
-        } else {
-            let strtFullYr: number = start.getFullYear();
-            let enFullYr: number = end.getFullYear();
-            if ((strtFullYr - (strtFullYr % 10) + 10) === (enFullYr - (enFullYr % 10))) {
-                result = -1;
-            } else {
-                result = 1;
-            }
-        }
-        return result;
     }
     private isPopupOpen(): boolean {
         if (!isNullOrUndefined(this.popupObj) && this.popupObj.element.classList.contains(POPUP)) {
@@ -2949,15 +2884,7 @@ export class DateRangePicker extends CalendarBase {
                     if (element === this.leftCalendar && ((e && !(<HTMLElement>e.currentTarget).children[0].classList.contains('e-icons'))
                         || (!isNullOrUndefined(this.controlDown)))) {
                         this.leftCalCurrentDate = new Date(+this.currentDate);
-                        if (view === 'Year') {
-                            let year: number = this.currentDate.getFullYear() + 1;
-                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(year));
-                        } else if (view === 'Decade') {
-                            let decYear: number = this.currentDate.getFullYear() + 10;
-                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(decYear));
-                        } else {
-                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(this.currentDate.getMonth() + 1));
-                        }
+                        this.effect = '';
                         this.currentDate = this.leftCalCurrentDate;
                         this.updateCalendarElement(this.leftCalendar);
                         this.updateControl(this.leftCalendar);
@@ -2971,15 +2898,7 @@ export class DateRangePicker extends CalendarBase {
                     } else if (e && !(<HTMLElement>e.currentTarget).children[0].classList.contains('e-icons')
                         || (!isNullOrUndefined(this.controlDown))) {
                         this.rightCalCurrentDate = new Date(+this.currentDate);
-                        if (view === 'Year') {
-                            let yr: number = this.currentDate.getFullYear() - 1;
-                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(yr));
-                        } else if (view === 'Decade') {
-                            let decyr: number = this.currentDate.getFullYear() - 10;
-                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(decyr));
-                        } else {
-                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(this.currentDate.getMonth() - 1));
-                        }
+                        this.effect = '';
                         this.currentDate = this.rightCalCurrentDate;
                         this.updateCalendarElement(this.rightCalendar);
                         this.updateControl(this.rightCalendar);

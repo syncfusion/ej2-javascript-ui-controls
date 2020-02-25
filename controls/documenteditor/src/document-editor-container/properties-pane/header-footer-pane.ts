@@ -23,6 +23,7 @@ export class HeaderFooterProperties {
     private isHeaderTopApply: boolean = false;
     private isFooterTopApply: boolean = false;
     private isRtl: boolean;
+
     /**
      * @private
      */
@@ -208,7 +209,8 @@ export class HeaderFooterProperties {
         this.footerFromTop.element.addEventListener('blur', (): void => { this.changeFooterValue(); this.isFooterTopApply = false; });
     }
     private onClose = (): void => {
-        this.documentEditor.selection.closeHeaderFooter();
+        this.container.showHeaderProperties = true;
+        this.container.documentEditor.selection.closeHeaderFooter();
     }
     private changeFirstPageOptions = (): void => {
         if (!this.documentEditor.isReadOnly) {

@@ -3514,7 +3514,6 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.render = function () {
         this.initialize();
         this.renderControl();
-        this.separator();
         this.wireEvents();
         this.renderComplete();
     };
@@ -3539,13 +3538,17 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.trgtEle = (ele.children.length > 0 && (!isBlazor() && !this.isServerRendered)) ? ele.querySelector('div') : null;
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };
         this.renderItems();
+        this.renderLayout();
+    };
+    Toolbar.prototype.renderLayout = function () {
         this.renderOverflowMode();
         if (this.tbarAlign) {
             this.itemPositioning();
         }
-        if (this.popObj && this.popObj.element.childElementCount > 1 && this.checkPopupRefresh(ele, this.popObj.element)) {
+        if (this.popObj && this.popObj.element.childElementCount > 1 && this.checkPopupRefresh(this.element, this.popObj.element)) {
             this.popupRefresh(this.popObj.element, false);
         }
+        this.separator();
     };
     Toolbar.prototype.itemsAlign = function (items, itemEleDom) {
         var innerItem;
@@ -3558,6 +3561,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
                 var itemEleBlaDom = this.element.querySelector('.' + BZ_ITEMS);
                 innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
+                if (!innerItem) {
+                    continue;
+                }
                 if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
                     this.popupPriCount++;
                 }
@@ -3593,16 +3599,15 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.serverItemsRerender = function () {
         this.destroyMode();
         this.resetServerItems();
-        this.itemsAlign(this.items, this.element.querySelector('.' + CLS_ITEMS));
-        this.renderOverflowMode();
-        if (this.tbarAlign) {
-            this.itemPositioning();
+        this.serverItemsRefresh();
+    };
+    Toolbar.prototype.serverItemsRefresh = function () {
+        var wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
+        if (wrapBlaEleDom.children.length > 0) {
+            this.itemsAlign(this.items, this.element.querySelector('.' + CLS_ITEMS));
+            this.renderLayout();
+            this.refreshOverflow();
         }
-        if (this.popObj && this.popObj.element.childElementCount > 1 && this.checkPopupRefresh(this.element, this.popObj.element)) {
-            this.popupRefresh(this.popObj.element, false);
-        }
-        this.separator();
-        this.refreshOverflow();
     };
     Toolbar.prototype.resetServerItems = function () {
         var wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
@@ -4406,15 +4411,15 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.renderItems = function () {
         var ele = this.element;
-        var itemEleDom;
         var items = this.items;
-        if (ele && ele.children.length > 0) {
-            itemEleDom = ele.querySelector('.' + CLS_ITEMS);
-        }
         if (this.trgtEle != null) {
             this.ctrlTemplate();
         }
         else if (ele && items.length > 0) {
+            var itemEleDom = void 0;
+            if (ele && ele.children.length > 0) {
+                itemEleDom = ele.querySelector('.' + CLS_ITEMS);
+            }
             if (!itemEleDom) {
                 itemEleDom = this.createElement('div', { className: CLS_ITEMS });
             }
@@ -5818,14 +5823,12 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.expandAnimation = function (ef, icn, trgt, trgtItemEle, animate, args) {
         var _this = this;
         var height;
-        var trgtHgt;
         this.lastActiveItemId = trgtItemEle.id;
         if (ef === 'SlideDown') {
             animate.begin = function () {
                 _this.expandProgress('begin', icn, trgt, trgtItemEle, args);
                 trgt.style.position = 'absolute';
                 height = trgtItemEle.offsetHeight;
-                trgtHgt = trgt.offsetHeight;
                 trgt.style.maxHeight = (trgt.offsetHeight) + 'px';
                 trgtItemEle.style.maxHeight = '';
             };
@@ -7037,10 +7040,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Tab.prototype.serverItemsChanged = function () {
-        if (this.isServerRendered && this.loadOn === 'Init') {
-            this.setActiveContent();
-        }
-        this.setActiveBorder();
+        this.enableAnimation = false;
+        this.setActive(this.selectedItem, true);
+        this.enableAnimation = true;
     };
     Tab.prototype.headerReady = function () {
         this.initRender = true;
@@ -7070,9 +7072,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.cntEle = select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element);
         if (!isNullOrUndefined(this.cntEle)) {
             this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) });
-        }
-        if (this.isServerRendered && this.loadOn === 'Init') {
-            this.setActiveContent();
         }
         this.initRender = false;
         this.renderComplete();
@@ -7258,8 +7257,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         if (isOverflow) {
             ele.classList.add(CLS_TB_POPUP);
-            this.tbPop.insertBefore(ele.cloneNode(true), selectAll('.' + CLS_TB_POPUP, this.tbPop)[0]);
-            ele.outerHTML = '';
+            this.tbPop.insertBefore(ele, selectAll('.' + CLS_TB_POPUP, this.tbPop)[0]);
         }
         return true;
     };
@@ -7274,9 +7272,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (this.tbItem.length !== 0) {
             target.classList.remove(CLS_TB_POPUP);
             target.removeAttribute('style');
-            this.tbItems.appendChild(target.cloneNode(true));
+            this.tbItems.appendChild(target);
             this.actEleId = target.id;
-            target.outerHTML = '';
             if (this.checkPopupOverflow(lastChild)) {
                 var prevEle = this.tbItems.lastChild.previousElementSibling;
                 this.checkPopupOverflow(prevEle);
@@ -7359,8 +7356,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 }
             });
             var prevEle = this.tbItem[prevIndex];
-            var no = this.extIndex(this.tbItem[this.selectedItem].id);
-            newCnt = this.getTrgContent(this.cntEle, no);
+            newCnt = this.getTrgContent(this.cntEle, this.extIndex(id));
             if (isNullOrUndefined(oldCnt) && !isNullOrUndefined(prevEle)) {
                 var idNo = this.extIndex(prevEle.id);
                 oldCnt = this.getTrgContent(this.cntEle, idNo);
@@ -7578,7 +7574,14 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         this.addVerticalClass();
         this.updateOrientationAttribute();
-        this.select(this.selectedItem);
+        this.setActiveBorder();
+        this.focusItem();
+    };
+    Tab.prototype.focusItem = function () {
+        var curActItem = select(' #' + CLS_ITEM$2 + this.tabId + '_' + this.selectedItem, this.hdrEle);
+        if (!isNullOrUndefined(curActItem)) {
+            curActItem.firstElementChild.focus();
+        }
     };
     Tab.prototype.serverChangeOrientation = function (newProp, oldProp) {
         this.setOrientation(newProp, this.hdrEle);
@@ -7592,7 +7595,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             addClass([this.element], [CLS_VTAB]);
         }
         this.updateOrientationAttribute();
-        this.select(this.selectedItem);
+        this.setActiveBorder();
+        this.focusItem();
     };
     Tab.prototype.changeToolbarOrientation = function () {
         this.tbObj.setProperties({ height: (this.isVertical() ? '100%' : 'auto'), width: (this.isVertical() ? 'auto' : '100%') }, true);
@@ -7731,16 +7735,17 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             this.bdrLine.classList.remove(CLS_HIDDEN$1);
         }
     };
-    Tab.prototype.setActive = function (value) {
+    Tab.prototype.setActive = function (value, skipDataBind) {
+        if (skipDataBind === void 0) { skipDataBind = false; }
         this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         var trg = this.tbItem[value];
-        if (this.isServerRendered) {
+        if (this.isServerRendered && trg) {
             value = parseInt(trg.getAttribute('data-index'), 10);
         }
         if (value < 0 || isNaN(value) || this.tbItem.length === 0) {
             return;
         }
-        if (value >= 0) {
+        if (value >= 0 && !skipDataBind) {
             this.allowServerDataBinding = false;
             this.setProperties({ selectedItem: value }, true);
             this.allowServerDataBinding = true;
@@ -7795,12 +7800,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             this.triggerAnimation(id, this.enableAnimation);
         }
         this.setActiveBorder();
-        var curActItem = select('.' + CLS_HEADER$1 + ' #' + id, this.element);
-        this.refreshItemVisibility(curActItem);
-        if (!this.initRender) {
-            curActItem.firstElementChild.focus();
-        }
-        if (!this.initRender) {
+        this.refreshItemVisibility(trg);
+        if (!this.initRender && !skipDataBind) {
+            trg.firstElementChild.focus();
             var eventArg = {
                 previousItem: this.prevItem,
                 previousIndex: this.prevIndex,
@@ -8379,24 +8381,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             this.selectingContent(args);
         }
     };
-    Tab.prototype.setActiveContent = function () {
-        var tabHeader = this.getTabHeader();
-        this.tbItem = selectAll('.' + CLS_TB_ITEM, tabHeader);
-        var id = CLS_ITEM$2 + this.tabId + '_' + this.selectedItem;
-        var curActItem = select(' #' + id, tabHeader);
-        var item = this.getTrgContent(this.cntEle, this.extIndex(id));
-        if (!isNullOrUndefined(item)) {
-            item.classList.add(CLS_ACTIVE$1);
-        }
-        if (curActItem.classList.contains(CLS_TB_POPUP)) {
-            this.enableAnimation = true;
-        }
-        else {
-            this.enableAnimation = false;
-        }
-        this.triggerAnimation(id, this.enableAnimation);
-        this.enableAnimation = true;
-    };
     Tab.prototype.selectingContent = function (args) {
         if (typeof args === 'number') {
             if (!isNullOrUndefined(this.tbItem[args]) && (this.tbItem[args].classList.contains(CLS_DISABLE$4) ||
@@ -8414,15 +8398,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             if (this.tbItem.length > args && args >= 0 && !isNaN(args)) {
                 this.prevIndex = this.selectedItem;
                 if (this.tbItem[args].classList.contains(CLS_TB_POPUP)) {
-                    if (this.isServerRendered && this.loadOn === 'Init') {
-                        this.enableAnimation = false;
-                    }
                     this.setActive(this.popupHandler(this.tbItem[args]));
                 }
                 else {
-                    if (this.isServerRendered && this.loadOn === 'Init') {
-                        this.enableAnimation = true;
-                    }
                     this.setActive(args);
                 }
             }

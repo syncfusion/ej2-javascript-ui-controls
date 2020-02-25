@@ -14,18 +14,22 @@ describe('FileManager control single selection Grid view', () => {
     describe('worst case testing', () => {
         let feObj: FileManager;
         let ele: HTMLElement, fmEle: HTMLElement;
+        let originalTimeout: any;
         beforeEach(() => {
             jasmine.Ajax.install();
             ele = createElement('div', { id: 'file_wrap1' });
             document.body.appendChild(ele);
             fmEle = createElement('div', { id: 'file1' });
             ele.appendChild(fmEle);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach(() => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             fmEle.remove();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('for window resize', (done: Function) => {
             feObj = new FileManager({
@@ -44,7 +48,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (feObj as any).resizeHandler();
                 done();

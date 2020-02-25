@@ -13,7 +13,7 @@ import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
-import { keyPressed, KeyboardEventArgs, columnChooserOpened } from '../../../src';
+import { keyPressed, KeyboardEventArgs, columnChooserOpened, AggregateColumnModel } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
 Grid.Inject(Page);
 

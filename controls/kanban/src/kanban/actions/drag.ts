@@ -1,5 +1,5 @@
 import {
-    Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, removeClass, classList, remove
+    Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, removeClass, classList, remove, MouseEventArgs
 } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { DragArgs, EJ2Instance, DragEdges, DragEventArgs } from '../base/interface';
@@ -23,7 +23,7 @@ export class DragAndDrop {
         this.dragObj = {
             element: null, cloneElement: null,
             targetClone: null, draggedClone: null, targetCloneMulti: null,
-            selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: []
+            selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.dragEdges = { left: false, right: false, top: false, bottom: false };
     }
@@ -43,16 +43,21 @@ export class DragAndDrop {
         });
     }
 
-    private dragHelper(e: { [key: string]: Object }): HTMLElement {
-        this.dragObj.element = e.element as HTMLElement;
+    private dragHelper(e: { [key: string]: MouseEventArgs }): HTMLElement {
+        if (this.parent.isAdaptive && this.parent.touchModule.mobilePopup &&
+            this.parent.touchModule.mobilePopup.element.classList.contains(cls.POPUP_OPEN_CLASS)) {
+            this.parent.touchModule.mobilePopup.hide();
+        }
+        this.dragObj.element = closest(e.sender.target as Element, '.' + cls.CARD_CLASS) as HTMLElement;
+        if (isNullOrUndefined(this.dragObj.element)) { return null; }
         this.dragObj.element.style.width = formatUnit(this.dragObj.element.offsetWidth);
         let cloneWrapper: HTMLElement = createElement('div', { innerHTML: this.dragObj.element.outerHTML });
-        this.dragObj.cloneElement = cloneWrapper.childNodes.item(0) as HTMLElement;
-        addClass([this.dragObj.cloneElement], ['e-cloned-card', 'duplicate']);
+        this.dragObj.cloneElement = cloneWrapper.children.item(0) as HTMLElement;
+        addClass([this.dragObj.cloneElement], cls.CLONED_CARD_CLASS);
         this.dragObj.element.parentElement.appendChild(this.dragObj.cloneElement);
-        this.dragObj.targetCloneMulti = createElement('div', { className: cls.TARGET_MULTI_CLONE });
+        this.dragObj.targetCloneMulti = createElement('div', { className: cls.TARGET_MULTI_CLONE_CLASS });
         this.dragObj.targetClone = createElement('div', {
-            className: cls.DROPPED_CLONE,
+            className: cls.DROPPED_CLONE_CLASS,
             styles: 'width:' + formatUnit(this.dragObj.element.offsetWidth) + ';height:' + formatUnit(this.dragObj.element.offsetHeight)
         });
         return this.dragObj.cloneElement;
@@ -60,8 +65,8 @@ export class DragAndDrop {
 
     private dragStart(e: MouseEvent & TouchEvent): void {
         this.dragObj.selectedCards = this.dragObj.element;
-        if (this.dragObj.element.classList.contains(cls.CARD_SELECTION)) {
-            let className: string = '.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION + ':not(.duplicate)';
+        if (this.dragObj.element.classList.contains(cls.CARD_SELECTION_CLASS)) {
+            let className: string = '.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS + ':not(.' + cls.CLONED_CARD_CLASS + ')';
             let closestEle: Element = closest(this.dragObj.element, '.' + cls.CONTENT_ROW_CLASS);
             this.dragObj.selectedCards = [].slice.call(closestEle.querySelectorAll(className)) as HTMLElement[];
             (<HTMLElement[]>this.dragObj.selectedCards).forEach((element: HTMLElement) => {
@@ -80,7 +85,7 @@ export class DragAndDrop {
                 };
                 return;
             }
-            if (this.dragObj.element.classList.contains(cls.CARD_SELECTION)) {
+            if (this.dragObj.element.classList.contains(cls.CARD_SELECTION_CLASS)) {
                 (<HTMLElement[]>this.dragObj.selectedCards).forEach((element: HTMLElement) => { this.draggedClone(element); });
                 if ((<HTMLElement[]>this.dragObj.selectedCards).length > 1) {
                     this.dragObj.cloneElement.innerHTML = '';
@@ -89,7 +94,7 @@ export class DragAndDrop {
                         innerHTML: (<HTMLElement[]>this.dragObj.selectedCards).length + ' Cards',
                     });
                     this.dragObj.cloneElement.appendChild(drag);
-                    classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [cls.CARD_SELECTION]);
+                    classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [cls.CARD_SELECTION_CLASS]);
                     this.dragObj.cloneElement.style.width = '90px';
                 }
             } else {
@@ -101,11 +106,11 @@ export class DragAndDrop {
 
     private draggedClone(element: HTMLElement): void {
         this.dragObj.draggedClone = createElement('div', {
-            className: cls.DRAGGED_CLONE,
+            className: cls.DRAGGED_CLONE_CLASS,
             styles: 'width:' + formatUnit(element.offsetWidth - 1) + ';height:' + formatUnit(element.offsetHeight)
         });
         element.insertAdjacentElement('afterend', this.dragObj.draggedClone);
-        addClass([element], cls.DRAGGED_CARD);
+        addClass([element], cls.DRAGGED_CARD_CLASS);
     }
 
     private drag(e: MouseEvent & TouchEvent): void {
@@ -142,12 +147,15 @@ export class DragAndDrop {
                     offsetHeight -= limitEle.offsetHeight;
                 }
                 this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
-                addClass([contentCell.querySelector('.' + cls.CARD_WRAPPER_CLASS)], cls.MULTI_CARD_WRAPPER);
+                addClass([contentCell.querySelector('.' + cls.CARD_WRAPPER_CLASS)], cls.MULTI_CARD_WRAPPER_CLASS);
                 (contentCell.querySelector('.' + cls.CARD_WRAPPER_CLASS) as HTMLElement).style.height = 'auto';
                 contentCell.style.borderStyle = 'none';
                 this.removeElement(this.dragObj.targetClone);
                 for (let key of keys) {
-                    let colKey: HTMLElement = createElement('div', { className: cls.MULTI_COLUMN_KEY, attrs: { 'data-key': key.trim() } });
+                    let colKey: HTMLElement = createElement('div', {
+                        className: cls.MULTI_COLUMN_KEY_CLASS,
+                        attrs: { 'data-key': key.trim() }
+                    });
                     let text: HTMLElement = createElement('div', { className: 'e-text', innerHTML: key.trim() });
                     contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
                     colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
@@ -159,27 +167,28 @@ export class DragAndDrop {
         this.addDropping();
         let isCollapsed: boolean = false;
         if (contentCell) {
-            isCollapsed = contentCell.classList.contains(cls.COLLAPSED_CLASS) && contentCell.classList.contains(cls.DROPPING);
+            isCollapsed = contentCell.classList.contains(cls.COLLAPSED_CLASS) && contentCell.classList.contains(cls.DROPPING_CLASS);
         }
         if (isCollapsed) {
-            this.toggleVisible(target, undefined); addClass([contentCell], cls.TOGGLE_VISIBLE);
+            this.toggleVisible(target, undefined); addClass([contentCell], cls.TOGGLE_VISIBLE_CLASS);
         }
-        let tColumn: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.TOGGLE_VISIBLE));
-        if (tColumn.length > 0 && !target.classList.contains(cls.TOGGLE_VISIBLE) && !closest(target, '.' + cls.TOGGLE_VISIBLE)) {
+        let tColumn: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.TOGGLE_VISIBLE_CLASS));
+        if (tColumn.length > 0 && !target.classList.contains(cls.TOGGLE_VISIBLE_CLASS)
+            && !closest(target, '.' + cls.TOGGLE_VISIBLE_CLASS)) {
             this.toggleVisible(target, tColumn.slice(-1)[0]);
-            removeClass(tColumn, cls.TOGGLE_VISIBLE);
+            removeClass(tColumn, cls.TOGGLE_VISIBLE_CLASS);
         }
         this.parent.notify(events.contentReady, {});
         let cloneCell: HTMLElement = closest(target, '.' + cls.CONTENT_CELLS_CLASS + ':not(.' + cls.COLLAPSED_CLASS + ')') as HTMLElement;
         if (cloneCell) {
             this.dragObj.targetClone.style.width = formatUnit((cloneCell.offsetWidth - 2) - events.cardSpace);
         }
-        let multiKeyTarget: Element = closest(target, '.' + cls.MULTI_COLUMN_KEY);
+        let multiKeyTarget: Element = closest(target, '.' + cls.MULTI_COLUMN_KEY_CLASS);
         if (multiKeyTarget) {
-            let columnKeys: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.MULTI_COLUMN_KEY)).filter(
+            let columnKeys: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.MULTI_COLUMN_KEY_CLASS)).filter(
                 (element: Element) => this.getColumnKey(element) === this.getColumnKey(multiKeyTarget));
             if (columnKeys.length > 0) {
-                addClass(columnKeys, cls.MULTI_ACTIVE);
+                addClass(columnKeys, cls.MULTI_ACTIVE_CLASS);
                 if (columnKeys[0].previousElementSibling) {
                     addClass([columnKeys[0].previousElementSibling], 'e-multi-bottom-border');
                 }
@@ -215,36 +224,28 @@ export class DragAndDrop {
     private addDropping(): void {
         if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
             let className: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + '):not(.' + cls.COLLAPSED_CLASS + ')';
-            let rows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
-            rows.forEach((row: Element) => addClass(row.childNodes, cls.DROPPING));
+            let cells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + cls.CONTENT_CELLS_CLASS));
+            cells.forEach((cell: Element) => addClass([cell], cls.DROPPING_CLASS));
         } else {
             let row: Element = closest(this.dragObj.draggedClone, '.' + cls.CONTENT_ROW_CLASS);
             if (row) {
-                [].slice.call(row.childNodes).forEach((cell: Element) => addClass([cell], cls.DROPPING));
+                [].slice.call(row.children).forEach((cell: Element) => addClass([cell], cls.DROPPING_CLASS));
             }
         }
         let cell: Element = closest(this.dragObj.draggedClone, '.' + cls.CONTENT_CELLS_CLASS);
         if (cell) {
-            removeClass([cell], cls.DROPPING);
+            removeClass([cell], cls.DROPPING_CLASS);
         }
     }
 
     private dragStop(e: MouseEvent): void {
         let contentCell: Element = closest(this.dragObj.targetClone, '.' + cls.CONTENT_CELLS_CLASS);
         let columnKey: Element;
-        if (this.parent.element.querySelector('.' + cls.TARGET_MULTI_CLONE)) {
-            columnKey = closest(e.target as HTMLElement, '.' + cls.MULTI_COLUMN_KEY);
+        if (this.parent.element.querySelector('.' + cls.TARGET_MULTI_CLONE_CLASS)) {
+            columnKey = closest(e.target as HTMLElement, '.' + cls.MULTI_COLUMN_KEY_CLASS);
         }
         let dragArgs: DragEventArgs = { cancel: false, data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
-            this.removeElement(this.dragObj.draggedClone);
-            this.removeElement(this.dragObj.targetClone);
-            this.removeElement(this.dragObj.cloneElement);
-            let dragMultiClone: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.DRAGGED_CLONE));
-            dragMultiClone.forEach((clone: HTMLElement) => remove(clone));
-            removeClass([this.dragObj.element], cls.DRAGGED_CARD);
-            clearInterval(this.dragObj.navigationInterval);
-            this.dragObj.navigationInterval = null;
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
                     let cardStatus: string;
@@ -261,18 +262,30 @@ export class DragAndDrop {
                             this.updateDroppedData(element, cardStatus, contentCell);
                         });
                     }
+                    if (this.parent.cardSettings.priority) {
+                        this.changeOrder(this.dragObj.modifiedData);
+                    }
+                    this.parent.crudModule.updateCard(this.dragObj.modifiedData);
                 }
             }
+            this.removeElement(this.dragObj.draggedClone);
+            this.removeElement(this.dragObj.targetClone);
+            this.removeElement(this.dragObj.cloneElement);
+            let dragMultiClone: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.DRAGGED_CLONE_CLASS));
+            dragMultiClone.forEach((clone: HTMLElement) => remove(clone));
+            removeClass([this.dragObj.element], cls.DRAGGED_CARD_CLASS);
+            clearInterval(this.dragObj.navigationInterval);
+            this.dragObj.navigationInterval = null;
             if (document.body.style.cursor === 'not-allowed') {
                 document.body.style.cursor = '';
             }
             let className: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ')';
-            let rows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
-            rows.forEach((row: Element) => removeClass(row.childNodes, cls.DROPPING));
+            let cells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + cls.CONTENT_CELLS_CLASS));
+            cells.forEach((cell: Element) => removeClass([cell], cls.DROPPING_CLASS));
             if (this.parent.isAdaptive) {
                 this.parent.touchModule.tabHold = false;
             }
-            this.dragObj.cardDetails = [];
+            this.dragObj.cardDetails = this.dragObj.modifiedData = [];
         });
     }
 
@@ -290,7 +303,31 @@ export class DragAndDrop {
                 crudData[this.parent.swimlaneSettings.keyField] = this.getColumnKey(prev);
             }
         }
-        this.parent.crudModule.updateCard(crudData);
+        this.dragObj.modifiedData.push(crudData);
+    }
+
+    private changeOrder(modifiedData: { [key: string]: Object }[]): void {
+        let prevEle: boolean = false;
+        let element: Element = this.dragObj.targetClone.previousElementSibling;
+        if (element && !element.classList.contains(cls.DRAGGED_CARD_CLASS) && !element.classList.contains(cls.CLONED_CARD_CLASS)
+            && !element.classList.contains(cls.DRAGGED_CLONE_CLASS)) {
+            prevEle = true;
+        } else if (this.dragObj.targetClone.nextElementSibling) {
+            element = this.dragObj.targetClone.nextElementSibling;
+        } else {
+            return;
+        }
+        let obj: { [key: string]: Object } = this.parent.getCardDetails(element);
+        let index: number = (obj as { [key: string]: Object })[this.parent.cardSettings.priority] as number;
+        modifiedData.forEach((data: { [key: string]: Object }): void => {
+            if (prevEle) {
+                data[this.parent.cardSettings.priority] = ++index;
+            } else if (index !== 1 && index <= data[this.parent.cardSettings.priority]) {
+                data[this.parent.cardSettings.priority] = --index;
+            } else if (index === 1) {
+                data[this.parent.cardSettings.priority] = 1;
+            }
+        });
     }
 
     private toggleVisible(target: HTMLElement, tColumn?: HTMLElement): void {
@@ -309,15 +346,15 @@ export class DragAndDrop {
     }
 
     private multiCloneRemove(): void {
-        let cloneMulti: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.TARGET_MULTI_CLONE));
+        let cloneMulti: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.TARGET_MULTI_CLONE_CLASS));
         if (cloneMulti.length > 0) {
-            let columnKey: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.MULTI_COLUMN_KEY));
+            let columnKey: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.MULTI_COLUMN_KEY_CLASS));
             columnKey.forEach((node: Element) => remove(node));
             cloneMulti.forEach((node: HTMLElement) => {
                 let cell: HTMLElement = closest(node, '.' + cls.CONTENT_CELLS_CLASS) as HTMLElement;
                 if (cell) {
                     cell.style.borderStyle = '';
-                    removeClass([cell.querySelector('.' + cls.CARD_WRAPPER_CLASS)], cls.MULTI_CARD_WRAPPER);
+                    removeClass([cell.querySelector('.' + cls.CARD_WRAPPER_CLASS)], cls.MULTI_CARD_WRAPPER_CLASS);
                 }
             });
             this.removeElement(this.dragObj.targetCloneMulti);

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.4.50 (2020-02-18)
+## 17.4.51 (2020-02-25)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#151574` - The issue with adding custom classes using the `cssClass` property has been resolved.
+
+## 17.4.49 (2020-02-11)
 
 ### Tooltip
 

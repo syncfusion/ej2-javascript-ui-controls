@@ -323,28 +323,30 @@ export class SelectTool extends ToolBase {
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         //rubber band selection
-        if (Point.equals(this.currentPosition, this.prevPosition) === false && this.inAction) {
-            let region: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
-            this.commandHandler.doRubberBandSelection(region);
-        } else {
-            //single selection
-            let arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
-            if (!this.commandHandler.hasSelection() || !args.info || !args.info.ctrlKey) {
-                this.commandHandler.clearSelection(args.source === null ? true : false);
-                if (this.action === 'LabelSelect') {
-                    this.commandHandler.labelSelect(args.source, args.sourceWrapper);
-                } else if (args.source) {
-                    this.commandHandler.selectObjects([args.source], false, arrayNodes);
-                }
+        if (!this.commandHandler.isUserHandle(this.currentPosition)) {
+            if (Point.equals(this.currentPosition, this.prevPosition) === false && this.inAction) {
+                let region: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
+                this.commandHandler.doRubberBandSelection(region);
             } else {
-                //handling multiple selection
-                if (args && args.source) {
-                    if (!this.commandHandler.isSelected(args.source)) {
-                        this.commandHandler.selectObjects([args.source], true);
-                    } else {
-                        if (args.clickCount === 1) {
-                            this.commandHandler.unSelect(args.source);
-                            this.commandHandler.updateBlazorSelector();
+                //single selection
+                let arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
+                if (!this.commandHandler.hasSelection() || !args.info || !args.info.ctrlKey) {
+                    this.commandHandler.clearSelection(args.source === null ? true : false);
+                    if (this.action === 'LabelSelect') {
+                        this.commandHandler.labelSelect(args.source, args.sourceWrapper);
+                    } else if (args.source) {
+                        this.commandHandler.selectObjects([args.source], false, arrayNodes);
+                    }
+                } else {
+                    //handling multiple selection
+                    if (args && args.source) {
+                        if (!this.commandHandler.isSelected(args.source)) {
+                            this.commandHandler.selectObjects([args.source], true);
+                        } else {
+                            if (args.clickCount === 1) {
+                                this.commandHandler.unSelect(args.source);
+                                this.commandHandler.updateBlazorSelector();
+                            }
                         }
                     }
                 }

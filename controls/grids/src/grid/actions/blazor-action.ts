@@ -1,5 +1,5 @@
-import { IGrid, ActionArgs, NotifyArgs } from '../base/interface';
-import { Observer, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { IGrid, ActionArgs, NotifyArgs, VirtualInfo } from '../base/interface';
+import { Observer, isBlazor, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
@@ -9,6 +9,8 @@ import { CellType, AggregateType } from '../base/enum';
 import { ReturnType } from '../base/type';
 import { AggregateRow } from '../models/aggregate';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
+import { SortSettingsModel, GroupSettingsModel } from '../base/grid-model';
 
 export const gridObserver: Observer = new Observer();
 
@@ -21,6 +23,8 @@ export class BlazorAction {
 
     private aria: AriaService = new AriaService();
     private actionArgs: ActionArgs = {};
+    private isInitial: boolean = true;
+    private virtualContentModule: VirtualContentRenderer;
 
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -38,6 +42,10 @@ export class BlazorAction {
         this.parent.on('offset', this.setServerOffSet, this);
         this.parent.on('updateaction', this.modelChanged, this);
         this.parent.on(events.modelChanged, this.modelChanged, this);
+        this.parent.on('group-expand-collapse', this.onGroupClick, this);
+        this.parent.on('setcolumnstyles', this.setColVTableWidthAndTranslate, this);
+        this.parent.on('update-virtual-view', this.updateVirtualViewChanges, this);
+        this.parent.on('refresh-virtual-indices', this.refreshVirtualIndices, this);
      }
 
     public removeEventListener(): void {
@@ -51,6 +59,10 @@ export class BlazorAction {
         this.parent.off('offset', this.setServerOffSet);
         this.parent.off('updateaction', this.modelChanged);
         this.parent.off(events.modelChanged, this.modelChanged);
+        this.parent.off('group-expand-collapse', this.onGroupClick);
+        this.parent.off('setcolumnstyles', this.setColVTableWidthAndTranslate);
+        this.parent.off('update-virtual-view', this.updateVirtualViewChanges);
+        this.parent.off('refresh-virtual-indices', this.refreshVirtualIndices);
      }
 
     public getModuleName(): string { return 'blazor'; };
@@ -211,7 +223,83 @@ export class BlazorAction {
         }
         this.parent.renderModule.dataManagerSuccess(args, <NotifyArgs>this.actionArgs);
         this.parent.getMediaColumns();
+        if (this.parent.enableVirtualization) {
+            this.wireEvents();
+            this.virtualContentModule = (<VirtualContentRenderer>this.parent.contentModule);
+            if (!this.isInitial) {
+                this.setContentVTableTranslate();
+            }
+            this.isInitial = false;
+            this.setColVTableWidthAndTranslate();
+        }
         this.actionArgs = this.parent.currentAction = {};
+    }
+
+    public setColVTableWidthAndTranslate(): void {
+        if (this.parent.enableColumnVirtualization && (JSON.stringify(this.virtualContentModule.currentInfo.columnIndexes) !==
+        JSON.stringify(this.virtualContentModule.prevInfo.columnIndexes))) {
+            let translateX: number = this.virtualContentModule.getColumnOffset(this.virtualContentModule.startColIndex - 1);
+            let width: string =  this.virtualContentModule.getColumnOffset(this.virtualContentModule.endColIndex - 1) - translateX + '';
+            this.virtualContentModule.header.virtualEle.setWrapperWidth(width);
+            this.virtualContentModule.header.virtualEle.adjustTable(translateX, 0);
+            this.parent.getContentTable().parentElement.style.width = width + 'px';
+            this.setContentVTableTranslate();
+        }
+    }
+
+    private setContentVTableTranslate(): void {
+        let translateX: number = 0;
+        if (this.parent.enableColumnVirtualization) {
+            translateX = this.virtualContentModule.getColumnOffset(this.virtualContentModule.startColIndex - 1);
+        }
+        let translateY: number = this.virtualContentModule.startIndex === 0 ? 0 :
+                                ((this.virtualContentModule.startIndex + 1) * this.parent.getRowHeight());
+        this.parent.getContentTable().parentElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
+    }
+
+    private wireEvents(): void {
+        EventHandler.add(this.parent.element, 'wheel', this.wheelScrollHandler, this);
+        EventHandler.add(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler, this);
+    }
+
+    private unWireEvents(): void {
+        EventHandler.remove(this.parent.element, 'wheel', this.wheelScrollHandler);
+        EventHandler.remove(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler);
+    }
+
+    private wheelScrollHandler(): void {
+        this.parent.isWheelScrolled = true;
+    }
+
+    private mouseLeaveHandler(): void {
+        this.parent.isWheelScrolled = false;
+    }
+
+    private updateVirtualViewChanges(args: {previousColIndexes: number[], preStartIndex: number,
+        pStartIndex: number, viewInfo: VirtualInfo}): void {
+        let adaptor: string = 'interopAdaptor';
+        let invokeMethodAsync: string = 'invokeMethodAsync';
+        if (this.parent.enableColumnVirtualization &&
+            (JSON.stringify(args.previousColIndexes) !== JSON.stringify(args.viewInfo.columnIndexes))) {
+                this.parent[adaptor][invokeMethodAsync]('InvokeStateHasChanged', args.viewInfo.columnIndexes[0],
+                                                        args.viewInfo.columnIndexes[args.viewInfo.columnIndexes.length - 1]);
+                this.parent.headerModule.refreshUI();
+        }
+        if (args.preStartIndex !== args.pStartIndex) {
+            this.parent[adaptor][invokeMethodAsync]('SetVirtualInfofromView', { StartIndex: args.viewInfo.startIndex,
+                EndIndex: args.viewInfo.endIndex, StartColumnIndex: args.viewInfo.columnIndexes[0],
+                EndColumnIndex: args.viewInfo.columnIndexes[args.viewInfo.columnIndexes.length - 1]});
+        }
+    }
+
+    private refreshVirtualIndices(args: {viewInfo: VirtualInfo}): void {
+        if (this.parent.pageSettings.currentPage === args.viewInfo.currentPage) {
+            let adaptor: string = 'interopAdaptor';
+            let invokeMethodAsync: string = 'invokeMethodAsync';
+            this.parent[adaptor][invokeMethodAsync]('RefreshVirtualIndices');
+        } else {
+            this.parent.pageSettings.currentPage = args.viewInfo.currentPage;
+        }
     }
 
     private setClientOffSet(args: ReturnType, index: number): void {
@@ -231,6 +319,52 @@ export class BlazorAction {
         DataUtil.serverTimezoneOffset = serverTimeZone;
     }
 
+    public onGroupClick(args: object): void {
+        let adaptor: string = 'interopAdaptor'; let content: string = 'contentModule';
+        let invokeMethodAsync: string = 'invokeMethodAsync';
+        this.parent[adaptor][invokeMethodAsync]('OnGroupExpandClick', args).then(() => {
+            this.parent[content].rowElements = [].slice.call(this.parent.getContentTable().querySelectorAll('tr.e-row[data-uid]'));
+        });
+    }
+
+    public setPersistData(args: Object): void {
+        let gObj: IGrid = this.parent;
+        gObj.mergePersistGridData(args);
+        let bulkChanges: string = 'bulkChanges';
+        if (gObj[bulkChanges].columns) {
+            delete gObj[bulkChanges].columns;
+        }
+        gObj.headerModule.refreshUI();
+        gObj.notify('persist-data-changed', {});
+        gObj.notify(events.columnVisibilityChanged, gObj.getColumns());
+    };
+
+    public resetPersistData(args: string): void {
+        let gObj: IGrid = this.parent;
+        let bulkChanges: string = 'bulkChanges';
+        let parseArgs: IGrid = JSON.parse(args);
+        let persistArgs: {filterSettings: Object, groupSettings: GroupSettingsModel, pageSettings: Object, sortSettings: SortSettingsModel,
+            searchSettings: Object, columns: Object} = {filterSettings: parseArgs.filterSettings, groupSettings: parseArgs.groupSettings,
+                                                        pageSettings: parseArgs.pageSettings, sortSettings: parseArgs.sortSettings,
+                                                        searchSettings: parseArgs.searchSettings, columns: parseArgs.columns};
+        if (!persistArgs.sortSettings.columns) {
+            persistArgs.sortSettings.columns = [];
+        }
+        if (!persistArgs.groupSettings.columns) {
+            persistArgs.groupSettings.columns = [];
+        }
+        for (let i: number = 0; i < this.parent.columns.length; i++) {
+            if ((gObj.columns[i] as Column).field in this.parent.groupSettings.columns) {
+                (gObj.columns[i] as Column).visible = true;
+            }
+        }
+        gObj.mergePersistGridData(persistArgs);
+        if (gObj[bulkChanges].columns) {
+            delete gObj[bulkChanges].columns;
+        }
+        gObj.notify('persist-data-changed', {});
+        gObj.setProperties({filterSettings: {columns: []}}, true);
+    }
 
     public dataFailure(args: { result: Object[] }): void {
         this.parent.renderModule.dataManagerFailure(args, <NotifyArgs>this.actionArgs);
@@ -239,5 +373,8 @@ export class BlazorAction {
 
      public destroy(): void {
         this.removeEventListener();
+        if (this.parent.enableVirtualization) {
+            this.unWireEvents();
+        }
      }
 }

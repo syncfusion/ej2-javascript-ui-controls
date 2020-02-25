@@ -1096,7 +1096,7 @@ describe('DateRangePicker', () => {
                 expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-title').textContent.indexOf(months[new Date().getMonth()]) > -1 && daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-title').textContent.indexOf(months[new Date().getMonth() + 1]) > -1).toBe(true);
             });
             it('is icons disabled correctly in successive months?', () => {
-                expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled") && daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")).toBe(true);
+                expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled") && daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")).toBe(false);
             });
             it('Left calendar Date Selection in calendar', () => {
                 let tdCell: HTMLElement = daterangepicker.popupObj.element.querySelectorAll('.e-left-calendar .e-content td')[10];
@@ -1162,7 +1162,7 @@ describe('DateRangePicker', () => {
                 let elements: CalendarElement = getCalendarElement(daterangepicker.popupObj.element);
                 document.querySelector('.e-left-calendar .e-header .e-date-icon-next').dispatchEvent(clickEvent);
                 document.querySelector('.e-left-calendar .e-header .e-date-icon-next').dispatchEvent(clickEvent);
-                expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")).toBe(true);
+                expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")).toBe(false);
             });
             it('range restricted while navigating previous left calendar ?', () => {
                 daterangepicker = createControl({ startDate: new Date("06/06/2017"), endDate: new Date("08/05/2017"), min: new Date("04/05/2017") });
@@ -2007,7 +2007,7 @@ describe('DateRangePicker', () => {
             daterangepicker.element.value = '';
             daterangepicker.destroy();
             daterangepicker = createControl({ startDate: new Date('12/24/2017'), endDate: new Date('1/24/2018') });
-            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled") && daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")).toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled") && daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")).toBe(false);
         });
     });
 
@@ -3058,7 +3058,7 @@ describe('DateRangePicker', () => {
         });
         it('min and max in same month', () => {
             daterangepicker = createControl({ min: new Date('05/10/2017'), max: new Date('05/24/2017') });
-            expect(daterangepicker.popupObj.element.querySelector('.e-calendar .e-prev').classList.contains('e-disabled') && daterangepicker.popupObj.element.querySelector('.e-calendar .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-calendar .e-prev').classList.contains('e-disabled') && daterangepicker.popupObj.element.querySelector('.e-calendar .e-next').classList.contains('e-disabled')).toBe(false);
             expect(daterangepicker.popupObj.element.querySelectorAll('.e-calendar .e-disabled').length > 0).toBe(true);
         });
         it(' min onproperty change test case ', () => {
@@ -5111,8 +5111,8 @@ describe('DateRangePicker', () => {
             let selectedCell: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-left-calendar td')[10]);
             selectedCell.dispatchEvent(clickEvent);
             expect(daterangepicker.rightCalNextIcon.classList.contains('e-icon-disabled')).toBe(true);
-            expect(daterangepicker.rightCalPrevIcon.classList.contains('e-icon-disabled')).toBe(false);
-            expect(daterangepicker.leftCalNextIcon.classList.contains('e-icon-disabled')).toBe(false);
+            expect(daterangepicker.rightCalPrevIcon.classList.contains('e-icon-disabled')).toBe(true);
+            expect(daterangepicker.leftCalNextIcon.classList.contains('e-icon-disabled')).toBe(true);
         });
     });
     describe('MinDays and MaxDays - Device', () => {
@@ -6469,7 +6469,6 @@ describe('DateRangePicker', () => {
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).click();
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018')
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('May 2018')
-            monthIconDisabled();
             expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
             expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
         });
@@ -6487,7 +6486,6 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('May 2018')
             expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
             expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
-            monthIconDisabled();
         });
         it('navigation to decade view in  left calendar test case ', function () {
             daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2018'), endDate: new Date("2/1/2018") });
@@ -6502,10 +6500,9 @@ describe('DateRangePicker', () => {
             (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
             (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('February 2019')
-            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('March 2019')
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('February 2018')
             expect(+daterangepicker.startDate).toBe(+new Date('1/3/2018'));
             expect(+daterangepicker.endDate).toBe(+new Date('2/1/2018'));
-            monthIconDisabled();
         });
         it('navigation to decade view in  right calendar test case ', function () {
             daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2018'), endDate: new Date("2/1/2018") });
@@ -6519,11 +6516,10 @@ describe('DateRangePicker', () => {
             expect(+daterangepicker.endDate).toBe(+new Date('2/1/2018'));
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[1].nextElementSibling).click();
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[1].nextElementSibling).click();
-            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('February 2019')
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('January 2018')
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('March 2019')
             expect(+daterangepicker.startDate).toBe(+new Date('1/3/2018'));
             expect(+daterangepicker.endDate).toBe(+new Date('2/1/2018'));
-            monthIconDisabled();
         });
         it('Icon disabled in left calendar after drill down test case ', function () {
             daterangepicker = new DateRangePicker({ startDate: new Date('4/3/2018'), endDate: new Date("5/1/2018") });
@@ -6539,13 +6535,12 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-date-icon-next')).dispatchEvent(clickEvent);
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018');
-            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('May 2018')
             expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
             expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
-            monthIconDisabled();
         });
         it('Icon disabled in right calendar after drill down test case ', function () {
             daterangepicker = new DateRangePicker({ startDate: new Date('4/3/2018'), endDate: new Date("5/1/2018") });
@@ -6562,12 +6557,11 @@ describe('DateRangePicker', () => {
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-date-icon-prev')).dispatchEvent(clickEvent);
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('May 2018');
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
-            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('May 2018');
             expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
             expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
-            monthIconDisabled();
         });
 
         it('Left calendar drill down navigation with right calendar in month view test case ', function () {
@@ -6580,7 +6574,7 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('May 2018');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
-            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-date-icon-next')).dispatchEvent(clickEvent);
@@ -6592,8 +6586,8 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-date-icon-prev')).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
-            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
-            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
             expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
@@ -6642,7 +6636,7 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018');
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
-            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-date-icon-prev')).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
@@ -6653,8 +6647,8 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-date-icon-next')).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
-            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
-            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
             expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
@@ -6667,8 +6661,8 @@ describe('DateRangePicker', () => {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
             }
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
-            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
-            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             leftCalendarTitleClick();
             rightCalendarTitleClick();
@@ -6717,7 +6711,7 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
-            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
         });
 
         it('right  calendar drill down with min and max test case ', function () {
@@ -6739,10 +6733,10 @@ describe('DateRangePicker', () => {
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[1]).click();
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('February 2018');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('March 2018');
-            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
-            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-start-date').children[0].textContent).toBe('4');
             expect(document.querySelector('.e-end-date').children[0].textContent).toBe('28');
         });
@@ -6855,7 +6849,7 @@ describe('DateRangePicker', () => {
             rightCalendarTitleClick();
             (<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling) &&
                 (<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling).click();
-            expect(document.querySelectorAll('.e-start-date').length).toBe(1)
+            expect(document.querySelectorAll('.e-start-date').length).toBe(2)
             expect((<HTMLElement>document.querySelector('.e-start-date')).textContent).toBe('' + new Date().getDate())
         });
         // it('Right calendar Date Selection in calendar with drilldown', () => {
@@ -7590,22 +7584,20 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
-            navIconDisabled();
             leftCalendarTitleClick();
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
             expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
-            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
-            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020');
-            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[2]).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-year')).toBe(true);
             expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-year')).toBe(true);
             expect(document.querySelector('.e-start-label').innerHTML).toBe('Mar 1, 2019');
-            expect(document.querySelector('.e-end-label').innerHTML).toBe('Mar 31, 2020');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Mar 31, 2019');
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
@@ -7613,7 +7605,7 @@ describe('DateRangePicker', () => {
             rightCalendarTitleClick();
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).click();
-            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(2);
         });
         it('start as Decade and Depth as Year',() =>{
             daterangepicker=createControl({value:[new Date('1/8/2019'), new Date('1/10/2039')],start:'Decade',depth:'Year'});
@@ -7622,13 +7614,12 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2030 - 2039');
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).click();
-            navIconDisabled();
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);;
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).dispatchEvent(clickEvent);;
             expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-year')).toBe(true);
             expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-year')).toBe(true);
             expect(document.querySelector('.e-start-label').innerHTML).toBe('Mar 1, 2011');
-            expect(document.querySelector('.e-end-label').innerHTML).toBe('Jun 30, 2012');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Jun 30, 2039');
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
@@ -7640,7 +7631,6 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.depth).toBe('Decade');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020 - 2029');
-            navIconDisabled();
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[2]).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-decade')).toBe(true);
@@ -7692,13 +7682,12 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2030 - 2039');
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).click();
-            navIconDisabled();
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-year')).toBe(true);
             expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-year')).toBe(true);
             expect(document.querySelector('.e-start-label').innerHTML).toBe('Mar 1, 2011');
-            expect(document.querySelector('.e-end-label').innerHTML).toBe('Jun 30, 2012');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Jun 30, 2039');
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
@@ -7764,7 +7753,7 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.depth).toBe('Month');
             rightCalendarTitleClick();
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).click();
-            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('May 2011');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('January 2011');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('June 2011');
             daterangepicker.start = 'Year';
             daterangepicker.depth = 'Year';
@@ -7776,7 +7765,7 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.depth).toBe('Year');
             rightCalendarTitleClick();
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).click();
-            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2013');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2011');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2014');  
         })
         it('start and Depth as year with mindays and maxdays', () => {
@@ -7800,7 +7789,6 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
             expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(false);
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[5]).dispatchEvent(clickEvent);
@@ -7810,14 +7798,12 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('Jun')
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
             expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-next')).dispatchEvent(clickEvent);
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('Jun')
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
@@ -7829,7 +7815,6 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.depth).toBe('Decade');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020 - 2029');
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
             expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(false);
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[5]).dispatchEvent(clickEvent);
@@ -7839,14 +7824,12 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
             expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-next')).dispatchEvent(clickEvent);
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
@@ -7858,7 +7841,6 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.depth).toBe('Decade');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020 - 2029');
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(true);
             expect((<HTMLElement>document.querySelector('.e-end-date')).classList.contains('e-range-hover')).toBe(true);
             (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[5]).dispatchEvent(clickEvent);
@@ -7868,13 +7850,11 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(false);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
             expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(false);
             expect((<HTMLElement>document.querySelector('.e-end-date')).innerText).toBe('2014');
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-next')).dispatchEvent(clickEvent);
-            navIconDisabled();
             expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
             expect((<HTMLElement>document.querySelector('.e-end-date')).innerText).toBe('2014')
             expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(false);
@@ -8265,7 +8245,7 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "February 2019").toBe(true);
             expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "March 2019").toBe(true);
             expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
             expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
             expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
             daterangepicker.navigateTo("Year", new Date("2/3/2025"));
@@ -8437,8 +8417,8 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "January 1900").toBe(true);
             expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "February 1900").toBe(true);
             expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
-            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
-            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
             expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
             daterangepicker.navigateTo("Year", new Date("2/3/1800"));
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "1900").toBe(true);
@@ -8470,8 +8450,8 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "November 2099").toBe(true);
             expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "December 2099").toBe(true);
             expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
-            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
             expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
             daterangepicker.navigateTo("Year", new Date("2/3/3000"));
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "2098").toBe(true);
@@ -8563,8 +8543,8 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "January 1900").toBe(true);
             expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "February 1900").toBe(true);
             expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
-            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
-            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
             expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
             daterangepicker.navigateTo("Year", new Date("2/3/1800"));
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "1900").toBe(true);
@@ -8593,8 +8573,8 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "November 2099").toBe(true);
             expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "December 2099").toBe(true);
             expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
-            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
             expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
             daterangepicker.navigateTo("Year", new Date("2/3/3000"));
             expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "2098").toBe(true);
@@ -8812,6 +8792,139 @@ describe('DateRangePicker', () => {
             dateRangePicker.appendTo('#date');
             dateRangePicker.element.parentElement.querySelectorAll('.e-clear-icon')[0].click();
             expect(dateRangePicker.inputElement.value === "").toBe(true);
+        });
+    });
+    describe('Consecutive month displaying', () => {
+        function leftCalendarTitleClick(): void {
+            (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).click();
+        }
+        function rightCalendarTitleClick(): void {
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).click();
+        }
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('navigation functionality in left calendar', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('4/3/2018'), endDate: new Date("5/1/2018") });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            leftCalendarTitleClick();
+            expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
+            expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
+            (<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018')
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('May 2018')
+            expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
+            expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
+        });
+        it('navigation functionality in right calendar', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('4/3/2018'), endDate: new Date("5/1/2018") });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            rightCalendarTitleClick();
+            expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
+            expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
+            (<HTMLElement>document.querySelectorAll('.e-focused-date')[1].nextElementSibling).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('June 2018');
+            expect(+daterangepicker.startDate).toBe(+new Date('4/3/2018'));
+            expect(+daterangepicker.endDate).toBe(+new Date('5/1/2018'));
+        });
+        it('navigating to decade view in left calendar', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2018'), endDate: new Date("2/1/2018") });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            leftCalendarTitleClick();
+            leftCalendarTitleClick();
+            expect(+daterangepicker.startDate).toBe(+new Date('1/3/2018'));
+            expect(+daterangepicker.endDate).toBe(+new Date('2/1/2018'));
+            (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
+            (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('February 2019')
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('February 2018')
+            expect(+daterangepicker.startDate).toBe(+new Date('1/3/2018'));
+            expect(+daterangepicker.endDate).toBe(+new Date('2/1/2018'));
+        });
+        it('navigating to decade view in right calendar', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2018'), endDate: new Date("2/1/2018") });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            rightCalendarTitleClick();
+            rightCalendarTitleClick();
+            expect(+daterangepicker.startDate).toBe(+new Date('1/3/2018'));
+            expect(+daterangepicker.endDate).toBe(+new Date('2/1/2018'));
+            (<HTMLElement>document.querySelectorAll('.e-focused-date')[1].nextElementSibling).click();
+            (<HTMLElement>document.querySelectorAll('.e-focused-date')[1].nextElementSibling).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('January 2018')
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('March 2019')
+            expect(+daterangepicker.startDate).toBe(+new Date('1/3/2018'));
+            expect(+daterangepicker.endDate).toBe(+new Date('2/1/2018'));
+        });
+        it('drill down left calendar with min and max test case ', function () {
+            daterangepicker = new DateRangePicker({
+                min: new Date('2/3/2018'),
+                max: new Date('3/29/2018'),
+                startDate: new Date('2/4/2018'),
+                endDate: new Date('3/28/2018')
+            });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            leftCalendarTitleClick();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018')
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('March 2018')
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('March 2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('March 2018');
+        });
+
+        it('drill down right calendar with min and max test case ', function () {
+            daterangepicker = new DateRangePicker({
+                min: new Date('2/3/2018'),
+                max: new Date('3/29/2018'),
+                startDate: new Date('2/4/2018'),
+                endDate: new Date('3/28/2018')
+            });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            rightCalendarTitleClick();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('February 2018')
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2018')
+            expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            (<HTMLElement>document.querySelectorAll('.e-focused-date')[1]).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('February 2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('March 2018');
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
+            expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
+            expect(document.querySelector('.e-start-date').children[0].textContent).toBe('4');
+            expect(document.querySelector('.e-end-date').children[0].textContent).toBe('28');
         });
     });
 });

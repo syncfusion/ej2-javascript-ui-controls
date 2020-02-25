@@ -576,6 +576,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private renderContent(target?: HTMLElement): void {
         let tooltipContent: HTMLElement = this.tooltipEle.querySelector('.' + CONTENT) as HTMLElement;
+        if (this.cssClass) {
+            addClass([this.tooltipEle], this.cssClass.split(' '));
+        }
         if (target && !isNullOrUndefined(target.getAttribute('title'))) {
             target.setAttribute('data-content', target.getAttribute('title'));
             target.removeAttribute('title');
@@ -718,9 +721,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         }, styles: 'width:' +
                             formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
                     });
-                    if (this.cssClass) {
-                        addClass([this.tooltipEle], this.cssClass.split(' '));
-                    }
                     this.beforeRenderBlazor(target, this);
                 }
                 if (!isBlazorTooltipRendered) {

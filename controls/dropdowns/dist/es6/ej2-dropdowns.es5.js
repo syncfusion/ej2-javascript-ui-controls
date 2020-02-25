@@ -1528,6 +1528,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     var defaultAttr = ['title', 'id', 'placeholder', 'aria-placeholder',
                         'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck', 'minlength', 'maxlength'];
                     var validateAttr = ['name', 'required'];
+                    if (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox') {
+                        defaultAttr.push('tabindex');
+                    }
                     if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                     }
@@ -2406,7 +2409,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 selectedElement.textContent = this.text;
                 selectedElement.setAttribute('value', this.value.toString());
             }
-            else {
+            else if (!this.isServerBlazor) {
                 this.hiddenElement.innerHTML = '<option selected>' + this.text + '</option>';
                 var selectedElement = this.hiddenElement.querySelector('option');
                 selectedElement.setAttribute('value', this.value.toString());
@@ -6727,10 +6730,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                         _this.selectAllEventData = [];
                         _this.selectAllEventEle = [];
                     }
-                    if (isClearAll) {
+                    if (isClearAll && (length === 1 || length === null)) {
                         _this.clearAllCallback(eve, isClearAll);
                     }
-                    if (_this.isSelectAll && isBlazor() && _this.isServerRendered && (_this.value && _this.value.length === 0)) {
+                    if (isBlazor() && _this.isServerRendered && (_this.value && _this.value.length === 0)) {
                         _this.updatedataValueItems(eve);
                     }
                 }
@@ -7509,8 +7512,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.remoteCustomValue = false;
             this.addValue(value, text, e);
         }
-        if (this.isSelectAll && isBlazor() && this.isServerRendered && this.value && this.list &&
-            this.value.length === this.list.querySelectorAll('li').length) {
+        if (isBlazor() && this.isServerRendered && this.value && this.list &&
+            this.value.length === this.list.querySelectorAll('li').length || this.value.length === this.maximumSelectionLength) {
             this.updatedataValueItems(e);
             this.checkPlaceholderSize();
         }

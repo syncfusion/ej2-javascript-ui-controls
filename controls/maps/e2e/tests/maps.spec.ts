@@ -2407,7 +2407,7 @@ describe('Checking with default Selection', function () {
         browser.sleep(2000);
         legend = element(by.id("legendPosition"));
         legend.all(by.tagName('option')).then((options: any) => {
-            options[2].click();
+            options[3].click();
         });
         browser.actions().click(element(By.id('container_Legend_Shape_Index_0'))).perform();
         browser.compareScreen(element(By.id('container')), 'ProgramSelection_Default_Right_Legend1');
@@ -2487,7 +2487,7 @@ describe('Checking with default Selection', function () {
         });
         legend = element(by.id("legendPosition"));
         legend.all(by.tagName('option')).then((options: any) => {
-            options[2].click();
+            options[3].click();
         });
         browser.actions().click(element(By.id('container_Legend_Index_0'))).perform();
         browser.compareScreen(element(By.id('container')), 'ProgramSelection_Interactive_Right_Legend1');

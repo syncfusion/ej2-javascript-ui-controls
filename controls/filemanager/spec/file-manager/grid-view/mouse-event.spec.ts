@@ -52,7 +52,7 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -92,7 +92,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickEmpty)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(feObj.activeModule).toBe('detailsview');
                 (<HTMLElement>(<any>feObj.detailsviewModule.gridObj.contentModule).contentPanel.firstElementChild).click();
@@ -126,7 +125,6 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(document.getElementById('file_grid').querySelector('.e-spinner-pane').classList.contains('e-spin-show')).toEqual(false);
                 expect(document.getElementById('file_grid').querySelector('.e-spinner-pane').classList.contains('e-spin-hide')).toEqual(true);
@@ -141,7 +139,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data3)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     let li3: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                     expect((li[1] as Element).classList.contains('e-active')).toBe(false);
@@ -150,7 +147,6 @@ describe('FileManager control Grid view', () => {
                     // create new folder
                     let items: any = document.getElementsByClassName('e-toolbar-item');
                     items[0].click();
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         expect((document.getElementById('file_dialog').querySelector('#newname') as any).value).toEqual("");
                         let ele: HTMLInputElement = document.getElementById('file_dialog').querySelector('#newname') as HTMLInputElement;
@@ -161,13 +157,11 @@ describe('FileManager control Grid view', () => {
                             status: 200,
                             responseText: JSON.stringify(data4)
                         });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         this.request = jasmine.Ajax.requests.mostRecent();
                         this.request.respondWith({
                             status: 200,
                             responseText: JSON.stringify(data4)
                         });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(function () {
                             let li1: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                             expect(li1.length).toEqual(10);
@@ -179,7 +173,6 @@ describe('FileManager control Grid view', () => {
                                 status: 200,
                                 responseText: JSON.stringify(data1)
                             });
-                            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                             setTimeout(function () {
                                 expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
                                 done();
@@ -191,7 +184,6 @@ describe('FileManager control Grid view', () => {
         });
         it('mouse click on Rename button', (done: Function) => {
             //rename item operation
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
                 feObj.detailsviewModule.gridObj.selectRows([0]);
                 feObj.detailsviewModule.gridObj.dataBind();
@@ -207,7 +199,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(rename)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                     this.request = jasmine.Ajax.requests.mostRecent();
                     this.request.respondWith({
                         status: 200,
@@ -219,7 +210,6 @@ describe('FileManager control Grid view', () => {
                         feObj.detailsviewModule.gridObj.selectRows([2]);
                         //rename with exisiting name
                         items[0].click();
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                         setTimeout(function () {
                             let val: any = document.getElementById('file_dialog').querySelector('#rename');
                             expect((val as any).value).toEqual("My Folder");
@@ -230,14 +220,12 @@ describe('FileManager control Grid view', () => {
                                 status: 200,
                                 responseText: JSON.stringify(renameExist)
                             });
-                            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                             setTimeout(function () {
                                 expect(document.getElementById('file_dialog').querySelector('.e-dlg-content').textContent).toBe("Cannot create a file when that file already exists");
                                 (feObj as any).dialogObj.hide();
                                 feObj.detailsviewModule.gridObj.selectRows([4]);
                                 //renaming the extension
                                 items[0].click();
-                                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                                 setTimeout(function () {
                                     let val: any = document.getElementById('file_dialog').querySelector('#rename');
                                     expect((val as any).value).toEqual("1.png");
@@ -248,7 +236,6 @@ describe('FileManager control Grid view', () => {
                                         (document.getElementById('file_extn_dialog').querySelectorAll('.e-btn')[2] as HTMLElement).click();
                                         setTimeout(function () {
                                             items[0].click();
-                                            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                                             setTimeout(function () {
                                                 let val: any = document.getElementById('file_dialog').querySelector('#rename');
                                                 expect((val as any).value).toEqual("1.png");
@@ -264,7 +251,6 @@ describe('FileManager control Grid view', () => {
                                                     });
                                                     setTimeout(function () {
                                                         items[0].click();
-                                                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                                                         setTimeout(function () {
                                                             let val: any = document.getElementById('file_dialog').querySelector('#rename');
                                                             expect((val as any).value).toEqual("1.png");
@@ -286,7 +272,6 @@ describe('FileManager control Grid view', () => {
         });
         it('mouse click on tree node rename', (done: Function) => {
             //rename operation
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
                 var treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
@@ -298,7 +283,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data3)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     mouseEventArgs.target = li[4].querySelector('.e-fullrow');
                     treeObj.touchClickObj.tap(tapEvent);
@@ -308,7 +292,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(data3)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     items[0].click();
                     setTimeout(function () {
                         let inputValue: any = document.getElementById('file_dialog').querySelector('#rename');
@@ -327,7 +310,6 @@ describe('FileManager control Grid view', () => {
         });
         it('File name validation in rename', (done: Function) => {
             //rename operation
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
                 feObj.detailsviewModule.gridObj.selectRows([0]);
                 feObj.detailsviewModule.gridObj.dataBind();
@@ -374,7 +356,6 @@ describe('FileManager control Grid view', () => {
 
         it('double click on folder', (done: Function) => {
             //double click
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
                 let obj = (feObj.detailsviewModule.gridObj as any);
                 (obj as any).dblClickHandler({ target: obj.element.querySelectorAll('.e-row')[3].firstElementChild });
@@ -383,7 +364,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data12)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     var gridFiles = document.getElementById("file_grid").querySelectorAll('.e-row');
                     expect(gridFiles.length).toBe(9);
@@ -424,7 +404,6 @@ describe('FileManager control Grid view', () => {
         });
         it('check box selection and allow multi selection', (done: Function) => {
             //check box render
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
                 let obj = (feObj.detailsviewModule.gridObj as any);
                 expect(obj.getHeaderContent().querySelectorAll('.e-checkselectall').length).toBe(1);
@@ -446,7 +425,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data12)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 feObj.dataBind();
                 (rows[0].querySelector('.e-frame') as HTMLElement).click();
                 (rows[2].querySelector('.e-frame') as HTMLElement).click();
@@ -457,7 +435,6 @@ describe('FileManager control Grid view', () => {
         });
         it('check box selection and allow multi selection false', (done: Function) => {
             //check box render
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
                 let obj = (feObj.detailsviewModule.gridObj as any);
                 expect(obj.getHeaderContent().querySelectorAll('.e-checkselectall').length).toBe(1);
@@ -476,7 +453,6 @@ describe('FileManager control Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data12)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(() => {
                     expect(JSON.parse(JSON.stringify(feObj.detailsviewModule.gridObj.columns[0])).type).not.toBe('checkbox');
                     (feObj.detailsviewModule.gridObj.getRows()[0].querySelector('.e-rowcell') as HTMLElement).click();
@@ -563,7 +539,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(data13)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         let rows2 = document.getElementById('file_grid').querySelectorAll('.e-row');
                         expect(rows2.length).toEqual(6);
@@ -618,7 +593,6 @@ describe('FileManager control Grid view', () => {
                         status: 200,
                         responseText: JSON.stringify(data1)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         let li1: Element[] = <Element[] & NodeListOf<HTMLLIElement>>largeIcons.querySelectorAll('li');
                         expect(li1.length).toBe(5);
@@ -662,7 +636,7 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(data5)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 100;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
 
         });
         afterEach((): void => {
@@ -673,7 +647,6 @@ describe('FileManager control Grid view', () => {
         });
 
         it('columnResizing testing', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 100;
             expect(feObj.detailsViewSettings.columnResizing).toEqual(true);
             expect(feObj.detailsViewSettings.columns.length).toEqual(4);
             expect((feObj.detailsViewSettings.columns[0] as any).headerTextAlign).toEqual("Left");
@@ -718,7 +691,7 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -777,7 +750,7 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -825,7 +798,6 @@ describe('FileManager control Grid view', () => {
             expect(li1.querySelector('.e-fe-text').textContent).toBe('Documents');
             expect(li1.classList.contains('e-active')).toBe(true);
             done();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
         });
     });
 });
@@ -866,11 +838,14 @@ describe('Default functionality testing', () => {
             status: 200,
             responseText: JSON.stringify(data1)
         });
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
     });
     afterEach((): void => {
         jasmine.Ajax.uninstall();
         if (feObj) feObj.destroy();
         ele.remove();
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
     });
     // it('Get details operation on tree nodes', (done: Function) => {
     //     var treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
@@ -906,7 +881,6 @@ describe('Default functionality testing', () => {
                 status: 200,
                 responseText: JSON.stringify(data7)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
             setTimeout(function () {
                 let activeLi: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                 expect(activeLi[0].querySelectorAll('[data-uid="filecontent/employees/documents/"]').length).toBe(0);

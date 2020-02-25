@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.4.50 (2020-02-18)
+## 17.4.40 (2019-12-24)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Performance issue with true type font is fixed.
+
+## 17.4.39 (2019-12-17)
 
 ### Pdf Export
 

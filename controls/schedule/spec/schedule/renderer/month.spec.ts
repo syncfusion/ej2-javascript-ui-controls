@@ -939,7 +939,7 @@ describe('Schedule Month view', () => {
             expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(4);
             let blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
             expect(blockEvent.offsetWidth).toEqual(70);
-            expect(blockEvent.offsetHeight).toEqual(58);
+            expect(blockEvent.offsetHeight).toEqual(57);
         });
 
         it('add event', (done: Function) => {

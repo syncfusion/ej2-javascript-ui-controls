@@ -646,7 +646,7 @@ describe('MultiSelect module', () => {
             editorObj.value = ['game1'];
             editorObj.dataBind();
             expect(editorObj.value).toEqual(['game1']);
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
@@ -702,7 +702,7 @@ describe('MultiSelect module', () => {
             editorObj.value = ['game1'];
             editorObj.dataBind();
             expect(editorObj.value).toEqual(['game1']);
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
@@ -758,7 +758,7 @@ describe('MultiSelect module', () => {
             editorObj.value = ['game1'];
             editorObj.dataBind();
             expect(editorObj.value).toEqual(['game1']);
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
@@ -814,7 +814,7 @@ describe('MultiSelect module', () => {
             editorObj.value = ['game1'];
             editorObj.dataBind();
             expect(editorObj.value).toEqual(['game1']);
-            expect(valueEle.innerHTML).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('game1');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
@@ -853,11 +853,11 @@ describe('MultiSelect module', () => {
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
             expect(editorObj.value).toEqual(['game3']);
-            expect(valueEle.innerHTML).toEqual('Cricket');
+            expect(valueEle.innerHTML).toEqual('game3');
             editorObj.emptyText = 'Enter some text';
             editorObj.dataBind();
             expect(editorObj.value).toEqual(['game3']);
-            expect(valueEle.innerHTML).toEqual('Cricket');
+            expect(valueEle.innerHTML).toEqual('game3');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
@@ -870,7 +870,7 @@ describe('MultiSelect module', () => {
             editorObj.value = ['game7'];
             editorObj.dataBind();
             expect(editorObj.value).toEqual(['game7']);
-            expect(valueEle.innerHTML).toEqual('Tennis');
+            expect(valueEle.innerHTML).toEqual('game7');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
@@ -1068,6 +1068,7 @@ describe('MultiSelect module', () => {
         });
         it('With Fields - String - Local Data - Array of Object', (done: Function) => {
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'MultiSelect',
                 mode: 'Inline',
                 value: ['game1', 'game2'],
@@ -1098,6 +1099,7 @@ describe('MultiSelect module', () => {
         });
         it('With Fields - String - Local Data - Array of Complex Object', (done: Function) => {
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'MultiSelect',
                 mode: 'Inline',
                 value: ['AU', 'BM'],
@@ -1113,6 +1115,7 @@ describe('MultiSelect module', () => {
         });
         it('With Fields - String - Remote Data', (done: Function) => {
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'MultiSelect',
                 mode: 'Inline',
                 value: ['ALFKI', 'ANATR'],
@@ -1144,6 +1147,7 @@ describe('MultiSelect module', () => {
                 }
             });
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'MultiSelect',
                 mode: 'Inline',
                 locale: 'fr-BE',
@@ -1184,6 +1188,7 @@ describe('MultiSelect module', () => {
         });
         it('With Fields - Number - Local Data - Array of Object', (done: Function) => {
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'MultiSelect',
                 mode: 'Inline',
                 value: [2, 3],
@@ -1214,6 +1219,7 @@ describe('MultiSelect module', () => {
         });
         it('With Fields - Number - Local Data - Array of Complex Object', (done: Function) => {
             editorObj = renderEditor({
+                textOption: 'Always',
                 type: 'MultiSelect',
                 mode: 'Inline',
                 value: [12, 13],

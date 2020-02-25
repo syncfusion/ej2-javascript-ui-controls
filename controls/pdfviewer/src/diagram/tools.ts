@@ -163,7 +163,7 @@ export class ToolBase {
         let height: number = (shape instanceof TextElement) ? shape.actualSize.height : shape.wrapper.bounds.height;
         // tslint:disable-next-line
         let obj: any = shape;
-        if (!shape.annotName) {
+        if (!shape.annotName && !shape.shapeAnnotationType) {
             if (shape as SelectorModel) {
                 // tslint:disable-next-line
                 obj = (shape as any).annotations[0];
@@ -1423,28 +1423,30 @@ export class PolygonDrawingTool extends ToolBase {
                             this.commandHandler.remove(this.drawingObject);
                             this.commandHandler.select([cobject.id], currentSelector);
                             let drawingObject: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
-                            // tslint:disable-next-line:max-line-length
-                            if (this.commandHandler.enableShapeAnnotation && (isNullOrUndefined(drawingObject.measureType) || drawingObject.measureType === '')) {
-                                this.commandHandler.annotation.shapeAnnotationModule.renderShapeAnnotations(drawingObject, drawingObject.pageIndex);
-                            }
-                            // tslint:disable-next-line:max-line-length
-                            if (this.commandHandler.enableMeasureAnnotation && (drawingObject.measureType === 'Area' || drawingObject.measureType === 'Volume')) {
-                                if (drawingObject.measureType === 'Area') {
-                                    // tslint:disable-next-line:max-line-length
-                                    drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateArea(drawingObject.vertexPoints);
-                                    this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
-                                } else if (drawingObject.measureType === 'Volume') {
-                                    // tslint:disable-next-line:max-line-length
-                                    drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateVolume(drawingObject.vertexPoints);
-                                    this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
-                                }
-                                if (drawingObject.enableShapeLabel) {
-                                    drawingObject.labelContent = drawingObject.notes;
-                                    // tslint:disable-next-line:max-line-length
-                                    this.commandHandler.nodePropertyChange(drawingObject, { vertexPoints: drawingObject.vertexPoints, notes: drawingObject.notes });
+                            if (drawingObject) {
+                                // tslint:disable-next-line:max-line-length
+                                if (this.commandHandler.enableShapeAnnotation && (isNullOrUndefined(drawingObject.measureType) || drawingObject.measureType === '')) {
+                                    this.commandHandler.annotation.shapeAnnotationModule.renderShapeAnnotations(drawingObject, drawingObject.pageIndex);
                                 }
                                 // tslint:disable-next-line:max-line-length
-                                this.commandHandler.annotation.measureAnnotationModule.renderMeasureShapeAnnotations(drawingObject, drawingObject.pageIndex);
+                                if (this.commandHandler.enableMeasureAnnotation && (drawingObject.measureType === 'Area' || drawingObject.measureType === 'Volume')) {
+                                    if (drawingObject.measureType === 'Area') {
+                                        // tslint:disable-next-line:max-line-length
+                                        drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateArea(drawingObject.vertexPoints);
+                                        this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
+                                    } else if (drawingObject.measureType === 'Volume') {
+                                        // tslint:disable-next-line:max-line-length
+                                        drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateVolume(drawingObject.vertexPoints);
+                                        this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
+                                    }
+                                    if (drawingObject.enableShapeLabel) {
+                                        drawingObject.labelContent = drawingObject.notes;
+                                        // tslint:disable-next-line:max-line-length
+                                        this.commandHandler.nodePropertyChange(drawingObject, { vertexPoints: drawingObject.vertexPoints, notes: drawingObject.notes });
+                                    }
+                                    // tslint:disable-next-line:max-line-length
+                                    this.commandHandler.annotation.measureAnnotationModule.renderMeasureShapeAnnotations(drawingObject, drawingObject.pageIndex);
+                                }
                             }
                         } else {
                             if (!isMouseLeave) {

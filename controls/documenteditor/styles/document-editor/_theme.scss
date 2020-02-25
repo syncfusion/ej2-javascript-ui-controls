@@ -1484,6 +1484,13 @@
     box-shadow: none;
   }
 
+  .e-de-table-options-dlg-div {
+    height: auto;
+    position: relative;
+    margin-bottom: 14px;
+    width: $de-dlg-table-options-content-div;
+  }
+
   @if $skin-name != 'bootstrap4' {
 
     .e-de-style-paragraph-indent-group-button .e-btn.e-active,

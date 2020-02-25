@@ -998,8 +998,11 @@ export class QuickPopups {
         });
     }
 
-    private beforeQuickPopupOpen(target: Element): void {
-        this.updateQuickPopupTemplates();
+    private beforeQuickPopupOpen(target: Element, success?: Boolean): void {
+        if (isBlazor() && this.isQuickInfoTemplates() && isNullOrUndefined(success)) {
+            this.updateQuickPopupTemplates(target);
+            return;
+        }
         let isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
         let popupType: PopupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp: PopupOpenEventArgs = {
@@ -1015,6 +1018,7 @@ export class QuickPopups {
                 }
                 this.resetQuickPopupTemplates();
                 util.removeChildren(this.quickPopup.element);
+                this.isMultipleEventSelect = false;
             } else {
                 let display: string = this.quickPopup.element.style.display;
                 this.quickPopup.element.style.display = 'block';
@@ -1055,6 +1059,14 @@ export class QuickPopups {
                 this.quickPopup.show();
             }
         });
+    }
+
+    private isQuickInfoTemplates(): boolean {
+        if (!isNullOrUndefined(this.parent.quickInfoTemplates.header || this.parent.quickInfoTemplates.content
+            || this.parent.quickInfoTemplates.footer)) {
+            return true;
+        }
+        return false;
     }
 
     private applyEventColor(): void {
@@ -1102,27 +1114,54 @@ export class QuickPopups {
         }
     }
 
-    private updateQuickPopupTemplates(): void {
+    private updateQuickPopupTemplates(target: Element): void {
+        let templateReady: { header: boolean, content: boolean, footer: boolean } = {
+            header: this.parent.quickInfoTemplates.header ? false : true,
+            content: this.parent.quickInfoTemplates.content ? false : true,
+            footer: this.parent.quickInfoTemplates.footer ? false : true
+        };
         if (this.parent.quickInfoTemplates.header) {
-            updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(
+                this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates, null, () => {
+                    templateReady.header = true;
+                    this.quickPopupShow(templateReady, target);
+                });
         }
         if (this.parent.quickInfoTemplates.content) {
-            updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(
+                this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates, null, () => {
+                    templateReady.content = true;
+                    this.quickPopupShow(templateReady, target);
+                });
         }
         if (this.parent.quickInfoTemplates.footer) {
-            updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(
+                this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates, null, () => {
+                    templateReady.footer = true;
+                    this.quickPopupShow(templateReady, target);
+                });
+        }
+    }
+
+    private quickPopupShow(templateReady: { header: boolean, content: boolean, footer: boolean }, target: Element): void {
+        if (templateReady.header && templateReady.content && templateReady.footer) {
+            this.beforeQuickPopupOpen(target, true);
         }
     }
 
     private resetQuickPopupTemplates(): void {
-        if (this.parent.quickInfoTemplates.header) {
-            resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        if (isBlazor() && this.isQuickInfoTemplates()) {
+            removeClass([this.quickPopup.element], cls.POPUP_OPEN);
+            addClass([this.quickPopup.element], cls.POPUP_CLOSE);
+            if (this.parent.quickInfoTemplates.header) {
+                resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+            }
+            if (this.parent.quickInfoTemplates.content) {
+                resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+            }
+            if (this.parent.quickInfoTemplates.footer) {
+                resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+            }
         }
     }
 

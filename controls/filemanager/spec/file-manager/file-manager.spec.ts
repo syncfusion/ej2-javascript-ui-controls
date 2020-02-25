@@ -133,7 +133,7 @@ describe('FileManager control', () => {
                 responseText: JSON.stringify(data10)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -160,7 +160,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(data11)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_largeicons').querySelectorAll('li');
                 expect(li.length).toBe(5);
@@ -173,6 +172,7 @@ describe('FileManager control', () => {
         let feObj: FileManager;
         let mouseEventArgs: any, tapEvent: any;
         let ele: HTMLElement;
+        let originalTimeout: any;
         beforeEach((done: Function): void => {
             jasmine.Ajax.install();
             feObj = undefined;
@@ -204,7 +204,8 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(data10)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -213,6 +214,7 @@ describe('FileManager control', () => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('Selecting file', (done: Function) => {
             var treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
@@ -224,7 +226,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(data11)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
             setTimeout(function () {
                 let li1: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_grid').querySelectorAll('.e-row');
                 var gridObj: any = (document.getElementById("file_grid") as any).ej2_instances[0];
@@ -247,6 +248,7 @@ describe('FileManager control', () => {
     describe('Window', () => {
         let feObj: FileManager;
         let ele: HTMLElement;
+        let originalTimeout: any;
         beforeEach((done: Function): void => {
             jasmine.Ajax.install();
             feObj = undefined;
@@ -268,11 +270,14 @@ describe('FileManager control', () => {
             setTimeout(function () {
                 done();
             }, 500);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('resize testing', () => {
             (feObj as any).resizeHandler();
@@ -283,6 +288,7 @@ describe('FileManager control', () => {
         let feObj: any;
         let mouseEventArgs: any, tapEvent: any;
         let ele: HTMLElement;
+        let originalTimeout: any;
         beforeEach((): void => {
             jasmine.Ajax.install();
             feObj = undefined;
@@ -313,12 +319,14 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(data10)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('Splitter Module testing', () => {
             expect(feObj.element.querySelector('.e-layout').classList.contains('e-splitter')).toEqual(true);
@@ -345,7 +353,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(data10)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeNodeId: string = li[1].getAttribute("data-uid");
                 let addressBarLi: any = feObj.element.querySelectorAll('.e-splitter .e-pane .e-address li');
@@ -364,7 +371,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(data10)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 var addressBarLi = feObj.element.querySelectorAll('.e-splitter .e-pane .e-address li');
                 addressBarLi[0].querySelector('a').click();
@@ -373,7 +379,6 @@ describe('FileManager control', () => {
                     status: 200,
                     responseText: JSON.stringify(data10)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let addressBarLi: any = feObj.element.querySelectorAll('.e-splitter .e-pane .e-address li');
                     expect(treeObj.selectedNodes[0] === 'fe_tree').toEqual(true);
@@ -411,7 +416,7 @@ describe('FileManager control', () => {
 
         let feObj: FileManager;
         let ele: HTMLElement;
-
+        let originalTimeout: any;
         beforeEach((): void => {
             jasmine.Ajax.install();
             let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
@@ -419,11 +424,14 @@ describe('FileManager control', () => {
             feObj = undefined;
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('with JSON string type test case ', (done: Function) => {
             feObj = new FileManager({
@@ -445,7 +453,6 @@ describe('FileManager control', () => {
                     status: 200,
                     responseText: (stringData)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_largeicons').querySelectorAll('li');
                     let treeObj: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
@@ -469,6 +476,8 @@ describe('FileManager control', () => {
             feObj = undefined;
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -491,8 +500,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -525,6 +532,8 @@ describe('FileManager control', () => {
             feObj = undefined;
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -547,8 +556,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(accessData1)
             });
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -581,6 +588,8 @@ describe('FileManager control', () => {
             feObj = undefined;
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -603,8 +612,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -631,6 +638,8 @@ describe('FileManager control', () => {
             feObj = undefined;
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -653,8 +662,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -683,6 +690,8 @@ describe('FileManager control', () => {
             document.body.appendChild(demo);
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -707,8 +716,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -729,6 +736,8 @@ describe('FileManager control', () => {
             feObj = undefined;
             ele = createElement('div', { id: 'file' });
             document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -756,8 +765,6 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: null
             });
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(true);
                 expect(document.getElementById('file_dialog').querySelector('.e-dlg-header').textContent).toEqual("Error");

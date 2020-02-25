@@ -2888,6 +2888,7 @@ export interface ChartSettingsModel {
       *                          { series: 2, point: 3} ],
       * ...
       * @default []
+      * @blazorType List<PivotChartIndexes>
       */
     selectedDataIndexes?: PivotChartIndexesModel[];
 

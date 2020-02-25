@@ -358,8 +358,9 @@ export function getRoundedPath(
  * @returns string
  * @private
  */
-export function getCompleteArc(center: GaugeLocation, start: number, end: number, radius: number, innerRadius: number): string {
-    end -= isCompleteAngle(start, end) ? 0.0001 : 0;
+export function getCompleteArc(center: GaugeLocation, start: number, end: number, radius: number, innerRadius: number,
+                               checkMinValue?: boolean): string {
+    end -= isCompleteAngle(start, end) && !checkMinValue ? 0.0001 : 0;
     let degree: number = getDegree(start, end);
     return getCompletePath(
         center, getLocationFromAngle(start, radius, center),

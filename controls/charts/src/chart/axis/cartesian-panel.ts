@@ -1065,7 +1065,8 @@ export class CartesianAxisLayoutPanel {
         let tickSpace: number = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
         let padding: number = tickSpace + this.padding + axis.lineStyle.width * 0.5;
         let rotateSize: Size; let diffHeight: number; let angle: number = axis.angle % 360;
-        let anglePadding: number = ((angle === 90) ? -4 : 0) || ((angle === -90) ? 4 : 0);
+        //I264474: Fix for X axis labels are not rendered in center of tick marks when angle is 270
+        let anglePadding: number = ((angle === 90 || angle === -270) ? -4 : (angle === -90 || angle === 270) ? 4 : 0);
         let options: TextOption; let yLocation: number; let labelWidth: number;
         let previousEnd: number = axis.isInversed ? (rect.x + rect.width) : rect.x;
         let width: number = 0; let length: number = axis.visibleLabels.length;

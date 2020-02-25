@@ -9669,17 +9669,11 @@ class BigEndianWriter {
         if (buff === null) {
             throw new Error('Argument Null Exception : buff');
         }
-        let result = [];
-        for (let i = 0; i < this.position; i++) {
-            result.push(this.buffer[i]);
-        }
+        let position = this.position;
         for (let i = 0; i < buff.length; i++) {
-            result.push(buff[i]);
+            this.buffer[position] = buff[i];
+            position++;
         }
-        for (let i = this.position; i < this.buffer.length; i++) {
-            result.push(this.buffer[i]);
-        }
-        this.buffer = result;
         this.internalPosition += buff.length;
     }
 }
@@ -19072,6 +19066,192 @@ class PdfLayoutResult {
 }
 
 /**
+ * PdfBorders.ts class for EJ2-PDF
+ */
+/**
+ * `PdfBorders` class used represents the cell border of the PDF grid.
+ */
+class PdfBorders {
+    // Properties
+    /**
+     * Gets or sets the `Left`.
+     * @private
+     */
+    get left() {
+        return this.leftPen;
+    }
+    set left(value) {
+        this.leftPen = value;
+    }
+    /**
+     * Gets or sets the `Right`.
+     * @private
+     */
+    get right() {
+        return this.rightPen;
+    }
+    set right(value) {
+        this.rightPen = value;
+    }
+    /**
+     * Gets or sets the `Top`.
+     * @private
+     */
+    get top() {
+        return this.topPen;
+    }
+    set top(value) {
+        this.topPen = value;
+    }
+    /**
+     * Gets or sets the `Bottom`.
+     * @private
+     */
+    get bottom() {
+        return this.bottomPen;
+    }
+    set bottom(value) {
+        this.bottomPen = value;
+    }
+    /**
+     * sets the `All`.
+     * @private
+     */
+    set all(value) {
+        this.leftPen = this.rightPen = this.topPen = this.bottomPen = value;
+    }
+    /**
+     * Gets a value indicating whether this instance `is all`.
+     * @private
+     */
+    get isAll() {
+        return ((this.leftPen === this.rightPen) && (this.leftPen === this.topPen) && (this.leftPen === this.bottomPen));
+    }
+    /**
+     * Gets the `default`.
+     * @private
+     */
+    static get default() {
+        return new PdfBorders();
+    }
+    // Constructor
+    /**
+     * Create a new instance for `PdfBorders` class.
+     * @private
+     */
+    constructor() {
+        let defaultBorderPenLeft = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenLeft.dashStyle = PdfDashStyle.Solid;
+        let defaultBorderPenRight = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenRight.dashStyle = PdfDashStyle.Solid;
+        let defaultBorderPenTop = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenTop.dashStyle = PdfDashStyle.Solid;
+        let defaultBorderPenBottom = new PdfPen(new PdfColor(0, 0, 0));
+        defaultBorderPenBottom.dashStyle = PdfDashStyle.Solid;
+        this.leftPen = defaultBorderPenLeft;
+        this.rightPen = defaultBorderPenRight;
+        this.topPen = defaultBorderPenTop;
+        this.bottomPen = defaultBorderPenBottom;
+    }
+}
+class PdfPaddings {
+    constructor(left, right, top, bottom) {
+        /**
+         * The 'left' border padding set.
+         * @private
+         */
+        this.hasLeftPad = false;
+        /**
+         * The 'right' border padding set.
+         * @private
+         */
+        this.hasRightPad = false;
+        /**
+         * The 'top' border padding set.
+         * @private
+         */
+        this.hasTopPad = false;
+        /**
+         * The 'bottom' border padding set.
+         * @private
+         */
+        this.hasBottomPad = false;
+        if (typeof left === 'undefined') {
+            //5.76 and 0 are taken from ms-word default table margins.
+            this.leftPad = this.rightPad = 5.76;
+            //0.5 is set for top and bottom by default.
+            this.bottomPad = this.topPad = 0.5;
+        }
+        else {
+            this.leftPad = left;
+            this.rightPad = right;
+            this.topPad = top;
+            this.bottomPad = bottom;
+            this.hasLeftPad = true;
+            this.hasRightPad = true;
+            this.hasTopPad = true;
+            this.hasBottomPad = true;
+        }
+    }
+    // Properties
+    /**
+     * Gets or sets the `left` value of the edge
+     * @private
+     */
+    get left() {
+        return this.leftPad;
+    }
+    set left(value) {
+        this.leftPad = value;
+        this.hasLeftPad = true;
+    }
+    /**
+     * Gets or sets the `right` value of the edge.
+     * @private
+     */
+    get right() {
+        return this.rightPad;
+    }
+    set right(value) {
+        this.rightPad = value;
+        this.hasRightPad = true;
+    }
+    /**
+     * Gets or sets the `top` value of the edge
+     * @private
+     */
+    get top() {
+        return this.topPad;
+    }
+    set top(value) {
+        this.topPad = value;
+        this.hasTopPad = true;
+    }
+    /**
+     * Gets or sets the `bottom` value of the edge.
+     * @private
+     */
+    get bottom() {
+        return this.bottomPad;
+    }
+    set bottom(value) {
+        this.bottomPad = value;
+        this.hasBottomPad = true;
+    }
+    /**
+     * Sets value to all sides `left,right,top and bottom`.s
+     * @private
+     */
+    set all(value) {
+        this.leftPad = this.rightPad = this.topPad = this.bottomPad = value;
+        this.hasLeftPad = true;
+        this.hasRightPad = true;
+        this.hasTopPad = true;
+        this.hasBottomPad = true;
+    }
+}
+
+/**
  * `PdfLayoutElement` class represents the base class for all elements that can be layout on the pages.
  * @private
  */
@@ -19130,6 +19310,18 @@ class PdfLayoutElement {
             let temparg4 = arg4;
             param.page = arg2;
             param.bounds = temparg3;
+            if (param != null) {
+                let x = param.bounds.x;
+                let y = param.bounds.y;
+                if (param.bounds.x === 0) {
+                    x = PdfBorders.default.right.width / 2;
+                }
+                if (param.bounds.y === 0) {
+                    y = PdfBorders.default.top.width / 2;
+                }
+                let newBound = new RectangleF(x, y, param.bounds.width, param.bounds.height);
+                param.bounds = newBound;
+            }
             param.format = (temparg4 != null) ? temparg4 : new PdfLayoutFormat();
             let result = this.layout(param);
             return result;
@@ -21284,192 +21476,6 @@ class PdfPageTemplateElement {
         }
         result = new RectangleF(x, y, width, height);
         return result;
-    }
-}
-
-/**
- * PdfBorders.ts class for EJ2-PDF
- */
-/**
- * `PdfBorders` class used represents the cell border of the PDF grid.
- */
-class PdfBorders {
-    // Properties
-    /**
-     * Gets or sets the `Left`.
-     * @private
-     */
-    get left() {
-        return this.leftPen;
-    }
-    set left(value) {
-        this.leftPen = value;
-    }
-    /**
-     * Gets or sets the `Right`.
-     * @private
-     */
-    get right() {
-        return this.rightPen;
-    }
-    set right(value) {
-        this.rightPen = value;
-    }
-    /**
-     * Gets or sets the `Top`.
-     * @private
-     */
-    get top() {
-        return this.topPen;
-    }
-    set top(value) {
-        this.topPen = value;
-    }
-    /**
-     * Gets or sets the `Bottom`.
-     * @private
-     */
-    get bottom() {
-        return this.bottomPen;
-    }
-    set bottom(value) {
-        this.bottomPen = value;
-    }
-    /**
-     * sets the `All`.
-     * @private
-     */
-    set all(value) {
-        this.leftPen = this.rightPen = this.topPen = this.bottomPen = value;
-    }
-    /**
-     * Gets a value indicating whether this instance `is all`.
-     * @private
-     */
-    get isAll() {
-        return ((this.leftPen === this.rightPen) && (this.leftPen === this.topPen) && (this.leftPen === this.bottomPen));
-    }
-    /**
-     * Gets the `default`.
-     * @private
-     */
-    static get default() {
-        return new PdfBorders();
-    }
-    // Constructor
-    /**
-     * Create a new instance for `PdfBorders` class.
-     * @private
-     */
-    constructor() {
-        let defaultBorderPenLeft = new PdfPen(new PdfColor(0, 0, 0));
-        defaultBorderPenLeft.dashStyle = PdfDashStyle.Solid;
-        let defaultBorderPenRight = new PdfPen(new PdfColor(0, 0, 0));
-        defaultBorderPenRight.dashStyle = PdfDashStyle.Solid;
-        let defaultBorderPenTop = new PdfPen(new PdfColor(0, 0, 0));
-        defaultBorderPenTop.dashStyle = PdfDashStyle.Solid;
-        let defaultBorderPenBottom = new PdfPen(new PdfColor(0, 0, 0));
-        defaultBorderPenBottom.dashStyle = PdfDashStyle.Solid;
-        this.leftPen = defaultBorderPenLeft;
-        this.rightPen = defaultBorderPenRight;
-        this.topPen = defaultBorderPenTop;
-        this.bottomPen = defaultBorderPenBottom;
-    }
-}
-class PdfPaddings {
-    constructor(left, right, top, bottom) {
-        /**
-         * The 'left' border padding set.
-         * @private
-         */
-        this.hasLeftPad = false;
-        /**
-         * The 'right' border padding set.
-         * @private
-         */
-        this.hasRightPad = false;
-        /**
-         * The 'top' border padding set.
-         * @private
-         */
-        this.hasTopPad = false;
-        /**
-         * The 'bottom' border padding set.
-         * @private
-         */
-        this.hasBottomPad = false;
-        if (typeof left === 'undefined') {
-            //5.76 and 0 are taken from ms-word default table margins.
-            this.leftPad = this.rightPad = 5.76;
-            //0.5 is set for top and bottom by default.
-            this.bottomPad = this.topPad = 0.5;
-        }
-        else {
-            this.leftPad = left;
-            this.rightPad = right;
-            this.topPad = top;
-            this.bottomPad = bottom;
-            this.hasLeftPad = true;
-            this.hasRightPad = true;
-            this.hasTopPad = true;
-            this.hasBottomPad = true;
-        }
-    }
-    // Properties
-    /**
-     * Gets or sets the `left` value of the edge
-     * @private
-     */
-    get left() {
-        return this.leftPad;
-    }
-    set left(value) {
-        this.leftPad = value;
-        this.hasLeftPad = true;
-    }
-    /**
-     * Gets or sets the `right` value of the edge.
-     * @private
-     */
-    get right() {
-        return this.rightPad;
-    }
-    set right(value) {
-        this.rightPad = value;
-        this.hasRightPad = true;
-    }
-    /**
-     * Gets or sets the `top` value of the edge
-     * @private
-     */
-    get top() {
-        return this.topPad;
-    }
-    set top(value) {
-        this.topPad = value;
-        this.hasTopPad = true;
-    }
-    /**
-     * Gets or sets the `bottom` value of the edge.
-     * @private
-     */
-    get bottom() {
-        return this.bottomPad;
-    }
-    set bottom(value) {
-        this.bottomPad = value;
-        this.hasBottomPad = true;
-    }
-    /**
-     * Sets value to all sides `left,right,top and bottom`.s
-     * @private
-     */
-    set all(value) {
-        this.leftPad = this.rightPad = this.topPad = this.bottomPad = value;
-        this.hasLeftPad = true;
-        this.hasRightPad = true;
-        this.hasTopPad = true;
-        this.hasBottomPad = true;
     }
 }
 
@@ -23722,16 +23728,18 @@ class PdfGrid extends PdfLayoutElement {
      * @private
      */
     layout(param) {
-        // if (this.rows.count !== 0) {
-        //     if (this.rows.getRow(0).cells.getCell(0).style.borders.left.width !== 1) {
-        //         let x : number = this.rows.getRow(0).cells.getCell(0).style.borders.left.width / 2;
-        //         let y : number = this.rows.getRow(0).cells.getCell(0).style.borders.top.width / 2;
-        //         if (param.bounds.x === PdfBorders.default.right.width / 2 && param.bounds.y === PdfBorders.default.right.width / 2) {
-        //             let newBound : RectangleF = new RectangleF(x, y, this.gridSize.width, this.gridSize.height);
-        //             param.bounds = newBound;
-        //         }
-        //     }
-        // }
+        if (this.rows.count !== 0) {
+            let currentRow = this.rows.getRow(0).cells.getCell(0).style;
+            if (currentRow.borders != null && ((currentRow.borders.left != null && currentRow.borders.left.width !== 1) ||
+                (currentRow.borders.top != null && currentRow.borders.top.width !== 1))) {
+                let x = currentRow.borders.left.width / 2;
+                let y = currentRow.borders.top.width / 2;
+                if (param.bounds.x === PdfBorders.default.right.width / 2 && param.bounds.y === PdfBorders.default.right.width / 2) {
+                    let newBound = new RectangleF(x, y, this.gridSize.width, this.gridSize.height);
+                    param.bounds = newBound;
+                }
+            }
+        }
         this.setSpan();
         this.checkSpan();
         this.layoutFormat = param.format;
@@ -24392,6 +24400,15 @@ class PdfGridLayouter extends ElementLayouter {
             //Draw Headers.
             for (let i = 0; i < this.Grid.headers.count; i++) {
                 let row = this.Grid.headers.getHeader(i);
+                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
+                    || (row.style.border.top != null && row.style.border.top.width !== 1))) {
+                    let headerX = row.style.border.left.width / 2;
+                    let headerY = row.style.border.top.width / 2;
+                    if (this.currentBounds.x === PdfBorders.default.right.width / 2 && this.currentBounds.y === PdfBorders.default.right.width / 2) {
+                        let headerBound = new RectangleF(headerX, headerY, this.currentBounds.width, this.currentBounds.height);
+                        this.currentBounds = headerBound;
+                    }
+                }
                 let headerHeight = this.currentBounds.y;
                 // RowLayoutResult
                 let headerResult = this.drawRow(row);
@@ -24413,6 +24430,14 @@ class PdfGridLayouter extends ElementLayouter {
             //Draw row by row with the specified cell range.
             for (let j = 0; j < this.Grid.rows.count; j++) {
                 let row = this.Grid.rows.getRow(j);
+                if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
+                    || (row.style.border.top != null && row.style.border.top.width !== 1))) {
+                    let x = row.style.border.left.width / 2;
+                    if (this.currentBounds.x === PdfBorders.default.right.width / 2) {
+                        let rowBound = new RectangleF(x, this.currentBounds.y, this.currentBounds.width, this.currentBounds.height);
+                        this.currentBounds = rowBound;
+                    }
+                }
                 i++;
                 this.currentRowIndex = i - 1;
                 let originalHeight = this.currentBounds.y;
@@ -24570,11 +24595,11 @@ class PdfGridLayouter extends ElementLayouter {
                         this.currentPage = this.getNextPageformat(format);
                         originalHeight = this.currentBounds.y;
                         let location = new PointF(PdfBorders.default.right.width / 2, PdfBorders.default.top.width / 2);
-                        // if (format.paginateBounds == new RectangleF(0,0,0,0) && this.startLocation == location)
-                        // {
-                        //     this.currentBounds.x += this.startLocation.x;
-                        //     this.currentBounds.y += this.startLocation.y;
-                        // }
+                        if ((format.paginateBounds.x === 0 && format.paginateBounds.y === 0 && format.paginateBounds.width === 0 &&
+                            format.paginateBounds.height === 0) && (this.startLocation.x === location.x && this.startLocation.y === location.y)) {
+                            this.currentBounds.x += this.startLocation.x;
+                            this.currentBounds.y += this.startLocation.y;
+                        }
                         if (this.Grid.isChildGrid && row.grid.ParentCell != null) {
                             if (this.Grid.ParentCell.row.grid.style.cellPadding != null) {
                                 if (row.rowBreakHeight + this.Grid.ParentCell.row.grid.style.cellPadding.top < this.currentBounds.height) {
@@ -24631,7 +24656,15 @@ class PdfGridLayouter extends ElementLayouter {
                             if (row.grid.splitChildRowIndex != -1) {
                                 row.grid.isGridSplit = true;
                             }
-                            this.currentBounds.y = 0.50;
+                            if (row.style.border != null && ((row.style.border.left != null && row.style.border.left.width !== 1)
+                                || (row.style.border.top != null && row.style.border.top.width !== 1))) {
+                                let x = row.style.border.left.width / 2;
+                                let y = row.style.border.top.width / 2;
+                                if (this.currentBounds.x === PdfBorders.default.right.width / 2 && this.currentBounds.y === PdfBorders.default.right.width / 2) {
+                                    let newBound = new RectangleF(x, y, this.currentBounds.width, this.currentBounds.height);
+                                    this.currentBounds = newBound;
+                                }
+                            }
                             if (this.Grid.repeatHeader) {
                                 for (let j = 0; j < this.Grid.headers.count; j++) {
                                     let headerRepeat = this.Grid.headers.getHeader(j);

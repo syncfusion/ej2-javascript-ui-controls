@@ -2081,6 +2081,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
      */
     Calendar.prototype.createContent = function () {
         this.previousDate = this.value;
+        this.previousDateTime = this.value;
         _super.prototype.createContent.call(this);
     };
     Calendar.prototype.minMaxDate = function (localDate) {
@@ -2341,8 +2342,10 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         this.changeHandler(e);
     };
     Calendar.prototype.changeEvent = function (e) {
-        this.trigger('change', this.changedArgs);
-        this.previousDate = new Date(+this.value);
+        if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())) {
+            this.trigger('change', this.changedArgs);
+            this.previousDate = new Date(+this.value);
+        }
     };
     Calendar.prototype.triggerChange = function (e) {
         this.changedArgs.event = e || null;
@@ -2350,7 +2353,8 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.value)) {
             this.setProperties({ value: this.value }, true);
         }
-        if (!this.isMultiSelection && +this.value !== Number.NaN && +this.value !== +this.previousDate) {
+        if (!this.isMultiSelection && +this.value !== Number.NaN && (+this.value !== +this.previousDate || this.previousDate == null
+            && !isNaN(+this.value))) {
             this.changeEvent(e);
         }
         else if (!isNullOrUndefined(this.values) && this.previousValues !== this.values.length) {
@@ -3080,7 +3084,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.disabledDates();
             }
         }
-        if (!+new Date(this.checkValue(this.value))) {
+        if (isNaN(+new Date(this.checkValue(this.value)))) {
             this.setProperties({ value: null }, true);
         }
         if (this.strictMode) {
@@ -5475,23 +5479,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         EventHandler.clearEvents(this.rightCalNextIcon);
     };
     DateRangePicker.prototype.updateNavIcons = function () {
-        if (this.isPopupOpen() && this.depth === this.currentView()) {
-            var leftDate = new Date(this.checkValue(this.leftCalCurrentDate));
-            var iconState = false;
-            if (this.currentView() === 'Year') {
-                iconState = (this.compareYears(leftDate, this.rightCalCurrentDate) < 1);
-            }
-            else if (this.currentView() === 'Decade') {
-                iconState = (this.compareDecades(leftDate, this.rightCalCurrentDate) < 1);
-            }
-            else if (this.currentView() === 'Month') {
-                iconState = (this.compareMonths(leftDate, this.rightCalCurrentDate) < 1);
-            }
-            this.previousIcon = this.rightCalPrevIcon;
-            this.nextIcon = this.leftCalNextIcon;
-            this.nextIconHandler(iconState);
-            this.previousIconHandler(iconState);
-        }
+        _super.prototype.iconHandler.call(this);
     };
     DateRangePicker.prototype.calendarIconEvent = function () {
         this.clearCalendarEvents();
@@ -6743,7 +6731,6 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         else {
             this.leftCalCurrentDate = new Date(+this.currentDate);
         }
-        this.updateNavIcons();
         this.calendarIconEvent();
         if ((((this.depth === 'Month')
             && this.leftCalendar.querySelector('.e-content').classList.contains('e-month')
@@ -6770,66 +6757,6 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.updateMinMaxDays(ele);
         }
         this.updateControl(ele);
-    };
-    DateRangePicker.prototype.compareMonths = function (start, end) {
-        var result;
-        if (start.getFullYear() === end.getFullYear() &&
-            (this.currentView() === 'Year' || this.currentView() === 'Decade')) {
-            result = -1;
-        }
-        else if (start.getFullYear() > end.getFullYear()) {
-            result = -1;
-        }
-        else if (start.getFullYear() < end.getFullYear()) {
-            if (start.getFullYear() + 1 === end.getFullYear() && start.getMonth() === 11 && end.getMonth() === 0) {
-                result = -1;
-            }
-            else {
-                result = 1;
-            }
-        }
-        else {
-            result = start.getMonth() === end.getMonth() ? 0 : start.getMonth() + 1 === end.getMonth() ? -1 : 1;
-        }
-        return result;
-    };
-    DateRangePicker.prototype.compareYears = function (start, end) {
-        var result;
-        if (start.getFullYear() === end.getFullYear()) {
-            result = -1;
-        }
-        else if (start.getFullYear() > end.getFullYear()) {
-            result = -1;
-        }
-        else {
-            if (start.getFullYear() + 1 === end.getFullYear()) {
-                result = -1;
-            }
-            else {
-                result = 1;
-            }
-        }
-        return result;
-    };
-    DateRangePicker.prototype.compareDecades = function (start, end) {
-        var result;
-        if (start.getFullYear() === end.getFullYear()) {
-            result = -1;
-        }
-        else if (start.getFullYear() > end.getFullYear()) {
-            result = -1;
-        }
-        else {
-            var strtFullYr = start.getFullYear();
-            var enFullYr = end.getFullYear();
-            if ((strtFullYr - (strtFullYr % 10) + 10) === (enFullYr - (enFullYr % 10))) {
-                result = -1;
-            }
-            else {
-                result = 1;
-            }
-        }
-        return result;
     };
     DateRangePicker.prototype.isPopupOpen = function () {
         if (!isNullOrUndefined(this.popupObj) && this.popupObj.element.classList.contains(POPUP$1)) {
@@ -7231,17 +7158,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     if (element === this.leftCalendar && ((e && !e.currentTarget.children[0].classList.contains('e-icons'))
                         || (!isNullOrUndefined(this.controlDown)))) {
                         this.leftCalCurrentDate = new Date(+this.currentDate);
-                        if (view === 'Year') {
-                            var year = this.currentDate.getFullYear() + 1;
-                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(year));
-                        }
-                        else if (view === 'Decade') {
-                            var decYear = this.currentDate.getFullYear() + 10;
-                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(decYear));
-                        }
-                        else {
-                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(this.currentDate.getMonth() + 1));
-                        }
+                        this.effect = '';
                         this.currentDate = this.leftCalCurrentDate;
                         this.updateCalendarElement(this.leftCalendar);
                         this.updateControl(this.leftCalendar);
@@ -7256,17 +7173,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     else if (e && !e.currentTarget.children[0].classList.contains('e-icons')
                         || (!isNullOrUndefined(this.controlDown))) {
                         this.rightCalCurrentDate = new Date(+this.currentDate);
-                        if (view === 'Year') {
-                            var yr = this.currentDate.getFullYear() - 1;
-                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(yr));
-                        }
-                        else if (view === 'Decade') {
-                            var decyr = this.currentDate.getFullYear() - 10;
-                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(decyr));
-                        }
-                        else {
-                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(this.currentDate.getMonth() - 1));
-                        }
+                        this.effect = '';
                         this.currentDate = this.rightCalCurrentDate;
                         this.updateCalendarElement(this.rightCalendar);
                         this.updateControl(this.rightCalendar);
@@ -11261,7 +11168,6 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     function DateTimePicker(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.valueWithMinutes = null;
-        _this.previousDateTime = null;
         _this.dateTimeOptions = options;
         return _this;
     }
@@ -11849,7 +11755,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         return popupHeight > height ? height : popupHeight;
     };
     DateTimePicker.prototype.changeEvent = function (e) {
-        if (+this.previousDateTime !== +this.value) {
+        if ((this.value && this.value.valueOf()) !== (this.previousDateTime && +this.previousDateTime.valueOf())) {
             _super.prototype.changeEvent.call(this, e);
             this.inputElement.focus();
             this.valueWithMinutes = this.value;

@@ -2261,7 +2261,10 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
             {
                 formulaName: 'INTERCEPT', category: 'Statistical',
                 description: 'Calculates the point of the Y-intercept line via linear regression.'
-            }
+            },
+            {
+                formulaName: 'LN', category: 'Math & Trig', description: 'Returns the natural logarithm of a number.'
+            },
         ];
         this.isConcat = false;
         this.parent = parent;
@@ -3598,6 +3601,41 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
         }
         return result;
     };
+    /** @hidden */
+    BasicFormulas.prototype.ComputeLN = function () {
+        var logValue = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            logValue[_i] = arguments[_i];
+        }
+        var argArr = logValue;
+        var cellvalue = '';
+        var logVal;
+        var orgValue;
+        if (logValue.length === 0 || logValue.length > 1) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        if (this.parent.isCellReference(argArr[0])) {
+            cellvalue = this.parent.getValueFromArg(argArr[0]);
+            logVal = this.parent.parseFloat(cellvalue);
+            if (logVal <= 0 || cellvalue === '') {
+                return this.parent.getErrorStrings()[CommonErrors.num];
+            }
+            if (isNaN(logVal)) {
+                return this.parent.getErrorStrings()[CommonErrors.value];
+            }
+        }
+        else {
+            orgValue = this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join(''));
+            logVal = this.parent.parseFloat(orgValue);
+            if (logVal <= 0 || logVal.toString() === '') {
+                return this.parent.getErrorStrings()[CommonErrors.num];
+            }
+            if (isNaN(logVal)) {
+                return this.parent.getErrorStrings()[CommonErrors.value];
+            }
+        }
+        return Math.log(logVal);
+    };
     BasicFormulas.prototype.getDataCollection = function (cells) {
         var cellsData = [];
         for (var i = 0, len = cells.length; i < len; i++) {
@@ -3959,7 +3997,7 @@ var Parser = /** @__PURE__ @class */ (function () {
         var condition;
         var ticLoc = tempString.indexOf(this.parent.tic);
         var singleTicLoc = tempString.indexOf(this.parent.singleTic);
-        if (ticLoc > -1 || singleTicLoc > -1) {
+        if (ticLoc > -1) {
             tempString = tempString.split(this.parent.singleTic).join(this.parent.tic);
             i = tempString.indexOf(this.parent.tic);
             while (i > -1 && tempString.length > 0) {
@@ -4297,7 +4335,9 @@ var Parser = /** @__PURE__ @class */ (function () {
                                     right = 'u' + right;
                                 }
                             }
-                            noCellReference = !this.parent.isCellReference(right);
+                            if (noCellReference && right.startsWith(this.sheetToken)) {
+                                noCellReference = !this.parent.isCellReference(right);
+                            }
                             if (!noCellReference) {
                                 this.parent.updateDependentCell(right);
                             }
@@ -6785,12 +6825,12 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
             for (var n = 0; n < sortedSheetNamesCollection.length; n++) {
                 var token = family.sheetNameToToken.get(sortedSheetNamesCollection[n]);
                 token = token.split(this.sheetToken).join(this.tempSheetPlaceHolder);
-                var s = '"' + sortedSheetNamesCollection[n].toUpperCase() + '"' + this.sheetToken;
+                var s = this.singleTic + 'SHEET' + sortedSheetNamesCollection[n] + this.singleTic + this.sheetToken;
                 if (text.indexOf(s) === -1) {
-                    s = sortedSheetNamesCollection[n].toUpperCase() + this.sheetToken;
+                    s = 'SHEET' + sortedSheetNamesCollection[n] + this.sheetToken;
                 }
-                text = text.split('SHEET' + s).join(token);
-                s = sortedSheetNamesCollection[n].toUpperCase() + this.sheetToken;
+                text = text.split(s).join(token);
+                s = sortedSheetNamesCollection[n] + this.sheetToken;
                 text = text.split(s).join(token);
             }
         }
@@ -7630,7 +7670,7 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.sheetInfo = [];
         this.parent.sheets.forEach(function (sheet, idx) {
-            _this.sheetInfo.push({ visibleName: sheet.name, sheet: sheet.name, index: idx });
+            _this.sheetInfo.push({ visibleName: sheet.name, sheet: 'Sheet' + sheet.id, index: idx });
         });
     };
     WorkbookFormula.prototype.sheetDeletion = function (delSheetName, sheetId, index) {
@@ -7747,15 +7787,28 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
         }
     };
     WorkbookFormula.prototype.parseSheetRef = function (value) {
-        var sheetInfo = this.getSheetInfo();
+        var regx;
+        var escapeRegx = new RegExp('[!@#$%^&()+=\';,.{}|\":<>~_-]', 'g');
+        var i = 0;
         var sheetCount = this.parent.sheets.length;
-        for (var j = 0; j < sheetCount; j++) {
-            if (sheetInfo[j].sheet.toUpperCase() !== sheetInfo[j].visibleName.toUpperCase()) {
-                var name_2 = sheetInfo[j].visibleName.toUpperCase();
-                if (value.toUpperCase().indexOf(name_2) > -1) {
-                    value = value.toUpperCase().split(name_2).join(sheetInfo[j].sheet);
+        var temp = [];
+        temp.length = 0;
+        var sheetInfo = this.getSheetInfo();
+        var exp = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
+        for (i = 0; i < sheetCount; i++) {
+            if (sheetInfo[i].sheet !== sheetInfo[i].visibleName) {
+                regx = new RegExp(sheetInfo[i].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
+                if (value.match(regx)) {
+                    value = value.replace(regx, i + '/');
+                    temp.push(i);
                 }
             }
+        }
+        i = 0;
+        while (i < temp.length) {
+            regx = new RegExp(temp[i] + '/' + exp, 'gi');
+            value = value.replace(regx, sheetInfo[temp[i]].sheet);
+            i++;
         }
         return value;
     };
@@ -20351,6 +20404,7 @@ var defaultLocale = {
     SUBTOTAL: 'Returns subtotal for a range using the given function number.',
     RADIANS: 'Converts degrees into radians.',
     MATCH: 'Returns the relative position of a specified value in given range.',
+    LN: 'Returns the natural logarithm of a number',
     DefineNameExists: 'This name already exists, try different name.',
     CircularReference: 'When a formula refers to one or more circular references, this may result in an incorrect calculation.',
     ShowRowsWhere: 'Show rows where:',

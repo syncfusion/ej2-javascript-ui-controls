@@ -3464,6 +3464,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     Tooltip.prototype.renderContent = function (target) {
         var tooltipContent = this.tooltipEle.querySelector('.' + CONTENT);
+        if (this.cssClass) {
+            addClass([this.tooltipEle], this.cssClass.split(' '));
+        }
         if (target && !isNullOrUndefined(target.getAttribute('title'))) {
             target.setAttribute('data-content', target.getAttribute('title'));
             target.removeAttribute('title');
@@ -3617,9 +3620,6 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                         }, styles: 'width:' +
                             formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
                     });
-                    if (this.cssClass) {
-                        addClass([this.tooltipEle], this.cssClass.split(' '));
-                    }
                     this.beforeRenderBlazor(target, this);
                 }
                 if (!isBlazorTooltipRendered) {

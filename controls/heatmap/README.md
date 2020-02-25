@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-heatmap/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-heatmap)
-
 # ej2-heatmap
 
 The Heat map control is used to visualize a two-dimensional data in which the values are represented in gradient or fixed colors.

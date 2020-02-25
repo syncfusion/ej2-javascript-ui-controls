@@ -106,6 +106,238 @@ describe('Kanban mobile testing', () => {
             expect(kanbanObj.element.querySelector('.e-toolbar-level-title .e-toolbar-swimlane-name').innerHTML).toEqual('Janet Leverling');
         });
     });
+    describe('Multi selection using mobile', () => {
+        let kanbanObj: Kanban;
+        let uA: string = Browser.userAgent;
+        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
+        beforeAll((done: DoneFn) => {
+            Browser.userAgent = androidUserAgent;
+            let model: KanbanModel = {
+                cardSettings: {
+                    selectionType: "Multiple"
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            Browser.userAgent = uA;
+        });
+
+        it('checking adaptive rendering or not', () => {
+            expect(kanbanObj.isAdaptive).toEqual(true);
+            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card');
+            (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
+        });
+
+        it('rendering the quick popup wrapper content', () => {
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card');
+            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            expect(appElements.classList.contains('e-selection')).toBe(true);
+            let eventPopup: HTMLElement = document.body.querySelector('.e-mobile-popup-wrapper') as HTMLElement;
+            expect(eventPopup).not.toBeNull();
+            expect(document.body.querySelector('.e-mobile-popup-wrapper').childElementCount).toEqual(2);
+            expect(kanbanObj.element.querySelector('.e-card').getAttribute("data-id")).toEqual(eventPopup.innerText);
+        });
+        it('checking after close click', () => {
+            let eventPopup: HTMLElement = document.body.querySelector('.e-mobile-popup-wrapper') as HTMLElement;
+            let closeElement: HTMLElement = eventPopup.querySelector('.e-close');
+            util.triggerMouseEvent(closeElement, 'click');
+        });
+        it('checking more than one card clicking', () => {
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="25"]') as HTMLElement;
+            util.triggerMouseEvent(element, 'click');
+        });
+        it('checking after close click', () => {
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="25"]') as HTMLElement;
+            expect(element.classList.contains('e-selection')).toBe(true);
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="2"]') as HTMLElement;
+            (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
+        });
+        it('checking the code content', () => {
+            let eventPopup: HTMLElement = document.body.querySelector('.e-mobile-popup-wrapper') as HTMLElement;
+            let closeElement: HTMLElement = eventPopup.querySelector('.e-close');
+            util.triggerMouseEvent(closeElement, 'click');
+        });
+        it('checking selected card == one', () => {
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="25"]') as HTMLElement;
+            util.triggerMouseEvent(element, 'click');
+        });
+        it('checking after close click', () => {
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="25"]') as HTMLElement;
+            (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
+        });
+        it('checking selected card == one', () => {
+            let eventPopup: HTMLElement = document.body.querySelector('.e-mobile-popup-wrapper') as HTMLElement;
+            let closeElement: HTMLElement = eventPopup.querySelector('.e-close');
+            util.triggerMouseEvent(closeElement, 'click');
+        });
+        it('checking after close click', () => {
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
+            util.triggerMouseEvent(element, 'click');
+        });
+        it('checking after close click', () => {
+            expect(kanbanObj.isAdaptive).toEqual(true);
+            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
+            expect(element.classList.contains('e-selection')).toBe(true);
+        });
+    });
+
+    describe('Multi selection using mobile', () => {
+        let kanbanObj: Kanban;
+        let uA: string = Browser.userAgent;
+        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
+        beforeAll((done: DoneFn) => {
+            Browser.userAgent = androidUserAgent;
+            let model: KanbanModel = {
+                cardSettings: {
+                    selectionType: "Multiple"
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            Browser.userAgent = uA;
+        });
+        it('checking after close click', () => {
+            expect(kanbanObj.isAdaptive).toEqual(true);
+            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
+            util.triggerMouseEvent(element, 'click');
+        });
+        it('checking after close click', () => {
+            let appElement: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]') as HTMLElement;
+            (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElement, type: 'touchstart' } });
+
+        }); it('checking after close click', () => {
+            let appElement: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]') as HTMLElement;
+            expect(appElement.classList.contains('e-selection')).toBe(true);
+        });
+        it('checking after close click', () => {
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
+            util.triggerMouseEvent(appElements, 'click');
+        });
+        it('checking after close click', () => {
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]') as HTMLElement;
+            util.triggerMouseEvent(appElements, 'click');
+        });
+        it('checking adaptive rendering or not', () => {
+            expect(kanbanObj.isAdaptive).toEqual(true);
+            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]');
+            (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
+        });
+        it('checking adaptive rendering or not', () => {
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]');
+            expect(appElements.classList.contains('e-selection')).toBe(true);
+            let appElement: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="2"]') as HTMLElement;
+            util.triggerMouseEvent(appElement, 'click');
+        });
+        it('checking adaptive rendering or not', () => {
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="2"]');
+            expect(appElements.classList.contains('e-selection')).toBe(true);
+            let appElement: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
+            util.triggerMouseEvent(appElement, 'click');
+        });
+        it('checking adaptive rendering or not', () => {
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]');
+            expect(appElements.classList.contains('e-selection')).toBe(true);
+            let appElement: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="2"]') as HTMLElement;
+            util.triggerMouseEvent(appElement, 'click');
+        });
+    });
+    describe('Multi selection using mobile', () => {
+        let kanbanObj: Kanban;
+        let uA: string = Browser.userAgent;
+        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
+        beforeAll((done: DoneFn) => {
+            Browser.userAgent = androidUserAgent;
+            let model: KanbanModel = {
+                cardSettings: {
+                    selectionType: "Multiple"
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            Browser.userAgent = uA;
+        });
+        it('checking adaptive rendering or not', () => {
+            expect(kanbanObj.isAdaptive).toEqual(true);
+            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
+            util.triggerMouseEvent(element, 'click');
+        });
+        it('checking adaptive rendering or not', () => {
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
+            expect(element.classList.contains('e-selection')).toBe(true);
+        });
+        it('checking adaptive rendering or not', () => {
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]');
+            (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
+        });
+        it('checking adaptive rendering or not', () => {
+            let element: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="3"]') as HTMLElement;
+            expect(element.classList.contains('e-selection')).toBe(true);
+        });
+    });
+    describe('Drag and drop functionality', () => {
+        let kanbanObj: Kanban;
+        let uA: string = Browser.userAgent;
+        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
+        let dragElement: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            Browser.userAgent = androidUserAgent;
+            let model: KanbanModel = {
+                cardSettings: {
+                    selectionType: "Multiple"
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            Browser.userAgent = uA;
+        });
+        it('checking adaptive rendering or not', () => {
+            expect(kanbanObj.isAdaptive).toEqual(true);
+            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
+            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card');
+            (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
+        });
+
+        it('Dragged clone behavior testing', () => {
+            dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="1"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toEqual(true);
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
+        });
+
+        it('Created Dropped clone on above the column testing and target is card', () => {
+            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
+            util.triggerMouseEvent(element, 'mousemove', 250, 100);
+            expect(element.previousElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
+        });
+
+        it('Dropped clone testing', (done: DoneFn) => {
+            let droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="13"]').item(0);
+            setTimeout(
+                () => {
+                    expect(document.body.querySelector('.e-mobile-popup-wrapper')).toBeNull();
+                    done();
+                },
+                400);
+            util.triggerMouseEvent(droppedElement, 'mouseup', 500, 200);
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();
@@ -118,5 +350,4 @@ describe('Kanban mobile testing', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         // tslint:enable:no-any
     });
-
 });

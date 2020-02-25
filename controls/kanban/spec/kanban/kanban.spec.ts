@@ -24,10 +24,8 @@ describe('Kanban base module', () => {
 
     describe('Basic Layout Rendering without model', () => {
         let kanbanObj: Kanban;
-        document.body.appendChild(createElement('div', { id: 'Kanban' }));
         beforeAll((done: DoneFn) => {
-            kanbanObj = new Kanban({ dataBound: () => done() });
-            kanbanObj.appendTo('#Kanban');
+            kanbanObj = util.createKanban({}, kanbanData, done);
         });
 
         afterAll(() => {
@@ -43,7 +41,7 @@ describe('Kanban base module', () => {
         });
 
         it('Kanban children testing', () => {
-            expect(kanbanObj.element.childElementCount).toBe(1);
+            expect(kanbanObj.element.childElementCount).toBe(3);
             expect(kanbanObj.element.firstElementChild.classList.contains('e-spinner-pane')).toBeTruthy();
         });
     });
@@ -66,7 +64,7 @@ describe('Kanban base module', () => {
         it('get component name testing', () => {
             expect(kanbanObj.getModuleName()).toEqual('kanban');
             expect(kanbanObj.requiredModules().length).toEqual(0);
-            expect((kanbanObj as any).getPersistData()).toEqual('{}');
+            (kanbanObj as any).getPersistData();
         });
 
         it('Kanban children testing', () => {
@@ -266,10 +264,9 @@ describe('Kanban base module', () => {
 
         it('First column card class and inner layout testing', () => {
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(1) .e-card');
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-card')).toBe(true);
-                expect(card.classList.contains('e-draggable')).toBe(true);
-                expect(card.classList.contains('e-lib')).toBe(true);
                 expect(card.getAttribute('data-key')).toBe('Open');
                 expect(card.hasAttribute('data-id')).toBe(true);
                 expect(card.childElementCount).toBe(2);
@@ -281,10 +278,9 @@ describe('Kanban base module', () => {
 
         it('Second column card class and inner layout testing', () => {
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(2) .e-card');
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-card')).toBe(true);
-                expect(card.classList.contains('e-draggable')).toBe(true);
-                expect(card.classList.contains('e-lib')).toBe(true);
                 expect(card.getAttribute('data-key')).toBe('InProgress');
                 expect(card.hasAttribute('data-id')).toBe(true);
                 expect(card.childElementCount).toBe(2);
@@ -296,10 +292,9 @@ describe('Kanban base module', () => {
 
         it('Third column card class and inner layout testing', () => {
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(3) .e-card');
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-card')).toBe(true);
-                expect(card.classList.contains('e-draggable')).toBe(true);
-                expect(card.classList.contains('e-lib')).toBe(true);
                 expect(card.getAttribute('data-key')).toBe('Testing');
                 expect(card.hasAttribute('data-id')).toBe(true);
                 expect(card.childElementCount).toBe(2);
@@ -311,10 +306,9 @@ describe('Kanban base module', () => {
 
         it('Forth column card class and inner layout testing', () => {
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells:nth-child(4) .e-card');
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-card')).toBe(true);
-                expect(card.classList.contains('e-draggable')).toBe(true);
-                expect(card.classList.contains('e-lib')).toBe(true);
                 expect(card.getAttribute('data-key')).toBe('Close');
                 expect(card.hasAttribute('data-id')).toBe(true);
                 expect(card.childElementCount).toBe(2);
@@ -540,10 +534,9 @@ describe('Kanban base module', () => {
         it('First column card class and inner layout testing', () => {
             let columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(1) .e-card';
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-card')).toBe(true);
-                expect(card.classList.contains('e-draggable')).toBe(true);
-                expect(card.classList.contains('e-lib')).toBe(true);
                 expect(card.getAttribute('data-key')).toBe('Open');
                 expect(card.hasAttribute('data-id')).toBe(true);
                 expect(card.childElementCount).toBe(2);
@@ -556,10 +549,9 @@ describe('Kanban base module', () => {
         it('Second column card class and inner layout testing', () => {
             let columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(2) .e-card';
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-card')).toBe(true);
-                expect(card.classList.contains('e-draggable')).toBe(true);
-                expect(card.classList.contains('e-lib')).toBe(true);
                 expect(card.getAttribute('data-key')).toBe('InProgress');
                 expect(card.hasAttribute('data-id')).toBe(true);
                 expect(card.childElementCount).toBe(2);
@@ -572,10 +564,9 @@ describe('Kanban base module', () => {
         it('Third column card class and inner layout testing', () => {
             let columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(3) .e-card';
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-card')).toBe(true);
-                expect(card.classList.contains('e-draggable')).toBe(true);
-                expect(card.classList.contains('e-lib')).toBe(true);
                 expect(card.getAttribute('data-key')).toBe('Testing');
                 expect(card.hasAttribute('data-id')).toBe(true);
                 expect(card.childElementCount).toBe(2);
@@ -588,10 +579,9 @@ describe('Kanban base module', () => {
         it('Forth column card class and inner layout testing', () => {
             let columnSelector: string = '.e-content-row:not(.e-swimlane-row) .e-content-cells:nth-child(4) .e-card';
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll(columnSelector);
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             cards.forEach((card: HTMLElement) => {
                 expect(card.classList.contains('e-card')).toBe(true);
-                expect(card.classList.contains('e-draggable')).toBe(true);
-                expect(card.classList.contains('e-lib')).toBe(true);
                 expect(card.getAttribute('data-key')).toBe('Close');
                 expect(card.hasAttribute('data-id')).toBe(true);
                 expect(card.childElementCount).toBe(2);
@@ -863,10 +853,9 @@ describe('Kanban base module', () => {
         });
         it('Layout rendering with template class in card', () => {
             let cards: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-card');
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             for (let i: number = 0; i < cards.length; i++) {
                 expect(cards[i].classList.contains('e-template')).toBe(true);
-                expect(cards[i].classList.contains('e-lib')).toBe(true);
-                expect(cards[i].classList.contains('e-draggable')).toBe(true);
                 expect(cards[i].hasAttribute('data-id')).toBe(true);
                 expect(cards[i].firstElementChild.classList.contains('card-template-wrap')).toBe(true);
                 expect(cards[i].firstElementChild.tagName).toBe('TABLE');
@@ -1059,16 +1048,13 @@ describe('Kanban base module', () => {
         });
 
         it('allowDragAndDrop propety testing', () => {
-            expect(kanbanObj.element.querySelector('.e-card').classList.contains('e-draggable')).toEqual(true);
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
             kanbanObj.allowDragAndDrop = false;
             kanbanObj.dataBind();
-            expect(kanbanObj.element.querySelector('.e-card').classList.contains('e-draggable')).toEqual(false);
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(false);
             kanbanObj.allowDragAndDrop = true;
             kanbanObj.dataBind();
-            expect(kanbanObj.element.querySelector('.e-card').classList.contains('e-draggable')).toEqual(true);
-            kanbanObj.allowDragAndDrop = true;
-            kanbanObj.dataBind();
-            expect(kanbanObj.element.querySelector('.e-card').classList.contains('e-draggable')).toEqual(true);
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
         });
 
         it('allowKeyboard propety testing', () => {
@@ -1086,12 +1072,12 @@ describe('Kanban base module', () => {
             expect(kanbanObj.element.querySelectorAll('.e-card-header').length).toEqual(9);
             kanbanObj.cardSettings.showHeader = false;
             kanbanObj.dataBind();
-            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(8);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
             expect(kanbanObj.element.querySelectorAll('.e-card-header').length).toEqual(0);
             kanbanObj.cardSettings.showHeader = true;
             kanbanObj.dataBind();
-            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(8);
-            expect(kanbanObj.element.querySelectorAll('.e-card-header').length).toEqual(8);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+            expect(kanbanObj.element.querySelectorAll('.e-card-header').length).toEqual(9);
         });
 
         it('height propety testing', () => {

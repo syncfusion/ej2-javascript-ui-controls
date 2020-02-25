@@ -16,18 +16,22 @@ describe('FileManager control LargeIcons view', () => {
     describe('methods testing', () => {
         let feObj: FileManager;
         let ele: HTMLElement, fmEle: HTMLElement;
+        let originalTimeout: any;
         beforeEach(() => {
             jasmine.Ajax.install();
             ele = createElement('div', { id: 'file_wrap2', styles: "display: none" });
             document.body.appendChild(ele);
             fmEle = createElement('div', { id: 'file2' });
             ele.appendChild(fmEle);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach(() => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             fmEle.remove();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('for refreshLayout', (done: Function) => {
             feObj = new FileManager({
@@ -44,7 +48,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (document.getElementById('file_wrap2') as any).style = "display: block";
                 expect((<any>document.getElementById("file2").getElementsByClassName('e-layout')[0]).style.height).toBe('0px');
@@ -70,7 +73,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let i: number = 0;
                 let action: string = 'select';
@@ -97,6 +99,7 @@ describe('FileManager control LargeIcons view', () => {
         let mouseEventArgs: any, tapEvent: any;
         let feObj: any;
         let ele: HTMLElement;
+        let originalTimeout: any;
         beforeEach(() => {
             jasmine.Ajax.install();
             ele = createElement('div', { id: 'file1' });
@@ -114,11 +117,14 @@ describe('FileManager control LargeIcons view', () => {
                 originalEvent: mouseEventArgs,
                 tapCount: 1
             };
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
         afterEach(() => {
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('for getSelectedFiles', (done: Function) => {
             feObj = new FileManager({
@@ -135,7 +141,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let li: any = document.getElementById('file1_largeicons').querySelectorAll('li');
                 mouseEventArgs.target = li[0];
@@ -167,7 +172,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let li: any = document.getElementById('file1_largeicons').querySelectorAll('li');
                 mouseEventArgs.target = li[0];
@@ -199,7 +203,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.deleteFiles();
                 let li: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -221,13 +224,11 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(data1Delete)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
                     let ntr: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -254,7 +255,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.deleteFiles();
                 let li: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -276,13 +276,11 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(idData1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(idData1Delete)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
                     let ntr: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -309,7 +307,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.renameFile();
                 let li: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -331,13 +328,11 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(folderRename)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(rename)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
                     let ntr: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -366,7 +361,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.renameFile();
                 let li: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -388,13 +382,11 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(idData1Rename1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(idData1Rename)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
                     let ntr: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -423,7 +415,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.openFile(null);
                 feObj.openFile("Document");
@@ -433,7 +424,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(data17)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
                     let ntr: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -461,7 +451,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.openFile(null);
                 feObj.openFile("617");
@@ -471,7 +460,6 @@ describe('FileManager control LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(idData4)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
                     let ntr: any = document.getElementById('file1_largeicons').querySelectorAll('li');
@@ -499,7 +487,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.downloadFiles();
                 feObj.downloadFiles(['12']);
@@ -521,7 +508,6 @@ describe('FileManager control LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(idData1)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 feObj.downloadFiles();
                 feObj.downloadFiles(['12']);
@@ -553,7 +539,7 @@ describe('FileManager control LargeIcons view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -580,7 +566,7 @@ describe('FileManager control LargeIcons view', () => {
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(filterData)
-                }); jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+                });
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     let len: number = feObj.detailsviewModule.gridObj.columns.length;

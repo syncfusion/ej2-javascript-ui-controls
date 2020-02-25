@@ -49,6 +49,7 @@ export class Toolbar {
                 created: this.toolbarCreateHandler.bind(this),
                 overflowMode: 'Popup',
                 clicked: this.onClicked.bind(this),
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 enableRtl: this.parent.enableRtl
             });
             this.toolbarObj.isStringTemplate = true;
@@ -164,6 +165,7 @@ export class Toolbar {
             this.buttonObj = new DropDownButton({
                 items: items, cssClass: getCssClass(this.parent, CLS.ROOT_POPUP),
                 select: sortbyClickHandler.bind(this, this.parent as IFileManager),
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 enableRtl: this.parent.enableRtl, iconCss: CLS.ICON_SHORTBY
             });
             this.buttonObj.isStringTemplate = true;
@@ -187,6 +189,7 @@ export class Toolbar {
                 cssClass: getCssClass(this.parent, 'e-caret-hide ' + CLS.ROOT_POPUP),
                 items: layoutItems, select: this.layoutChange.bind(this),
                 enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>'
             });
             this.layoutBtnObj.isStringTemplate = true;

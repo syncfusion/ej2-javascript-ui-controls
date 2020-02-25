@@ -625,3 +625,5 @@ export const FORMATTING_MENU: string = 'e-pivot-format-menu';
 export const NUMBER_FORMATTING_MENU: string = 'e-pivot-number-format-menu';
 /** @hidden */
 export const CONDITIONAL_FORMATTING_MENU: string = 'e-pivot-conditional-format-menu';
+/** @hidden */
+export const EMPTY_FORMAT: string = 'e-pivot-conditional-empty-format';

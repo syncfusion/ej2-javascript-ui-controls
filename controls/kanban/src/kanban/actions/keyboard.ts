@@ -26,6 +26,9 @@ export class Keyboard {
         multiSelectionByDownArrow: 'shift+40',
         multiSelectionByLeftArrow: 'shift+37',
         multiSelectionByRightArrow: 'shift+39',
+        shiftTab: 'shift+tab',
+        enter: '13',
+        tab: 'tab'
     };
     /**
      * Constructor for keyboard module
@@ -42,74 +45,126 @@ export class Keyboard {
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {
-        let selectedCard: Element = this.parent.element.querySelectorAll('.e-card.e-selection').item(0);
-        if (!selectedCard && e.action !== 'firstCardSelection' && e.action !== 'lastCardSelection') {
+        let selectedCard: Element = this.parent.element.querySelectorAll(`.${cls.CARD_CLASS}.${cls.CARD_SELECTION_CLASS}`).item(0);
+        if (!selectedCard && !closest(document.activeElement, `.${cls.ROOT_CLASS}`)) {
             return;
         }
-        let key: string;
         switch (e.action) {
             case 'upArrow':
             case 'downArrow':
             case 'multiSelectionByUpArrow':
             case 'multiSelectionByDownArrow':
-                key = closest(this.parent.actionModule.lastCardSelection, '.e-content-cells').getAttribute('data-key');
-                let cardSelector: string = '.e-content-cells[data-key=' + key + '] .e-card';
-                let allCards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(cardSelector));
-                let curId: string = this.parent.actionModule.lastCardSelection.getAttribute('data-id');
-                let curIndex: number = this.getCardId(allCards).indexOf(curId);
-                let isShift: boolean = ((e.action === 'multiSelectionByUpArrow' || e.action === 'multiSelectionByDownArrow')
-                    && this.parent.cardSettings.selectionType === 'Multiple');
-                let index: number = (e.action === 'upArrow' || e.action === 'multiSelectionByUpArrow') ? curIndex - 1 : curIndex + 1;
-                this.parent.actionModule.cardSelection(allCards[index], false, isShift);
+                this.processUpDownArrow(e.action, selectedCard);
                 break;
             case 'rightArrow':
             case 'leftArrow':
             case 'multiSelectionByLeftArrow':
             case 'multiSelectionByRightArrow':
-                this.moveCards(e.action, this.parent.actionModule.lastCardSelection);
+                this.processLeftRightArrow(e, selectedCard);
                 break;
             case 'firstCardSelection':
             case 'lastCardSelection':
-                if (selectedCard) {
-                    removeClass([selectedCard], 'e-selection');
-                    let selection: string[] = this.parent.actionModule.selectionArray;
-                    selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
-                }
-                let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS));
-                let element: Element = e.action === 'firstCardSelection' ? cards[0] : cards[cards.length - 1];
-                this.parent.actionModule.cardSelection(element, false, false);
+                this.processCardSelection(e.action, selectedCard);
                 break;
             case 'swimlaneExpandAll':
             case 'swimlaneCollapseAll':
             case 'selectedSwimlaneExpand':
             case 'selectedSwimlaneCollapse':
-                if (this.parent.swimlaneSettings.keyField) {
-                    this.swimlaneExpandCollapse(e.action);
-                }
+                this.processSwimlaneExpandCollapse(e.action);
                 break;
             case 'selectedColumnExpand':
             case 'selectedColumnCollapse':
-                key = selectedCard.getAttribute('data-key');
-                let cell: HTMLTableHeaderCellElement = this.parent.element.querySelector('.e-header-cells[data-key=' + key + ']');
-                if (cell.classList.contains(cls.HEADER_ROW_TOGGLE_CLASS)) {
-                    if ((cell.classList.contains('e-collapsed') && e.action === 'selectedColumnCollapse') ||
-                        (!cell.classList.contains('e-collapsed') && e.action === 'selectedColumnExpand')) {
-                        return;
-                    } else {
-                        this.parent.actionModule.columnExpandCollapse(cell);
-                    }
-                }
+                this.processColumnExpandcollapse(e.action, selectedCard);
+                break;
+            case 'enter':
+                this.processEnter(e, selectedCard);
+                break;
+            case 'tab':
+            case 'shiftTab':
+                this.processTab(e.action, selectedCard);
                 break;
         }
     }
 
-    private swimlaneExpandCollapse(action: string): void {
-        let className: string = '.e-card.e-selection';
+    private processCardSelection(action: string, selectedCard: Element): void {
+        if (selectedCard) {
+            removeClass([selectedCard], cls.CARD_SELECTION_CLASS);
+            let selection: string[] = this.parent.actionModule.selectionArray;
+            selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
+        }
+        let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS));
+        let element: Element = action === 'firstCardSelection' ? cards[0] : cards[cards.length - 1];
+        this.parent.actionModule.cardSelection(element, false, false);
+    }
+
+    private processLeftRightArrow(e: KeyboardEventArgs, selectedCard: Element): void {
+        let activeElement: HTMLElement = document.activeElement as HTMLElement;
+        if (!selectedCard && activeElement) {
+            if (activeElement.classList.contains(cls.COLUMN_EXPAND_CLASS) || activeElement.classList.contains(cls.COLUMN_COLLAPSE_CLASS)) {
+                this.parent.actionModule.columnExpandCollapse(activeElement);
+            } else if (activeElement.classList.contains(cls.SWIMLANE_ROW_EXPAND_CLASS) ||
+                activeElement.classList.contains(cls.SWIMLANE_ROW_COLLAPSE_CLASS)) {
+                this.parent.actionModule.rowExpandCollapse(e);
+            }
+        }
+        if (selectedCard) {
+            this.processMoveCards(e.action, this.parent.actionModule.lastCardSelection);
+        }
+    }
+
+    private processUpDownArrow(action: string, selectedCard: Element): void {
+        let card: HTMLElement;
+        let isShift: boolean = false;
+        if (selectedCard) {
+            let key: string = closest(this.parent.actionModule.lastCardSelection, '.' + cls.CONTENT_CELLS_CLASS).getAttribute('data-key');
+            let cardSelector: string = `.${cls.CONTENT_CELLS_CLASS}[data-key="${key}"] .${cls.CARD_CLASS}`;
+            let allCards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(cardSelector));
+            let curId: string = this.parent.actionModule.lastCardSelection.getAttribute('data-id');
+            let curIndex: number = this.getCardId(allCards).indexOf(curId);
+            isShift = ((action === 'multiSelectionByUpArrow' || action === 'multiSelectionByDownArrow')
+                && this.parent.cardSettings.selectionType === 'Multiple');
+            let index: number = (action === 'upArrow' || action === 'multiSelectionByUpArrow') ? curIndex - 1 : curIndex + 1;
+            card = allCards[index];
+        } else if (action === 'downArrow' && document.activeElement) {
+            if (document.activeElement.classList.contains(cls.SWIMLANE_ROW_EXPAND_CLASS)) {
+                let parentEle: Element = closest(document.activeElement, '.' + cls.SWIMLANE_ROW_CLASS);
+                card = parentEle.nextElementSibling.querySelector('.' + cls.CARD_CLASS);
+            } else if (document.activeElement.classList.contains(cls.ROOT_CLASS) && !this.parent.swimlaneSettings.keyField) {
+                card = this.parent.element.querySelector('.' + cls.CARD_CLASS);
+            }
+        } else if (action === 'upArrow' && document.activeElement &&
+        document.activeElement.classList.contains(cls.SWIMLANE_ROW_EXPAND_CLASS)) {
+            let parentEle: Element = closest(document.activeElement, '.' + cls.SWIMLANE_ROW_CLASS);
+            let allCards: HTMLElement[] = [].slice.call(parentEle.previousElementSibling.querySelectorAll('.' + cls.CARD_CLASS));
+            card = (allCards).slice(-1)[0];
+        }
+        this.parent.actionModule.cardSelection(card, false, isShift);
+        this.parent.element.focus();
+    }
+
+    private processColumnExpandcollapse(action: string, selectedCard: Element): void {
+        let key: string = selectedCard.getAttribute('data-key');
+        let cell: HTMLTableHeaderCellElement = this.parent.element.querySelector(`.${cls.HEADER_CELLS_CLASS}[data-key="${key}"]`);
+        if (cell.classList.contains(cls.HEADER_ROW_TOGGLE_CLASS)) {
+            if ((cell.classList.contains(cls.COLLAPSED_CLASS) && action === 'selectedColumnCollapse') ||
+                (!cell.classList.contains(cls.COLLAPSED_CLASS) && action === 'selectedColumnExpand')) {
+                return;
+            } else {
+                this.parent.actionModule.columnExpandCollapse(cell);
+            }
+        }
+    }
+
+    private processSwimlaneExpandCollapse(action: string): void {
+        if (!this.parent.swimlaneSettings.keyField) {
+            return;
+        }
+        let className: string = `.${cls.CARD_CLASS}.${cls.CARD_SELECTION_CLASS}`;
         if (action === 'swimlaneExpandAll' || action === 'swimlaneCollapseAll') {
-            className = '.e-content-row.e-swimlane-row';
+            className = `.${cls.CONTENT_ROW_CLASS}.${cls.SWIMLANE_ROW_CLASS}`;
         }
         let element: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
-        let collapseCount: number = this.parent.element.querySelectorAll(className + '.e-collapsed').length;
+        let collapseCount: number = this.parent.element.querySelectorAll(className + '.' + cls.COLLAPSED_CLASS).length;
         if ((action === 'swimlaneCollapseAll' && element.length - collapseCount === 0) ||
             (action === 'swimlaneExpandAll' && element.length - collapseCount === element.length)) {
             return;
@@ -117,13 +172,17 @@ export class Keyboard {
         element.forEach((ele: Element) => {
             if (ele.classList.contains(cls.CARD_CLASS)) {
                 ele = closest(ele, '.' + cls.CONTENT_ROW_CLASS).previousElementSibling;
+                if ((!ele.classList.contains(cls.COLLAPSED_CLASS) && action === 'selectedSwimlaneExpand') ||
+                (ele.classList.contains(cls.COLLAPSED_CLASS) && action === 'selectedSwimlaneCollapse')) {
+                     return;
+                }
             }
             if (ele.classList.contains(cls.COLLAPSED_CLASS)) {
                 removeClass([ele, ele.nextElementSibling], cls.COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + cls.ICON_CLASS), [cls.SWIMLANE_ROW_EXPAND], [cls.SWIMLANE_ROW_COLLAPSE]);
+                classList(ele.querySelector('.' + cls.ICON_CLASS), [cls.SWIMLANE_ROW_EXPAND_CLASS], [cls.SWIMLANE_ROW_COLLAPSE_CLASS]);
             } else if (!ele.classList.contains(cls.COLLAPSED_CLASS)) {
                 addClass([ele, ele.nextElementSibling], cls.COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + cls.ICON_CLASS), [cls.SWIMLANE_ROW_COLLAPSE], [cls.SWIMLANE_ROW_EXPAND]);
+                classList(ele.querySelector('.' + cls.ICON_CLASS), [cls.SWIMLANE_ROW_COLLAPSE_CLASS], [cls.SWIMLANE_ROW_EXPAND_CLASS]);
             }
         });
     }
@@ -134,52 +193,70 @@ export class Keyboard {
         return curCardId;
     }
 
-    private moveNextRow(row: Element): void {
+    private processNextRow(row: Element): void {
         for (let i: number = 0; i < row.childElementCount; i++) {
             let nextCell: Element = row.children[i];
             let nextCellCards: HTMLElement[] = [].slice.call(nextCell.querySelectorAll('.' + cls.CARD_CLASS));
             if (nextCellCards.length > 0) {
                 this.parent.actionModule.cardSelection(nextCellCards[0], false, false);
-                if (row.classList.contains('e-collapsed')) {
-                    this.swimlaneExpandCollapse('selectedSwimlaneExpand');
+                if (row.classList.contains(cls.COLLAPSED_CLASS)) {
+                    this.processSwimlaneExpandCollapse('selectedSwimlaneExpand');
                 }
                 break;
             }
         }
     }
 
-    private movePreviousRow(row: Element): void {
+    private processPreviousRow(row: Element): void {
         for (let i: number = (row.childElementCount - 1); i >= 0; i--) {
             let nextCell: Element = row.children[i];
             let nextCellCards: HTMLElement[] = [].slice.call(nextCell.querySelectorAll('.' + cls.CARD_CLASS));
             if (nextCellCards.length > 0) {
-                if (!row.classList.contains('e-collapsed')) {
-                    this.swimlaneExpandCollapse('selectedSwimlaneCollapse');
-                }
                 this.parent.actionModule.cardSelection(nextCellCards.slice(-1)[0], false, false);
                 break;
             }
         }
     }
 
-    private cardIndex(isSame: boolean, nextCellCards: HTMLElement[], curIndex: number, action: string): void {
+    private processCards(isSame: boolean, nextCellCards: HTMLElement[], curIndex: number, action: string): void {
         if (isSame) {
             let isShift: boolean = ((action === 'multiSelectionByRightArrow' || action === 'multiSelectionByLeftArrow')
                 && this.parent.cardSettings.selectionType === 'Multiple');
-            if (nextCellCards[curIndex]) {
-                this.parent.actionModule.cardSelection(nextCellCards[curIndex], false, isShift);
-            } else {
-                this.parent.actionModule.cardSelection(nextCellCards.slice(-1)[0], false, isShift);
-            }
+            let processCard: HTMLElement = nextCellCards[curIndex] || nextCellCards.slice(-1)[0];
+            this.parent.actionModule.cardSelection(processCard, false, isShift);
         }
     }
 
-    private moveCards(action: string, card: Element): void {
+    private processEnter(e: Event, selectedCard: Element): void {
+        let element: Element = (e.target) as HTMLElement;
+        if (element.classList.contains(cls.HEADER_ICON_CLASS)) {
+            this.parent.actionModule.columnExpandCollapse(e);
+        }
+        if (element.classList.contains(cls.SWIMLANE_ROW_EXPAND_CLASS) || element.classList.contains(cls.SWIMLANE_ROW_COLLAPSE_CLASS)) {
+            this.parent.actionModule.rowExpandCollapse(e);
+        }
+        if (selectedCard) {
+            this.parent.actionModule.cardSelection(selectedCard, false, false);
+        }
+    }
+
+    private processTab(action: string, selectedCard: Element): void {
+        if (selectedCard) {
+            let target: HTMLElement = closest(selectedCard, '.' + cls.CONTENT_ROW_CLASS) as HTMLElement;
+            let tabTarget: Element = action === 'tab' ? target.previousElementSibling : target.nextElementSibling;
+            if (tabTarget) {
+                (tabTarget.querySelector(`.${cls.SWIMLANE_ROW_COLLAPSE_CLASS},.${cls.SWIMLANE_ROW_EXPAND_CLASS}`) as HTMLElement).focus();
+            }
+            removeClass([selectedCard], cls.CARD_SELECTION_CLASS);
+        }
+    }
+
+    private processMoveCards(action: string, card: Element): void {
         let nextCell: Element;
         let nextCellCards: HTMLElement[];
-        let curCell: HTMLTableCellElement = closest(card, '.e-content-cells') as HTMLTableCellElement;
-        let curCellCards: HTMLElement[] = [].slice.call(curCell.querySelectorAll('.e-card'));
-        let curRow: HTMLTableRowElement = closest(curCell, '.e-content-row') as HTMLTableRowElement;
+        let curCell: HTMLTableCellElement = closest(card, '.' + cls.CONTENT_CELLS_CLASS) as HTMLTableCellElement;
+        let curCellCards: HTMLElement[] = [].slice.call(curCell.querySelectorAll('.' + cls.CARD_CLASS));
+        let curRow: HTMLTableRowElement = closest(curCell, '.' + cls.CONTENT_ROW_CLASS) as HTMLTableRowElement;
         let curIndex: number = this.getCardId(curCellCards).indexOf(card.getAttribute('data-id'));
         if (action === 'rightArrow' || action === 'multiSelectionByRightArrow') {
             if (curCell.cellIndex === (curRow.childElementCount - 1) && this.parent.swimlaneSettings.keyField
@@ -187,9 +264,8 @@ export class Keyboard {
                 if (curIndex < (this.getCardId(curCellCards).length - 1)) {
                     this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.nextElementSibling, false, false);
                 } else if (curRow.rowIndex !== (this.parent.element.querySelectorAll('.' + cls.CONTENT_ROW_CLASS).length - 1)) {
-                    let targetRow: Element =
-                        this.parent.element.querySelector('.' + cls.CONTENT_ROW_CLASS + `:nth-child(${curRow.rowIndex + 3})`);
-                    this.moveNextRow(targetRow);
+                    let row: Element = this.parent.element.querySelector(`.${cls.CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex + 3})`);
+                    this.processNextRow(row);
                 }
             } else {
                 let isSame: boolean = false;
@@ -201,17 +277,17 @@ export class Keyboard {
                         break;
                     }
                 }
-                this.cardIndex(isSame, nextCellCards, curIndex, action);
+                this.processCards(isSame, nextCellCards, curIndex, action);
             }
         } else {
             if (curCell.cellIndex === 0 && this.parent.swimlaneSettings.keyField && action !== 'multiSelectionByLeftArrow') {
                 if (curIndex > 0) {
                     this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.previousElementSibling, false, false);
                 } else if (curRow.rowIndex > 1) {
-                    let className: string = '.' + cls.CONTENT_ROW_CLASS + `:nth-child(${curRow.rowIndex - 1})` + ':not(.e-collapsed)';
+                    let className: string = `.${cls.CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex - 1}):not(.${cls.COLLAPSED_CLASS})`;
                     let targetRow: Element = this.parent.element.querySelector(className);
                     if (targetRow) {
-                        this.movePreviousRow(targetRow);
+                        this.processPreviousRow(targetRow);
                     }
                 }
             } else {
@@ -224,15 +300,15 @@ export class Keyboard {
                         break;
                     }
                     if (i === 0 && this.parent.swimlaneSettings.keyField) {
-                        let row: Element =
-                            this.parent.element.querySelector('.' + cls.CONTENT_ROW_CLASS + `:nth-child(${curRow.rowIndex - 1})`);
-                        this.movePreviousRow(row);
+                        let row: Element = this.parent.element.querySelector(`.${cls.CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex - 1})`);
+                        this.processPreviousRow(row);
                     }
                 }
-                this.cardIndex(isSame, nextCellCards, curIndex, action);
+                this.processCards(isSame, nextCellCards, curIndex, action);
             }
         }
     }
+
     /**
      * Get module name.
      */

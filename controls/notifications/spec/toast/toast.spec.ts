@@ -120,6 +120,25 @@ describe("Toast Testing", () => {
         });
     });
 
+    describe("Blazor coverage testing ", () => {
+        let toast: Toast;
+        beforeEach((): void => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "toast";
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            document.body.innerHTML = "";
+        });
+        it("Blazor testing", () => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({ }, ele);
+            toast.show();
+            (toast as any).isDestroy = true;
+            (toast as any).destroyToast(toast.element);
+        });
+    });
+
     describe("Toast Title property testing ", () => {
         let toast: Toast;
         beforeEach((): void => {

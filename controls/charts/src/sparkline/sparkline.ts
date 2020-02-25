@@ -6,7 +6,7 @@ import { SparklineBorder, SparklineTooltipSettings, ContainerArea, AxisSettings,
 import { SparklineDataLabelSettings, RangeBandSettings } from './model/base';
 import { SparklineBorderModel, SparklineTooltipSettingsModel, ContainerAreaModel, AxisSettingsModel } from './model/base-model';
 import { SparklineMarkerSettingsModel, SparklineDataLabelSettingsModel, RangeBandSettingsModel, PaddingModel } from './model/base-model';
-import { SparklineType, SparklineValueType, SparklineTheme } from './model/enum';
+import { SparklineType, SparklineValueType, SparklineRangePadding, SparklineTheme } from './model/enum';
 import { Size, createSvg, RectOption, Rect, drawRectangle, getIdElement, SparkValues, withInBounds, removeElement } from './utils/helper';
 import { ISparklineLoadedEventArgs, ISparklineLoadEventArgs, IDataLabelRenderingEventArgs, IPointRegionEventArgs } from './model/interface';
 import { IMarkerRenderingEventArgs, ISparklinePointEventArgs, ISparklineMouseEventArgs } from './model/interface';
@@ -58,6 +58,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      */
     @Property('Line')
     public type: SparklineType;
+    /**
+     * To configure Sparkline series type.
+     * @default 'None'
+     */
+    @Property('None')
+    public rangePadding: SparklineRangePadding;
     /**
      * To configure sparkline data source.
      * @isGenericType true
@@ -327,6 +333,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public svgObject: Element;
     /** @private */
     public isDevice: Boolean = Browser.isDevice;
+    /** @private */
+    public intervalDivs: number[] = [10, 5, 2, 1];
     /** @private */
     public isTouch: Boolean;
     /** @private */

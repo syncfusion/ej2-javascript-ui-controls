@@ -3,6 +3,12 @@
   /*! field-list theme */
 
   #{&}.e-pivotfieldlist {
+
+    .e-member-editor-dialog,
+    .e-olap-editor-dialog {
+      visibility: hidden;
+    }
+
     .e-select-table {
       background-color: $field-list-toggle-bg-color;
       border: .5px $field-list-border-type $field-list-toggle-border-color;

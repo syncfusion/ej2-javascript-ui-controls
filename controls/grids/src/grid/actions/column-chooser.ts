@@ -694,11 +694,13 @@ export class ColumnChooser implements IAction {
     private beforeOpenColumnChooserEvent(): object {
         let args1: { requestType: string, element?: Element, columns?: Column[], cancel: boolean, searchOperator: string } = {
             requestType: 'beforeOpenColumnChooser', element: this.parent.element,
-            columns: this.getColumns() as Column[], cancel: false, searchOperator: this.searchOperator
+            columns: this.getColumns() as Column[], cancel: false,
+            searchOperator: this.parent.columnChooserSettings.operator
         };
         if (isBlazor() && !this.parent.isJsComponent) {
             args1 = {
-                requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
+                requestType: 'beforeOpenColumnChooser', cancel: false,
+                searchOperator: this.parent.columnChooserSettings.operator
             };
         }
         this.parent.trigger(events.beforeOpenColumnChooser, args1);

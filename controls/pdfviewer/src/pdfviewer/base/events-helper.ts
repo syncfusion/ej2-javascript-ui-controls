@@ -407,6 +407,182 @@ export interface AnnotationMoveEventArgs extends BaseEventArgs {
 }
 
 /**
+ * This event arguments provides the necessary information about signature add event.
+ */
+export interface AddSignatureEventArgs extends BaseEventArgs {
+    /**
+     * Defines the bounds of the signature added in the page of the PDF document.
+     */
+    // tslint:disable-next-line
+    bounds: any;
+    /**
+     * Defines the id of the signature added in the page of the PDF document.
+     */
+    id: string;
+    /**
+     * Defines the page number in which the signature is added.
+     */
+    pageIndex: number;
+    /**
+     * Define the type of the signature added in the page of the PDF document.
+     */
+    type: AnnotationType;
+    /**
+     * Define the opacity of the signature added in the page of the PDF document.
+     */
+    opacity: number;
+    /**
+     * Define the stroke color of the signature added in the page of the PDF document.
+     */
+    strokeColor: string;
+    /**
+     * Define the thickness of the signature added in the page of the PDF document.
+     */
+    thickness: number;
+}
+
+/**
+ * This event arguments provides the necessary information about signature remove event.
+ */
+export interface RemoveSignatureEventArgs extends BaseEventArgs {
+    /**
+     * Defines the bounds of the signature removed in the page of the PDF document.
+     */
+    // tslint:disable-next-line
+    bounds: any;
+    /**
+     * Defines the id of the signature removed in the page of the PDF document.
+     */
+    id: string;
+    /**
+     * Defines the page number in which the signature is removed.
+     */
+    pageIndex: number;
+    /**
+     * Define the type of the signature removed in the page of the PDF document.
+     */
+    type: AnnotationType;
+}
+
+/**
+ * This event arguments provides the necessary information about signature move event.
+ */
+export interface MoveSignatureEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the annotation moved in the page of the PDF document.
+     */
+    id: string;
+    /**
+     * Defines the page number in which the annotation is moved.
+     */
+    pageIndex: number;
+    /**
+     * Defines the type of the signature moved in the page of the PDF document.
+     */
+    type: AnnotationType;
+    /**
+     * Define the opacity of the signature added in the page of the PDF document.
+     */
+    opacity: number;
+    /**
+     * Define the stroke color of the signature added in the page of the PDF document.
+     */
+    strokeColor: string;
+    /**
+     * Define the thickness of the signature added in the page of the PDF document.
+     */
+    thickness: number;
+    /**
+     * Previous position of signature in the page text content.
+     */
+    previousPosition: object;
+    /**
+     * Current position of signature in the page text content.
+     */
+    currentPosition: object;
+}
+
+/**
+ * This event arguments provides the necessary information about signature properties change event.
+ */
+export interface SignaturePropertiesChangeEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the signature property is changed in the page of the PDF document.
+     */
+    id: string;
+    /**
+     * Defines the page number in which the signature property is changed.
+     */
+    pageIndex: number;
+    /**
+     * Defines the type of the signature property is changed in the page of the PDF document.
+     */
+    type: AnnotationType;
+    /**
+     * Specifies that the stroke color of the signature is changed.
+     */
+    isStrokeColorChanged?: boolean;
+    /**
+     * Specifies that the opacity of the signature is changed.
+     */
+    isOpacityChanged: boolean;
+    /**
+     * Specifies that the thickness of the signature is changed.
+     */
+    isThicknessChanged?: boolean;
+    /**
+     * Defines the old property value of the signature.
+     */
+    // tslint:disable-next-line
+    oldValue: any;
+    /**
+     * Defines the new property value of the signature.
+     */
+    // tslint:disable-next-line
+    newValue: any;
+}
+
+/**
+ * This event arguments provides the necessary information about signature resize event.
+ */
+export interface ResizeSignatureEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the signature added in the page of the PDF document.
+     */
+    id: string;
+    /**
+     * Defines the page number in which the signature is added.
+     */
+    pageIndex: number;
+    /**
+     * Define the type of the signature added in the page of the PDF document.
+     */
+    type: AnnotationType;
+    /**
+     * Define the opacity of the signature added in the page of the PDF document.
+     */
+    opacity: number;
+    /**
+     * Define the stroke color of the signature added in the page of the PDF document.
+     */
+    strokeColor: string;
+    /**
+     * Define the thickness of the signature added in the page of the PDF document.
+     */
+    thickness: number;
+    /**
+     * Defines the current Position of the signature added in the page of the PDF document.
+     */
+    // tslint:disable-next-line
+    currentPosition: any;
+    /**
+     * Defines the previous position of the signature added in the page of the PDF document.
+     */
+    // tslint:disable-next-line
+    previousPosition: any;
+}
+
+/**
  * This event arguments provides the necessary information about annotation mouseover event.
  */
 export interface AnnotationMouseoverEventArgs extends BaseEventArgs {
@@ -604,6 +780,16 @@ export interface ExportFailureEventArgs extends BaseEventArgs {
     errorDetails: string;
 }
 
+/** 
+ * This event arguments provides the necessary information about text extraction completed in the PDF Viewer.
+ */
+export interface ExtractTextCompletedEventArgs extends BaseEventArgs {
+    /**
+     * Returns the extracted text collection
+     */
+    // tslint:disable-next-line
+    documentTextCollection: any;
+}
 /** 
  * This event arguments provides the necessary information about data.
  */

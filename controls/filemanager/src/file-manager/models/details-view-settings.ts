@@ -5,7 +5,7 @@ import { ColumnModel } from './index';
  */
 export const columnArray: ColumnModel[] = [
     {
-        field: 'name', headerText: 'Name', minWidth: 120, width: 'auto',
+        field: 'name', headerText: 'Name', minWidth: 120,
         template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name'}
     },
     {
@@ -33,7 +33,7 @@ export class DetailsViewSettings extends ChildProperty<DetailsViewSettings> {
      * Specifies the customizable details view.
      * @default {     
      * columns: [{
-     * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', customAttributes: { class: 'e-fe-grid-name' },
+     * field: 'name', headerText: 'Name', minWidth: 120, customAttributes: { class: 'e-fe-grid-name' },
      * template: '\<span class="e-fe-text">${name}\</span>'},{field: 'size', headerText: 'Size', 
      * minWidth: 50, width: '110', template: '\<span class="e-fe-size">${size}\</span>'},
      * { field: '_fm_modified', headerText: 'DateModified',

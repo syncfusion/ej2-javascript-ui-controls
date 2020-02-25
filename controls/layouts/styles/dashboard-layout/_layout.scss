@@ -145,12 +145,8 @@
       }
     }
 
-    & .e-panel.e-draggable {
-
-      &:hover {
-        cursor: $panel-dragging-cursor;
-      }
-
+    & .e-drag:hover {
+      cursor: $panel-dragging-cursor;
     }
 
     & .e-panel.e-dragging,

@@ -85,7 +85,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
  */
 const columnArray = [
     {
-        field: 'name', headerText: 'Name', minWidth: 120, width: 'auto',
+        field: 'name', headerText: 'Name', minWidth: 120,
         template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
     },
     {
@@ -176,6 +176,9 @@ __decorate$6([
 __decorate$6([
     Property(true)
 ], UploadSettings.prototype, "autoUpload", void 0);
+__decorate$6([
+    Property(false)
+], UploadSettings.prototype, "autoClose", void 0);
 __decorate$6([
     Property(0)
 ], UploadSettings.prototype, "minFileSize", void 0);
@@ -509,6 +512,8 @@ const destroy = 'destroy';
 const beforeRequest = 'before-request';
 /** @hidden */
 const upload = 'upload';
+/** @hidden */
+const skipUpload = 'skip-upload';
 /** @hidden */
 const afterRequest = 'after-request';
 /** @hidden */
@@ -1976,6 +1981,7 @@ function createDialog(parent, text, e, details, replaceItems) {
             open: options.open,
             close: options.close,
             enableRtl: parent.enableRtl,
+            enableHtmlSanitizer: parent.enableHtmlSanitizer,
             locale: parent.locale
         });
         parent.dialogObj.isStringTemplate = true;
@@ -2007,6 +2013,7 @@ function createExtDialog(parent, text, replaceItems, newPath) {
             buttons: extOptions.buttons,
             open: extOptions.open,
             close: extOptions.close,
+            enableHtmlSanitizer: parent.enableHtmlSanitizer,
             locale: parent.locale
         });
         parent.extDialogObj.isStringTemplate = true;
@@ -2192,14 +2199,18 @@ function getExtOptions(parent, text, replaceItems, newPath) {
                 {
                     buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Skip') },
                     click: () => {
+                        let count = 0;
                         if (parent.isApplySame) {
+                            count = parent.retryFiles.length;
                             parent.retryFiles = [];
                             retryDlgClose(parent);
                         }
                         else {
+                            count = 1;
                             parent.retryFiles.splice(0, 1);
                             (parent.retryFiles.length !== 0) ? createExtDialog(parent, 'UploadRetry') : retryDlgClose(parent);
                         }
+                        parent.notify(skipUpload, { count: count });
                     }
                 }
             ];
@@ -2637,6 +2648,7 @@ function createImageDialog(parent, header, imageUrl) {
             locale: parent.locale,
             enableResize: true,
             allowDragging: true,
+            enableHtmlSanitizer: parent.enableHtmlSanitizer,
             position: { X: 'center', Y: 'center' },
             enableRtl: parent.enableRtl,
             open: openImage.bind(this, parent),
@@ -2774,6 +2786,7 @@ class LargeIconsView {
                 fields: { text: 'name', iconCss: '_fm_icon', imageUrl: '_fm_imageUrl', htmlAttributes: '_fm_htmlAttr' },
                 sortOrder: this.parent.sortOrder,
                 itemCreated: this.onItemCreated.bind(this),
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             };
             this.items = [];
             this.items = this.renderList(args);
@@ -4264,6 +4277,7 @@ class BreadCrumbBar {
                         cssClass: 'e-caret-hide e-submenu',
                         iconCss: ICON_BREADCRUMB,
                         iconPosition: 'Top',
+                        enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                         beforeItemRender: this.addSubMenuAttributes.bind(this),
                         select: this.subMenuSelectOperations.bind(this)
                     });
@@ -4515,6 +4529,7 @@ class ContextMenu$2 {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             target: '#' + this.parent.element.id,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             beforeItemRender: this.onBeforeItemRender.bind(this),
             select: this.onSelect.bind(this),
             beforeOpen: this.onBeforeOpen.bind(this),
@@ -5208,6 +5223,8 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         this.dragCursorPosition = { left: 44, top: 18 };
         this.isDropEnd = false;
         this.droppedObjects = [];
+        this.uploadingCount = 0;
+        this.uploadedCount = 0;
         FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
     }
     /**
@@ -5402,6 +5419,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             paneSettings: paneSettings,
             width: '100%',
             enableRtl: false,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
             resizing: this.splitterResize.bind(this)
         });
         this.splitterObj.isStringTemplate = true;
@@ -5477,6 +5495,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
             enableRtl: this.enableRtl,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
             open: this.onOpen.bind(this),
             close: this.onClose.bind(this),
             beforeOpen: this.onBeforeOpen.bind(this),
@@ -5612,6 +5631,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         });
     }
     onRemoving() {
+        this.onFileUploadSuccess({ count: 1 });
         if (this.uploadObj.getFilesData().length === 1) {
             this.uploadDialogObj.hide();
         }
@@ -5627,6 +5647,8 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         if (args.filesData.length === 0) {
             return;
         }
+        this.uploadingCount = args.filesData.length;
+        this.uploadedCount = 0;
         let details = getPathObject(this);
         if (!hasUploadAccess(details)) {
             args.cancel = true;
@@ -5635,12 +5657,19 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         }
         this.uploadDialogObj.show();
     }
+    onFileUploadSuccess(args) {
+        this.uploadedCount = this.uploadedCount + args.count;
+        if (this.uploadSettings.autoClose && (this.uploadingCount === this.uploadedCount)) {
+            this.uploadDialogObj.hide();
+        }
+    }
     /* istanbul ignore next */
     onUploadSuccess(files) {
         let args = { action: 'Upload', result: files };
         this.trigger('success', args);
         this.itemData = [getValue(this.pathId[this.pathId.length - 1], this.feParent)];
         read(this, pathChanged, this.path);
+        this.onFileUploadSuccess({ count: 1 });
         if (typeof getValue('onSuccess', this.uploadEventArgs.ajaxSettings) === 'function') {
             getValue('onSuccess', this.uploadEventArgs.ajaxSettings)();
         }
@@ -5672,6 +5701,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         this.on(afterRequest, this.hideSpinner, this);
         this.on(initialEnd, this.onInitialEnd, this);
         this.on(detailsInit, this.onDetailsInit, this);
+        this.on(skipUpload, this.onFileUploadSuccess, this);
         EventHandler.add(this.element, 'contextmenu', this.onContextMenu, this);
     }
     removeEventListeners() {
@@ -5682,6 +5712,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         this.off(afterRequest, this.hideSpinner);
         this.off(initialEnd, this.onInitialEnd);
         this.off(detailsInit, this.onDetailsInit);
+        this.off(skipUpload, this.onFileUploadSuccess);
         EventHandler.remove(this.element, 'contextmenu', this.onContextMenu);
     }
     onDetailsInit() {
@@ -6159,6 +6190,9 @@ __decorate$8([
     Complex({}, DetailsViewSettings)
 ], FileManager.prototype, "detailsViewSettings", void 0);
 __decorate$8([
+    Property(true)
+], FileManager.prototype, "enableHtmlSanitizer", void 0);
+__decorate$8([
     Property(false)
 ], FileManager.prototype, "enablePersistence", void 0);
 __decorate$8([
@@ -6307,6 +6341,7 @@ class Toolbar$1 {
                 created: this.toolbarCreateHandler.bind(this),
                 overflowMode: 'Popup',
                 clicked: this.onClicked.bind(this),
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 enableRtl: this.parent.enableRtl
             });
             this.toolbarObj.isStringTemplate = true;
@@ -6425,6 +6460,7 @@ class Toolbar$1 {
             this.buttonObj = new DropDownButton({
                 items: items, cssClass: getCssClass(this.parent, ROOT_POPUP),
                 select: sortbyClickHandler.bind(this, this.parent),
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 enableRtl: this.parent.enableRtl, iconCss: ICON_SHORTBY
             });
             this.buttonObj.isStringTemplate = true;
@@ -6448,6 +6484,7 @@ class Toolbar$1 {
                 cssClass: getCssClass(this.parent, 'e-caret-hide ' + ROOT_POPUP),
                 items: layoutItems, select: this.layoutChange.bind(this),
                 enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>'
             });
             this.layoutBtnObj.isStringTemplate = true;
@@ -6761,6 +6798,7 @@ class NavigationPane {
         this.isDrag = false;
         this.isPathDragged = false;
         this.isRenameParent = false;
+        this.isRightClick = false;
         this.renameParent = null;
         this.parent = parent;
         this.addEventListener();
@@ -6798,6 +6836,7 @@ class NavigationPane {
                 dataSource: [rootData], id: '_fm_id', parentID: '_fm_pId', expanded: '_fm_expanded', selected: '_fm_selected', text: 'name',
                 hasChildren: 'hasChild', iconCss: '_fm_icon', htmlAttributes: '_fm_htmlAttr', tooltip: 'name'
             },
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             nodeSelected: this.onNodeSelected.bind(this),
             nodeExpanding: this.onNodeExpand.bind(this),
             nodeClicked: this.onNodeClicked.bind(this),
@@ -6900,7 +6939,7 @@ class NavigationPane {
             this.parent.isFiltered = false;
         }
         this.parent.searchedItems = [];
-        if (!args.isInteracted && !this.isPathDragged && !this.isRenameParent) {
+        if (!args.isInteracted && !this.isRightClick && !this.isPathDragged && !this.isRenameParent) {
             return;
         }
         this.activeNode = args.node;
@@ -6920,7 +6959,7 @@ class NavigationPane {
         }
         read(this.parent, this.isPathDragged ? pasteEnd : pathChanged, this.parent.path);
         this.parent.visitedItem = args.node;
-        this.isPathDragged = this.isRenameParent = false;
+        this.isPathDragged = this.isRenameParent = this.isRightClick = false;
     }
     /* istanbul ignore next */
     onPathDrag(args) {
@@ -6952,6 +6991,10 @@ class NavigationPane {
     onNodeClicked(args) {
         this.parent.activeModule = 'navigationpane';
         this.activeNode = args.node;
+        if ((args.event.which === 3) && (args.node.getAttribute('data-uid') !== this.treeObj.selectedNodes[0])) {
+            this.isRightClick = true;
+            this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
+        }
     }
     /* istanbul ignore next */
     onNodeEditing(args) {
@@ -7501,6 +7544,7 @@ class DetailsView {
         this.count = 0;
         this.isRendered = true;
         this.isLoaded = false;
+        this.isNameWidth = false;
         this.pasteOperation = false;
         this.uploadOperation = false;
         Grid.Inject(Resize, ContextMenu$1, Sort, VirtualScroll);
@@ -7552,6 +7596,7 @@ class DetailsView {
         if (this.parent.view === 'Details') {
             removeClass([this.parent.element], MULTI_SELECT);
             let items = getSortedData(this.parent, args.files);
+            this.checkNameWidth();
             let columns = this.getColumns();
             let sortSettings;
             if (this.parent.isMobile) {
@@ -7595,7 +7640,20 @@ class DetailsView {
             this.emptyArgs = args;
         }
     }
+    checkNameWidth() {
+        let initialColumn = this.parent.detailsViewSettings.columns;
+        this.isNameWidth = false;
+        for (let i = 0; i < initialColumn.length; i++) {
+            if (initialColumn[i].field === 'name') {
+                this.isNameWidth = !isNullOrUndefined(initialColumn[i].width);
+                return;
+            }
+        }
+    }
     adjustWidth(columns, fieldName) {
+        if (this.isNameWidth && (fieldName === 'name')) {
+            return;
+        }
         for (let i = 0; i < columns.length; i++) {
             if (columns[i].field === fieldName) {
                 let nameWidth;
@@ -7646,6 +7704,9 @@ class DetailsView {
             else {
                 columns.unshift(cBox);
             }
+        }
+        for (let i = 0, len = columns.length; i < len; i++) {
+            columns[i].disableHtmlEncode = !this.parent.enableHtmlSanitizer;
         }
         return columns;
     }
@@ -7898,6 +7959,7 @@ class DetailsView {
                     break;
                 case 'detailsViewSettings':
                     if (!isNullOrUndefined(this.gridObj)) {
+                        this.checkNameWidth();
                         let columns = this.getColumns();
                         this.gridObj.columns = columns;
                         this.gridObj.allowResizing = this.parent.detailsViewSettings.columnResizing;
@@ -8321,7 +8383,7 @@ class DetailsView {
             let gridContentColGroup = this.gridObj.getContent().querySelector('.e-content .e-table').children[0];
             let gridHeaderColNames = this.gridObj.getColumns();
             for (let i = 0; i < gridHeaderColNames.length; i++) {
-                if (gridHeaderColNames[i].field === 'name' || gridHeaderColNames[i].field === 'filterPath') {
+                if ((!this.isNameWidth && gridHeaderColNames[i].field === 'name') || gridHeaderColNames[i].field === 'filterPath') {
                     if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                         if (this.element.clientWidth <= 500) {
                             gridHeaderColGroup.children[i].setAttribute('style', 'width: 120px');
@@ -9180,5 +9242,5 @@ class DetailsView {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, Column, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, actionFailure, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, methodCall, permissionRead, permissionEdit, permissionEditContents, permissionCopy, permissionUpload, permissionDownload, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, Column, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, skipUpload, afterRequest, download, layoutRefresh, actionFailure, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, methodCall, permissionRead, permissionEdit, permissionEditContents, permissionCopy, permissionUpload, permissionDownload, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es2015.js.map

@@ -393,6 +393,291 @@ describe('CRUD actions module', () => {
         });
     });
 
+    describe('Add Card with Priority', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = {
+                cardSettings: {
+                    priority: 'RankId'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Passed one data', (done: DoneFn) => {
+            expect(kanbanObj.kanbanData.length).toEqual(75);
+            kanbanObj.addCard({ Id: 101, Status: 'Open', Assignee: 'Andrew Fuller', RankId: 1 });
+            kanbanObj.dataBound = () => {
+                expect(kanbanObj.kanbanData.length).toEqual(76);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).Id).toEqual(101);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).RankId).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][1] as { [key: string]: Object }).RankId).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][2] as { [key: string]: Object }).RankId).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][3] as { [key: string]: Object }).RankId).toEqual(4);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][4] as { [key: string]: Object }).RankId).toEqual(5);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][5] as { [key: string]: Object }).RankId).toEqual(6);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][6] as { [key: string]: Object }).RankId).toEqual(7);
+                done();
+            }
+        });
+        it('Passed two datas', (done: DoneFn) => {
+            expect(kanbanObj.kanbanData.length).toEqual(76);
+            kanbanObj.addCard([{ Id: 102, Status: 'Open', Assignee: 'Andrew Fuller', RankId: 1 }, { Id: 103, Status: 'Open', Assignee: 'Andrew Fuller', RankId: 3 }]);
+            kanbanObj.dataBound = () => {
+                expect(kanbanObj.kanbanData.length).toEqual(78);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).Id).toEqual(102);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).RankId).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][1] as { [key: string]: Object }).RankId).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][2] as { [key: string]: Object }).RankId).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][2] as { [key: string]: Object }).Id).toEqual(103);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][3] as { [key: string]: Object }).RankId).toEqual(4);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][4] as { [key: string]: Object }).RankId).toEqual(5);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][5] as { [key: string]: Object }).RankId).toEqual(6);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][6] as { [key: string]: Object }).RankId).toEqual(7);
+                done();
+            }
+        });
+        it('Passed different column datas', (done: DoneFn) => {
+            expect(kanbanObj.kanbanData.length).toEqual(78);
+            kanbanObj.addCard([{ Id: 104, Status: 'InProgress', Assignee: 'Andrew Fuller', RankId: 1 }, { Id: 105, Status: 'Testing', Assignee: 'Andrew Fuller', RankId: 3 }]);
+            kanbanObj.dataBound = () => {
+                expect(kanbanObj.kanbanData.length).toEqual(80);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][0] as { [key: string]: Object }).Id).toEqual(104);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][0] as { [key: string]: Object }).RankId).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][1] as { [key: string]: Object }).RankId).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][2] as { [key: string]: Object }).RankId).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][2] as { [key: string]: Object }).Id).toEqual(105);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][2] as { [key: string]: Object }).RankId).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][3] as { [key: string]: Object }).RankId).toEqual(4);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][4] as { [key: string]: Object }).RankId).toEqual(5);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][5] as { [key: string]: Object }).RankId).toEqual(6);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][6] as { [key: string]: Object }).RankId).toEqual(7);
+                done();
+            }
+        });
+    });
+
+    describe('Add Card with Priority using swimlane', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = {
+                cardSettings: {
+                    priority: 'RankId'
+                },
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Passed one data', (done: DoneFn) => {
+            expect(kanbanObj.kanbanData.length).toEqual(75);
+            kanbanObj.addCard({ Id: 101, Status: 'Open', Assignee: 'Andrew Fuller', RankId: 1 });
+            kanbanObj.dataBound = () => {
+                expect(kanbanObj.kanbanData.length).toEqual(76);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][1] as { [key: string]: Object }).Id).toEqual(101);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][1] as { [key: string]: Object }).RankId).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][5] as { [key: string]: Object }).Id).toEqual(25);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][5] as { [key: string]: Object }).RankId).toEqual(5);
+                done();
+            }
+        });
+    });
+
+    describe('Update Card with Priority', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = {
+                cardSettings: {
+                    priority: 'RankId'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Passed one data', (done: DoneFn) => {
+            expect(kanbanObj.kanbanData.length).toEqual(75);
+            kanbanObj.updateCard({ Id: 1, Status: 'Open', Assignee: 'Andrew Fuller', RankId: 5 });
+            kanbanObj.dataBound = () => {
+                expect(kanbanObj.kanbanData.length).toEqual(75);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).Id).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).RankId).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][1] as { [key: string]: Object }).Id).toEqual(13);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][1] as { [key: string]: Object }).RankId).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][2] as { [key: string]: Object }).Id).toEqual(15);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][2] as { [key: string]: Object }).RankId).toEqual(4);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][3] as { [key: string]: Object }).Id).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][3] as { [key: string]: Object }).RankId).toEqual(5);
+                done();
+            }
+        });
+        it('Passed two datas', (done: DoneFn) => {
+            expect(kanbanObj.kanbanData.length).toEqual(75);
+            kanbanObj.updateCard([{ Id: 2, Status: 'Open', Assignee: 'Andrew Fuller', RankId: 4 }, { Id: 16, Status: 'Open', Assignee: 'Andrew Fuller', RankId: 1 }]);
+            kanbanObj.dataBound = () => {
+                expect(kanbanObj.kanbanData.length).toEqual(75);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).Id).toEqual(16);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).RankId).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][1] as { [key: string]: Object }).Id).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][1] as { [key: string]: Object }).RankId).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][2] as { [key: string]: Object }).Id).toEqual(13);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][2] as { [key: string]: Object }).RankId).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][3] as { [key: string]: Object }).Id).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['Open'][3] as { [key: string]: Object }).RankId).toEqual(4);
+                done();
+            }
+        });
+        it('Passed different column datas', (done: DoneFn) => {
+            expect(kanbanObj.kanbanData.length).toEqual(75);
+            kanbanObj.updateCard([{ Id: 8, Status: 'InProgress', Assignee: 'Andrew Fuller', RankId: 2 }, { Id: 3, Status: 'Testing', Assignee: 'Andrew Fuller', RankId: 2 }]);
+            kanbanObj.dataBound = () => {
+                expect(kanbanObj.kanbanData.length).toEqual(75);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][0] as { [key: string]: Object }).Id).toEqual(8);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][0] as { [key: string]: Object }).RankId).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][1] as { [key: string]: Object }).Id).toEqual(4);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][1] as { [key: string]: Object }).RankId).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][2] as { [key: string]: Object }).Id).toEqual(14);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][2] as { [key: string]: Object }).RankId).toEqual(4);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][0] as { [key: string]: Object }).Id).toEqual(5);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][0] as { [key: string]: Object }).RankId).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][1] as { [key: string]: Object }).Id).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][1] as { [key: string]: Object }).RankId).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][2] as { [key: string]: Object }).Id).toEqual(9);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][2] as { [key: string]: Object }).RankId).toEqual(3);
+                done();
+            }
+        });
+    });
+
+    describe('Drag and drop functionality', () => {
+        let kanbanObj: Kanban;
+        let dragElement: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = {
+                cardSettings: {
+                    priority: 'RankId'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Dragged clone behavior testing', () => {
+            dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="1"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
+        });
+
+        it('Created Dropped clone on above the column testing and target is card', () => {
+            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
+            util.triggerMouseEvent(element, 'mousemove', 250, 400);
+        });
+
+        it('Dropped clone testing', (done: DoneFn) => {
+            let droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0);
+            expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).Id).toEqual(1);
+            expect((kanbanObj.layoutModule.getColumnCards()['Open'][0] as { [key: string]: Object }).RankId).toEqual(1);
+            expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][0] as { [key: string]: Object }).Id).toEqual(2);
+            expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][0] as { [key: string]: Object }).RankId).toEqual(1);
+            expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][1] as { [key: string]: Object }).Id).toEqual(4);
+            expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][1] as { [key: string]: Object }).RankId).toEqual(2);
+            expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][2] as { [key: string]: Object }).Id).toEqual(14);
+            expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][2] as { [key: string]: Object }).RankId).toEqual(3);
+            kanbanObj.dataBound = () => {
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][0] as { [key: string]: Object }).Id).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][0] as { [key: string]: Object }).RankId).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][1] as { [key: string]: Object }).Id).toEqual(4);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][1] as { [key: string]: Object }).RankId).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][2] as { [key: string]: Object }).Id).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][2] as { [key: string]: Object }).RankId).toEqual(3);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][3] as { [key: string]: Object }).Id).toEqual(14);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][3] as { [key: string]: Object }).RankId).toEqual(4);
+                done();
+            };
+            util.triggerMouseEvent(droppedElement, 'mouseup', 250, 400);
+        });
+    });
+
+    describe('Drag and drop functionality', () => {
+        let kanbanObj: Kanban;
+        let dragElement: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = {
+                cardSettings: {
+                    priority: 'RankId'
+                },
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Dragged clone behavior testing', () => {
+            dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="2"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 250, 400);
+        });
+
+        it('Created Dropped clone on above the column testing and target is card', () => {
+            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
+            util.triggerMouseEvent(element, 'mousemove', 250, 550);
+        });
+
+        it('Dropped clone testing', (done: DoneFn) => {
+            let droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="45"]').item(0);
+            kanbanObj.dataBound = () => {
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][0] as { [key: string]: Object }).Id).toEqual(2);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][0] as { [key: string]: Object }).RankId).toEqual(1);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][10] as { [key: string]: Object }).Id).toEqual(45);
+                expect((kanbanObj.layoutModule.getColumnCards()['Testing'][10] as { [key: string]: Object }).RankId).toEqual(10);
+                done();
+            };
+            util.triggerMouseEvent(droppedElement, 'mouseup', 250, 550);
+        });
+        it('Dragged clone behavior testing', () => {
+            dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="45"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 250, 100);
+        });
+
+        it('Created Dropped clone on above the column testing and target is card', () => {
+            let element: Element = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1);
+            util.triggerMouseEvent(element, 'mousemove', 250, 150);
+        });
+
+        it('Dropped clone testing', (done: DoneFn) => {
+            let droppedElement: Element = (kanbanObj.element.querySelectorAll('.e-card-wrapper') as NodeListOf<Element>).item(1);
+            kanbanObj.dataBound = () => {
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][8] as { [key: string]: Object }).Id).toEqual(45);
+                expect((kanbanObj.layoutModule.getColumnCards()['InProgress'][8] as { [key: string]: Object }).RankId).toEqual(10);
+                done();
+            };
+            util.triggerMouseEvent(droppedElement, 'mouseup', 250, 100);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

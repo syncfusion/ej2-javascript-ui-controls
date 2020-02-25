@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### Slider
+
+#### Bug Fixes
+
+- `#259186` The issue with the Vertical Slider tooltip content that rotate `225` degrees has been resolved.
+
 ## 17.4.46 (2020-01-30)
 
 ### Slider

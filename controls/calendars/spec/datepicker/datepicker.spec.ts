@@ -3922,4 +3922,35 @@ describe('Datepicker', () => {
             }, 110);
         });
     });
+    describe('EJ2-36108', function () {
+        let datePicker:any;
+        let userAgent = Browser.userAgent;
+        beforeAll(function () {
+            let edgeAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.74 Safari/537.36 Edg/79.0.309.43";
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+        });
+        afterAll(function () {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            Browser.userAgent = userAgent;
+            document.body.innerHTML = '';
+        });
+        it('Timezone issue on selecting 1/1/1970', function () {
+            datePicker = new DatePicker({
+            });
+            datePicker.appendTo('#date');
+            datePicker.show();
+            datePicker.navigateTo('decade',new Date('1/1/1970'));
+            expect(datePicker.currentView()).toBe("Decade");
+            (document.getElementsByClassName('e-focused-date')[0] as HTMLElement).click();
+            expect(datePicker.currentView()).toBe("Year");
+            (document.getElementsByClassName('e-focused-date')[0] as HTMLElement).click();
+            expect(datePicker.currentView()).toBe("Month");
+            (document.getElementsByClassName('e-focused-date')[0] as HTMLElement).click();
+            expect(+datePicker.value).toBe(+new Date('1/1/1970'));
+            expect(datePicker.inputElement.value === "1/1/1970").toBe(true);
+        });
+    });
 });

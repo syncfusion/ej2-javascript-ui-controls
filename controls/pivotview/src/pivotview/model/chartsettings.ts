@@ -3167,6 +3167,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
       *                          { series: 2, point: 3} ],
       * ...
       * @default []
+      * @blazorType List<PivotChartIndexes>
       */
      @Collection<PivotChartIndexesModel>([], Indexes)
      public selectedDataIndexes: PivotChartIndexesModel[];

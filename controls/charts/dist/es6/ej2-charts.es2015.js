@@ -1582,6 +1582,7 @@ class Axis extends ChildProperty {
      * @return {void}
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     getMaxLabelWidth(chart) {
         let pointX;
         let previousEnd = 0;
@@ -1675,6 +1676,8 @@ class Axis extends ChildProperty {
             }
         }
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
+            //I264474: Fix for datasource bind im mounted console error ocurred
+            this.rotatedLabel = isNullOrUndefined(this.rotatedLabel) ? '' : this.rotatedLabel;
             if (isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = measureText(this.rotatedLabel, this.labelStyle);
             }
@@ -4514,7 +4517,8 @@ class CartesianAxisLayoutPanel {
         let rotateSize;
         let diffHeight;
         let angle = axis.angle % 360;
-        let anglePadding = ((angle === 90) ? -4 : 0) || ((angle === -90) ? 4 : 0);
+        //I264474: Fix for X axis labels are not rendered in center of tick marks when angle is 270
+        let anglePadding = ((angle === 90 || angle === -270) ? -4 : (angle === -90 || angle === 270) ? 4 : 0);
         let options;
         let yLocation;
         let labelWidth;
@@ -7706,6 +7710,15 @@ let Chart = class Chart extends Component {
         if (this.legendModule && this.legendSettings.visible) {
             this.legendModule.getLegendOptions(this.visibleSeries, this);
         }
+        /**
+         * I264230, EJ2-36761
+         * Issue: Tooltip doesnot appears after zooming and hovering on same point
+         * Root cause: While performing zoom, previous points in tooltip restore.
+         * Fix: previous points set to empty array
+         */
+        if (this.tooltip.enable && this.tooltipModule) {
+            this.tooltipModule.previousPoints = [];
+        }
         this.calculateStackValues();
         this.calculateBounds();
         //this prevents the initial rendering of stock chart
@@ -9334,6 +9347,9 @@ let Chart = class Chart extends Component {
                         this.processData(false);
                         refreshBounds = true;
                         break;
+                    case 'enableCanvas':
+                        this.refresh();
+                        break;
                     case 'series':
                         let len = this.series.length;
                         let seriesRefresh = false;
@@ -9341,8 +9357,9 @@ let Chart = class Chart extends Component {
                         let blazorProp;
                         for (let i = 0; i < len; i++) {
                             series = newProp.series[i];
-                            if (this.isBlazor && (series.isClosed || series.marker ||
-                                series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
+                            // I264774 blazor series visible property binding not working issue fixed.
+                            if (this.isBlazor && series && ((series.visible !== oldProp.series[i].visible) || series.isClosed ||
+                                series.marker || series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
                                 blazorProp = true;
                             }
                             if (series && (series.dataSource || series.query || series.xName || series.yName || series.size ||
@@ -17948,8 +17965,7 @@ class Toolkit {
         chart.svgObject.setAttribute('cursor', 'auto');
         let zoomingEventArgs;
         let zoomedAxisCollection = [];
-        for (let i = 0; i < chart.axisCollections.length; i++) {
-            let axis = chart.axisCollections[i];
+        for (let axis of chart.axisCollections) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -18040,8 +18056,7 @@ class Toolkit {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             let argsData;
-            for (let i = 0; i < axes.length; i++) {
-                let axis = axes[i];
+            for (let axis of axes) {
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18156,8 +18171,7 @@ class Zoom {
         let argsData;
         let zoomingEventArgs;
         let zoomedAxisCollection = [];
-        for (let i = 0; i < axes.length; i++) {
-            let axis = axes[i];
+        for (let axis of axes) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18261,8 +18275,7 @@ class Zoom {
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let onZoomingEventArg;
         let zoomedAxisCollections = [];
-        for (let j = 0; j < axes.length; j++) {
-            let axis = axes[j];
+        for (let axis of axes) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18324,8 +18337,7 @@ class Zoom {
         let argsData;
         let onZoomingEventArgs;
         let zoomedAxisCollection = [];
-        for (let k = 0; k < axes.length; k++) {
-            let axis = axes[k];
+        for (let axis of axes) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18493,8 +18505,7 @@ class Zoom {
         let yAxisLoc;
         let element;
         if (transX !== null && transY !== null) {
-            for (let i = 0; i < chart.visibleSeries.length; i++) {
-                let value = chart.visibleSeries[i];
+            for (let value of chart.visibleSeries) {
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -18664,8 +18675,7 @@ class Zoom {
      */
     isAxisZoomed(axes) {
         let showToolkit = false;
-        for (let k = 0; k < axes.length; k++) {
-            let axis = axes[k];
+        for (let axis of axes) {
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
         }
         return showToolkit;
@@ -24913,7 +24923,8 @@ class PieSeries extends PieBase {
             let clipslice = accumulation.renderer.drawPath(path);
             clippath.appendChild(clipslice);
             accumulation.svgObject.appendChild(clippath);
-            slice.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+            // I263828 pie chart animation issue fixed for safari browser
+            slice.setAttribute('style', 'clip-path:url(#' + clippath.id + '); -webkit-clip-path:url(#' + clippath.id + ');');
             this.doAnimation(clipslice, series);
         }
     }
@@ -28963,7 +28974,7 @@ class RangeSlider {
     }
     /**
      * Trigger changed event
-     * @param range
+     * @private
      */
     triggerEvent(range) {
         let argsData;
@@ -29517,7 +29528,7 @@ let RangeNavigator = class RangeNavigator extends Component {
      * @private
      */
     mouseMove(e) {
-        if (getElement$1(this.element.id + '_svg')) {
+        if (getElement$1(!this.stockChart ? this.element.id + '_svg' : this.element.id)) {
             this.mouseX = this.setMouseX(e);
             this.notify(Browser.touchMoveEvent, e);
         }
@@ -29529,6 +29540,10 @@ let RangeNavigator = class RangeNavigator extends Component {
      * @private
      */
     mouseLeave(e) {
+        let rangeSlider = this.rangeSlider;
+        if (rangeSlider.isDrag) {
+            rangeSlider.triggerEvent(this.chartSeries.xAxis.actualRange);
+        }
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.mouseX = this.setMouseX(e);
         this.notify(cancelEvent, e);
@@ -30489,7 +30504,7 @@ class CartesianChart {
             pointMove: (args) => {
                 this.stockChart.trigger('pointMove', args);
             },
-            onZooming: (args) => { this.stockChart.trigger(onZooming, args); },
+            onZooming: (args) => { this.stockChart.trigger('onZooming', args); },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),
             zoomSettings: this.copyObject(stockChart.zoomSettings),
@@ -40289,6 +40304,24 @@ class SparklineRenderer {
         return interval;
     }
     /**
+     * To find x axis interval.
+     */
+    getPaddingInterval(data, x, type, delta) {
+        let interval = 1;
+        let size = this.sparkline.availableSize.height;
+        let intervalCount = interval * data.length;
+        intervalCount = Math.max((size * (intervalCount / 100)), 1);
+        let niceInterval = delta / intervalCount;
+        for (let intervalVal of this.sparkline.intervalDivs) {
+            let currentInterval = interval * intervalVal;
+            if (intervalCount < (delta / currentInterval)) {
+                break;
+            }
+            niceInterval = currentInterval;
+        }
+        return niceInterval;
+    }
+    /**
      * To calculate axis ranges internally.
      */
     // tslint:disable-next-line:max-func-body-length
@@ -40400,7 +40433,9 @@ class SparklineRenderer {
         let x;
         let y;
         let visiblePoints = [];
+        let delta = max - min;
         let interval = this.getInterval(data, model.xName, model.valueType);
+        let interVal = this.getPaddingInterval(data, model.xName, model.valueType, delta);
         for (let i = 0; i < maxPointsLength; i++) {
             if (isNullOrUndefined(data[i][model.xName]) && isNullOrUndefined(data[i][model.yName]) && ((data[i][model.yName]) !== 0)
                 && isNumericArray) {
@@ -40440,6 +40475,28 @@ class SparklineRenderer {
                     };
                 }
                 else {
+                    if (y === min && model.rangePadding === 'Additional') {
+                        min -= interVal + padding.top;
+                        max += interVal + padding.top;
+                        unitX = maxX - minX;
+                        unitY = max - min;
+                        unitX = (unitX === 0) ? 1 : unitX;
+                        unitY = (unitY === 0) ? 1 : unitY;
+                        this.unitX = unitX;
+                        this.unitY = unitY;
+                        this.min = min;
+                    }
+                    else if (y === min && model.rangePadding === 'Normal') {
+                        min -= interVal;
+                        max += interVal;
+                        unitX = maxX - minX;
+                        unitY = max - min;
+                        unitX = (unitX === 0) ? 1 : unitX;
+                        unitY = (unitY === 0) ? 1 : unitY;
+                        this.unitX = unitX;
+                        this.unitY = unitY;
+                        this.min = min;
+                    }
                     let z = ((height / this.unitY) * (y - min));
                     let z1 = (y === min && y > value) ? ((maxPointsLength !== 1 && this.unitY !== 1) ?
                         (height / this.unitY) * (min / 2) : (z | 1)) :
@@ -40535,6 +40592,8 @@ let Sparkline = class Sparkline extends Component {
         super(options, element);
         /** @private */
         this.isDevice = Browser.isDevice;
+        /** @private */
+        this.intervalDivs = [10, 5, 2, 1];
     }
     /**
      * Initializing pre-required values for sparkline.
@@ -40913,6 +40972,9 @@ __decorate$21([
 __decorate$21([
     Property('Line')
 ], Sparkline.prototype, "type", void 0);
+__decorate$21([
+    Property('None')
+], Sparkline.prototype, "rangePadding", void 0);
 __decorate$21([
     Property(null)
 ], Sparkline.prototype, "dataSource", void 0);

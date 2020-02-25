@@ -22,13 +22,15 @@ import { Cell } from '../models/cell';
  * The `Group` module is used to handle group action.
  */
 export class Group implements IAction {
-    //Internal variables    
+    //Internal variables
+    private sortRequired: boolean = true;
     private groupSettings: GroupSettingsModel;
     private element: HTMLElement;
     private colName: string;
     private column: Column;
     private isAppliedGroup: boolean = false;
     private isAppliedUnGroup: boolean = false;
+    private reorderingColumns: string[] = [];
     private groupGenerator: GroupModelGenerator;
     private visualElement: HTMLElement = createElement('div', {
         className: 'e-cloneproperties e-dragclone e-gdclone',
@@ -39,7 +41,7 @@ export class Group implements IAction {
         let target: Element = (e.sender.target as Element);
         let element: HTMLElement = target.classList.contains('e-groupheadercell') ? target as HTMLElement :
             parentsUntil(target, 'e-groupheadercell') as HTMLElement;
-        if (!element) {
+        if (!element || (!target.classList.contains('e-drag') && this.parent.allowGroupReordering)) {
             return false;
         }
         this.column = gObj.getColumnByField(element.firstElementChild.getAttribute('ej-mappingname'));
@@ -57,20 +59,86 @@ export class Group implements IAction {
         }
     }
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }): void => {
+        if (this.parent.allowGroupReordering) {
+            this.animateDropper(e);
+        }
         let target: Element = e.target;
         let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         this.parent.trigger(events.columnDrag, { target: target, draggableType: 'headercell', column: this.column });
-        classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
-        if (!(parentsUntil(target as Element, 'e-gridcontent') || parentsUntil(target as Element, 'e-headercell'))) {
-            classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+        if (!this.parent.allowGroupReordering) {
+            classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+            if (!(parentsUntil(target as Element, 'e-gridcontent') || parentsUntil(target as Element, 'e-headercell'))) {
+                classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+            }
         }
     }
     private dragStop: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
         this.parent.element.classList.remove('e-ungroupdrag');
-        if (!(parentsUntil(e.target, 'e-gridcontent') || parentsUntil(e.target, 'e-gridheader'))) {
+        let preventDrop: boolean = !(parentsUntil(e.target, 'e-gridcontent') || parentsUntil(e.target, 'e-gridheader'));
+        if (this.parent.allowGroupReordering && preventDrop) {
+            remove(e.helper);
+            if (parentsUntil(e.target, 'e-groupdroparea')) {
+                this.rearrangeGroup(e);
+            } else if (!(parentsUntil(e.target, 'e-grid'))) {
+                let field: string = this.parent.getColumnByUid(e.helper.getAttribute('e-mappinguid')).field;
+                if (this.groupSettings.columns.indexOf(field) !== -1) {
+                    this.ungroupColumn(field);
+                }
+            }
+            return;
+        } else if (preventDrop) {
             remove(e.helper);
             return;
         }
+    }
+    private animateDropper: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
+        let uid: string = this.parent.element.querySelector('.e-cloneproperties').getAttribute('e-mappinguid');
+        let dragField: string = this.parent.getColumnByUid(uid).field;
+        let parent: Element = parentsUntil(e.target, 'e-groupdroparea');
+        let dropTarget: Element = parentsUntil(e.target, 'e-group-animator');
+        // tslint:disable-next-line
+        let grouped: string[] = [].slice.call(this.element.querySelectorAll('.e-groupheadercell'))
+            .map((e: Element) => e.querySelector('div').getAttribute('ej-mappingname'));
+        let cols: string[] = JSON.parse(JSON.stringify(grouped));
+        if (dropTarget || parent) {
+            if (dropTarget) {
+                let dropField: string = dropTarget.querySelector('div[ej-mappingname]').getAttribute('ej-mappingname');
+                let dropIndex: number = +(dropTarget.getAttribute('index'));
+                if (dropField !== dragField) {
+                    let dragIndex: number = cols.indexOf(dragField);
+                    if (dragIndex !== -1) {
+                        cols.splice(dragIndex, 1);
+                    }
+                    let flag: boolean = dropIndex !== -1 && dragIndex === dropIndex;
+                    cols.splice(dropIndex + (flag ? 1 : 0), 0, dragField);
+                }
+            } else if (parent && cols.indexOf(dragField) === -1) {
+                cols.push(dragField);
+            }
+            this.element.innerHTML = '';
+            if (cols.length && !this.element.classList.contains('e-grouped')) {
+                this.element.classList.add('e-grouped');
+            }
+            this.reorderingColumns = cols;
+            for (let c: number = 0; c < cols.length; c++) {
+                this.addColToGroupDrop(cols[c]);
+            }
+        } else {
+            this.addLabel();
+            this.removeColFromGroupDrop(dragField);
+        }
+
+    }
+    private addLabel(): void {
+        if (!this.element.querySelectorAll('.e-group-animator').length) {
+            let dragLabel: string = this.l10n.getConstant('GroupDropArea');
+            this.element.innerHTML = dragLabel;
+            this.element.classList.remove('e-grouped');
+        }
+    }
+    private rearrangeGroup(e: { target: HTMLElement, event: MouseEventArgs, helper: Element }): void {
+        this.sortRequired = false;
+        this.updateModel();
     }
     private drop: Function = (e: DropEventArgs) => {
         let gObj: IGrid = this.parent;
@@ -111,6 +179,9 @@ export class Group implements IAction {
     }
 
     private columnDrag(e: { target: Element }): void {
+        if (this.parent.allowGroupReordering) {
+            this.animateDropper(e);
+        }
         let gObj: IGrid = this.parent;
         let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
@@ -157,6 +228,7 @@ export class Group implements IAction {
         this.parent.on(events.click, this.clickHandler, this);
         this.parent.on(events.columnDrag, this.columnDrag, this);
         this.parent.on(events.columnDragStart, this.columnDragStart, this);
+        this.parent.on(events.headerDrop, this.columnDrop, this);
         this.parent.on(events.columnDrop, this.columnDrop, this);
         this.parent.on(events.headerRefreshed, this.refreshSortIcons, this);
         this.parent.on(events.sortComplete, this.refreshSortIcons, this);
@@ -166,6 +238,8 @@ export class Group implements IAction {
         this.parent.on(events.initialEnd, this.render, this);
         this.parent.on(events.groupAggregates, this.onGroupAggregates, this);
         this.parent.on('blazor-action-begin', this.blazorActionBegin, this);
+        this.parent.on('group-expand-collapse', this.updateExpand, this);
+        this.parent.on('persist-data-changed', this.initialEnd, this);
     }
     /**
      * @hidden
@@ -181,15 +255,17 @@ export class Group implements IAction {
         this.parent.off(events.columnDrag, this.columnDrag);
         this.parent.off(events.columnDragStart, this.columnDragStart);
         this.parent.off(events.columnDrop, this.columnDrop);
+        this.parent.off(events.headerDrop, this.columnDrop);
         this.parent.off(events.headerRefreshed, this.refreshSortIcons);
         this.parent.off(events.sortComplete, this.refreshSortIcons);
         this.parent.off(events.keyPressed, this.keyPressHandler);
         this.parent.off(events.groupAggregates, this.onGroupAggregates);
         this.parent.off('blazor-action-begin', this.blazorActionBegin);
+        this.parent.off('group-expand-collapse', this.updateExpand);
     }
 
     private blazorActionBegin(): void {
-        if (this.parent.allowGrouping) {
+        if (this.parent.allowGrouping && this.parent.isCollapseStateEnabled()) {
             this.expandAll();
         }
     }
@@ -198,6 +274,12 @@ export class Group implements IAction {
         let gObj: IGrid = this.parent;
         this.parent.off(events.contentReady, this.initialEnd);
         this.parent.off(events.onEmpty, this.initialEnd);
+        if (isBlazor() && gObj.isServerRendered) {
+            for (let i: number = 0; i < gObj.columns.length; i++) {
+                this.removeColFromGroupDrop((gObj.columns[i] as Column).field);
+            }
+            this.updateGroupDropArea();
+        }
         if (this.parent.getColumns().length && this.groupSettings.columns.length) {
             this.contentRefresh = false;
             for (let col of gObj.groupSettings.columns) {
@@ -245,7 +327,7 @@ export class Group implements IAction {
                 if (!row) { break; }
                 this.expandCollapseRows(row);
                 break;
-                case 'ctrlSpace':
+            case 'ctrlSpace':
                 let elem: HTMLElement = gObj.focusModule.currentInfo.element;
                 if (elem && elem.classList.contains('e-headercell')) {
                     let column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('e-mappinguid'));
@@ -322,6 +404,13 @@ export class Group implements IAction {
             let gObj: IGrid = this.parent;
             let indent: number = trgt.parentElement.querySelectorAll('.e-indentcell').length;
             let expand: boolean = false;
+            if (isBlazor() && this.parent.isCollapseStateEnabled()) {
+                this.parent.notify(
+                    'group-expand-collapse',
+                    { uid: trgt.parentElement.getAttribute('data-uid'),
+                    isExpand: trgt.classList.contains('e-recordpluscollapse') });
+                return;
+            }
             if (trgt.classList.contains('e-recordpluscollapse')) {
                 addClass([trgt], 'e-recordplusexpand'); removeClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gdiagonaldown e-icon-gdownarrow';
@@ -382,6 +471,10 @@ export class Group implements IAction {
         dataManager.then((e: ReturnType) => gObj.renderModule.dataManagerSuccess(e, args));
     }
     private expandCollapse(isExpand: boolean): void {
+        if (isBlazor() && this.parent.isCollapseStateEnabled()) {
+            this.parent.notify('group-expand-collapse', { isExpand: isExpand });
+            return;
+        }
         let rowNodes: HTMLCollection = this.parent.getContentTable().querySelector('tbody').children;
         let row: Element;
         for (let i: number = 0, len: number = rowNodes.length; i < len; i++) {
@@ -436,6 +529,9 @@ export class Group implements IAction {
             remove(groupElem);
         }
         this.element = this.parent.createElement('div', { className: 'e-groupdroparea', attrs: { 'tabindex': '-1' } });
+        if (this.parent.allowGroupReordering) {
+            this.element.classList.add('e-group-animate');
+        }
         this.updateGroupDropArea();
         this.parent.element.insertBefore(this.element, this.parent.element.firstChild);
         if (!this.groupSettings.showDropArea) {
@@ -464,8 +560,8 @@ export class Group implements IAction {
 
     private initializeGHeaderDrag(): void {
         let drag: Draggable = new Draggable(this.element as HTMLElement, {
-            dragTarget: '.e-groupheadercell',
-            distance: 5,
+            dragTarget: this.parent.allowGroupReordering ? '.e-drag' : '.e-groupheadercell',
+            distance: this.parent.allowGroupReordering ? -10 : 5,
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
@@ -527,6 +623,11 @@ export class Group implements IAction {
             return;
         }
         column.visible = true;
+        if (isBlazor() && gObj.isServerRendered) {
+            let setVisible: Object[] = [];
+            setVisible[0] = column;
+            this.parent.notify('setvisibility', setVisible);
+        }
         this.colName = column.field;
         let columns: string[] = JSON.parse(JSON.stringify(this.groupSettings.columns));
         columns.splice(columns.indexOf(this.colName), 1);
@@ -541,6 +642,9 @@ export class Group implements IAction {
         let isServerRendered: string = 'isServerRendered';
         if (isBlazor() && this.parent[isServerRendered]) {
             gObj.sortSettings.columns = gObj.sortSettings.columns;
+        }
+        if (this.parent.allowGroupReordering) {
+            this.reorderingColumns = columns;
         }
         this.groupSettings.columns = columns;
         if (gObj.allowGrouping) {
@@ -557,10 +661,16 @@ export class Group implements IAction {
     public updateModel(): void {
         let gObj: IGrid = this.parent;
         let i: number = 0;
-        let columns: string[] = JSON.parse(JSON.stringify(this.groupSettings.columns));
-        columns.push(this.colName);
-        this.groupAddSortingQuery(this.colName);
-        this.groupSettings.columns = columns;
+        let columns: string[] =  JSON.parse(JSON.stringify(this.groupSettings.columns));
+        columns = this.reorderingColumns.length ? JSON.parse(JSON.stringify(this.reorderingColumns)) : columns;
+        if (this.sortRequired) {
+            if (columns.indexOf(this.colName) === -1) {
+                columns.push(this.colName);
+            }
+            this.groupAddSortingQuery(this.colName);
+        }
+        this.sortRequired = true;
+        this.parent.groupSettings.columns = columns;
         this.parent.dataBind();
     }
 
@@ -605,16 +715,14 @@ export class Group implements IAction {
             this.parent.sortSettings.columns[i].direction = 'Ascending';
         }
     }
-
-    private addColToGroupDrop(field: string): void {
+    private createElement(field: string): Element {
         let gObj: IGrid = this.parent;
         let direction: string = 'Ascending';
+        let animator: Element = this.parent.createElement('div', { className: 'e-grid-icon e-group-animator' });
         let groupedColumn: Element = this.parent.createElement('div', { className: 'e-grid-icon e-groupheadercell' });
         let childDiv: Element = this.parent.createElement('div', { attrs: { 'ej-mappingname': field } });
+
         let column: Column = this.parent.getColumnByField(field);
-        if (isNullOrUndefined(column)) {
-            return;
-        }
         //Todo headerTemplateID for grouped column, disableHtmlEncode                          
         let headerCell: Element = gObj.getColumnHeaderByUid(column.uid);
         // if (!isNullOrUndefined(column.headerTemplate)) {
@@ -625,6 +733,13 @@ export class Group implements IAction {
         //     }
         //     childDiv.firstElementChild.classList.add('e-grouptext');
         // } else {
+        if (this.parent.allowGroupReordering) {
+            childDiv.appendChild(this.parent.createElement(
+                'span', {
+                className: 'e-drag e-icons e-icon-drag', innerHTML: '&nbsp;',
+                attrs: { title: 'Drag', tabindex: '-1', 'aria-label': 'Drag the grouped column' }
+            }));
+        }
         childDiv.appendChild(this.parent.createElement('span', {
             className: 'e-grouptext', innerHTML: column.headerText,
             attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
@@ -634,9 +749,9 @@ export class Group implements IAction {
         if (this.groupSettings.showToggleButton) {
             childDiv.appendChild(this.parent.createElement(
                 'span', {
-                    className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
-                    attrs: { tabindex: '-1', 'aria-label': 'ungroup button' }
-                }));
+                className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
+                attrs: { tabindex: '-1', 'aria-label': 'ungroup button' }
+            }));
         }
 
         if (headerCell.querySelectorAll('.e-ascending,.e-descending').length) {
@@ -644,23 +759,51 @@ export class Group implements IAction {
         }
         childDiv.appendChild(this.parent.createElement(
             'span', {
-                className: 'e-groupsort e-icons ' +
-                    ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
-                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
-            }));
+            className: 'e-groupsort e-icons ' +
+                ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
+            attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
+        }));
         childDiv.appendChild(this.parent.createElement(
             'span', {
-                className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
-                attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
-                styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
-            }));
+            className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
+            attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
+            styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
+        }));
 
         groupedColumn.appendChild(childDiv);
+        let index: number = this.groupSettings.columns.indexOf(field);
+        if (this.parent.allowGroupReordering) {
+            animator.appendChild(groupedColumn);
+            animator.appendChild(this.createSeparator());
+            groupedColumn = animator;
+        }
+        return groupedColumn;
+    }
+    private addColToGroupDrop(field: string): void {
+        if (this.parent.allowGroupReordering
+            && this.parent.element.querySelector('.e-groupdroparea div[ej-mappingname=' + field + ']')) {
+            return;
+        }
+        let column: Column = this.parent.getColumnByField(field);
+        if (isNullOrUndefined(column)) {
+            return;
+        }
+        let groupedColumn: Element = this.createElement(field);
+        if (this.parent.allowGroupReordering) {
+            let index: number = this.element.querySelectorAll('.e-group-animator').length;
+            groupedColumn.setAttribute('index', index.toString());
+        }
         this.element.appendChild(groupedColumn);
 
         //Todo:  rtl 
     }
-
+    private createSeparator(): Element {
+        return this.parent.createElement('span', {
+            className: 'e-nextgroup e-icons e-icon-next', innerHTML: '&nbsp;',
+            attrs: { tabindex: '-1', 'aria-label': 'Separator for the grouped columns' },
+            styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
+        });
+    }
     private refreshToggleBtn(isRemove?: boolean): void {
         if (this.groupSettings.showToggleButton) {
             let headers: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-headercelldiv'));
@@ -674,10 +817,10 @@ export class Group implements IAction {
                         if (!isRemove) {
                             headers[i].appendChild(this.parent.createElement(
                                 'span', {
-                                    className: 'e-grptogglebtn e-icons ' +
-                                        (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
-                                            : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
-                                }));
+                                className: 'e-grptogglebtn e-icons ' +
+                                    (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
+                                        : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
+                            }));
                         }
                     }
                 }
@@ -687,7 +830,13 @@ export class Group implements IAction {
 
     private removeColFromGroupDrop(field: string): void {
         if (!isNullOrUndefined(this.getGHeaderCell(field))) {
-            remove(this.getGHeaderCell(field));
+            let elem: Element = this.getGHeaderCell(field);
+            if (this.parent.allowGroupReordering) {
+                let parent: Element = parentsUntil(elem, 'e-group-animator');
+                remove(parent);
+            } else {
+                remove(elem);
+            }
             this.updateGroupDropArea();
         }
         this.isAppliedUnGroup = false;
@@ -915,5 +1064,38 @@ export class Group implements IAction {
             result = DataUtil.group(aggrds, groupedCols[l], aggregates, null, null);
         }
         return result;
+    }
+
+    public updateExpand(args: { uid?: string, isExpand?: boolean }): void {
+        let uid: string = args.uid; let isExpand: boolean = args.isExpand;
+        let rows: Row<Column>[] = this.parent.getRowsObject();
+        for (let i: number = 0; i < rows.length; i++) {
+            let row: Row<Column> = rows[i];
+            if (row.uid === uid || isNullOrUndefined(uid)) {
+                row.isExpand = isExpand;
+                for (let j: number = i + 1; j < rows.length; j++) {
+                    let childRow: Row<Column> = rows[j];
+                    let closestParent: Row<Column>;
+
+                    if (childRow.parentUid !== row.uid) {
+                        closestParent = rows.filter((x: Row<Column>) => x.uid === childRow.parentUid)[0];
+                    }
+                    if (childRow.parentUid === row.uid) {
+                        childRow.visible = row.isExpand;
+                    } else if (!isNullOrUndefined(closestParent) && childRow.parentUid === closestParent.uid) {
+                        if (closestParent.isExpand && closestParent.visible === true) {
+                            childRow.visible = true;
+                        } else if (closestParent.isExpand && closestParent.visible === false) {
+                            childRow.visible = false;
+                        }
+                    }
+
+                    if (isNullOrUndefined(uid)) {
+                        break;
+                    }
+                }
+            }
+        }
+        this.parent.notify(events.contentReady, { rows: rows, args: { isFrozen: false, rows: rows } });
     }
 }

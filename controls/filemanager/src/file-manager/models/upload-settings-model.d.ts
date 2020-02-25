@@ -21,6 +21,12 @@ export interface UploadSettingsModel {
     autoUpload?: boolean;
 
     /**
+     * Defines whether to close the upload dialog after uploading all the files.
+     * @default false
+     */
+    autoClose?: boolean;
+
+    /**
      * Specifies the minimum file size to be uploaded in bytes.
      * The property is used to make sure that you cannot upload empty files and small files.
      * @default 0

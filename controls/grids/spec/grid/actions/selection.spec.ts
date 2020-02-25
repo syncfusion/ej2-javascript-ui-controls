@@ -3640,6 +3640,17 @@ describe('Row,cell Selecting in batch edit while adding record => ', () => {
             gridObj.editModule.deleteRecord();
             expect(gridObj.selectionModule.getCurrentBatchRecordChanges().length).toBe(13);
     });
+
+    it('recordClick event in Grid', () => {
+        gridObj.recordClick = (args: any): void => {
+            expect(args.rowIndex).toBe(2);
+            expect(args.cellIndex).toBe(1);
+            expect(args.column.field).toBe('CustomerID');
+        }
+        (gridObj.getContent().querySelectorAll('.e-row')[2].querySelectorAll('.e-rowcell')[1] as
+         HTMLElement).click();
+    });
+
     afterAll(() => {
         destroy(gridObj);
     });

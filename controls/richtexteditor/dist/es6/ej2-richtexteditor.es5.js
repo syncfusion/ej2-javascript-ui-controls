@@ -16165,7 +16165,7 @@ var Image = /** @__PURE__ @class */ (function () {
                 };
                 this.deleteImg(event_1);
             }
-            if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+            if (this.parent.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                 this.remvoeResizEle();
             }
         }
@@ -16904,9 +16904,9 @@ var Image = /** @__PURE__ @class */ (function () {
         var selectParent;
         var proxy = this;
         var iframe = proxy.parent.iframeSettings.enable;
-        if (proxy.parent.editorMode === 'HTML' &&
-            (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))
-                || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
+        if (proxy.parent.editorMode === 'HTML' && (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' +
+            this.parent.contentModule.getPanel().id))
+            || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
             this.contentModule.getEditPanel().focus();
             var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
@@ -20567,10 +20567,19 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     RichTextEditor.prototype.setContentHeight = function (target, isExpand) {
         var heightValue;
         var topValue = 0;
+        var rteHeightPercent;
+        var heightPercent;
         var cntEle = (this.sourceCodeModule.getPanel() &&
             this.sourceCodeModule.getPanel().parentElement.style.display === 'block') ? this.sourceCodeModule.getPanel().parentElement :
             this.contentModule.getPanel();
         var rteHeight = this.element.offsetHeight;
+        if (this.element.offsetHeight === 0 && this.height !== 'auto' && !this.getToolbar()) {
+            rteHeight = parseInt(this.height, 10);
+            heightPercent = typeof (this.height) === 'string' && this.height.indexOf('%') > -1;
+            if (heightPercent) {
+                rteHeightPercent = this.height;
+            }
+        }
         var tbHeight = this.getToolbar() ? this.toolbarModule.getToolbarHeight() : 0;
         var rzHeight = this.enableResize ?
             this.element.querySelector('.' + CLS_RTE_RES_HANDLE).offsetHeight + 8 : 0;
@@ -20584,7 +20593,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 heightValue = 'auto';
             }
             else {
-                heightValue = rteHeight - (tbHeight + rzHeight) + 'px';
+                heightValue = heightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
             }
         }
         setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });

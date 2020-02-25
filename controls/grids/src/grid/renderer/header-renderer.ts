@@ -98,7 +98,9 @@ export class HeaderRender implements IRenderer {
                     (gObj.element.querySelector('.e-reorderuparrow') as HTMLElement).style.display = 'none';
                     (gObj.element.querySelector('.e-reorderdownarrow') as HTMLElement).style.display = 'none';
                 }
-                return;
+                if (!gObj.allowGroupReordering) {
+                    return;
+                }
             }
             gObj.notify(events.columnDrag, { target: e.target, column: this.column, event: e.event });
         }
@@ -124,8 +126,7 @@ export class HeaderRender implements IRenderer {
             !(gObj.allowReordering || gObj.allowGrouping)) {
             return;
         }
-        gObj.notify(events.headerDrop, { target: e.target, uid: uid });
-
+        gObj.notify(events.headerDrop, { target: e.target, uid: uid, droppedElement: e.droppedElement });
     }
 
     //Module declarations

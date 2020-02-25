@@ -10,7 +10,6 @@ import { StockSeriesModel } from '../model/base-model';
 import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { MarginModel } from '../../chart';
 import { StockSeries } from '../model/base';
-import { onZooming } from '../../common/model/constants';
 
 interface Range {
     start: number;
@@ -90,7 +89,7 @@ export class CartesianChart {
             pointMove: (args: IPointEventArgs) => {
                 this.stockChart.trigger('pointMove', args);
             },
-            onZooming: (args: IZoomingEventArgs) => { this.stockChart.trigger(onZooming, args); },
+            onZooming: (args: IZoomingEventArgs) => { this.stockChart.trigger('onZooming', args); },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),
             zoomSettings: this.copyObject(stockChart.zoomSettings),

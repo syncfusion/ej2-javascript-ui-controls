@@ -21,7 +21,7 @@ import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } f
 import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel  } from '../model/chart-base-model';
 import { textWrap } from '../../common/utils/helper';
 import { ScrollBar } from '../../common/scrollbar/scrollbar';
-
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 const axisPadding: number = 10;
 
@@ -1061,6 +1061,7 @@ export class Axis extends ChildProperty<Axis> {
      * @return {void}
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     public getMaxLabelWidth(chart: Chart): void {
         let pointX: number; let previousEnd: number = 0;
         let isIntersect: boolean = false; let isAxisLabelBreak: boolean;
@@ -1152,6 +1153,8 @@ export class Axis extends ChildProperty<Axis> {
             }
         }
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
+            //I264474: Fix for datasource bind im mounted console error ocurred
+            this.rotatedLabel = isNullOrUndefined(this.rotatedLabel) ? '' : this.rotatedLabel;
             if (isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = measureText(this.rotatedLabel, this.labelStyle);
             } else {

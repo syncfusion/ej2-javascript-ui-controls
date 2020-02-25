@@ -98,6 +98,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     private blazorRef: object;
     private serverModuleName: string;
     protected defaultKeyConfigs: { [key: string]: string };
+    protected previousDateTime: Date;
 
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
@@ -2293,6 +2294,7 @@ export class Calendar extends CalendarBase {
      */
     public createContent(): void {
         this.previousDate = this.value;
+        this.previousDateTime = this.value;
         super.createContent();
     }
     protected minMaxDate(localDate: Date): Date {
@@ -2548,8 +2550,10 @@ export class Calendar extends CalendarBase {
 
 
     protected changeEvent(e: Event): void {
-        this.trigger('change', this.changedArgs);
-        this.previousDate = new Date(+this.value);
+        if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())) {
+            this.trigger('change', this.changedArgs);
+            this.previousDate = new Date(+this.value);
+        }
     }
 
     protected triggerChange(e: MouseEvent | KeyboardEvent): void {
@@ -2558,7 +2562,8 @@ export class Calendar extends CalendarBase {
         if (!isNullOrUndefined(this.value)) {
             this.setProperties({ value: this.value }, true);
         }
-        if (!this.isMultiSelection && +this.value !== Number.NaN && +this.value !== +this.previousDate) {
+        if (!this.isMultiSelection && +this.value !== Number.NaN && (+this.value !== +this.previousDate || this.previousDate == null
+            && !isNaN(+this.value))) {
             this.changeEvent(e);
         } else if (!isNullOrUndefined(this.values) && this.previousValues !== this.values.length) {
             this.changeEvent(e);

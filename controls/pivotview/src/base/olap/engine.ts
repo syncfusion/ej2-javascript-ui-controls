@@ -1993,7 +1993,7 @@ export class OlapEngine {
                 childSets.push(item);
                 if (this.isPaging) {
                     let drillField: string = item.split('::[')[fieldPos];
-                    drillField = drillField[0] == '[' ? drillField : ('[' + drillField);
+                    drillField = drillField[0] === '[' ? drillField : ('[' + drillField);
                     let drillFieldSep: string[] = drillField.split('~~');
                     for (let fPos: number = drillFieldSep.indexOf(memberName); fPos < drillFieldSep.length; fPos++) {
                         memberObj[drillFieldSep[fPos]] = drillFieldSep[fPos];

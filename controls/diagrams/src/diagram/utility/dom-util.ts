@@ -152,7 +152,8 @@ function wrapSvgText(text: TextAttributes, textValue?: string, laneWidth?: numbe
                 } else {
                     txtValue = txtValue + (content[k + 1] || '');
                     if (txtValue.indexOf('\n') > -1) {
-                        txtValue = txtValue.replace('\n', '');
+                        childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: bBoxText(txtValue, text) };
+                        txtValue = '';
                     }
                     let width: number = bBoxText(txtValue, text);
                     if (Math.ceil(width) + 2 >= text.width && txtValue.length > 0) {
@@ -717,16 +718,34 @@ export function getContent(
 export function setAttributeSvg(svg: SVGElement, attributes: Object): void {
     let keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        svg.setAttribute(keys[i], attributes[keys[i]]);
+        if (keys[i] !== 'style') {
+            svg.setAttribute(keys[i], attributes[keys[i]]);
+        } else {
+            applyStyleAgainstCsp(svg, attributes[keys[i]]);
+        }
     }
 }
 
+/** @private */
+export function applyStyleAgainstCsp(svg: SVGElement | HTMLElement, attributes: string): void {
+    let keys: string[] = attributes.split(';');
+    for (let i: number = 0; i < keys.length; i++) {
+        let attribute: string[] = keys[i].split(':');
+        if (attribute.length === 2) {
+            svg.style[attribute[0].trim()] = attribute[1].trim();
+        }
+    }
+}
 
 /** @private */
 export function setAttributeHtml(element: HTMLElement, attributes: Object): void {
     let keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        element.setAttribute(keys[i], attributes[keys[i]]);
+        if (keys[i] !== 'style') {
+            element.setAttribute(keys[i], attributes[keys[i]]);
+        } else {
+            applyStyleAgainstCsp(element, attributes[keys[i]]);
+        }
     }
 }
 

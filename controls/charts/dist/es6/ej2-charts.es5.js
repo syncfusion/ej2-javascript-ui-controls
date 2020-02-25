@@ -1785,6 +1785,7 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     Axis.prototype.getMaxLabelWidth = function (chart) {
         var pointX;
         var previousEnd = 0;
@@ -1878,6 +1879,8 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
+            //I264474: Fix for datasource bind im mounted console error ocurred
+            this.rotatedLabel = isNullOrUndefined(this.rotatedLabel) ? '' : this.rotatedLabel;
             if (isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = measureText(this.rotatedLabel, this.labelStyle);
             }
@@ -4781,7 +4784,8 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var rotateSize;
         var diffHeight;
         var angle = axis.angle % 360;
-        var anglePadding = ((angle === 90) ? -4 : 0) || ((angle === -90) ? 4 : 0);
+        //I264474: Fix for X axis labels are not rendered in center of tick marks when angle is 270
+        var anglePadding = ((angle === 90 || angle === -270) ? -4 : (angle === -90 || angle === 270) ? 4 : 0);
         var options;
         var yLocation;
         var labelWidth;
@@ -8163,6 +8167,15 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         if (this.legendModule && this.legendSettings.visible) {
             this.legendModule.getLegendOptions(this.visibleSeries, this);
         }
+        /**
+         * I264230, EJ2-36761
+         * Issue: Tooltip doesnot appears after zooming and hovering on same point
+         * Root cause: While performing zoom, previous points in tooltip restore.
+         * Fix: previous points set to empty array
+         */
+        if (this.tooltip.enable && this.tooltipModule) {
+            this.tooltipModule.previousPoints = [];
+        }
         this.calculateStackValues();
         this.calculateBounds();
         //this prevents the initial rendering of stock chart
@@ -9827,6 +9840,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                         this.processData(false);
                         refreshBounds = true;
                         break;
+                    case 'enableCanvas':
+                        this.refresh();
+                        break;
                     case 'series':
                         var len = this.series.length;
                         var seriesRefresh = false;
@@ -9834,8 +9850,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                         var blazorProp = void 0;
                         for (var i = 0; i < len; i++) {
                             series = newProp.series[i];
-                            if (this.isBlazor && (series.isClosed || series.marker ||
-                                series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
+                            // I264774 blazor series visible property binding not working issue fixed.
+                            if (this.isBlazor && series && ((series.visible !== oldProp.series[i].visible) || series.isClosed ||
+                                series.marker || series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
                                 blazorProp = true;
                             }
                             if (series && (series.dataSource || series.query || series.xName || series.yName || series.size ||
@@ -19259,8 +19276,8 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         chart.svgObject.setAttribute('cursor', 'auto');
         var zoomingEventArgs;
         var zoomedAxisCollection = [];
-        for (var i = 0; i < chart.axisCollections.length; i++) {
-            var axis = chart.axisCollections[i];
+        for (var _i = 0, _a = chart.axisCollections; _i < _a.length; _i++) {
+            var axis = _a[_i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -19351,8 +19368,8 @@ var Toolkit = /** @__PURE__ @class */ (function () {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             var argsData = void 0;
-            for (var i = 0; i < axes.length; i++) {
-                var axis = axes[i];
+            for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+                var axis = _a[_i];
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19469,8 +19486,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var argsData;
         var zoomingEventArgs;
         var zoomedAxisCollection = [];
-        for (var i = 0; i < axes.length; i++) {
-            var axis = axes[i];
+        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+            var axis = _a[_i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19575,8 +19592,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         var onZoomingEventArg;
         var zoomedAxisCollections = [];
-        for (var j = 0; j < axes.length; j++) {
-            var axis = axes[j];
+        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+            var axis = _a[_i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19639,8 +19656,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var argsData;
         var onZoomingEventArgs;
         var zoomedAxisCollection = [];
-        for (var k = 0; k < axes.length; k++) {
-            var axis = axes[k];
+        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+            var axis = _a[_i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19808,8 +19825,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var yAxisLoc;
         var element;
         if (transX !== null && transY !== null) {
-            for (var i = 0; i < chart.visibleSeries.length; i++) {
-                var value = chart.visibleSeries[i];
+            for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
+                var value = _a[_i];
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -19979,8 +19996,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
      */
     Zoom.prototype.isAxisZoomed = function (axes) {
         var showToolkit = false;
-        for (var k = 0; k < axes.length; k++) {
-            var axis = axes[k];
+        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+            var axis = _a[_i];
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
         }
         return showToolkit;
@@ -26498,7 +26515,8 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
             var clipslice = accumulation.renderer.drawPath(path);
             clippath.appendChild(clipslice);
             accumulation.svgObject.appendChild(clippath);
-            slice.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+            // I263828 pie chart animation issue fixed for safari browser
+            slice.setAttribute('style', 'clip-path:url(#' + clippath.id + '); -webkit-clip-path:url(#' + clippath.id + ');');
             this.doAnimation(clipslice, series);
         }
     };
@@ -30805,7 +30823,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
     };
     /**
      * Trigger changed event
-     * @param range
+     * @private
      */
     RangeSlider.prototype.triggerEvent = function (range) {
         var argsData;
@@ -31377,7 +31395,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RangeNavigator.prototype.mouseMove = function (e) {
-        if (getElement$1(this.element.id + '_svg')) {
+        if (getElement$1(!this.stockChart ? this.element.id + '_svg' : this.element.id)) {
             this.mouseX = this.setMouseX(e);
             this.notify(Browser.touchMoveEvent, e);
         }
@@ -31389,6 +31407,10 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RangeNavigator.prototype.mouseLeave = function (e) {
+        var rangeSlider = this.rangeSlider;
+        if (rangeSlider.isDrag) {
+            rangeSlider.triggerEvent(this.chartSeries.xAxis.actualRange);
+        }
         var cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.mouseX = this.setMouseX(e);
         this.notify(cancelEvent, e);
@@ -32359,7 +32381,7 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
             pointMove: function (args) {
                 _this.stockChart.trigger('pointMove', args);
             },
-            onZooming: function (args) { _this.stockChart.trigger(onZooming, args); },
+            onZooming: function (args) { _this.stockChart.trigger('onZooming', args); },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),
             zoomSettings: this.copyObject(stockChart.zoomSettings),
@@ -42795,6 +42817,25 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
         return interval;
     };
     /**
+     * To find x axis interval.
+     */
+    SparklineRenderer.prototype.getPaddingInterval = function (data, x, type, delta) {
+        var interval = 1;
+        var size = this.sparkline.availableSize.height;
+        var intervalCount = interval * data.length;
+        intervalCount = Math.max((size * (intervalCount / 100)), 1);
+        var niceInterval = delta / intervalCount;
+        for (var _i = 0, _a = this.sparkline.intervalDivs; _i < _a.length; _i++) {
+            var intervalVal = _a[_i];
+            var currentInterval = interval * intervalVal;
+            if (intervalCount < (delta / currentInterval)) {
+                break;
+            }
+            niceInterval = currentInterval;
+        }
+        return niceInterval;
+    };
+    /**
      * To calculate axis ranges internally.
      */
     // tslint:disable-next-line:max-func-body-length
@@ -42906,7 +42947,9 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
         var x;
         var y;
         var visiblePoints = [];
+        var delta = max - min;
         var interval = this.getInterval(data, model.xName, model.valueType);
+        var interVal = this.getPaddingInterval(data, model.xName, model.valueType, delta);
         for (var i = 0; i < maxPointsLength; i++) {
             if (isNullOrUndefined(data[i][model.xName]) && isNullOrUndefined(data[i][model.yName]) && ((data[i][model.yName]) !== 0)
                 && isNumericArray) {
@@ -42946,6 +42989,28 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
                     };
                 }
                 else {
+                    if (y === min && model.rangePadding === 'Additional') {
+                        min -= interVal + padding.top;
+                        max += interVal + padding.top;
+                        unitX = maxX - minX;
+                        unitY = max - min;
+                        unitX = (unitX === 0) ? 1 : unitX;
+                        unitY = (unitY === 0) ? 1 : unitY;
+                        this.unitX = unitX;
+                        this.unitY = unitY;
+                        this.min = min;
+                    }
+                    else if (y === min && model.rangePadding === 'Normal') {
+                        min -= interVal;
+                        max += interVal;
+                        unitX = maxX - minX;
+                        unitY = max - min;
+                        unitX = (unitX === 0) ? 1 : unitX;
+                        unitY = (unitY === 0) ? 1 : unitY;
+                        this.unitX = unitX;
+                        this.unitY = unitY;
+                        this.min = min;
+                    }
                     var z = ((height / this.unitY) * (y - min));
                     var z1 = (y === min && y > value) ? ((maxPointsLength !== 1 && this.unitY !== 1) ?
                         (height / this.unitY) * (min / 2) : (z | 1)) :
@@ -43056,6 +43121,8 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         /** @private */
         _this.isDevice = Browser.isDevice;
+        /** @private */
+        _this.intervalDivs = [10, 5, 2, 1];
         return _this;
     }
     /**
@@ -43437,6 +43504,9 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
     __decorate$21([
         Property('Line')
     ], Sparkline.prototype, "type", void 0);
+    __decorate$21([
+        Property('None')
+    ], Sparkline.prototype, "rangePadding", void 0);
     __decorate$21([
         Property(null)
     ], Sparkline.prototype, "dataSource", void 0);

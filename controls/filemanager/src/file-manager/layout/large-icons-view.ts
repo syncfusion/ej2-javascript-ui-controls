@@ -126,6 +126,7 @@ export class LargeIconsView {
                 fields: { text: 'name', iconCss: '_fm_icon', imageUrl: '_fm_imageUrl', htmlAttributes: '_fm_htmlAttr' },
                 sortOrder: this.parent.sortOrder,
                 itemCreated: this.onItemCreated.bind(this),
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             };
             this.items = [];
             this.items = this.renderList(args);

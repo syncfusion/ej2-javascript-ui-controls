@@ -914,7 +914,7 @@ describe('Circular-Gauge Control', () => {
                 gauge.setPointerValue(0, 0, 0);
                 value = svg.getAttribute('d').split(' ');
                 expect(Math.round(+value[9]) == 556 || Math.round(+value[9]) == 550).toBe(true);
-                expect(Math.round(+value[10])).toBe(228);
+                expect(Math.round(+value[10])).toBe(225);
                 expect(Math.round(+value[1]) == 556 || Math.round(+value[1]) == 550).toBe(true);
                 expect(Math.round(+value[2])).toBe(225);
                 done();

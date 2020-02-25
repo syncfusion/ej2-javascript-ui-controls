@@ -2,13 +2,30 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### File Manager
+
+#### New Features
+
+- `#263021` - Support has been provided to auto close the upload dialog after uploading all the selected files.
+
 ## 17.4.50 (2020-02-18)
 
 ### File Manager
 
 #### Bug Fixes
 
-- Resolved the script error when navigate any folder after changing the toolbar settings dynamically in the file manager component. 
+- `#262675` - Provided the support to prevent the XSS attacks using the `enableHtmlSanitizer` property.
+- The issue with the given `name` column's width that is not applied in details view has been resolved.
+
+## 17.4.44 (2021-01-21)
+
+### File Manager
+
+#### Bug Fixes
+
+- Resolved the script error when navigate any folder after changing the toolbar settings dynamically in the file manager component.
 
 ## 17.4.43 (2020-01-14)
 

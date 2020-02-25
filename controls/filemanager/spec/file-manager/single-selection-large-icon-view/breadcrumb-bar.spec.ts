@@ -38,7 +38,7 @@ describe('FileManager control single selection Large icons view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -80,7 +80,6 @@ describe('FileManager control single selection Large icons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -97,7 +96,6 @@ describe('FileManager control single selection Large icons view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -128,7 +126,6 @@ describe('FileManager control single selection Large icons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -144,19 +141,16 @@ describe('FileManager control single selection Large icons view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(data17)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(data19)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(searchEle.placeholder).toBe("Search docs");
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
@@ -189,7 +183,6 @@ describe('FileManager control single selection Large icons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -229,7 +222,6 @@ describe('FileManager control single selection Large icons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -246,7 +238,6 @@ describe('FileManager control single selection Large icons view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -292,7 +283,6 @@ describe('FileManager control single selection Large icons view', () => {
                     status: 200,
                     responseText: JSON.stringify(data18)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');

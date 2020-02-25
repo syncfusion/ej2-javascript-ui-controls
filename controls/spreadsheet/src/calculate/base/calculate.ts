@@ -1950,12 +1950,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             for (let n: number = 0; n < sortedSheetNamesCollection.length; n++) {
                 let token: string = family.sheetNameToToken.get(sortedSheetNamesCollection[n]);
                 token = token.split(this.sheetToken).join(this.tempSheetPlaceHolder);
-                let s: string = '"' + sortedSheetNamesCollection[n].toUpperCase() + '"' + this.sheetToken;
+                let s: string = this.singleTic + 'SHEET' + sortedSheetNamesCollection[n] + this.singleTic + this.sheetToken;
                 if (text.indexOf(s) === -1) {
-                    s = sortedSheetNamesCollection[n].toUpperCase() + this.sheetToken;
+                    s = 'SHEET' + sortedSheetNamesCollection[n] + this.sheetToken;
                 }
-                text = text.split('SHEET' + s).join(token);
-                s = sortedSheetNamesCollection[n].toUpperCase() + this.sheetToken;
+                text = text.split(s).join(token);
+                s = sortedSheetNamesCollection[n] + this.sheetToken;
                 text = text.split(s).join(token);
             }
         }

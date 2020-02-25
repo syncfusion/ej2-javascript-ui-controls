@@ -145,7 +145,7 @@ function updateRulerDimension(diagram: Diagram, ruler: Ruler, offset: number, is
     updateRulerSpace(diagram, rulerGeometry, isHorizontal);
     ruler.offset = offset;
     ruler.scale = diagram.scroller.currentZoom;
-    ruler.length = rulerGeometry.width + 100;
+    ruler.length = (isHorizontal ? rulerGeometry.width : rulerGeometry.height) + 100;
     ruler.arrangeTick = getFunction(diagramRuler.arrangeTick);
     ruler.dataBind();
     let rulerObj: HTMLElement = isHorizontal ? diagram.hRuler.element : diagram.vRuler.element;

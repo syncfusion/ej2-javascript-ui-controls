@@ -304,7 +304,7 @@ describe('Action module', () => {
         it('Maintain single collapsed state testing - after drag stop', () => {
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(0);
-            expect(kanbanObj.element.querySelectorAll('.e-card.duplicate').length).toBe(0);
+            expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
             let headerCell: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(headerCell.classList.contains('e-column-collapse')).toBe(true);
@@ -564,7 +564,7 @@ describe('Action module', () => {
         it('Maintain single collapsed state testing - after drag stop', () => {
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-target-dropped-clone').length).toBe(0);
-            expect(kanbanObj.element.querySelectorAll('.e-card.duplicate').length).toBe(0);
+            expect(kanbanObj.element.querySelectorAll('.e-card.e-cloned-card').length).toBe(0);
             expect(kanbanObj.element.querySelectorAll('.e-kanban-dragged-card').length).toBe(0);
             let element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[1].children[0].lastElementChild;
             expect(element.classList.contains('e-column-collapse')).toBe(true);
@@ -579,7 +579,7 @@ describe('Action module', () => {
             util.triggerMouseEvent(draggedElement, 'mousemove', 280, 200);
             let element: Element = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells').item(1);
             util.triggerMouseEvent(element, 'mousemove', 290, 200);
-           });
+        });
         it('Single Collapsed column with drag and drop behavior testing - drop the card on collapsed column', () => {
             let droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="18"]').item(0);
             util.triggerMouseEvent(droppedElement, 'mousemove', 700, 150);

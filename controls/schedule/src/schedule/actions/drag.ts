@@ -490,7 +490,6 @@ export class DragAndDrop extends ActionBase {
             this.appendCloneElement(this.getEventWrapper(colIndex));
             dragStart = this.parent.getDateFromElement(td);
             dragStart.setMinutes(dragStart.getMinutes() + (diffInMinutes / heightPerMinute));
-            dragStart = this.calculateIntervalTime(dragStart);
             dragEnd = new Date(dragStart.getTime());
             if (this.actionObj.element.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
                 dragEnd.setMinutes(dragEnd.getMinutes() + this.actionObj.slotInterval);
@@ -523,7 +522,8 @@ export class DragAndDrop extends ActionBase {
             datesCount = datesCount + this.verticalEvent.dateRender[i].length;
         }
         let dayIndex: number = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
-            : this.parent.getDateFromElement(this.actionObj.target as HTMLElement).getDay();
+            : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], util.resetTime(
+                this.parent.getDateFromElement(this.actionObj.target as HTMLElement)));
         let record: { [key: string]: Object } = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
         let eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
         let eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;

@@ -1762,7 +1762,7 @@ var RowModelGenerator = /** @__PURE__ @class */ (function () {
         }
         return cols;
     };
-    RowModelGenerator.prototype.generateRow = function (data, index, cssClass, indent, pid, tIndex) {
+    RowModelGenerator.prototype.generateRow = function (data, index, cssClass, indent, pid, tIndex, parentUid) {
         var options = {};
         options.foreignKeyData = {};
         var isServerRendered = 'isServerRendered';
@@ -1773,6 +1773,7 @@ var RowModelGenerator = /** @__PURE__ @class */ (function () {
         options.tIndex = tIndex;
         options.isDataRow = true;
         options.parentGid = pid;
+        options.parentUid = parentUid;
         if (this.parent.isPrinting) {
             if (this.parent.hierarchyPrintMode === 'All') {
                 options.isExpand = true;
@@ -1897,11 +1898,11 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
         var rows = [];
         var row = this.getData();
         for (var i = 0; i < row.length; i++) {
-            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end));
+            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end, args ? args.parentUid : undefined));
         }
         return rows;
     };
-    SummaryModelGenerator.prototype.getGeneratedRow = function (summaryRow, data, raw, start, end) {
+    SummaryModelGenerator.prototype.getGeneratedRow = function (summaryRow, data, raw, start, end, parentUid) {
         var tmp = [];
         var indents = this.getIndentByLevel(raw);
         var isDetailGridAlone = !isNullOrUndefined(this.parent.childGrid);
@@ -1917,6 +1918,7 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
         var row = new Row({ data: data, attributes: { class: 'e-summaryrow' } });
         row.cells = tmp;
         row.uid = getUid('grid-row');
+        row.parentUid = parentUid;
         row.visible = tmp.some(function (cell) { return cell.isDataCell && cell.visible; });
         return row;
     };
@@ -2071,29 +2073,33 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
             this.getGroupedRecords(0, data[i], data.level, i, undefined, this.rows.length);
         }
         this.index = 0;
+        if (this.parent.isCollapseStateEnabled()) {
+            this.ensureRowVisibility();
+        }
         return this.rows;
     };
-    GroupModelGenerator.prototype.getGroupedRecords = function (index, data, raw, parentid, childId, tIndex) {
+    GroupModelGenerator.prototype.getGroupedRecords = function (index, data, raw, parentid, childId, tIndex, parentUid) {
         var _a;
         var level = raw;
         if (isNullOrUndefined(data.items)) {
             if (isNullOrUndefined(data.GroupGuid)) {
-                this.rows = this.rows.concat(this.generateDataRows(data, index, parentid, this.rows.length));
+                this.rows = this.rows.concat(this.generateDataRows(data, index, parentid, this.rows.length, parentUid));
             }
             else {
                 for (var j = 0, len = data.length; j < len; j++) {
-                    this.getGroupedRecords(index, data[j], data.level, parentid, index, this.rows.length);
+                    this.getGroupedRecords(index, data[j], data.level, parentid, index, this.rows.length, parentUid);
                 }
             }
         }
         else {
-            this.rows = this.rows.concat(this.generateCaptionRow(data, index, parentid, childId, tIndex));
+            var captionRow = this.generateCaptionRow(data, index, parentid, childId, tIndex, parentUid);
+            this.rows = this.rows.concat(captionRow);
             if (data.items && data.items.length) {
-                this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length);
+                this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length, captionRow.uid);
             }
             if (this.parent.aggregates.length) {
                 var rowCnt = this.rows.length;
-                (_a = this.rows).push.apply(_a, this.summaryModelGen.generateRows(data, { level: level }));
+                (_a = this.rows).push.apply(_a, this.summaryModelGen.generateRows(data, { level: level, parentUid: captionRow.uid }));
                 for (var i = rowCnt - 1; i >= 0; i--) {
                     if (this.rows[i].isCaptionRow) {
                         this.rows[i].aggregatesCount = this.rows.length - rowCnt;
@@ -2157,7 +2163,7 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
         cells.push.apply(cells, visibles);
         return cells;
     };
-    GroupModelGenerator.prototype.generateCaptionRow = function (data, indent, parentID, childID, tIndex) {
+    GroupModelGenerator.prototype.generateCaptionRow = function (data, indent, parentID, childID, tIndex, parentUid) {
         var options = {};
         var records = 'records';
         var col = this.parent.getColumnByField(data.field);
@@ -2166,11 +2172,12 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
             options.data.field = data.field;
         }
         options.isDataRow = false;
-        options.isExpand = true;
+        options.isExpand = !this.parent.isCollapseStateEnabled();
         options.parentGid = parentID;
         options.childGid = childID;
         options.tIndex = tIndex;
         options.isCaptionRow = true;
+        options.parentUid = parentUid;
         options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : data.items.length;
         options.uid = isBlazor() && this.parent.isServerRendered ? this.parent.getRowUid('grid-row') : getUid('grid-row');
         var row = new Row(options);
@@ -2187,11 +2194,11 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
             setValue('foreignKey', fkValue, row.data);
         }
     };
-    GroupModelGenerator.prototype.generateDataRows = function (data, indent, childID, tIndex) {
+    GroupModelGenerator.prototype.generateDataRows = function (data, indent, childID, tIndex, parentUid) {
         var rows = [];
         var indexes = this.parent.getColumnIndexesInView();
         for (var i = 0, len = data.length; i < len; i++, tIndex++) {
-            rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex);
+            rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex, parentUid);
             for (var j = 0; j < indent; j++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(indent) === -1) {
                     continue;
@@ -2224,6 +2231,20 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
         }
         return input;
     };
+    GroupModelGenerator.prototype.ensureRowVisibility = function () {
+        for (var i = 0; i < this.rows.length; i++) {
+            var row = this.rows[i];
+            if (!row.isCaptionRow) {
+                continue;
+            }
+            for (var j = i + 1; j < this.rows.length; j++) {
+                var childRow = this.rows[j];
+                if (row.uid === childRow.parentUid) {
+                    this.rows[j].visible = row.isExpand;
+                }
+            }
+        }
+    };
     return GroupModelGenerator;
 }(RowModelGenerator));
 
@@ -2241,6 +2262,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         this.freezeRows = [];
         this.movableRows = [];
         this.freezeRowElements = [];
+        /** @hidden */
+        this.currentInfo = {};
         this.isLoaded = true;
         this.viewColIndexes = [];
         this.drop = function (e) {
@@ -2343,7 +2366,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         var contentDiv = this.getPanel();
         var virtualTable = contentDiv.querySelector('.e-virtualtable');
         var virtualTrack = contentDiv.querySelector('.e-virtualtrack');
-        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)) {
+        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)
+            && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered))) {
             remove(virtualTable);
             remove(virtualTrack);
         }
@@ -2433,6 +2457,11 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         var isServerRendered = 'isServerRendered';
         if (isBlazor() && this.parent[isServerRendered]) {
             modelData = this.generator.generateRows(dataSource, args);
+            if (this.parent.enableVirtualization) {
+                this.prevInfo = this.prevInfo ? this.prevInfo : args.virtualInfo;
+                this.prevInfo = args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
+                    this.currentInfo.page !== args.virtualInfo.page ? this.currentInfo : args.virtualInfo;
+            }
             this.rows = modelData;
             this.freezeRows = modelData;
             this.rowElements = [].slice.call(this.getTable().querySelectorAll('tr.e-row[data-uid]'));
@@ -3178,7 +3207,9 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
                         gObj.element.querySelector('.e-reorderuparrow').style.display = 'none';
                         gObj.element.querySelector('.e-reorderdownarrow').style.display = 'none';
                     }
-                    return;
+                    if (!gObj.allowGroupReordering) {
+                        return;
+                    }
                 }
                 gObj.notify(columnDrag, { target: e.target, column: _this.column, event: e.event });
             }
@@ -3204,7 +3235,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
                 !(gObj.allowReordering || gObj.allowGrouping)) {
                 return;
             }
-            gObj.notify(headerDrop, { target: e.target, uid: uid });
+            gObj.notify(headerDrop, { target: e.target, uid: uid, droppedElement: e.droppedElement });
         };
         this.parent = parent;
         this.serviceLocator = serviceLocator;
@@ -5954,6 +5985,9 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
                 (e.args && e.args.isFrozen) ? _this.fHeader : _this.header;
             var rows = content ? e.rows.slice(_this.parent.frozenRows) : e.rows;
             var updateRow = content ? e.rows.slice(0, _this.parent.frozenRows) : e.rows;
+            if (_this.parent.isCollapseStateEnabled() && content) {
+                rows = rows.filter(function (x) { return x.visible !== false; });
+            }
             var isRowTemplate = !isNullOrUndefined(_this.parent.rowTemplate);
             var matrix = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             var frozenColumnsCount = _this.parent.getFrozenColumns();
@@ -6092,7 +6126,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
             case 'grouping':
             case 'ungrouping':
                 current[1] = current.length &&
-                    !this.parent.groupSettings.showGroupedColumn ?
+                    !this.parent.groupSettings.showGroupedColumn && !isNullOrUndefined(matrix.matrix[current[0]]) ?
                     matrix.matrix[current[0]].indexOf(1) : e.requestType === 'grouping' ? current[1] + 1 : current[1] - 1;
                 break;
         }
@@ -6722,6 +6756,39 @@ var PageSettings = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], PageSettings.prototype, "template", void 0);
     return PageSettings;
+}(ChildProperty));
+
+var __extends$15 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the column chooser behavior of the Grid.
+ */
+var ColumnChooserSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$15(ColumnChooserSettings, _super);
+    function ColumnChooserSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('startsWith')
+    ], ColumnChooserSettings.prototype, "operator", void 0);
+    return ColumnChooserSettings;
 }(ChildProperty));
 
 var __assign = (undefined && undefined.__assign) || function () {
@@ -8588,8 +8655,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.persistSelectedData = res;
     };
     Selection.prototype.setRowSelection = function (state) {
-        var adaptorName = 'adaptorName';
-        if (!this.parent.getDataModule().isRemote() && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
+        if (!this.parent.getDataModule().isRemote() && !isBlazor()) {
             if (state) {
                 for (var _i = 0, _a = this.getData(); _i < _a.length; _i++) {
                     var data = _a[_i];
@@ -8698,7 +8764,6 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.updatePersistSelectedData = function (checkState) {
         if (this.parent.isPersistSelection) {
-            var adaptorName = 'adaptorName';
             var rows = this.parent.getRows();
             for (var i = 0; i < rows.length; i++) {
                 this.updatePersistCollection(rows[i], checkState);
@@ -8709,8 +8774,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             else if (this.parent.checkAllRows === 'Check') {
                 this.setRowSelection(true);
-                this.persistSelectedData = (!this.parent.getDataModule().isRemote() &&
-                    !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) ?
+                this.persistSelectedData = (!this.parent.getDataModule().isRemote() && !isBlazor()) ?
                     this.getData().slice() : this.persistSelectedData;
             }
         }
@@ -10039,7 +10103,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
     return Scroll;
 }());
 
-var __extends$15 = (undefined && undefined.__extends) || (function () {
+var __extends$16 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -10052,7 +10116,7 @@ var __extends$15 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -10062,7 +10126,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
  * Configures the Grid's aggregate column.
  */
 var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
-    __extends$15(AggregateColumn, _super);
+    __extends$16(AggregateColumn, _super);
     function AggregateColumn() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.templateFn = {};
@@ -10113,28 +10177,28 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
     AggregateColumn.prototype.setPropertiesSilent = function (prop) {
         this.setProperties(prop, true);
     };
-    __decorate$3([
+    __decorate$4([
         Property()
     ], AggregateColumn.prototype, "type", void 0);
-    __decorate$3([
+    __decorate$4([
         Property()
     ], AggregateColumn.prototype, "field", void 0);
-    __decorate$3([
+    __decorate$4([
         Property()
     ], AggregateColumn.prototype, "columnName", void 0);
-    __decorate$3([
+    __decorate$4([
         Property()
     ], AggregateColumn.prototype, "format", void 0);
-    __decorate$3([
+    __decorate$4([
         Property()
     ], AggregateColumn.prototype, "footerTemplate", void 0);
-    __decorate$3([
+    __decorate$4([
         Property()
     ], AggregateColumn.prototype, "groupFooterTemplate", void 0);
-    __decorate$3([
+    __decorate$4([
         Property()
     ], AggregateColumn.prototype, "groupCaptionTemplate", void 0);
-    __decorate$3([
+    __decorate$4([
         Property()
     ], AggregateColumn.prototype, "customAggregate", void 0);
     return AggregateColumn;
@@ -10143,11 +10207,11 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
  * Configures the aggregate rows.
  */
 var AggregateRow = /** @__PURE__ @class */ (function (_super) {
-    __extends$15(AggregateRow, _super);
+    __extends$16(AggregateRow, _super);
     function AggregateRow() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$3([
+    __decorate$4([
         Collection([], AggregateColumn)
     ], AggregateRow.prototype, "columns", void 0);
     return AggregateRow;
@@ -10473,6 +10537,7 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
     function BlazorAction(parent) {
         this.aria = new AriaService();
         this.actionArgs = {};
+        this.isInitial = true;
         this.parent = parent;
         this.addEventListener();
     }
@@ -10487,6 +10552,10 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
         this.parent.on('offset', this.setServerOffSet, this);
         this.parent.on('updateaction', this.modelChanged, this);
         this.parent.on(modelChanged, this.modelChanged, this);
+        this.parent.on('group-expand-collapse', this.onGroupClick, this);
+        this.parent.on('setcolumnstyles', this.setColVTableWidthAndTranslate, this);
+        this.parent.on('update-virtual-view', this.updateVirtualViewChanges, this);
+        this.parent.on('refresh-virtual-indices', this.refreshVirtualIndices, this);
     };
     BlazorAction.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -10499,6 +10568,10 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
         this.parent.off('offset', this.setServerOffSet);
         this.parent.off('updateaction', this.modelChanged);
         this.parent.off(modelChanged, this.modelChanged);
+        this.parent.off('group-expand-collapse', this.onGroupClick);
+        this.parent.off('setcolumnstyles', this.setColVTableWidthAndTranslate);
+        this.parent.off('update-virtual-view', this.updateVirtualViewChanges);
+        this.parent.off('refresh-virtual-indices', this.refreshVirtualIndices);
     };
     BlazorAction.prototype.getModuleName = function () { return 'blazor'; };
     
@@ -10658,7 +10731,74 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
         }
         this.parent.renderModule.dataManagerSuccess(args, this.actionArgs);
         this.parent.getMediaColumns();
+        if (this.parent.enableVirtualization) {
+            this.wireEvents();
+            this.virtualContentModule = this.parent.contentModule;
+            if (!this.isInitial) {
+                this.setContentVTableTranslate();
+            }
+            this.isInitial = false;
+            this.setColVTableWidthAndTranslate();
+        }
         this.actionArgs = this.parent.currentAction = {};
+    };
+    BlazorAction.prototype.setColVTableWidthAndTranslate = function () {
+        if (this.parent.enableColumnVirtualization && (JSON.stringify(this.virtualContentModule.currentInfo.columnIndexes) !==
+            JSON.stringify(this.virtualContentModule.prevInfo.columnIndexes))) {
+            var translateX = this.virtualContentModule.getColumnOffset(this.virtualContentModule.startColIndex - 1);
+            var width = this.virtualContentModule.getColumnOffset(this.virtualContentModule.endColIndex - 1) - translateX + '';
+            this.virtualContentModule.header.virtualEle.setWrapperWidth(width);
+            this.virtualContentModule.header.virtualEle.adjustTable(translateX, 0);
+            this.parent.getContentTable().parentElement.style.width = width + 'px';
+            this.setContentVTableTranslate();
+        }
+    };
+    BlazorAction.prototype.setContentVTableTranslate = function () {
+        var translateX = 0;
+        if (this.parent.enableColumnVirtualization) {
+            translateX = this.virtualContentModule.getColumnOffset(this.virtualContentModule.startColIndex - 1);
+        }
+        var translateY = this.virtualContentModule.startIndex === 0 ? 0 :
+            ((this.virtualContentModule.startIndex + 1) * this.parent.getRowHeight());
+        this.parent.getContentTable().parentElement.style.transform = "translate(" + translateX + "px, " + translateY + "px)";
+    };
+    BlazorAction.prototype.wireEvents = function () {
+        EventHandler.add(this.parent.element, 'wheel', this.wheelScrollHandler, this);
+        EventHandler.add(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler, this);
+    };
+    BlazorAction.prototype.unWireEvents = function () {
+        EventHandler.remove(this.parent.element, 'wheel', this.wheelScrollHandler);
+        EventHandler.remove(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler);
+    };
+    BlazorAction.prototype.wheelScrollHandler = function () {
+        this.parent.isWheelScrolled = true;
+    };
+    BlazorAction.prototype.mouseLeaveHandler = function () {
+        this.parent.isWheelScrolled = false;
+    };
+    BlazorAction.prototype.updateVirtualViewChanges = function (args) {
+        var adaptor = 'interopAdaptor';
+        var invokeMethodAsync = 'invokeMethodAsync';
+        if (this.parent.enableColumnVirtualization &&
+            (JSON.stringify(args.previousColIndexes) !== JSON.stringify(args.viewInfo.columnIndexes))) {
+            this.parent[adaptor][invokeMethodAsync]('InvokeStateHasChanged', args.viewInfo.columnIndexes[0], args.viewInfo.columnIndexes[args.viewInfo.columnIndexes.length - 1]);
+            this.parent.headerModule.refreshUI();
+        }
+        if (args.preStartIndex !== args.pStartIndex) {
+            this.parent[adaptor][invokeMethodAsync]('SetVirtualInfofromView', { StartIndex: args.viewInfo.startIndex,
+                EndIndex: args.viewInfo.endIndex, StartColumnIndex: args.viewInfo.columnIndexes[0],
+                EndColumnIndex: args.viewInfo.columnIndexes[args.viewInfo.columnIndexes.length - 1] });
+        }
+    };
+    BlazorAction.prototype.refreshVirtualIndices = function (args) {
+        if (this.parent.pageSettings.currentPage === args.viewInfo.currentPage) {
+            var adaptor = 'interopAdaptor';
+            var invokeMethodAsync = 'invokeMethodAsync';
+            this.parent[adaptor][invokeMethodAsync]('RefreshVirtualIndices');
+        }
+        else {
+            this.parent.pageSettings.currentPage = args.viewInfo.currentPage;
+        }
     };
     BlazorAction.prototype.setClientOffSet = function (args, index) {
         var timeZone = DataUtil.serverTimezoneOffset;
@@ -10675,12 +10815,61 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
         args[data] = DataUtil.parse.parseJson(JSON.stringify(args[data]));
         DataUtil.serverTimezoneOffset = serverTimeZone;
     };
+    BlazorAction.prototype.onGroupClick = function (args) {
+        var _this = this;
+        var adaptor = 'interopAdaptor';
+        var content = 'contentModule';
+        var invokeMethodAsync = 'invokeMethodAsync';
+        this.parent[adaptor][invokeMethodAsync]('OnGroupExpandClick', args).then(function () {
+            _this.parent[content].rowElements = [].slice.call(_this.parent.getContentTable().querySelectorAll('tr.e-row[data-uid]'));
+        });
+    };
+    BlazorAction.prototype.setPersistData = function (args) {
+        var gObj = this.parent;
+        gObj.mergePersistGridData(args);
+        var bulkChanges = 'bulkChanges';
+        if (gObj[bulkChanges].columns) {
+            delete gObj[bulkChanges].columns;
+        }
+        gObj.headerModule.refreshUI();
+        gObj.notify('persist-data-changed', {});
+        gObj.notify(columnVisibilityChanged, gObj.getColumns());
+    };
+    
+    BlazorAction.prototype.resetPersistData = function (args) {
+        var gObj = this.parent;
+        var bulkChanges = 'bulkChanges';
+        var parseArgs = JSON.parse(args);
+        var persistArgs = { filterSettings: parseArgs.filterSettings, groupSettings: parseArgs.groupSettings,
+            pageSettings: parseArgs.pageSettings, sortSettings: parseArgs.sortSettings,
+            searchSettings: parseArgs.searchSettings, columns: parseArgs.columns };
+        if (!persistArgs.sortSettings.columns) {
+            persistArgs.sortSettings.columns = [];
+        }
+        if (!persistArgs.groupSettings.columns) {
+            persistArgs.groupSettings.columns = [];
+        }
+        for (var i = 0; i < this.parent.columns.length; i++) {
+            if (gObj.columns[i].field in this.parent.groupSettings.columns) {
+                gObj.columns[i].visible = true;
+            }
+        }
+        gObj.mergePersistGridData(persistArgs);
+        if (gObj[bulkChanges].columns) {
+            delete gObj[bulkChanges].columns;
+        }
+        gObj.notify('persist-data-changed', {});
+        gObj.setProperties({ filterSettings: { columns: [] } }, true);
+    };
     BlazorAction.prototype.dataFailure = function (args) {
         this.parent.renderModule.dataManagerFailure(args, this.actionArgs);
         this.actionArgs = this.parent.currentAction = {};
     };
     BlazorAction.prototype.destroy = function () {
         this.removeEventListener();
+        if (this.parent.enableVirtualization) {
+            this.unWireEvents();
+        }
     };
     return BlazorAction;
 }());
@@ -10939,6 +11128,9 @@ var GroupSettings = /** @__PURE__ @class */ (function (_super) {
     ], GroupSettings.prototype, "showDropArea", void 0);
     __decorate$1([
         Property(false)
+    ], GroupSettings.prototype, "allowGroupReordering", void 0);
+    __decorate$1([
+        Property(false)
     ], GroupSettings.prototype, "showToggleButton", void 0);
     __decorate$1([
         Property(false)
@@ -10989,6 +11181,12 @@ var EditSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property('')
     ], EditSettings.prototype, "template", void 0);
+    __decorate$1([
+        Property('')
+    ], EditSettings.prototype, "headerTemplate", void 0);
+    __decorate$1([
+        Property('')
+    ], EditSettings.prototype, "footerTemplate", void 0);
     __decorate$1([
         Property('Top')
     ], EditSettings.prototype, "newRowPosition", void 0);
@@ -11056,7 +11254,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * @hidden
      */
     Grid.prototype.getPersistData = function () {
         var keyEntity = ['pageSettings', 'sortSettings',
@@ -11234,9 +11431,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.isInitialLoad = false;
         this.allowServerDataBinding = false;
         this.ignoreCollectionWatch = true;
-        if (this.enableVirtualization || this.enableColumnVirtualization) {
-            this.isServerRendered = false; //NEW
-        }
         this.mergeCells = {};
         this.isEdit = false;
         this.checkAllRows = 'None';
@@ -11408,8 +11602,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         if (!(isBlazor() && this.isServerRendered)) {
             this.getMediaColumns();
+            setColumnIndex(this.columns);
         }
-        setColumnIndex(this.columns);
         this.checkLockColumns(this.columns);
         this.getColumns();
         this.processModel();
@@ -12211,7 +12405,12 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         var dRows = [];
         for (var i = 0, len = rows.length; i < len; i++) {
             if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
-                dRows.push(rows[i]);
+                if (this.isCollapseStateEnabled()) {
+                    dRows[parseInt(rows[i].getAttribute("aria-rowindex"))] = rows[i];
+                }
+                else {
+                    dRows.push(rows[i]);
+                }
             }
         }
         return dRows;
@@ -12596,6 +12795,22 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return this.editTemplateFn;
     };
     /**
+     * Gets a compiled dialog edit header template.
+     * @private
+     * @return {Function}
+     */
+    Grid.prototype.getEditHeaderTemplate = function () {
+        return this.editHeaderTemplateFn;
+    };
+    /**
+     * Gets a compiled dialog edit footer template.
+     * @private
+     * @return {Function}
+     */
+    Grid.prototype.getEditFooterTemplate = function () {
+        return this.editFooterTemplateFn;
+    };
+    /**
      * Get the names of the primary key columns of the Grid.
      * @return {string[]}
      */
@@ -12689,6 +12904,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      */
     Grid.prototype.getVisibleFrozenColumns = function () {
         return this.getVisibleFrozenColumnsCount() + this.getVisibleFrozenCount(this.columns, 0);
+    };
+    /**
+     * Get the current Filter operator and field.
+     * @return {Object}
+     */
+    Grid.prototype.getFilterUIInfo = function () {
+        return this.filterModule ? this.filterModule.getFilterUIInfo() : {};
     };
     Grid.prototype.getVisibleFrozenColumnsCount = function () {
         var visibleFrozenColumns = 0;
@@ -13233,6 +13455,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.rowTemplateFn = templateCompiler(this.rowTemplate);
         this.detailTemplateFn = templateCompiler(this.detailTemplate);
         this.editTemplateFn = templateCompiler(this.editSettings.template);
+        this.editHeaderTemplateFn = templateCompiler(this.editSettings.headerTemplate);
+        this.editFooterTemplateFn = templateCompiler(this.editSettings.footerTemplate);
         if (!isNullOrUndefined(this.parentDetails)) {
             var value = isNullOrUndefined(this.parentDetails.parentKeyFieldValue) ? 'undefined' :
                 this.parentDetails.parentKeyFieldValue;
@@ -13620,6 +13844,23 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (parentsUntil(e.target, 'e-gridheader') && this.allowRowDragAndDrop) {
             e.preventDefault();
         }
+        var args = this.getRowInfo(e.target);
+        var cancel = 'cancel';
+        args[cancel] = false;
+        var isDataRow = false;
+        var tr = closest(e.target, 'tr');
+        if (tr && tr.getAttribute('data-uid')) {
+            var rowObj = this.getRowObjectFromUID(tr.getAttribute('data-uid'));
+            isDataRow = rowObj ? rowObj.isDataRow : false;
+        }
+        if (isBlazor()) {
+            var clonedColumn = extend({}, args.column);
+            args = { rowData: args.rowData, rowIndex: args.rowIndex,
+                cellIndex: args.cellIndex, column: clonedColumn };
+        }
+        if (isDataRow) {
+            this.trigger(recordClick, args);
+        }
         this.notify(click, e);
     };
     Grid.prototype.checkEdit = function (e) {
@@ -13681,10 +13922,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         return false;
     };
-    Grid.prototype.mergePersistGridData = function () {
+    /**
+     * hidden
+     */
+    Grid.prototype.mergePersistGridData = function (persistedData) {
         var data = window.localStorage.getItem(this.getModuleName() + this.element.id);
-        if (!(isNullOrUndefined(data) || (data === ''))) {
-            var dataObj = JSON.parse(data);
+        if (!(isNullOrUndefined(data) || (data === '')) || !isNullOrUndefined(persistedData)) {
+            var dataObj = !isNullOrUndefined(persistedData) ? persistedData : JSON.parse(data);
             if (this.enableVirtualization) {
                 dataObj.pageSettings.currentPage = 1;
             }
@@ -13694,7 +13938,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 var key = keys_1[_i];
                 if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
                     if (Array.isArray(this[key]) && key === 'columns') {
-                        setColumnIndex(this[key]);
+                        if (!(isBlazor() && this.isServerRendered)) {
+                            setColumnIndex(this[key]);
+                        }
                         this.mergeColumns(dataObj[key], this[key]);
                         this[key] = dataObj[key];
                     }
@@ -13722,6 +13968,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     if (isBlazor()) {
                         var guid = 'guid';
                         storedColumns[i][guid] = localCol[guid];
+                        storedColumns[i].uid = localCol.uid;
                     }
                     storedColumns[i] = extend(localCol, storedColumns[i], true);
                 }
@@ -13798,7 +14045,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     Grid.prototype.updateColumnObject = function () {
         prepareColumns(this.columns, this.enableColumnVirtualization);
-        setColumnIndex(this.columns);
+        if (!(isBlazor() && this.isServerRendered)) {
+            setColumnIndex(this.columns);
+        }
         this.initForeignColumn();
         this.notify(autoCol, {});
     };
@@ -14337,7 +14586,25 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         return height;
     };
+    /**
+     *To perform aggregate operation on a column.
+     *@param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
+     *@param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
+     * */
+    Grid.prototype.getSummaryValues = function (summaryCol, summaryData) {
+        return DataUtil.aggregates[summaryCol.type.toLowerCase()](summaryData, summaryCol.field);
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.isCollapseStateEnabled = function () {
+        var isExpanded = 'isExpanded';
+        return this[isExpanded];
+    };
     var Grid_1;
+    __decorate$1([
+        Property()
+    ], Grid.prototype, "parentDetails", void 0);
     __decorate$1([
         Property([])
     ], Grid.prototype, "columns", void 0);
@@ -14441,6 +14708,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], Grid.prototype, "showColumnChooser", void 0);
     __decorate$1([
+        Complex({}, ColumnChooserSettings)
+    ], Grid.prototype, "columnChooserSettings", void 0);
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "enableHeaderFocus", void 0);
     __decorate$1([
@@ -14542,6 +14812,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], Grid.prototype, "recordDoubleClick", void 0);
+    __decorate$1([
+        Event()
+    ], Grid.prototype, "recordClick", void 0);
     __decorate$1([
         Event()
     ], Grid.prototype, "rowSelecting", void 0);
@@ -14991,6 +15264,32 @@ function getUpdateUsingRaf(updateFunction, callBack) {
             callBack(e);
         }
     });
+}
+/**
+ * @hidden
+ */
+function isExportColumns(exportProperties) {
+    return !isNullOrUndefined(exportProperties) &&
+        !isNullOrUndefined(exportProperties.columns) && exportProperties.columns.length > 0;
+}
+/**
+ * @hidden
+ */
+function updateColumnTypeForExportColumns(exportProperties, gObj) {
+    var exportColumns = exportProperties.columns;
+    var gridColumns = gObj.columns;
+    for (var i = 0; i < exportColumns.length; i++) {
+        if (gridColumns.length - 1 >= i) {
+            if (gridColumns[i].columns) {
+                for (var j = 0; j < gridColumns[i].columns.length; j++) {
+                    exportColumns[i].columns[j].type = gridColumns[i].columns[j].type;
+                }
+            }
+            else {
+                exportColumns[i].type = gridColumns[i].type;
+            }
+        }
+    }
 }
 /**
  * @hidden
@@ -16109,7 +16408,9 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
     CheckBoxFilterBase.prototype.closeDialog = function () {
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
             var filterTemplateCol = this.options.columns.filter(function (col) { return col.getFilterItemTemplate(); });
-            if (filterTemplateCol.length) {
+            // tslint:disable-next-line:no-any
+            var registeredTemplate = this.parent.registeredTemplate;
+            if (filterTemplateCol.length && !isNullOrUndefined(registeredTemplate) && registeredTemplate.filterItemTemplate) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
             this.parent.notify(filterMenuClose, { field: this.options.field });
@@ -16757,7 +17058,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
     return CheckBoxFilterBase;
 }());
 
-var __extends$16 = (undefined && undefined.__extends) || (function () {
+var __extends$17 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16775,7 +17076,7 @@ var __extends$16 = (undefined && undefined.__extends) || (function () {
  * `ExcelFilter` module is used to handle filtering action.
  */
 var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(ExcelFilterBase, _super);
+    __extends$17(ExcelFilterBase, _super);
     /**
      * Constructor for excel filtering module
      * @hidden
@@ -17209,7 +17510,8 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             fields: { text: 'text', value: 'value' },
             text: selectedValue,
             open: this.dropDownOpen.bind(this),
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            change: this.dropDownValueChange.bind(this)
         }, col.filter.params));
         this.dropOptr.appendTo(optrInput);
         var operator = this.getSelectedValue(selectedValue);
@@ -17217,6 +17519,20 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
     };
     ExcelFilterBase.prototype.dropDownOpen = function (args) {
         args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
+    };
+    ExcelFilterBase.prototype.dropDownValueChange = function (args) {
+        if (args.element.id.includes('-xlfl-frstoptr')) {
+            this.firstOperator = args.value.toString();
+        }
+        else {
+            this.secondOperator = args.value.toString();
+        }
+    };
+    /**
+     * @hidden
+     */
+    ExcelFilterBase.prototype.getFilterUIInfo = function () {
+        return { firstOperator: this.firstOperator, secondOperator: this.secondOperator, field: this.options.field };
     };
     ExcelFilterBase.prototype.getSelectedValue = function (text) {
         var selectedField = new DataManager(this.optrData).executeLocal(new Query().where('text', 'equal', text));
@@ -17251,6 +17567,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         //Renders first dropdown
         /* tslint:disable-next-line:max-line-length */
         var optr = this.renderOperatorUI(column, table, '-xlfl-frstoptr', predicates, true);
+        this.firstOperator = optr.operator;
         //Renders first value
         this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
         var predicate = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
@@ -17259,6 +17576,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         this.renderRadioButton(column, predicate, predicates);
         //Renders second dropdown
         optr = this.renderOperatorUI(column, table, '-xlfl-secndoptr', predicates, false);
+        this.secondOperator = optr.operator;
         //Renders second text box
         this.renderFlValueUI(column, optr, '-xlfl-secndvalue', predicates, false);
     };
@@ -18335,7 +18653,7 @@ var PagerMessage = /** @__PURE__ @class */ (function () {
     return PagerMessage;
 }());
 
-var __extends$17 = (undefined && undefined.__extends) || (function () {
+var __extends$18 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -18348,7 +18666,7 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -18367,7 +18685,7 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
  * ```
  */
 var Pager = /** @__PURE__ @class */ (function (_super) {
-    __extends$17(Pager, _super);
+    __extends$18(Pager, _super);
     /**
      * Constructor for creating the component.
      * @hidden
@@ -18720,49 +19038,49 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    __decorate$4([
+    __decorate$5([
         Property(false)
     ], Pager.prototype, "enableQueryString", void 0);
-    __decorate$4([
+    __decorate$5([
         Property(false)
     ], Pager.prototype, "enableExternalMessage", void 0);
-    __decorate$4([
+    __decorate$5([
         Property(true)
     ], Pager.prototype, "enablePagerMessage", void 0);
-    __decorate$4([
+    __decorate$5([
         Property(12)
     ], Pager.prototype, "pageSize", void 0);
-    __decorate$4([
+    __decorate$5([
         Property(10)
     ], Pager.prototype, "pageCount", void 0);
-    __decorate$4([
+    __decorate$5([
         Property(1)
     ], Pager.prototype, "currentPage", void 0);
-    __decorate$4([
+    __decorate$5([
         Property()
     ], Pager.prototype, "totalRecordsCount", void 0);
-    __decorate$4([
+    __decorate$5([
         Property()
     ], Pager.prototype, "externalMessage", void 0);
-    __decorate$4([
+    __decorate$5([
         Property(false)
     ], Pager.prototype, "pageSizes", void 0);
-    __decorate$4([
+    __decorate$5([
         Property()
     ], Pager.prototype, "template", void 0);
-    __decorate$4([
+    __decorate$5([
         Property('')
     ], Pager.prototype, "customText", void 0);
-    __decorate$4([
+    __decorate$5([
         Event()
     ], Pager.prototype, "click", void 0);
-    __decorate$4([
+    __decorate$5([
         Event()
     ], Pager.prototype, "dropDownChanged", void 0);
-    __decorate$4([
+    __decorate$5([
         Event()
     ], Pager.prototype, "created", void 0);
-    Pager = __decorate$4([
+    Pager = __decorate$5([
         NotifyPropertyChanges
     ], Pager);
     return Pager;
@@ -19227,7 +19545,7 @@ var keyActions = {
     altPageDown: '.e-np'
 };
 
-var __extends$18 = (undefined && undefined.__extends) || (function () {
+var __extends$19 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19245,7 +19563,7 @@ var __extends$18 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(FilterCellRenderer, _super);
+    __extends$19(FilterCellRenderer, _super);
     function FilterCellRenderer() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.element = _this.parent.createElement('TH', { className: 'e-filterbarcell' });
@@ -19902,6 +20220,12 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
     FilterMenuRenderer.prototype.destroy = function () {
         this.closeDialog();
     };
+    /**
+     * @hidden
+     */
+    FilterMenuRenderer.prototype.getFilterUIInfo = function () {
+        return { field: this.col.field, operator: this.flMuiObj.getFlOperator() };
+    };
     return FilterMenuRenderer;
 }());
 
@@ -19978,7 +20302,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
     return CheckBoxFilter;
 }());
 
-var __extends$19 = (undefined && undefined.__extends) || (function () {
+var __extends$20 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -19996,7 +20320,7 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
  * `ExcelFilter` module is used to handle filtering action.
  */
 var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(ExcelFilter, _super);
+    __extends$20(ExcelFilter, _super);
     /**
      * Constructor for excelbox filtering module
      * @hidden
@@ -20029,6 +20353,12 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
     ExcelFilter.prototype.filterByColumn = function (fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
         /* tslint:disable-next-line:max-line-length */
         this.excelFilterBase.filterByColumn(fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue);
+    };
+    /**
+     * @hidden
+     */
+    ExcelFilter.prototype.getFilterUIInfo = function () {
+        return this.excelFilterBase.getFilterUIInfo();
     };
     /**
      * For internal use only - Get the module name.
@@ -20189,18 +20519,21 @@ var Filter = /** @__PURE__ @class */ (function () {
      */
     Filter.prototype.updateModel = function () {
         var col = this.parent.getColumnByField(this.fieldName);
-        var field = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
-        this.currentFilterObject = {
-            field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
-            value: this.value, predicate: this.predicate,
-            matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
-        };
-        var index = this.getFilteredColsIndexByField(col);
-        if (index > -1) {
-            this.filterSettings.columns[index] = this.currentFilterObject;
-        }
-        else {
-            this.filterSettings.columns.push(this.currentFilterObject);
+        var arrayVal = Array.isArray(this.value) ? this.value : [this.value];
+        for (var i = 0, len = arrayVal.length; i < len; i++) {
+            var field = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
+            this.currentFilterObject = {
+                field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
+                value: arrayVal[i], predicate: this.predicate,
+                matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
+            };
+            var index = this.getFilteredColsIndexByField(col);
+            if (index > -1 && !Array.isArray(this.value)) {
+                this.filterSettings.columns[index] = this.currentFilterObject;
+            }
+            else {
+                this.filterSettings.columns.push(this.currentFilterObject);
+            }
         }
         this.filterSettings.columns = this.filterSettings.columns;
         this.parent.dataBind();
@@ -20280,6 +20613,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         EventHandler.add(document, 'click', this.clickHandler, this);
         this.parent.on(filterOpen, this.columnMenuFilter, this);
         this.parent.on(click, this.filterIconClickHandler, this);
+        this.parent.on('persist-data-changed', this.initialEnd, this);
     };
     /**
      * @hidden
@@ -20336,11 +20670,11 @@ var Filter = /** @__PURE__ @class */ (function () {
             });
             return;
         }
+        this.predicate = predicate ? predicate : Array.isArray(filterValue) ? 'or' : 'and';
         this.value = filterValue;
         this.matchCase = matchCase || false;
         this.ignoreAccent = this.ignoreAccent = !isNullOrUndefined(ignoreAccent) ? ignoreAccent : this.parent.filterSettings.ignoreAccent;
         this.fieldName = fieldName;
-        this.predicate = predicate || 'and';
         this.operator = filterOperator;
         filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
         if (this.column.type === 'number' || this.column.type === 'date') {
@@ -21053,6 +21387,12 @@ var Filter = /** @__PURE__ @class */ (function () {
         if (filterIconElement) {
             filterIconElement.classList.add('e-filtered');
         }
+    };
+    /**
+     * @hidden
+     */
+    Filter.prototype.getFilterUIInfo = function () {
+        return this.filterModule ? this.filterModule.getFilterUIInfo() : {};
     };
     return Filter;
 }());
@@ -22888,8 +23228,11 @@ var Group = /** @__PURE__ @class */ (function () {
      */
     function Group(parent, groupSettings, sortedColumns, serviceLocator) {
         var _this = this;
+        //Internal variables
+        this.sortRequired = true;
         this.isAppliedGroup = false;
         this.isAppliedUnGroup = false;
+        this.reorderingColumns = [];
         this.visualElement = createElement('div', {
             className: 'e-cloneproperties e-dragclone e-gdclone',
             styles: 'line-height:23px', attrs: { action: 'grouping' }
@@ -22899,7 +23242,7 @@ var Group = /** @__PURE__ @class */ (function () {
             var target = e.sender.target;
             var element = target.classList.contains('e-groupheadercell') ? target :
                 parentsUntil(target, 'e-groupheadercell');
-            if (!element) {
+            if (!element || (!target.classList.contains('e-drag') && _this.parent.allowGroupReordering)) {
                 return false;
             }
             _this.column = gObj.getColumnByField(element.firstElementChild.getAttribute('ej-mappingname'));
@@ -22917,19 +23260,77 @@ var Group = /** @__PURE__ @class */ (function () {
             }
         };
         this.drag = function (e) {
+            if (_this.parent.allowGroupReordering) {
+                _this.animateDropper(e);
+            }
             var target = e.target;
             var cloneElement = _this.parent.element.querySelector('.e-cloneproperties');
             _this.parent.trigger(columnDrag, { target: target, draggableType: 'headercell', column: _this.column });
-            classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
-            if (!(parentsUntil(target, 'e-gridcontent') || parentsUntil(target, 'e-headercell'))) {
-                classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+            if (!_this.parent.allowGroupReordering) {
+                classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+                if (!(parentsUntil(target, 'e-gridcontent') || parentsUntil(target, 'e-headercell'))) {
+                    classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+                }
             }
         };
         this.dragStop = function (e) {
             _this.parent.element.classList.remove('e-ungroupdrag');
-            if (!(parentsUntil(e.target, 'e-gridcontent') || parentsUntil(e.target, 'e-gridheader'))) {
+            var preventDrop = !(parentsUntil(e.target, 'e-gridcontent') || parentsUntil(e.target, 'e-gridheader'));
+            if (_this.parent.allowGroupReordering && preventDrop) {
+                remove(e.helper);
+                if (parentsUntil(e.target, 'e-groupdroparea')) {
+                    _this.rearrangeGroup(e);
+                }
+                else if (!(parentsUntil(e.target, 'e-grid'))) {
+                    var field = _this.parent.getColumnByUid(e.helper.getAttribute('e-mappinguid')).field;
+                    if (_this.groupSettings.columns.indexOf(field) !== -1) {
+                        _this.ungroupColumn(field);
+                    }
+                }
+                return;
+            }
+            else if (preventDrop) {
                 remove(e.helper);
                 return;
+            }
+        };
+        this.animateDropper = function (e) {
+            var uid = _this.parent.element.querySelector('.e-cloneproperties').getAttribute('e-mappinguid');
+            var dragField = _this.parent.getColumnByUid(uid).field;
+            var parent = parentsUntil(e.target, 'e-groupdroparea');
+            var dropTarget = parentsUntil(e.target, 'e-group-animator');
+            // tslint:disable-next-line
+            var grouped = [].slice.call(_this.element.querySelectorAll('.e-groupheadercell'))
+                .map(function (e) { return e.querySelector('div').getAttribute('ej-mappingname'); });
+            var cols = JSON.parse(JSON.stringify(grouped));
+            if (dropTarget || parent) {
+                if (dropTarget) {
+                    var dropField = dropTarget.querySelector('div[ej-mappingname]').getAttribute('ej-mappingname');
+                    var dropIndex = +(dropTarget.getAttribute('index'));
+                    if (dropField !== dragField) {
+                        var dragIndex = cols.indexOf(dragField);
+                        if (dragIndex !== -1) {
+                            cols.splice(dragIndex, 1);
+                        }
+                        var flag = dropIndex !== -1 && dragIndex === dropIndex;
+                        cols.splice(dropIndex + (flag ? 1 : 0), 0, dragField);
+                    }
+                }
+                else if (parent && cols.indexOf(dragField) === -1) {
+                    cols.push(dragField);
+                }
+                _this.element.innerHTML = '';
+                if (cols.length && !_this.element.classList.contains('e-grouped')) {
+                    _this.element.classList.add('e-grouped');
+                }
+                _this.reorderingColumns = cols;
+                for (var c = 0; c < cols.length; c++) {
+                    _this.addColToGroupDrop(cols[c]);
+                }
+            }
+            else {
+                _this.addLabel();
+                _this.removeColFromGroupDrop(dragField);
             }
         };
         this.drop = function (e) {
@@ -22957,7 +23358,21 @@ var Group = /** @__PURE__ @class */ (function () {
         this.addEventListener();
         this.groupGenerator = new GroupModelGenerator(this.parent);
     }
+    Group.prototype.addLabel = function () {
+        if (!this.element.querySelectorAll('.e-group-animator').length) {
+            var dragLabel = this.l10n.getConstant('GroupDropArea');
+            this.element.innerHTML = dragLabel;
+            this.element.classList.remove('e-grouped');
+        }
+    };
+    Group.prototype.rearrangeGroup = function (e) {
+        this.sortRequired = false;
+        this.updateModel();
+    };
     Group.prototype.columnDrag = function (e) {
+        if (this.parent.allowGroupReordering) {
+            this.animateDropper(e);
+        }
         var gObj = this.parent;
         var cloneElement = this.parent.element.querySelector('.e-cloneproperties');
         classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
@@ -23003,6 +23418,7 @@ var Group = /** @__PURE__ @class */ (function () {
         this.parent.on(click, this.clickHandler, this);
         this.parent.on(columnDrag, this.columnDrag, this);
         this.parent.on(columnDragStart, this.columnDragStart, this);
+        this.parent.on(headerDrop, this.columnDrop, this);
         this.parent.on(columnDrop, this.columnDrop, this);
         this.parent.on(headerRefreshed, this.refreshSortIcons, this);
         this.parent.on(sortComplete, this.refreshSortIcons, this);
@@ -23012,6 +23428,8 @@ var Group = /** @__PURE__ @class */ (function () {
         this.parent.on(initialEnd, this.render, this);
         this.parent.on(groupAggregates, this.onGroupAggregates, this);
         this.parent.on('blazor-action-begin', this.blazorActionBegin, this);
+        this.parent.on('group-expand-collapse', this.updateExpand, this);
+        this.parent.on('persist-data-changed', this.initialEnd, this);
     };
     /**
      * @hidden
@@ -23029,14 +23447,16 @@ var Group = /** @__PURE__ @class */ (function () {
         this.parent.off(columnDrag, this.columnDrag);
         this.parent.off(columnDragStart, this.columnDragStart);
         this.parent.off(columnDrop, this.columnDrop);
+        this.parent.off(headerDrop, this.columnDrop);
         this.parent.off(headerRefreshed, this.refreshSortIcons);
         this.parent.off(sortComplete, this.refreshSortIcons);
         this.parent.off(keyPressed, this.keyPressHandler);
         this.parent.off(groupAggregates, this.onGroupAggregates);
         this.parent.off('blazor-action-begin', this.blazorActionBegin);
+        this.parent.off('group-expand-collapse', this.updateExpand);
     };
     Group.prototype.blazorActionBegin = function () {
-        if (this.parent.allowGrouping) {
+        if (this.parent.allowGrouping && this.parent.isCollapseStateEnabled()) {
             this.expandAll();
         }
     };
@@ -23044,6 +23464,12 @@ var Group = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         this.parent.off(contentReady, this.initialEnd);
         this.parent.off(onEmpty, this.initialEnd);
+        if (isBlazor() && gObj.isServerRendered) {
+            for (var i = 0; i < gObj.columns.length; i++) {
+                this.removeColFromGroupDrop(gObj.columns[i].field);
+            }
+            this.updateGroupDropArea();
+        }
         if (this.parent.getColumns().length && this.groupSettings.columns.length) {
             this.contentRefresh = false;
             for (var _i = 0, _a = gObj.groupSettings.columns; _i < _a.length; _i++) {
@@ -23168,6 +23594,11 @@ var Group = /** @__PURE__ @class */ (function () {
             var gObj = this.parent;
             var indent = trgt.parentElement.querySelectorAll('.e-indentcell').length;
             var expand = false;
+            if (isBlazor() && this.parent.isCollapseStateEnabled()) {
+                this.parent.notify('group-expand-collapse', { uid: trgt.parentElement.getAttribute('data-uid'),
+                    isExpand: trgt.classList.contains('e-recordpluscollapse') });
+                return;
+            }
             if (trgt.classList.contains('e-recordpluscollapse')) {
                 addClass([trgt], 'e-recordplusexpand');
                 removeClass([trgt], 'e-recordpluscollapse');
@@ -23233,6 +23664,10 @@ var Group = /** @__PURE__ @class */ (function () {
         dataManager.then(function (e) { return gObj.renderModule.dataManagerSuccess(e, args); });
     };
     Group.prototype.expandCollapse = function (isExpand) {
+        if (isBlazor() && this.parent.isCollapseStateEnabled()) {
+            this.parent.notify('group-expand-collapse', { isExpand: isExpand });
+            return;
+        }
         var rowNodes = this.parent.getContentTable().querySelector('tbody').children;
         var row;
         for (var i = 0, len = rowNodes.length; i < len; i++) {
@@ -23284,6 +23719,9 @@ var Group = /** @__PURE__ @class */ (function () {
             remove(groupElem);
         }
         this.element = this.parent.createElement('div', { className: 'e-groupdroparea', attrs: { 'tabindex': '-1' } });
+        if (this.parent.allowGroupReordering) {
+            this.element.classList.add('e-group-animate');
+        }
         this.updateGroupDropArea();
         this.parent.element.insertBefore(this.element, this.parent.element.firstChild);
         if (!this.groupSettings.showDropArea) {
@@ -23310,8 +23748,8 @@ var Group = /** @__PURE__ @class */ (function () {
     };
     Group.prototype.initializeGHeaderDrag = function () {
         var drag = new Draggable(this.element, {
-            dragTarget: '.e-groupheadercell',
-            distance: 5,
+            dragTarget: this.parent.allowGroupReordering ? '.e-drag' : '.e-groupheadercell',
+            distance: this.parent.allowGroupReordering ? -10 : 5,
             helper: this.helper,
             dragStart: this.dragStart,
             drag: this.drag,
@@ -23371,6 +23809,11 @@ var Group = /** @__PURE__ @class */ (function () {
             return;
         }
         column.visible = true;
+        if (isBlazor() && gObj.isServerRendered) {
+            var setVisible = [];
+            setVisible[0] = column;
+            this.parent.notify('setvisibility', setVisible);
+        }
         this.colName = column.field;
         var columns = JSON.parse(JSON.stringify(this.groupSettings.columns));
         columns.splice(columns.indexOf(this.colName), 1);
@@ -23386,6 +23829,9 @@ var Group = /** @__PURE__ @class */ (function () {
         if (isBlazor() && this.parent[isServerRendered]) {
             gObj.sortSettings.columns = gObj.sortSettings.columns;
         }
+        if (this.parent.allowGroupReordering) {
+            this.reorderingColumns = columns;
+        }
         this.groupSettings.columns = columns;
         if (gObj.allowGrouping) {
             this.isAppliedUnGroup = true;
@@ -23400,9 +23846,15 @@ var Group = /** @__PURE__ @class */ (function () {
     Group.prototype.updateModel = function () {
         var gObj = this.parent;
         var columns = JSON.parse(JSON.stringify(this.groupSettings.columns));
-        columns.push(this.colName);
-        this.groupAddSortingQuery(this.colName);
-        this.groupSettings.columns = columns;
+        columns = this.reorderingColumns.length ? JSON.parse(JSON.stringify(this.reorderingColumns)) : columns;
+        if (this.sortRequired) {
+            if (columns.indexOf(this.colName) === -1) {
+                columns.push(this.colName);
+            }
+            this.groupAddSortingQuery(this.colName);
+        }
+        this.sortRequired = true;
+        this.parent.groupSettings.columns = columns;
         this.parent.dataBind();
     };
     /**
@@ -23446,15 +23898,13 @@ var Group = /** @__PURE__ @class */ (function () {
             this.parent.sortSettings.columns[i].direction = 'Ascending';
         }
     };
-    Group.prototype.addColToGroupDrop = function (field) {
+    Group.prototype.createElement = function (field) {
         var gObj = this.parent;
         var direction = 'Ascending';
+        var animator = this.parent.createElement('div', { className: 'e-grid-icon e-group-animator' });
         var groupedColumn = this.parent.createElement('div', { className: 'e-grid-icon e-groupheadercell' });
         var childDiv = this.parent.createElement('div', { attrs: { 'ej-mappingname': field } });
         var column = this.parent.getColumnByField(field);
-        if (isNullOrUndefined(column)) {
-            return;
-        }
         //Todo headerTemplateID for grouped column, disableHtmlEncode                          
         var headerCell = gObj.getColumnHeaderByUid(column.uid);
         // if (!isNullOrUndefined(column.headerTemplate)) {
@@ -23465,6 +23915,12 @@ var Group = /** @__PURE__ @class */ (function () {
         //     }
         //     childDiv.firstElementChild.classList.add('e-grouptext');
         // } else {
+        if (this.parent.allowGroupReordering) {
+            childDiv.appendChild(this.parent.createElement('span', {
+                className: 'e-drag e-icons e-icon-drag', innerHTML: '&nbsp;',
+                attrs: { title: 'Drag', tabindex: '-1', 'aria-label': 'Drag the grouped column' }
+            }));
+        }
         childDiv.appendChild(this.parent.createElement('span', {
             className: 'e-grouptext', innerHTML: column.headerText,
             attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
@@ -23490,8 +23946,37 @@ var Group = /** @__PURE__ @class */ (function () {
             styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
         }));
         groupedColumn.appendChild(childDiv);
+        var index = this.groupSettings.columns.indexOf(field);
+        if (this.parent.allowGroupReordering) {
+            animator.appendChild(groupedColumn);
+            animator.appendChild(this.createSeparator());
+            groupedColumn = animator;
+        }
+        return groupedColumn;
+    };
+    Group.prototype.addColToGroupDrop = function (field) {
+        if (this.parent.allowGroupReordering
+            && this.parent.element.querySelector('.e-groupdroparea div[ej-mappingname=' + field + ']')) {
+            return;
+        }
+        var column = this.parent.getColumnByField(field);
+        if (isNullOrUndefined(column)) {
+            return;
+        }
+        var groupedColumn = this.createElement(field);
+        if (this.parent.allowGroupReordering) {
+            var index = this.element.querySelectorAll('.e-group-animator').length;
+            groupedColumn.setAttribute('index', index.toString());
+        }
         this.element.appendChild(groupedColumn);
         //Todo:  rtl 
+    };
+    Group.prototype.createSeparator = function () {
+        return this.parent.createElement('span', {
+            className: 'e-nextgroup e-icons e-icon-next', innerHTML: '&nbsp;',
+            attrs: { tabindex: '-1', 'aria-label': 'Separator for the grouped columns' },
+            styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
+        });
     };
     Group.prototype.refreshToggleBtn = function (isRemove) {
         if (this.groupSettings.showToggleButton) {
@@ -23517,7 +24002,14 @@ var Group = /** @__PURE__ @class */ (function () {
     };
     Group.prototype.removeColFromGroupDrop = function (field) {
         if (!isNullOrUndefined(this.getGHeaderCell(field))) {
-            remove(this.getGHeaderCell(field));
+            var elem = this.getGHeaderCell(field);
+            if (this.parent.allowGroupReordering) {
+                var parent_1 = parentsUntil(elem, 'e-group-animator');
+                remove(parent_1);
+            }
+            else {
+                remove(elem);
+            }
             this.updateGroupDropArea();
         }
         this.isAppliedUnGroup = false;
@@ -23740,6 +24232,44 @@ var Group = /** @__PURE__ @class */ (function () {
             result = DataUtil.group(aggrds, groupedCols[l], aggregates, null, null);
         }
         return result;
+    };
+    Group.prototype.updateExpand = function (args) {
+        var uid = args.uid;
+        var isExpand = args.isExpand;
+        var rows = this.parent.getRowsObject();
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            if (row.uid === uid || isNullOrUndefined(uid)) {
+                row.isExpand = isExpand;
+                var _loop_1 = function (j) {
+                    var childRow = rows[j];
+                    var closestParent = void 0;
+                    if (childRow.parentUid !== row.uid) {
+                        closestParent = rows.filter(function (x) { return x.uid === childRow.parentUid; })[0];
+                    }
+                    if (childRow.parentUid === row.uid) {
+                        childRow.visible = row.isExpand;
+                    }
+                    else if (!isNullOrUndefined(closestParent) && childRow.parentUid === closestParent.uid) {
+                        if (closestParent.isExpand && closestParent.visible === true) {
+                            childRow.visible = true;
+                        }
+                        else if (closestParent.isExpand && closestParent.visible === false) {
+                            childRow.visible = false;
+                        }
+                    }
+                    if (isNullOrUndefined(uid)) {
+                        return "break";
+                    }
+                };
+                for (var j = i + 1; j < rows.length; j++) {
+                    var state_1 = _loop_1(j);
+                    if (state_1 === "break")
+                        break;
+                }
+            }
+        }
+        this.parent.notify(contentReady, { rows: rows, args: { isFrozen: false, rows: rows } });
     };
     return Group;
 }());
@@ -24349,7 +24879,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     return Toolbar$$1;
 }());
 
-var __extends$20 = (undefined && undefined.__extends) || (function () {
+var __extends$21 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24367,7 +24897,7 @@ var __extends$20 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(FooterRenderer, _super);
+    __extends$21(FooterRenderer, _super);
     function FooterRenderer(gridModule, serviceLocator) {
         var _this = _super.call(this, gridModule, serviceLocator) || this;
         _this.aggregates = {};
@@ -24628,7 +25158,7 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
     return FooterRenderer;
 }(ContentRender));
 
-var __extends$21 = (undefined && undefined.__extends) || (function () {
+var __extends$22 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -24646,7 +25176,7 @@ var __extends$21 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var SummaryCellRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$21(SummaryCellRenderer, _super);
+    __extends$22(SummaryCellRenderer, _super);
     function SummaryCellRenderer() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.element = _this.parent
@@ -24840,7 +25370,7 @@ function summaryIterator(aggregates, callback) {
  * @hidden
  */
 var InterSectionObserver = /** @__PURE__ @class */ (function () {
-    function InterSectionObserver(element, options) {
+    function InterSectionObserver(parent, element, options) {
         var _this = this;
         this.fromWheel = false;
         this.touchMove = false;
@@ -24877,6 +25407,7 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
                 }, axis: 'X'
             }
         };
+        this.parent = parent;
         this.element = element;
         this.options = options;
     }
@@ -24909,7 +25440,8 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
                 return;
             }
             var check = _this.check(direction);
-            if (current.entered) {
+            if (current.entered && (!isBlazor() || (isBlazor() && !_this.parent.isServerRendered) ||
+                (isBlazor() && _this.parent.isServerRendered && !_this.parent.isWheelScrolled))) {
                 onEnterCallback(_this.element, current, direction, { top: top, left: left }, _this.fromWheel, check);
             }
             if (check) {
@@ -24918,10 +25450,14 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
                 if (current.axis === 'X') {
                     fn = debounced50;
                 }
-                fn({
-                    direction: direction, sentinel: current, offset: { top: top, left: left },
-                    focusElement: document.activeElement
-                });
+                if (isBlazor() && _this.parent.isServerRendered && _this.parent.isWheelScrolled) {
+                    callback({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                        focusElement: document.activeElement });
+                }
+                else {
+                    fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                        focusElement: document.activeElement });
+                }
             }
             _this.fromWheel = false;
         };
@@ -25003,12 +25539,14 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
             }
         }
         info.blockIndexes = loadedBlocks;
-        var grouping = 'records';
-        if (this.parent.allowGrouping) {
-            this.parent.currentViewData[grouping] = result.map(function (m) { return m.data; });
-        }
-        else {
-            this.parent.currentViewData = result.map(function (m) { return m.data; });
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            var grouping = 'records';
+            if (this.parent.allowGrouping) {
+                this.parent.currentViewData[grouping] = result.map(function (m) { return m.data; });
+            }
+            else {
+                this.parent.currentViewData = result.map(function (m) { return m.data; });
+            }
         }
         return result;
     };
@@ -25058,6 +25596,10 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
             }
             return left + calWidth < offsetVal;
         });
+        if (isBlazor() && this.parent.isServerRendered) {
+            this.parent.contentModule.startColIndex = indexes[0];
+            this.parent.contentModule.endColIndex = indexes[indexes.length - 1];
+        }
         return indexes;
     };
     VirtualRowModelGenerator.prototype.checkAndResetCache = function (action) {
@@ -25136,7 +25678,7 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
     return VirtualRowModelGenerator;
 }());
 
-var __extends$22 = (undefined && undefined.__extends) || (function () {
+var __extends$23 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25154,11 +25696,13 @@ var __extends$22 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(VirtualContentRenderer, _super);
+    __extends$23(VirtualContentRenderer, _super);
     function VirtualContentRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.prevHeight = 0;
-        _this.currentInfo = {};
+        /** @hidden */
+        _this.startIndex = 0;
+        _this.preStartIndex = 0;
         _this.preventEvent = false;
         _this.actions = ['filtering', 'searching', 'grouping', 'ungrouping'];
         _this.offsets = {};
@@ -25192,7 +25736,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
-        this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
+        this.observer = new InterSectionObserver(this.parent, this.virtualEle.wrapper, opt);
     };
     VirtualContentRenderer.prototype.renderEmpty = function (tbody) {
         this.getTable().appendChild(tbody);
@@ -25226,7 +25770,13 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.refreshMvTbalTransform();
         }
         var info = scrollArgs.sentinel;
+        var pStartIndex = this.preStartIndex;
+        var previousColIndexes = this.parent.getColumnIndexesInView();
         var viewInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
+        if (isBlazor() && this.parent.isServerRendered) {
+            this.parent.notify('update-virtual-view', { previousColIndexes: previousColIndexes, preStartIndex: this.preStartIndex,
+                pStartIndex: pStartIndex, viewInfo: viewInfo });
+        }
         if (isGroupAdaptive(this.parent)) {
             if ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
                 && scrollArgs.direction === 'up' && viewInfo.blockIndexes[viewInfo.blockIndexes.length - 1] !== 2) {
@@ -25241,15 +25791,22 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
         }
-        if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
-            || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
-            if (Browser.isIE) {
-                this.parent.hideSpinner();
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
+                || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
+                if (Browser.isIE) {
+                    this.parent.hideSpinner();
+                }
+                return;
             }
-            return;
         }
         this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
-        this.parent.pageSettings.currentPage = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            this.parent.pageSettings.currentPage = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+        }
+        else if (isBlazor() && this.parent.isServerRendered && this.preStartIndex !== pStartIndex) {
+            this.parent.notify('refresh-virtual-indices', { viewInfo: viewInfo });
+        }
         if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
             var lastPage = Math.ceil(this.getTotalBlocks() / 2);
             if (this.parent.pageSettings.currentPage === lastPage && scrollArgs.sentinel.axis === 'Y') {
@@ -25265,7 +25822,13 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo,
+                focusElement: scrollArgs.focusElement });
+        }
+        else if (this.preStartIndex !== pStartIndex) {
+            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo });
+        }
     };
     VirtualContentRenderer.prototype.block = function (blk) {
         return this.vgenerator.isBlockAvailable(blk);
@@ -25273,7 +25836,8 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualContentRenderer.prototype.getInfoFromView = function (direction, info, e) {
         var isBlockAdded = false;
         var tempBlocks = [];
-        var infoType = { direction: direction, sentinelInfo: info, offsets: e };
+        var infoType = { direction: direction, sentinelInfo: info, offsets: e,
+            startIndex: this.preStartIndex, endIndex: this.preEndIndex };
         var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
         infoType.page = this.getPageFromTop(e.top + vHeight, infoType);
@@ -25304,6 +25868,42 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         infoType.columnIndexes = info.axis === 'X' ? this.vgenerator.getColumnIndexes() : this.parent.getColumnIndexesInView();
         if (this.parent.enableColumnVirtualization && info.axis === 'X') {
             infoType.event = refreshVirtualBlock;
+        }
+        if (isBlazor() && this.parent.isServerRendered) {
+            var rowHeight = this.parent.getRowHeight();
+            var exactTopIndex = e.top / rowHeight;
+            var noOfInViewIndexes = vHeight / rowHeight;
+            var pageSizeBy4 = this.parent.pageSettings.pageSize / 4;
+            if (infoType.direction === 'down') {
+                var sIndex = Math.round(exactTopIndex) + Math.round(noOfInViewIndexes) - Math.round((pageSizeBy4));
+                if (isNullOrUndefined(infoType.startIndex) || (exactTopIndex + noOfInViewIndexes) >
+                    (infoType.startIndex + Math.round((this.parent.pageSettings.pageSize / 2 + pageSizeBy4)))) {
+                    infoType.startIndex = sIndex >= 0 ? Math.round(sIndex) : 0;
+                    var eIndex = infoType.startIndex + this.parent.pageSettings.pageSize;
+                    infoType.endIndex = eIndex < this.count ? eIndex : this.count;
+                    infoType.startIndex = eIndex >= this.count ?
+                        infoType.endIndex - this.parent.pageSettings.pageSize : infoType.startIndex;
+                    infoType.currentPage = Math.ceil(infoType.endIndex / this.parent.pageSettings.pageSize);
+                }
+            }
+            else if (infoType.direction === 'up') {
+                if (infoType.startIndex && infoType.endIndex) {
+                    var loadAtIndex = Math.round(((infoType.startIndex * rowHeight) + (pageSizeBy4 * rowHeight)) / rowHeight);
+                    if (exactTopIndex < loadAtIndex) {
+                        var idxAddedToExactTop = (pageSizeBy4) > noOfInViewIndexes ? pageSizeBy4 :
+                            (noOfInViewIndexes + noOfInViewIndexes / 4);
+                        var eIndex = Math.round(exactTopIndex + idxAddedToExactTop);
+                        infoType.endIndex = eIndex < this.count ? eIndex : this.count;
+                        var sIndex = infoType.endIndex - this.parent.pageSettings.pageSize;
+                        infoType.startIndex = sIndex > 0 ? sIndex : 0;
+                        infoType.endIndex = sIndex < 0 ? this.parent.pageSettings.pageSize : infoType.endIndex;
+                        infoType.currentPage = Math.ceil(infoType.startIndex / this.parent.pageSettings.pageSize);
+                    }
+                }
+            }
+            this.preStartIndex = this.startIndex = infoType.startIndex;
+            this.preEndIndex = infoType.endIndex;
+            infoType.event = (infoType.currentPage !== this.parent.pageSettings.currentPage) ? modelChanged : refreshVirtualBlock;
         }
         return infoType;
     };
@@ -25560,7 +26160,12 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             var height = _this.content.getBoundingClientRect().height;
             var x = _this.getColumnOffset(xAxis ? _this.vgenerator.getColumnIndexes()[0] - 1 : _this.prevInfo.columnIndexes[0] - 1);
             var y = _this.getTranslateY(e.top, height, xAxis && top === e.top ? _this.prevInfo : undefined, true);
-            _this.virtualEle.adjustTable(x, Math.min(y, _this.offsets[_this.maxBlock]));
+            if (!isBlazor() || (isBlazor() && !_this.parent.isServerRendered) || (isBlazor() && _this.parent.isServerRendered && !xAxis)) {
+                _this.virtualEle.adjustTable(x, Math.min(y, _this.offsets[_this.maxBlock]));
+            }
+            else {
+                _this.parent.notify('setcolumnstyles', {});
+            }
             if (_this.parent.getFrozenColumns() && !xAxis) {
                 var left = _this.parent.getMovableVirtualContent().scrollLeft;
                 if (_this.parent.enableColumnVirtualization && left > 0) {
@@ -25572,7 +26177,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                     fvTable.style.transform = "translate(" + x + "px, " + Math.min(y, _this.offsets[_this.maxBlock]) + "px)";
                 }
             }
-            if (_this.parent.enableColumnVirtualization) {
+            if (_this.parent.enableColumnVirtualization && (!isBlazor() || (isBlazor() && !_this.parent.isServerRendered))) {
                 _this.header.virtualEle.adjustTable(x, 0);
             }
         };
@@ -25700,7 +26305,8 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.getRowCollection = function (index, isMovable) {
         var prev = this.prevInfo.blockIndexes;
-        var startIdx = (prev[0] - 1) * this.getBlockSize();
+        var startIdx = (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) ?
+            (prev[0] - 1) * this.getBlockSize() : this.startIndex;
         var rowCollection = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
         var selectedRow = rowCollection[index - startIdx];
         if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
@@ -25750,6 +26356,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.setVisible = function (columns) {
         var gObj = this.parent;
+        if (isBlazor() && gObj.isServerRendered) {
+            this.parent.notify('setvisibility', columns);
+        }
         var rows = [];
         rows = this.getRows();
         var testRow;
@@ -25818,7 +26427,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
  * @hidden
  */
 var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(VirtualHeaderRenderer, _super);
+    __extends$23(VirtualHeaderRenderer, _super);
     function VirtualHeaderRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.virtualEle = new VirtualElementHandler();
@@ -25830,6 +26439,11 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualHeaderRenderer.prototype.renderTable = function () {
         this.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().querySelector('.e-headercontent')));
+        if (isBlazor() && this.parent.isServerRendered) {
+            var adaptor = 'interopAdaptor';
+            var invokeMethodAsync = 'invokeMethodAsync';
+            this.parent[adaptor][invokeMethodAsync]('SetColumnIndex', this.parent.contentModule.startColIndex, this.parent.contentModule.endColIndex);
+        }
         _super.prototype.renderTable.call(this);
         this.virtualEle.table = this.getTable();
         this.virtualEle.content = this.getPanel().querySelector('.e-headercontent');
@@ -25903,13 +26517,27 @@ var VirtualElementHandler = /** @__PURE__ @class */ (function () {
     function VirtualElementHandler() {
     }
     VirtualElementHandler.prototype.renderWrapper = function (height) {
-        this.wrapper = createElement('div', { className: 'e-virtualtable', styles: "min-height:" + formatUnit(height) });
+        if (isBlazor()) {
+            this.wrapper = this.content.querySelector('.e-virtualtable') ? this.content.querySelector('.e-virtualtable') :
+                createElement('div', { className: 'e-virtualtable' });
+            this.wrapper.setAttribute('styles', "min-height:" + formatUnit(height));
+        }
+        else {
+            this.wrapper = createElement('div', { className: 'e-virtualtable', styles: "min-height:" + formatUnit(height) });
+        }
         this.wrapper.appendChild(this.table);
         this.content.appendChild(this.wrapper);
     };
     VirtualElementHandler.prototype.renderPlaceHolder = function (position) {
         if (position === void 0) { position = 'relative'; }
-        this.placeholder = createElement('div', { className: 'e-virtualtrack', styles: "position:" + position });
+        if (isBlazor()) {
+            this.placeholder = this.content.querySelector('.e-virtualtrack') ? this.content.querySelector('.e-virtualtrack') :
+                createElement('div', { className: 'e-virtualtrack' });
+            this.placeholder.setAttribute('styles', "position:" + position);
+        }
+        else {
+            this.placeholder = createElement('div', { className: 'e-virtualtrack', styles: "position:" + position });
+        }
         this.content.appendChild(this.placeholder);
     };
     VirtualElementHandler.prototype.adjustTable = function (xValue, yValue) {
@@ -25956,6 +26584,9 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         var height = this.blockSize * 2;
         var size = this.parent.pageSettings.pageSize;
         this.parent.setProperties({ pageSettings: { pageSize: size < height ? height : size } }, true);
+        if (isBlazor() && this.parent.isServerRendered) {
+            this.parent.notify('editsuccess', {});
+        }
     };
     VirtualScroll.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26346,8 +26977,9 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
         // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
         //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
         this.dialogObj = new Dialog(extend({
-            header: this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
-                this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
+            header: gObj.editSettings.headerTemplate ? this.getDialogEditTemplateElement('HeaderTemplate', args) :
+                this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
+                    this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
             content: this.getEditElement(elements, args),
             showCloseIcon: true,
             allowDragging: true,
@@ -26355,6 +26987,7 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
             close: this.dialogClose.bind(this),
             closeOnEscape: true, width: gObj.editSettings.template ? 'auto' : '330px',
             target: args.target ? args.target : document.body, animationSettings: { effect: 'None' },
+            footerTemplate: gObj.editSettings.footerTemplate ? this.getDialogEditTemplateElement('FooterTemplate', args) : null,
             buttons: [{
                     click: this.btnClick.bind(this),
                     buttonModel: { content: this.l10n.getConstant('SaveButton'), cssClass: 'e-primary', isPrimary: true }
@@ -26385,8 +27018,14 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
         this.destroy();
     };
     DialogEditRender.prototype.destroy = function (args) {
-        var editTemplateID = this.parent.element.id + 'editSettingsTemplate';
-        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
+        var dialogEditTemplates = ['template', 'headerTemplate', 'footerTemplate'];
+        for (var i = 0; i < dialogEditTemplates.length; i++) {
+            if (this.parent.editSettings[dialogEditTemplates[i]]) {
+                var templateName = dialogEditTemplates[i].charAt(0).toUpperCase() + dialogEditTemplates[i].slice(1);
+                var editTemplateID = this.parent.element.id + 'editSettings' + templateName;
+                updateBlazorTemplate(editTemplateID, templateName, this.parent.editSettings);
+            }
+        }
         this.parent.notify(destroyForm, {});
         this.parent.isEdit = false;
         this.parent.notify(toolbarRefresh, {});
@@ -26394,6 +27033,14 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
             this.dialogObj.destroy();
             remove(this.dialog);
         }
+    };
+    DialogEditRender.prototype.getDialogEditTemplateElement = function (dialogTemp, args) {
+        var tempDiv = this.parent.createElement('div', { className: 'e-dialog' + dialogTemp });
+        var dummyData = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
+        var templateID = this.parent.element.id + 'editSettings' + dialogTemp;
+        appendChildren(tempDiv, this.parent.getEditHeaderTemplate()(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
+        updateBlazorTemplate(templateID, dialogTemp, this.parent.editSettings);
+        return tempDiv;
     };
     DialogEditRender.prototype.getEditElement = function (elements, args) {
         var _this = this;
@@ -27440,7 +28087,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
     return NormalEdit;
 }());
 
-var __extends$23 = (undefined && undefined.__extends) || (function () {
+var __extends$24 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -27458,7 +28105,7 @@ var __extends$23 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var InlineEdit = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(InlineEdit, _super);
+    __extends$24(InlineEdit, _super);
     function InlineEdit(parent, serviceLocator, renderer) {
         var _this = _super.call(this, parent, serviceLocator) || this;
         _this.parent = parent;
@@ -28436,6 +29083,10 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     };
     BatchEdit.prototype.editNextValCell = function () {
         var gObj = this.parent;
+        var changes = this.getBatchChanges();
+        var addedRecords = 'addedRecords';
+        var dRecords = 'deletedRecords';
+        var btmIdx = (this.parent.getCurrentViewRecords().length + changes[addedRecords].length - changes[dRecords].length) - 1;
         if (this.isAdded && !gObj.isEdit) {
             for (var i = this.cellDetails.cellIndex; i < gObj.getColumns().length; i++) {
                 if (gObj.isEdit) {
@@ -28444,7 +29095,8 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 var index = this.findNextEditableCell(this.cellDetails.cellIndex + 1, true, true);
                 var col = gObj.getColumns()[index];
                 if (col) {
-                    this.editCell(0, col.field, true);
+                    this.parent.editSettings.newRowPosition === 'Bottom' ? this.editCell(btmIdx, col.field, true) :
+                        this.editCell(0, col.field, true);
                     this.saveCell();
                 }
             }
@@ -28612,7 +29264,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     return BatchEdit;
 }());
 
-var __extends$24 = (undefined && undefined.__extends) || (function () {
+var __extends$25 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -28630,7 +29282,7 @@ var __extends$24 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var DialogEdit = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(DialogEdit, _super);
+    __extends$25(DialogEdit, _super);
     function DialogEdit(parent, serviceLocator, renderer) {
         var _this = 
         //constructor
@@ -30255,11 +30907,13 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
     ColumnChooser.prototype.beforeOpenColumnChooserEvent = function () {
         var args1 = {
             requestType: 'beforeOpenColumnChooser', element: this.parent.element,
-            columns: this.getColumns(), cancel: false, searchOperator: this.searchOperator
+            columns: this.getColumns(), cancel: false,
+            searchOperator: this.parent.columnChooserSettings.operator
         };
         if (isBlazor() && !this.parent.isJsComponent) {
             args1 = {
-                requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
+                requestType: 'beforeOpenColumnChooser', cancel: false,
+                searchOperator: this.parent.columnChooserSettings.operator
             };
         }
         this.parent.trigger(beforeOpenColumnChooser, args1);
@@ -30360,7 +31014,7 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
             rows[i].cells = [];
         }
         rows = this.processColumns(rows);
-        rows = this.processHeaderCells(rows);
+        rows = this.processHeaderCells(rows, columns);
         return { rows: rows, columns: this.generateActualColumns(columns) };
     };
     ExportHelper.prototype.getConvertedWidth = function (input) {
@@ -30390,8 +31044,8 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         }
         return actualColumns;
     };
-    ExportHelper.prototype.processHeaderCells = function (rows) {
-        var columns = this.parent.columns;
+    ExportHelper.prototype.processHeaderCells = function (rows, cols) {
+        var columns = cols;
         for (var i = 0; i < columns.length; i++) {
             if (!columns[i].commands) {
                 rows = this.appendGridCells(columns[i], rows, 0);
@@ -30683,6 +31337,9 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         else {
             this.isCsvExport = false;
         }
+        if (isExportColumns(exportProperties)) {
+            updateColumnTypeForExportColumns(exportProperties, gObj);
+        }
         return this.processRecords(gObj, exportProperties, args[isMultiEx], args[workbk]);
     };
     ExcelExport.prototype.exportingSuccess = function (resolve) {
@@ -30885,7 +31542,9 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             gObj.hierarchyPrintMode = exportProperties.hierarchyExportMode || 'Expanded';
         }
         var helper = new ExportHelper(gObj);
-        var headerRow = helper.getHeaders(gObj.columns, this.includeHiddenColumn);
+        var gColumns = isExportColumns(exportProperties) ?
+            prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns;
+        var headerRow = helper.getHeaders(gColumns, this.includeHiddenColumn);
         var groupIndent = gObj.groupSettings.columns.length;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
         /* tslint:disable-next-line:max-line-length */
@@ -31582,6 +32241,9 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 return resolve();
             });
         }
+        if (isExportColumns(pdfExportProperties)) {
+            updateColumnTypeForExportColumns(pdfExportProperties, parent);
+        }
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
@@ -31672,7 +32334,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var allowHorizontalOverflow = true;
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
-            if (isBlazor()) {
+            if (isBlazor() && !isNullOrUndefined(this.gridTheme)) {
                 this.getGridPdfFont(this.gridTheme);
             }
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
@@ -31680,7 +32342,8 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         }
         var helper = new ExportHelper(gObj);
         var dataSource = this.processExportProperties(pdfExportProperties, returnType.result);
-        var columns = gObj.columns;
+        var columns = isExportColumns(pdfExportProperties) ?
+            prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns;
         var isGrouping = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
@@ -31699,7 +32362,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         // Column collection with respect to the records in the grid
         var gridColumns = returnValue.columns;
         // process grid header content
-        pdfGrid = this.processGridHeaders(gObj.groupSettings.columns.length, pdfGrid, returnValue.rows, gridColumns, border, headerFont, headerBrush, gObj, allowHorizontalOverflow);
+        pdfGrid = this.processGridHeaders(gObj.groupSettings.columns.length, pdfGrid, returnValue.rows, gridColumns, border, headerFont, headerBrush, gObj, allowHorizontalOverflow, columns);
         // set alignment, width and type of the values of the column
         this.setColumnProperties(gridColumns, pdfGrid, helper, gObj, allowHorizontalOverflow);
         var captionThemeStyle = this.getSummaryCaptionThemeStyle();
@@ -31897,11 +32560,11 @@ var PdfExport = /** @__PURE__ @class */ (function () {
             _loop_1(dataSourceItems);
         }
     };
-    PdfExport.prototype.processGridHeaders = function (childLevels, pdfGrid, rows, gridColumn, border, headerFont, headerBrush, grid, allowHorizontalOverflow) {
+    PdfExport.prototype.processGridHeaders = function (childLevels, pdfGrid, rows, gridColumn, border, headerFont, headerBrush, grid, allowHorizontalOverflow, eCols) {
         var _this = this;
         var columnCount = gridColumn.length + childLevels;
-        var depth = measureColumnDepth(grid.columns);
-        var cols = grid.columns;
+        var depth = measureColumnDepth(eCols);
+        var cols = eCols;
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
         var applyTextAndSpan = function (rowIdx, colIdx, col, rowSpan, colSpan) {
@@ -32812,7 +33475,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     return PdfExport;
 }());
 
-var __extends$25 = (undefined && undefined.__extends) || (function () {
+var __extends$26 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -32830,7 +33493,7 @@ var __extends$25 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var CommandColumnRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(CommandColumnRenderer, _super);
+    __extends$26(CommandColumnRenderer, _super);
     function CommandColumnRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.buttonElement = _this.parent.createElement('button', {});
@@ -33644,7 +34307,7 @@ var FreezeRowModelGenerator = /** @__PURE__ @class */ (function () {
     return FreezeRowModelGenerator;
 }());
 
-var __extends$26 = (undefined && undefined.__extends) || (function () {
+var __extends$27 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -33662,7 +34325,7 @@ var __extends$26 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
-    __extends$26(FreezeContentRender, _super);
+    __extends$27(FreezeContentRender, _super);
     function FreezeContentRender(parent, locator) {
         return _super.call(this, parent, locator) || this;
     }
@@ -33733,7 +34396,7 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
     return FreezeContentRender;
 }(ContentRender));
 var FreezeRender = /** @__PURE__ @class */ (function (_super) {
-    __extends$26(FreezeRender, _super);
+    __extends$27(FreezeRender, _super);
     function FreezeRender(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.addEventListener();
@@ -34028,7 +34691,7 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
     return FreezeRender;
 }(HeaderRender));
 
-var __extends$27 = (undefined && undefined.__extends) || (function () {
+var __extends$28 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -34046,7 +34709,7 @@ var __extends$27 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(VirtualFreezeRenderer, _super);
+    __extends$28(VirtualFreezeRenderer, _super);
     function VirtualFreezeRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.serviceLoc = locator;
@@ -34130,7 +34793,7 @@ var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
     return VirtualFreezeRenderer;
 }(FreezeContentRender));
 var VirtualFreezeHdrRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(VirtualFreezeHdrRenderer, _super);
+    __extends$28(VirtualFreezeHdrRenderer, _super);
     function VirtualFreezeHdrRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.serviceLoc = locator;
@@ -34775,7 +35438,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     return ColumnMenu;
 }());
 
-var __extends$28 = (undefined && undefined.__extends) || (function () {
+var __extends$29 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -34792,7 +35455,7 @@ var __extends$28 = (undefined && undefined.__extends) || (function () {
  * `ForeignKey` module is used to handle foreign key column's actions.
  */
 var ForeignKey = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(ForeignKey, _super);
+    __extends$29(ForeignKey, _super);
     function ForeignKey(parent, serviceLocator) {
         var _this = _super.call(this, parent, serviceLocator) || this;
         _this.parent = parent;
@@ -35658,5 +36321,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, refreshInfiniteModeBlocks, resetInfiniteBlocks, shareInfiniteCache, infiniteScrollListener, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, refreshInfiniteModeBlocks, resetInfiniteBlocks, shareInfiniteCache, infiniteScrollListener, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

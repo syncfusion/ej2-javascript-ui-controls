@@ -891,6 +891,7 @@ export class TextSearch {
                             proxy.createRequestForGetPdfTexts(startIndex, endIndex);
                         } else {
                             proxy.isTextRetrieved = true;
+                            proxy.pdfViewer.fireTextExtractionCompleted(proxy.documentTextCollection);
                             if (proxy.isTextSearched && proxy.searchString.length > 0) {
                                 proxy.textSearch(proxy.searchString);
                                 proxy.isTextSearched = false;

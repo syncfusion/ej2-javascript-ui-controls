@@ -8673,7 +8673,7 @@ function updateRulerDimension(diagram, ruler, offset, isHorizontal) {
     updateRulerSpace(diagram, rulerGeometry, isHorizontal);
     ruler.offset = offset;
     ruler.scale = diagram.scroller.currentZoom;
-    ruler.length = rulerGeometry.width + 100;
+    ruler.length = (isHorizontal ? rulerGeometry.width : rulerGeometry.height) + 100;
     ruler.arrangeTick = getFunction(diagramRuler.arrangeTick);
     ruler.dataBind();
     let rulerObj = isHorizontal ? diagram.hRuler.element : diagram.vRuler.element;
@@ -16417,7 +16417,8 @@ function wrapSvgText(text, textValue, laneWidth) {
                 else {
                     txtValue = txtValue + (content[k + 1] || '');
                     if (txtValue.indexOf('\n') > -1) {
-                        txtValue = txtValue.replace('\n', '');
+                        childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: bBoxText(txtValue, text) };
+                        txtValue = '';
                     }
                     let width = bBoxText(txtValue, text);
                     if (Math.ceil(width) + 2 >= text.width && txtValue.length > 0) {
@@ -16961,14 +16962,34 @@ function getContent(element, isHtml, nodeObject) {
 function setAttributeSvg(svg, attributes) {
     let keys = Object.keys(attributes);
     for (let i = 0; i < keys.length; i++) {
-        svg.setAttribute(keys[i], attributes[keys[i]]);
+        if (keys[i] !== 'style') {
+            svg.setAttribute(keys[i], attributes[keys[i]]);
+        }
+        else {
+            applyStyleAgainstCsp(svg, attributes[keys[i]]);
+        }
+    }
+}
+/** @private */
+function applyStyleAgainstCsp(svg, attributes) {
+    let keys = attributes.split(';');
+    for (let i = 0; i < keys.length; i++) {
+        let attribute = keys[i].split(':');
+        if (attribute.length === 2) {
+            svg.style[attribute[0].trim()] = attribute[1].trim();
+        }
     }
 }
 /** @private */
 function setAttributeHtml(element, attributes) {
     let keys = Object.keys(attributes);
     for (let i = 0; i < keys.length; i++) {
-        element.setAttribute(keys[i], attributes[keys[i]]);
+        if (keys[i] !== 'style') {
+            element.setAttribute(keys[i], attributes[keys[i]]);
+        }
+        else {
+            applyStyleAgainstCsp(element, attributes[keys[i]]);
+        }
     }
 }
 /** @private */
@@ -17430,7 +17451,7 @@ function bBoxText(textContent, options) {
     let svg = window[measureElement].children[2];
     let text = getChildNode(svg)[1];
     text.textContent = textContent;
-    text.setAttribute('style', 'font-size:' + options.fontSize + 'px; font-family:'
+    applyStyleAgainstCsp(text, 'font-size:' + options.fontSize + 'px; font-family:'
         + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
     let bBox = text.getBBox().width;
     window[measureElement].style.visibility = 'hidden';
@@ -21611,32 +21632,34 @@ class SelectTool extends ToolBase {
     mouseUp(args) {
         this.checkPropertyValue();
         //rubber band selection
-        if (Point.equals(this.currentPosition, this.prevPosition) === false && this.inAction) {
-            let region = Rect.toBounds([this.prevPosition, this.currentPosition]);
-            this.commandHandler.doRubberBandSelection(region);
-        }
-        else {
-            //single selection
-            let arrayNodes = this.commandHandler.getSelectedObject();
-            if (!this.commandHandler.hasSelection() || !args.info || !args.info.ctrlKey) {
-                this.commandHandler.clearSelection(args.source === null ? true : false);
-                if (this.action === 'LabelSelect') {
-                    this.commandHandler.labelSelect(args.source, args.sourceWrapper);
-                }
-                else if (args.source) {
-                    this.commandHandler.selectObjects([args.source], false, arrayNodes);
-                }
+        if (!this.commandHandler.isUserHandle(this.currentPosition)) {
+            if (Point.equals(this.currentPosition, this.prevPosition) === false && this.inAction) {
+                let region = Rect.toBounds([this.prevPosition, this.currentPosition]);
+                this.commandHandler.doRubberBandSelection(region);
             }
             else {
-                //handling multiple selection
-                if (args && args.source) {
-                    if (!this.commandHandler.isSelected(args.source)) {
-                        this.commandHandler.selectObjects([args.source], true);
+                //single selection
+                let arrayNodes = this.commandHandler.getSelectedObject();
+                if (!this.commandHandler.hasSelection() || !args.info || !args.info.ctrlKey) {
+                    this.commandHandler.clearSelection(args.source === null ? true : false);
+                    if (this.action === 'LabelSelect') {
+                        this.commandHandler.labelSelect(args.source, args.sourceWrapper);
                     }
-                    else {
-                        if (args.clickCount === 1) {
-                            this.commandHandler.unSelect(args.source);
-                            this.commandHandler.updateBlazorSelector();
+                    else if (args.source) {
+                        this.commandHandler.selectObjects([args.source], false, arrayNodes);
+                    }
+                }
+                else {
+                    //handling multiple selection
+                    if (args && args.source) {
+                        if (!this.commandHandler.isSelected(args.source)) {
+                            this.commandHandler.selectObjects([args.source], true);
+                        }
+                        else {
+                            if (args.clickCount === 1) {
+                                this.commandHandler.unSelect(args.source);
+                                this.commandHandler.updateBlazorSelector();
+                            }
                         }
                     }
                 }
@@ -27439,6 +27462,21 @@ class CommandHandler {
             return arg;
         }
         return arg;
+    }
+    /** @private */
+    isUserHandle(position) {
+        let handle = this.diagram.selectedItems;
+        if (handle.wrapper && canShowCorner(handle.constraints, 'UserHandle')) {
+            for (let obj of handle.userHandles) {
+                if (obj.visible) {
+                    let paddedBounds = getUserHandlePosition(handle, obj, this.diagram.scroller.transform);
+                    if (contains(position, paddedBounds, obj.size / (2 * this.diagram.scroller.transform.scale))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
     /** @private */
     selectObjects(obj, multipleSelection, oldValue) {
@@ -34867,7 +34905,7 @@ class Diagram extends Component {
         }
         else {
             this.diagramCanvas = element;
-            this.diagramCanvas.setAttribute('style', style);
+            applyStyleAgainstCsp(this.diagramCanvas, style);
         }
         this.diagramCanvas.style.background = this.backgroundColor;
     }
@@ -34881,7 +34919,7 @@ class Diagram extends Component {
     ;
     renderBackgroundLayer(bounds, commonStyle) {
         let bgLayer = this.createSvg(this.element.id + '_backgroundLayer_svg', bounds.width, bounds.height);
-        bgLayer.setAttribute('style', commonStyle);
+        applyStyleAgainstCsp(bgLayer, commonStyle);
         let backgroundImage = createSvgElement('g', {
             'id': this.element.id + '_backgroundImageLayer',
             'class': 'e-background-image-layer'
@@ -34918,19 +34956,19 @@ class Diagram extends Component {
         this.diagramLayerDiv = createHtmlElement('div', attributes);
         if (this.mode === 'SVG') {
             let diagramSvg = this.createSvg(this.element.id + '_diagramLayer_svg', bounds.width, bounds.height);
-            diagramSvg.setAttribute('style', ' pointer-events: none; ');
+            diagramSvg.style['pointer-events'] = 'none';
             diagramSvg.setAttribute('class', 'e-diagram-layer');
             let diagramLayer = createSvgElement('g', { 'id': this.element.id + '_diagramLayer' });
             let transformationLayer = createSvgElement('g', {});
             this.diagramLayer = diagramLayer;
-            diagramLayer.setAttribute('style', 'pointer-events: all;');
+            diagramSvg.style['pointer-events'] = 'all';
             transformationLayer.appendChild(diagramLayer);
             diagramSvg.appendChild(transformationLayer);
             this.diagramLayerDiv.appendChild(diagramSvg);
         }
         else {
             this.diagramLayer = CanvasRenderer.createCanvas(this.element.id + '_diagram', bounds.width, bounds.height);
-            this.diagramLayer.setAttribute('style', 'position:absolute;left:0px;top:0px;');
+            applyStyleAgainstCsp(this.diagramLayer, 'position:absolute;left:0px;top:0px;');
             this.diagramLayerDiv.appendChild(this.diagramLayer);
         }
         this.diagramCanvas.appendChild(this.diagramLayerDiv);
@@ -34966,9 +35004,9 @@ class Diagram extends Component {
         });
         let svgAdornerSvg = this.createSvg(this.element.id + '_diagramAdorner_svg', bounds.width, bounds.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer');
-        svgAdornerSvg.setAttribute('style', 'pointer-events:none;');
+        svgAdornerSvg.style['pointer-events'] = 'none';
         this.adornerLayer = createSvgElement('g', { 'id': this.element.id + '_diagramAdorner' });
-        this.adornerLayer.setAttribute('style', ' pointer-events: all; ');
+        this.adornerLayer.style[' pointer-events'] = 'all';
         svgAdornerSvg.appendChild(this.adornerLayer);
         divElement.appendChild(svgAdornerSvg);
         this.diagramCanvas.appendChild(divElement);
@@ -38399,8 +38437,14 @@ class Diagram extends Component {
                             childTable = sourceElement[childtable];
                             let wrapper = obj.wrapper.children[0].children[0];
                             if (sourceElement[selectedSymbols] instanceof Node) {
-                                clonedObject.offsetX = position.x + 5 + (clonedObject.width || wrapper.actualSize.width) / 2;
-                                clonedObject.offsetY = position.y + (clonedObject.height || wrapper.actualSize.height) / 2;
+                                if (obj.shape.shape === 'TextAnnotation') {
+                                    clonedObject.offsetX = position.x + 11 + (clonedObject.width || wrapper.actualSize.width) / 2;
+                                    clonedObject.offsetY = position.y + 11 + (clonedObject.height || wrapper.actualSize.height) / 2;
+                                }
+                                else {
+                                    clonedObject.offsetX = position.x + 5 + (clonedObject.width || wrapper.actualSize.width) / 2;
+                                    clonedObject.offsetY = position.y + (clonedObject.height || wrapper.actualSize.height) / 2;
+                                }
                                 let newNode = new Node(this, 'nodes', clonedObject, true);
                                 if (newNode.shape.type === 'Bpmn' && newNode.shape.activity.subProcess.processes
                                     && newNode.shape.activity.subProcess.processes.length) {
@@ -51935,8 +51979,8 @@ class SymbolPalette extends Component {
                 this.diagramRenderer.renderElement(content, canvas, undefined);
             }
         }
-        ((div && (symbol.shape.type === 'HTML' || symbol.children
-            && symbol.children.length > 0)) ? div : canvas).setAttribute('style', style);
+        applyStyleAgainstCsp(((div && (symbol.shape.type === 'HTML' || symbol.children
+            && symbol.children.length > 0)) ? div : canvas), style);
         content.offsetX = prevPosition.x;
         content.offsetY = prevPosition.y;
         return previewContainer;
@@ -52036,8 +52080,8 @@ class SymbolPalette extends Component {
             if (canvas instanceof HTMLCanvasElement) {
                 style += 'transform:scale(.5,.5);';
             }
-            ((div && (symbol.shape.type === 'HTML' || symbol.children &&
-                symbol.children.length > 0)) ? div : canvas).setAttribute('style', style);
+            applyStyleAgainstCsp(((div && (symbol.shape.type === 'HTML' || symbol.children &&
+                symbol.children.length > 0)) ? div : canvas), style);
             container.classList.add('e-symbol-draggable');
             return container;
         }
@@ -52390,13 +52434,15 @@ class SymbolPalette extends Component {
     }
     createTextbox() {
         let searchDiv = createHtmlElement('div', { id: this.element.id + '_search' });
-        searchDiv.setAttribute('style', 'backgroundColor:white;height:30px');
+        applyStyleAgainstCsp(searchDiv, 'backgroundColor:white;height:30px');
+        //  searchDiv.setAttribute('style', 'backgroundColor:white;height:30px');
         searchDiv.className = 'e-input-group';
         this.element.appendChild(searchDiv);
         let textBox = createHtmlElement('input', {});
         textBox.placeholder = 'Search Shapes';
         textBox.id = 'textEnter';
-        textBox.setAttribute('style', 'width:100%;height:auto');
+        applyStyleAgainstCsp(textBox, 'width:100%;height:auto');
+        //textBox.setAttribute('style', 'width:100%;height:auto');
         textBox.className = 'e-input';
         searchDiv.appendChild(textBox);
         let span = createHtmlElement('span', { id: 'iconSearch', className: 'e-input-group-icon e-search e-icons' });

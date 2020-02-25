@@ -171,6 +171,7 @@ export class PointerRenderer {
      * @private
      */
     public setPointerValue(axis: Axis, pointer: Pointer, value: number): void {
+        let checkMinValue: boolean = value === axis.visibleRange.min && pointer.type === 'RangeBar';
         let location: GaugeLocation = this.gauge.midPoint;
         let isClockWise: boolean = axis.direction === 'ClockWise';
         let startAngle: number = getAngleFromValue(
@@ -182,9 +183,10 @@ export class PointerRenderer {
             axis.startAngle, axis.endAngle, isClockWise
         );
         if (isClockWise) {
-            endAngle = startAngle === endAngle ? endAngle + 1 : endAngle;
+            endAngle = startAngle === endAngle && !checkMinValue ? endAngle + 1 : endAngle;
         } else {
-            endAngle = startAngle === endAngle ? [startAngle, startAngle = endAngle - 1][0] : [startAngle, startAngle = endAngle][0];
+            endAngle = startAngle === endAngle && !checkMinValue ? [startAngle, startAngle = endAngle - 1][0]
+                : [startAngle, startAngle = endAngle][0];
         }
         let roundStartAngle: number;
         let roundEndAngle: number;
@@ -210,7 +212,7 @@ export class PointerRenderer {
         }
         pointer.pathElement.map((element: Element) => {
             if (pointer.type === 'RangeBar') {
-                if (pointer.roundedCornerRadius && value) {
+                if (pointer.roundedCornerRadius && value && !checkMinValue) {
                     element.setAttribute('d', getRoundedPathArc(
                         location, Math.floor(roundStartAngle), Math.ceil(roundEndAngle), oldStartValue, oldEndValue,
                         pointer.currentRadius, pointer.pointerWidth, pointer.pointerWidth
@@ -218,7 +220,8 @@ export class PointerRenderer {
                     radius = 0;
                 } else {
                     element.setAttribute('d', getCompleteArc(
-                        location, startAngle, endAngle, pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth)
+                        location, startAngle, endAngle, pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth),
+                        checkMinValue
                     ));
                 }
             } else {

@@ -116,8 +116,8 @@ export class Zoom {
             this.getTileTranslatePosition(prevLevel, newZoomFactor, position);
             map.tileZoomLevel = newZoomFactor;
             map.scale = Math.pow(2, newZoomFactor - 1);
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
+            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
             this.triggerZoomEvent(prevTilePoint, prevLevel);
             map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint);
         }
@@ -163,7 +163,10 @@ export class Zoom {
         let size: Size = map.availableSize;
         map.previousProjection = map.projectionType;
         let prevLevel: number = map.tileZoomLevel;
+        let prevTilePoint: Point = map.tileTranslatePoint;
         let zoomRect: Rect = this.zoomingRect;
+        let maxZoom: number = map.zoomSettings.maxZoom;
+        let minZoom: number = map.zoomSettings.minZoom;
         if (zoomRect.height > 0 && zoomRect.width > 0) {
             let x: number = this.zoomingRect.x + (this.zoomingRect.width / 2);
             let y: number = this.zoomingRect.y + (this.zoomingRect.height / 2);
@@ -176,17 +179,21 @@ export class Zoom {
                 let translatePointY: number = translatePoint.y - (((size.height / scale) - (size.height / zoomCalculationFactor)) / (size.height / y));
                 map.translatePoint = new Point(translatePointX, translatePointY);
                 map.scale = zoomCalculationFactor;
+                this.triggerZoomEvent(prevTilePoint, prevLevel);
             } else {
                 zoomCalculationFactor = prevLevel + (Math.round(prevLevel + (((size.width / zoomRect.width) + (size.height / zoomRect.height)) / 2)));
+                zoomCalculationFactor = (zoomCalculationFactor >= minZoom && zoomCalculationFactor <= maxZoom) ? zoomCalculationFactor : maxZoom;
                 this.getTileTranslatePosition(prevLevel, zoomCalculationFactor, { x: x, y: y });
                 map.tileZoomLevel = zoomCalculationFactor;
-                map.mapLayerPanel.generateTiles(zoomCalculationFactor, map.tileTranslatePoint);
                 map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * Math.pow(2, zoomCalculationFactor))) /
                     (Math.pow(2, zoomCalculationFactor));
                 map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, zoomCalculationFactor))) /
                     (Math.pow(2, zoomCalculationFactor));
                 map.scale = (Math.pow(2, zoomCalculationFactor));
+                this.triggerZoomEvent(prevTilePoint, prevLevel);
+                map.mapLayerPanel.generateTiles(zoomCalculationFactor, map.tileTranslatePoint);
             }
+            map.mapScaleValue = zoomCalculationFactor;
             this.applyTransform(true);
             this.maps.zoomNotApplied = false;
             this.zoomingRect = null;
@@ -332,7 +339,9 @@ export class Zoom {
                             }
 
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
-                            this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
+                            if (!this.isPanning) {
+                              this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
+                            }
                             currentEle = layerElement.childNodes[j] as Element;
                             if (!isNullOrUndefined(currentEle)) {
                                 for (let k: number = 0; k < currentEle.childElementCount; k++) {
@@ -520,13 +529,13 @@ export class Zoom {
                             if (currentLayers.markerClusterSettings.allowClustering) {
                                 this.maps.svgObject.appendChild(markerSVGObject);
                                 this.maps.element.appendChild(this.maps.svgObject);
-                                clusterTemplate(currentLayers, markerSVGObject, this.maps, layerIndex, markerSVGObject, layerElement, true);
+                                clusterTemplate(currentLayers, markerSVGObject, this.maps, layerIndex, markerSVGObject, layerElement, true, true);
                             }
                         }
                         if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                             getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
                             if (currentLayers.markerClusterSettings.allowClustering) {
-                                clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false) ;
+                                clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false, true) ;
                             }
                         }
                     });
@@ -585,8 +594,8 @@ export class Zoom {
                     let templateOffset: ClientRect = element.getBoundingClientRect();
                     let layerOffset: ClientRect = layerEle.getBoundingClientRect();
                     let elementOffset: ClientRect = element.parentElement.getBoundingClientRect();
-                    let x: number = ((labelX) + (layerOffset.left - elementOffset.left) - (templateOffset.width / 2));
-                    let y: number = ((labelY) + (layerOffset.top - elementOffset.top) - (templateOffset.height / 2));
+                    let x: number = ((labelX) + (layerOffset.left - elementOffset.left));
+                    let y: number = ((labelY) + (layerOffset.top - elementOffset.top));
                     (<HTMLElement>element).style.left = x + 'px';
                     (<HTMLElement>element).style.top = y + 'px';
                 } else {
@@ -825,7 +834,7 @@ export class Zoom {
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
         let zoomArgs: IMapZoomEventArgs;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
+        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom  || minZoom >= 1 && zoomFactor >= 1)) {
             let min: Object = map.baseMapRectBounds['min'] as Object;
             let max: Object = map.baseMapRectBounds['max'] as Object;
             let mapWidth: number = Math.abs(max['x'] - min['x']);
@@ -841,7 +850,7 @@ export class Zoom {
             map.zoomTranslatePoint = map.translatePoint;
             map.scale = zoomFactor;
             this.triggerZoomEvent(prevTilePoint, prevLevel);
-        } else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom)) {
+        } else if ((map.isTileMap) && (zoomFactor >= minZoom && zoomFactor <= maxZoom  || minZoom >= 1 && zoomFactor >= 1)) {
             let tileZoomFactor: number = zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;

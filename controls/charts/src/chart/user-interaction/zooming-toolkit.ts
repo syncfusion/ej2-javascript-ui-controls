@@ -260,8 +260,7 @@ export class Toolkit {
         chart.svgObject.setAttribute('cursor', 'auto');
         let zoomingEventArgs: IZoomingEventArgs;
         let zoomedAxisCollection: IAxisData[] = [];
-        for (let i: number = 0; i < chart.axisCollections.length; i++) {
-            let axis: Axis = chart.axisCollections[i];
+        for (let axis of (chart.axisCollections as Axis[])) {
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -359,8 +358,7 @@ export class Toolkit {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             let argsData: IZoomCompleteEventArgs;
-            for (let i = 0; i < axes.length; i++) {
-                let axis: Axis = axes[i] as Axis;
+            for (let axis of (axes as Axis[])) {
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition

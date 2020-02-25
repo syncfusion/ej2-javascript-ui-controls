@@ -34,6 +34,7 @@ export function createDialog(parent: IFileManager, text: string, e?: ReadArgs | 
             open: options.open,
             close: options.close,
             enableRtl: parent.enableRtl,
+            enableHtmlSanitizer: parent.enableHtmlSanitizer,
             locale: parent.locale
         });
         parent.dialogObj.isStringTemplate = true;
@@ -64,6 +65,7 @@ export function createExtDialog(parent: IFileManager, text: string, replaceItems
             buttons: extOptions.buttons,
             open: extOptions.open,
             close: extOptions.close,
+            enableHtmlSanitizer: parent.enableHtmlSanitizer,
             locale: parent.locale
         });
         parent.extDialogObj.isStringTemplate = true;
@@ -245,13 +247,17 @@ function getExtOptions(parent: IFileManager, text: string, replaceItems?: string
                 {
                     buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Skip') },
                     click: () => {
+                        let count: number = 0;
                         if (parent.isApplySame) {
+                            count = parent.retryFiles.length;
                             parent.retryFiles = [];
                             retryDlgClose(parent);
                         } else {
+                            count = 1;
                             parent.retryFiles.splice(0, 1);
                             (parent.retryFiles.length !== 0) ? createExtDialog(parent, 'UploadRetry') : retryDlgClose(parent);
                         }
+                        parent.notify(events.skipUpload, { count: count });
                     }
                 }
             ];
@@ -699,6 +705,7 @@ export function createImageDialog(parent: IFileManager, header: string, imageUrl
             locale: parent.locale,
             enableResize: true,
             allowDragging: true,
+            enableHtmlSanitizer: parent.enableHtmlSanitizer,
             position: { X: 'center', Y: 'center' },
             enableRtl: parent.enableRtl,
             open: openImage.bind(this, parent),

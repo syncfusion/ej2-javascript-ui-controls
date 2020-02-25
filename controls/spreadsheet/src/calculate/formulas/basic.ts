@@ -109,7 +109,10 @@ export class BasicFormulas {
         {
             formulaName: 'INTERCEPT', category: 'Statistical',
             description: 'Calculates the point of the Y-intercept line via linear regression.'
-        }
+        },
+        {
+            formulaName: 'LN', category: 'Math & Trig', description: 'Returns the natural logarithm of a number.'
+        },
     ];
     private isConcat: boolean = false;
     constructor(parent?: Calculate) {
@@ -1296,6 +1299,36 @@ export class BasicFormulas {
         return result;
     }
 
+    /** @hidden */
+    public ComputeLN(...logValue: string[]): string | number {
+        let argArr: string[] = logValue;
+        let cellvalue: string = '';
+        let logVal: number;
+        let orgValue: number | string;
+        if (logValue.length === 0 || logValue.length > 1) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        if (this.parent.isCellReference(argArr[0])) {
+            cellvalue = this.parent.getValueFromArg(argArr[0]);
+            logVal = this.parent.parseFloat(cellvalue);
+            if (logVal <= 0 || cellvalue === '') {
+                return this.parent.getErrorStrings()[CommonErrors.num];
+            }
+            if (isNaN(logVal)) {
+                return this.parent.getErrorStrings()[CommonErrors.value];
+            }
+        } else {
+            orgValue = this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join(''));
+            logVal = this.parent.parseFloat(orgValue);
+            if (logVal <= 0 || logVal.toString() === '') {
+                return this.parent.getErrorStrings()[CommonErrors.num];
+            }
+            if (isNaN(logVal)) {
+                return this.parent.getErrorStrings()[CommonErrors.value];
+            }
+        }
+        return Math.log(logVal);
+    }
     private getDataCollection(cells: string[] | string): string[] {
         let cellsData: string[] = [];
         for (let i: number = 0, len: number = cells.length; i < len; i++) {

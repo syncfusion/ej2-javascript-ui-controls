@@ -940,14 +940,12 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   }
   private expandAnimation(ef: Str, icn: HTEle, trgt: HTEle, trgtItemEle: HTEle, animate: AnimationModel, args: ExpandEventArgs): void {
     let height: number;
-    let trgtHgt: number;
     this.lastActiveItemId = trgtItemEle.id;
     if (ef === 'SlideDown') {
       animate.begin = () => {
         this.expandProgress('begin', icn, trgt, trgtItemEle, args);
         trgt.style.position = 'absolute';
         height = trgtItemEle.offsetHeight;
-        trgtHgt = trgt.offsetHeight;
         trgt.style.maxHeight = (trgt.offsetHeight) + 'px';
         trgtItemEle.style.maxHeight = '';
       };

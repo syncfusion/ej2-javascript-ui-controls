@@ -304,6 +304,38 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Annotation new line rendering', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+
+            ele = createElement('div', { id: 'diagramannotationEditing' });
+            document.body.appendChild(ele);
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100,
+            annotations:[{content:"the\nline\nobjects"}], offsetY: 100 };
+            diagram = new Diagram({
+                width: '600px', height: '600px',
+                nodes: [node]
+            });
+            diagram.appendTo('#diagramannotationEditing');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking without label', (done: Function) => {
+            expect(diagram.nameTable['node1'].wrapper.children[1].childNodes.length === 3).toBe(true);
+            done();
+        });
+    });
     describe('Annotation style update SVG mode', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

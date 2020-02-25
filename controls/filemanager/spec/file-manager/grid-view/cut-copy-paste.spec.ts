@@ -50,7 +50,7 @@ describe('FileManager control Details view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             mouseEventArgs = {
                 preventDefault: (): void => { },
                 stopImmediatePropagation: (): void => { },
@@ -193,7 +193,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -206,7 +205,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(fileCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     done();
@@ -226,7 +224,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -239,7 +236,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(fileCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     expect(feObj.detailsviewModule.gridObj.getSelectedRows().length).toBe(1);
@@ -249,7 +245,7 @@ describe('FileManager control Details view', () => {
                     this.request.respondWith({
                         status: 200,
                         responseText: JSON.stringify(fileCopyRead)
-                    }); jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+                    }); 
                     setTimeout(function () {
                         expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
                         expect(document.getElementById('file_largeicons').querySelectorAll('li.e-active').length).toBe(1);
@@ -271,7 +267,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -284,7 +279,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(fileCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     done();
@@ -328,7 +322,7 @@ describe('FileManager control Details view', () => {
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data1)
-            }); jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            }); 
             setTimeout(function () {
                 expect(document.getElementById('file_largeicons').querySelectorAll('li')[4].classList.contains('e-blur')).toBe(true);
                 expect(closest(document.getElementsByClassName('e-fe-cut')[0], 'div').classList.contains('e-hidden')).toBe(false);
@@ -356,7 +350,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(closest(document.getElementsByClassName('e-fe-cut')[0], 'div').classList.contains('e-hidden')).toBe(true);
                 expect(closest(document.getElementsByClassName('e-fe-copy')[0], 'div').classList.contains('e-hidden')).toBe(true);
@@ -370,7 +363,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[4].classList.contains('e-blur')).toBe(false);
                     expect(closest(document.getElementsByClassName('e-fe-cut')[0], 'div').classList.contains('e-hidden')).toBe(true);
@@ -394,7 +386,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 keyboardEventArgs.action = 'ctrlV';
                 (<any>feObj.detailsviewModule).keyupHandler(keyboardEventArgs);
@@ -408,7 +399,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(fileCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     done();
@@ -431,7 +421,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 keyboardEventArgs.action = 'ctrlV';
                 (<any>feObj.detailsviewModule).keyupHandler(keyboardEventArgs);
@@ -455,7 +444,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 keyboardEventArgs.action = 'ctrlV';
                 (<any>feObj.detailsviewModule).keyupHandler(keyboardEventArgs);
@@ -498,7 +486,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 keyboardEventArgs.action = 'ctrlV';
                 (<any>feObj.detailsviewModule).keyupHandler(keyboardEventArgs);
@@ -512,7 +499,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(fileCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     done();
@@ -521,7 +507,6 @@ describe('FileManager control Details view', () => {
         });
 
         it('Context menu file cut paste testing testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             expect(feObj.selectedItems.length).toBe(0);
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             feObj.detailsviewModule.gridObj.selectRows([4]);
@@ -542,7 +527,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
             setTimeout(function () {
                 expect(feObj.selectedItems.length).toBe(0);
                 let Li: Element = (<any>feObj.detailsviewModule.gridObj.contentModule).contentPanel.firstElementChild;
@@ -563,7 +547,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(fileCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     done();
@@ -572,7 +555,6 @@ describe('FileManager control Details view', () => {
         });
 
         it('Context menu file copy paste testing testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             expect(feObj.selectedItems.length).toBe(0);
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             feObj.detailsviewModule.gridObj.selectRows([4]);
@@ -593,7 +575,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
             setTimeout(function () {
                 expect(feObj.selectedItems.length).toBe(0);
                 let Li: Element = (<any>feObj.detailsviewModule.gridObj.contentModule).contentPanel.firstElementChild;
@@ -614,7 +595,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(fileCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     done();
@@ -641,7 +621,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -654,7 +633,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(folderCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     done();
@@ -681,7 +659,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -694,7 +671,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(folderCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                     done();
@@ -714,7 +690,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data23)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let el: any = document.getElementById(feObj.element.id + '_contextmenu');
                 let sourceElement: any = el.ej2_instances[0];
@@ -732,7 +707,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(doubleClickRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
                 setTimeout(function () {
                     li[3].querySelector('.e-fullrow').dispatchEvent(evt);
                     expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
@@ -747,7 +721,6 @@ describe('FileManager control Details view', () => {
                         status: 200,
                         responseText: JSON.stringify(folderCopyRead)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                         expect(document.getElementById('file_tree').querySelectorAll('li')[1].textContent).toBe('Employees')
@@ -769,7 +742,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data23)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let el: any = document.getElementById(feObj.element.id + '_contextmenu');
                 let sourceElement: any = el.ej2_instances[0];
@@ -787,7 +759,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(doubleClickRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
                 setTimeout(function () {
                     li[3].querySelector('.e-fullrow').dispatchEvent(evt);
                     expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
@@ -802,7 +773,6 @@ describe('FileManager control Details view', () => {
                         status: 200,
                         responseText: JSON.stringify(folderCopyRead)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                         expect(document.getElementById('file_tree').querySelectorAll('li')[1].textContent).toBe('Documents')
@@ -820,7 +790,6 @@ describe('FileManager control Details view', () => {
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.target = li[1];
             (feObj.navigationpaneModule as any).keyDown(keyboardEventArgs);
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
             expect(li[1].classList.contains('e-blur')).toBe(true);
             mouseEventArgs.target = li[3].querySelector('.e-fullrow');
             treeObj.touchClickObj.tap(tapEvent);
@@ -829,7 +798,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 keyboardEventArgs.action = 'ctrlV';
                 keyboardEventArgs.ctrlKey = true;
@@ -845,7 +813,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(folderCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let activeLi: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                     expect((<HTMLElement>activeLi[1]).innerText).toBe("Employees");
@@ -862,7 +829,6 @@ describe('FileManager control Details view', () => {
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.target = li[1];
             (feObj.navigationpaneModule as any).keyDown(keyboardEventArgs);
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
             mouseEventArgs.target = li[3].querySelector('.e-fullrow');
             treeObj.touchClickObj.tap(tapEvent);
             this.request = jasmine.Ajax.requests.mostRecent();
@@ -870,7 +836,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 keyboardEventArgs.action = 'ctrlV';
                 keyboardEventArgs.ctrlKey = true;
@@ -886,7 +851,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(folderCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
                 setTimeout(function () {
                     let activeLi: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                     expect((<HTMLElement>activeLi[1]).innerText).toBe("Documents");
@@ -907,7 +871,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -920,7 +883,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(multiItemCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
                     done();
@@ -941,7 +903,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -954,7 +915,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(multiItemCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
                     done();
@@ -976,7 +936,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
@@ -990,7 +949,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(multiItemCopyRead3)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(6);
                     expect(document.getElementById('file_extn_dialog').querySelectorAll('button').length).toBe(3);
@@ -1006,7 +964,6 @@ describe('FileManager control Details view', () => {
                         status: 200,
                         responseText: JSON.stringify(multiItemCopyRead2)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(7);
                         done();
@@ -1026,7 +983,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
@@ -1040,7 +996,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(multiItemCopyRead3)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(6);
                     expect(document.getElementById('file_extn_dialog').querySelectorAll('button').length).toBe(3);
@@ -1056,7 +1011,6 @@ describe('FileManager control Details view', () => {
                         status: 200,
                         responseText: JSON.stringify(multiItemCopyRead1)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(7);
                         done();
@@ -1074,7 +1028,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -1087,7 +1040,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(multiItemCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(document.getElementById('file_dialog').querySelector("#file_dialog_title").textContent).toBe('Error');
                     document.getElementById('file_dialog').querySelectorAll('button')[1].click();
@@ -1105,7 +1057,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -1118,7 +1069,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(multiItemCopyRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(document.getElementById('file_dialog').querySelector("#file_dialog_title").textContent).toBe('Error')
                     document.getElementById('file_dialog').querySelectorAll('button')[1].click();
@@ -1145,7 +1095,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(searchpng)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                 expect(gridLi.length).toEqual(2);
@@ -1158,7 +1107,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(doubleClickRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
                 setTimeout(function () {
                     (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                     this.request = jasmine.Ajax.requests.mostRecent();
@@ -1171,7 +1119,6 @@ describe('FileManager control Details view', () => {
                         status: 200,
                         responseText: JSON.stringify(fileCopyRead)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
                         expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                         done();
@@ -1181,7 +1128,6 @@ describe('FileManager control Details view', () => {
         });
 
         it('Context menu file cut paste in selected folder testing', (done) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             expect(feObj.selectedItems.length).toBe(0);
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
@@ -1210,7 +1156,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
                 done();
@@ -1309,7 +1254,7 @@ describe('FileManager control Details view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -1321,7 +1266,6 @@ describe('FileManager control Details view', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('drag and drop same folder tree', () => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             let treeObj = feObj.navigationpaneModule.treeObj;
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
             let rect: any = li[1].querySelector('.e-fullrow').getClientRects();
@@ -1440,7 +1384,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(drop).toBe(1);
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
@@ -1488,7 +1431,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(drop).toBe(1);
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
@@ -1547,7 +1489,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(drop).toBe(1);
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
@@ -1636,7 +1577,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(drop).toBe(1);
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
@@ -1658,7 +1598,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(treeObj.element.querySelector('[title="Documents"]').classList.contains('e-level-2')).toBe(true);
                 li = treeObj.element.querySelectorAll('li');
@@ -1711,7 +1650,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(folderDragRead)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(treeObj.element.querySelector('[title="Documents"]').classList.contains('e-level-4')).toBe(true);
                     expect(drop).toBe(1);
@@ -1742,7 +1680,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(treeObj.element.querySelector('[title="Documents"]').classList.contains('e-level-2')).toBe(true);
                 let gridObj: any = feObj.detailsviewModule.gridObj;
@@ -1790,7 +1727,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1pasteIN2)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(drop).toBe(1);
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
@@ -1811,7 +1747,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(doubleClickRead2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 li = treeObj.element.querySelectorAll('li');
                 expect(li.length).toBe(6);
@@ -1862,7 +1797,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(doubleClickRead2)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(document.getElementById('file_extn_dialog').querySelectorAll('button').length).toBe(3);
                     document.getElementById('file_extn_dialog').querySelectorAll('button')[2].click();
@@ -1978,7 +1912,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN3)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(drop).toBe(1);
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(3);
@@ -2032,7 +1965,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(drop).toBe(0);
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
@@ -2050,7 +1982,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1pasteIN4)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(drop).toBe(1);
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(3);
@@ -2105,7 +2036,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(drop).toBe(0);
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
@@ -2123,7 +2053,6 @@ describe('FileManager control Details view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1pasteIN3)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     expect(drop).toBe(1);
                     expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(3);
@@ -2178,7 +2107,6 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1pasteIN2)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
                 expect(drop).toBe(0);
                 expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);

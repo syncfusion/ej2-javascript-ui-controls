@@ -48,13 +48,13 @@ export const CONTENT_ROW_CLASS: string = 'e-content-row';
 /** @hidden */
 export const SWIMLANE_ROW_CLASS: string = 'e-swimlane-row';
 /** @hidden */
-export const SWIMLANE_ROW_EXPAND: string = 'e-swimlane-row-expand';
+export const SWIMLANE_ROW_EXPAND_CLASS: string = 'e-swimlane-row-expand';
 /** @hidden */
-export const SWIMLANE_ROW_COLLAPSE: string = 'e-swimlane-row-collapse';
+export const SWIMLANE_ROW_COLLAPSE_CLASS: string = 'e-swimlane-row-collapse';
 /** @hidden */
-export const SWIMLANE_ROW_TEXT: string = 'e-swimlane-text';
+export const SWIMLANE_ROW_TEXT_CLASS: string = 'e-swimlane-text';
 /** @hidden */
-export const CARD_ITEM_COUNT: string = 'e-item-count';
+export const CARD_ITEM_COUNT_CLASS: string = 'e-item-count';
 /** @hidden */
 export const CARD_WRAPPER_CLASS: string = 'e-card-wrapper';
 /** @hidden */
@@ -68,17 +68,17 @@ export const CARD_HEADER_TEXT_CLASS: string = 'e-card-header-caption';
 /** @hidden */
 export const CARD_HEADER_TITLE_CLASS: string = 'e-card-header-title';
 /** @hidden */
-export const COLUMN_EXPAND: string = 'e-column-expand';
+export const COLUMN_EXPAND_CLASS: string = 'e-column-expand';
 /** @hidden */
-export const COLUMN_COLLAPSE: string = 'e-column-collapse';
+export const COLUMN_COLLAPSE_CLASS: string = 'e-column-collapse';
 /** @hidden */
-export const COLLAPSE_HEADER_TEXT: string = 'e-collapse-header-text';
+export const COLLAPSE_HEADER_TEXT_CLASS: string = 'e-collapse-header-text';
 /** @hidden */
 export const COLLAPSED_CLASS: string = 'e-collapsed';
 /** @hidden */
 export const DIALOG_CLASS: string = 'e-kanban-dialog';
 /** @hidden */
-export const DIALOG_CONTENT_CONTAINER: string = 'e-kanban-dialog-content';
+export const DIALOG_CONTENT_CONTAINER_CLASS: string = 'e-kanban-dialog-content';
 /** @hidden */
 export const FORM_CLASS: string = 'e-kanban-form';
 /** @hidden */
@@ -88,53 +88,55 @@ export const ERROR_VALIDATION_CLASS: string = 'e-kanban-error';
 /** @hidden */
 export const FIELD_CLASS: string = 'e-field';
 /** @hidden */
-export const DRAGGED_CLONE: string = 'e-target-dragged-clone';
+export const DRAGGED_CLONE_CLASS: string = 'e-target-dragged-clone';
 /** @hidden */
-export const DRAGGED_CARD: string = 'e-kanban-dragged-card';
+export const CLONED_CARD_CLASS: string = 'e-cloned-card';
 /** @hidden */
-export const DROPPED_CLONE: string = 'e-target-dropped-clone';
+export const DRAGGED_CARD_CLASS: string = 'e-kanban-dragged-card';
 /** @hidden */
-export const DROPPING: string = 'e-dropping';
+export const DROPPED_CLONE_CLASS: string = 'e-target-dropped-clone';
 /** @hidden */
-export const TOGGLE_VISIBLE: string = 'e-toggle-visible';
+export const DROPPING_CLASS: string = 'e-dropping';
 /** @hidden */
-export const MULTI_CLONE_CONTENT_CELL: string = 'e-multi-content-cell';
+export const TOGGLE_VISIBLE_CLASS: string = 'e-toggle-visible';
 /** @hidden */
-export const MULTI_CARD_WRAPPER: string = 'e-multi-card-wrapper';
+export const MULTI_CLONE_CONTENT_CELL_CLASS: string = 'e-multi-content-cell';
 /** @hidden */
-export const MULTI_ACTIVE: string = 'e-multi-active';
+export const MULTI_CARD_WRAPPER_CLASS: string = 'e-multi-card-wrapper';
 /** @hidden */
-export const TARGET_MULTI_CLONE: string = 'e-target-multi-clone';
+export const MULTI_ACTIVE_CLASS: string = 'e-multi-active';
 /** @hidden */
-export const MULTI_COLUMN_KEY: string = 'e-column-key';
+export const TARGET_MULTI_CLONE_CLASS: string = 'e-target-multi-clone';
 /** @hidden */
-export const CARD_SELECTION: string = 'e-selection';
+export const MULTI_COLUMN_KEY_CLASS: string = 'e-column-key';
+/** @hidden */
+export const CARD_SELECTION_CLASS: string = 'e-selection';
 /** @hidden */
 export const TOOLTIP_CLASS: string = 'e-kanban-tooltip';
 /** @hidden */
-export const TOOLTIP_TEXT: string = 'e-tooltip-text';
+export const TOOLTIP_TEXT_CLASS: string = 'e-tooltip-text';
 /** @hidden */
 export const SCROLL_CONTAINER_CLASS: string = 'e-cell-scroll-container';
 /** @hidden */
-export const SWIMLANE_HEADER: string = 'e-swimlane-header';
+export const SWIMLANE_HEADER_CLASS: string = 'e-swimlane-header';
 /** @hidden */
-export const SWIMLANE_HEADER_TOOLBAR: string = 'e-swimlane-header-toolbar';
+export const SWIMLANE_HEADER_TOOLBAR_CLASS: string = 'e-swimlane-header-toolbar';
 /** @hidden */
-export const TOOLBAR_MENU: string = 'e-toolbar-menu';
+export const TOOLBAR_MENU_CLASS: string = 'e-toolbar-menu';
 /** @hidden */
-export const TOOLBAR_MENU_ICON: string = 'e-icon-menu';
+export const TOOLBAR_MENU_ICON_CLASS: string = 'e-icon-menu';
 /** @hidden */
-export const TOOLBAR_LEVEL_TITLE: string = 'e-toolbar-level-title';
+export const TOOLBAR_LEVEL_TITLE_CLASS: string = 'e-toolbar-level-title';
 /** @hidden */
-export const TOOLBAR_SWIMLANE_NAME: string = 'e-toolbar-swimlane-name';
+export const TOOLBAR_SWIMLANE_NAME_CLASS: string = 'e-toolbar-swimlane-name';
 /** @hidden */
-export const SWIMLANE_OVERLAY: string = 'e-swimlane-overlay';
+export const SWIMLANE_OVERLAY_CLASS: string = 'e-swimlane-overlay';
 /** @hidden */
-export const SWIMLANE_CONTENT: string = 'e-swimlane-content';
+export const SWIMLANE_CONTENT_CLASS: string = 'e-swimlane-content';
 /** @hidden */
-export const SWIMLANE_RESOURCE: string = 'e-swimlane-resource';
+export const SWIMLANE_RESOURCE_CLASS: string = 'e-swimlane-resource';
 /** @hidden */
-export const SWIMLANE_TREE: string = 'e-swimlane-tree';
+export const SWIMLANE_TREE_CLASS: string = 'e-swimlane-tree';
 /** @hidden */
 export const LIMITS_CLASS: string = 'e-limits';
 /** @hidden */
@@ -142,6 +144,20 @@ export const MAX_COUNT_CLASS: string = 'e-max-count';
 /** @hidden */
 export const MIN_COUNT_CLASS: string = 'e-min-count';
 /** @hidden */
-export const MAX_COLOR: string = 'e-max-color';
+export const MAX_COLOR_CLASS: string = 'e-max-color';
 /** @hidden */
-export const MIN_COLOR: string = 'e-min-color';
+export const MIN_COLOR_CLASS: string = 'e-min-color';
+/** @hidden */
+export const POPUP_EVENT_CLASS: string = 'e-event-popup';
+/** @hidden */
+export const POPUP_HEADER_CLASS: string = 'e-popup-header';
+/** @hidden */
+export const CLOSE_CLASS: string = 'e-close';
+/** @hidden */
+export const POPUP_CONTENT_CLASS: string = 'e-popup-content';
+/** @hidden */
+export const POPUP_WRAPPER_CLASS: string = 'e-mobile-popup-wrapper';
+/** @hidden */
+export const CLOSE_ICON_CLASS: string = 'e-close-icon';
+/** @hidden */
+export const POPUP_OPEN_CLASS: string = 'e-popup-open';

@@ -38,7 +38,7 @@ describe('FileManager control single selection Grid view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -80,7 +80,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -97,7 +96,6 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -128,7 +126,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(searchhellopng)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                 expect(gridLi.length).toEqual(0);
@@ -140,7 +137,6 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                     expect(gridLi.length).toEqual(5);
@@ -169,7 +165,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -184,19 +179,16 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(data17)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
                     responseText: JSON.stringify(data19)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     expect(searchEle.placeholder).toBe("Search docs");
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
@@ -229,7 +221,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -282,7 +273,6 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data18)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -314,7 +304,6 @@ describe('FileManager control single selection Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                 let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -331,7 +320,6 @@ describe('FileManager control single selection Grid view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
                     let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -345,9 +333,7 @@ describe('FileManager control single selection Grid view', () => {
         });
         it('Search field with value test case', (done) => {
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 searchObj.ej2_instances[0].value = 'doc';
                 searchObj.ej2_instances[0].element.value = 'doc';
                 let eventArgs: any = { value: 'doc', container: searchObj };
@@ -361,9 +347,7 @@ describe('FileManager control single selection Grid view', () => {
         });
         it('Search file testing with change event', (done) => {
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 feObj.searchSettings.allowSearchOnTyping = false;
                 feObj.dataBind();
                 searchObj.ej2_instances[0].value = 'doc';
@@ -379,9 +363,7 @@ describe('FileManager control single selection Grid view', () => {
             feObj.searchSettings.filterType = 'startsWith';
             feObj.dataBind();
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 feObj.searchSettings.allowSearchOnTyping = true;
                 feObj.dataBind();
                 searchObj.ej2_instances[0].value = 'doc';
@@ -397,9 +379,7 @@ describe('FileManager control single selection Grid view', () => {
             feObj.searchSettings.filterType = 'endsWith';
             feObj.dataBind();
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 feObj.searchSettings.allowSearchOnTyping = true;
                 feObj.dataBind();
                 searchObj.ej2_instances[0].value = 'doc';
@@ -415,9 +395,7 @@ describe('FileManager control single selection Grid view', () => {
             feObj.searchSettings.filterType = 'startsWith';
             feObj.dataBind();
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 feObj.searchSettings.allowSearchOnTyping = false;
                 feObj.dataBind();
                 searchObj.ej2_instances[0].value = 'doc';
@@ -433,9 +411,7 @@ describe('FileManager control single selection Grid view', () => {
             feObj.searchSettings.filterType = 'endsWith';
             feObj.dataBind();
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 feObj.searchSettings.allowSearchOnTyping = false;
                 feObj.dataBind();
                 searchObj.ej2_instances[0].value = 'doc';
@@ -451,9 +427,7 @@ describe('FileManager control single selection Grid view', () => {
             feObj.searchSettings.filterType = 'startsWith';
             feObj.dataBind();
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 feObj.searchSettings.allowSearchOnTyping = true;
                 feObj.dataBind();
                 searchObj.ej2_instances[0].value = 'doc';
@@ -472,9 +446,7 @@ describe('FileManager control single selection Grid view', () => {
             feObj.searchSettings.filterType = 'startsWith';
             feObj.dataBind();
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 feObj.searchSettings.allowSearchOnTyping = true;
                 feObj.dataBind();
                 searchObj.ej2_instances[0].value = 'doc';
@@ -488,9 +460,7 @@ describe('FileManager control single selection Grid view', () => {
                 feObj.searchSettings.filterType = 'startsWith';
                 feObj.dataBind();
                 let searchObj1: any = feObj.element.querySelector("#file_search");
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 setTimeout(function () {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                     feObj.searchSettings.allowSearchOnTyping = true;
                     feObj.dataBind();
                     searchObj1.ej2_instances[0].value = '';
@@ -505,9 +475,7 @@ describe('FileManager control single selection Grid view', () => {
             feObj.searchSettings.filterType = 'startsWith';
             feObj.dataBind();
             let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                 feObj.searchSettings.allowSearchOnTyping = true;
                 feObj.dataBind();
                 searchObj.focus();

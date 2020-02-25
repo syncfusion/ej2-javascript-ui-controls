@@ -303,6 +303,8 @@ var WORK_HOURS_CLASS = 'e-work-hours';
 /** @hidden */
 var POPUP_OPEN = 'e-popup-open';
 /** @hidden */
+var POPUP_CLOSE = 'e-popup-close';
+/** @hidden */
 var DATE_HEADER_WRAP_CLASS = 'e-date-header-wrap';
 /** @hidden */
 var DATE_HEADER_CONTAINER_CLASS = 'e-date-header-container';
@@ -4417,7 +4419,12 @@ var EventBase = /** @__PURE__ @class */ (function () {
         var elementSelect = [];
         var selectAppointments = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_BORDER));
         selectAppointments.filter(function (element) {
-            eventSelect.push(_this.getEventByGuid(element.getAttribute('data-guid')));
+            var isAlreadyAdded = eventSelect.filter(function (event) {
+                return event.Guid === element.getAttribute('data-guid');
+            });
+            if (isAlreadyAdded.length === 0) {
+                eventSelect.push(_this.getEventByGuid(element.getAttribute('data-guid')));
+            }
             elementSelect.push(element);
         });
         return {
@@ -6150,9 +6157,12 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             }
         });
     };
-    QuickPopups.prototype.beforeQuickPopupOpen = function (target) {
+    QuickPopups.prototype.beforeQuickPopupOpen = function (target, success) {
         var _this = this;
-        this.updateQuickPopupTemplates();
+        if (isBlazor() && this.isQuickInfoTemplates() && isNullOrUndefined(success)) {
+            this.updateQuickPopupTemplates(target);
+            return;
+        }
         var isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         var popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         var eventProp = {
@@ -6168,6 +6178,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 }
                 _this.resetQuickPopupTemplates();
                 removeChildren(_this.quickPopup.element);
+                _this.isMultipleEventSelect = false;
             }
             else {
                 var display = _this.quickPopup.element.style.display;
@@ -6210,6 +6221,13 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 _this.quickPopup.show();
             }
         });
+    };
+    QuickPopups.prototype.isQuickInfoTemplates = function () {
+        if (!isNullOrUndefined(this.parent.quickInfoTemplates.header || this.parent.quickInfoTemplates.content
+            || this.parent.quickInfoTemplates.footer)) {
+            return true;
+        }
+        return false;
     };
     QuickPopups.prototype.applyEventColor = function () {
         var colorField = '';
@@ -6258,26 +6276,50 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    QuickPopups.prototype.updateQuickPopupTemplates = function () {
+    QuickPopups.prototype.updateQuickPopupTemplates = function (target) {
+        var _this = this;
+        var templateReady = {
+            header: this.parent.quickInfoTemplates.header ? false : true,
+            content: this.parent.quickInfoTemplates.content ? false : true,
+            footer: this.parent.quickInfoTemplates.footer ? false : true
+        };
         if (this.parent.quickInfoTemplates.header) {
-            updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates, null, function () {
+                templateReady.header = true;
+                _this.quickPopupShow(templateReady, target);
+            });
         }
         if (this.parent.quickInfoTemplates.content) {
-            updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates, null, function () {
+                templateReady.content = true;
+                _this.quickPopupShow(templateReady, target);
+            });
         }
         if (this.parent.quickInfoTemplates.footer) {
-            updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+            updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates, null, function () {
+                templateReady.footer = true;
+                _this.quickPopupShow(templateReady, target);
+            });
+        }
+    };
+    QuickPopups.prototype.quickPopupShow = function (templateReady, target) {
+        if (templateReady.header && templateReady.content && templateReady.footer) {
+            this.beforeQuickPopupOpen(target, true);
         }
     };
     QuickPopups.prototype.resetQuickPopupTemplates = function () {
-        if (this.parent.quickInfoTemplates.header) {
-            resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        if (isBlazor() && this.isQuickInfoTemplates()) {
+            removeClass([this.quickPopup.element], POPUP_OPEN);
+            addClass([this.quickPopup.element], POPUP_CLOSE);
+            if (this.parent.quickInfoTemplates.header) {
+                resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+            }
+            if (this.parent.quickInfoTemplates.content) {
+                resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+            }
+            if (this.parent.quickInfoTemplates.footer) {
+                resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+            }
         }
     };
     QuickPopups.prototype.quickPopupClose = function () {
@@ -13343,9 +13385,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Imports the events from an .ics file downloaded from any of the calendars like Google or Outlook into the Scheduler.
-     * This method accepts the blob object of an .ics file to be imported as a mandatory argument.
+     * This method accepts the blob object or string format of an .ics file to be imported as a mandatory argument.
      * @method importICalendar
-     * @param {Blob} fileContent Accepts the file object.
+     * @param {Blob | string} fileContent Accepts the file object or string format of an .ics file.
      * @returns {void}
      */
     Schedule.prototype.importICalendar = function (fileContent) {
@@ -14460,7 +14502,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             var appTop = this.getRowTop(resIndex);
             var blockElement = this.createBlockAppointmentElement(event, resIndex);
             setStyleAttribute(blockElement, {
-                'width': appWidth + 'px', 'height': appHeight + 1 + 'px', 'left': appLeft + 'px',
+                'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px',
                 'right': appRight + 'px', 'top': appTop + 'px'
             });
             this.renderEventElement(event, blockElement, cellTd);
@@ -16878,7 +16920,6 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             this.appendCloneElement(this.getEventWrapper(colIndex));
             dragStart$$1 = this.parent.getDateFromElement(td);
             dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes / heightPerMinute));
-            dragStart$$1 = this.calculateIntervalTime(dragStart$$1);
             dragEnd = new Date(dragStart$$1.getTime());
             if (this.actionObj.element.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
                 dragEnd.setMinutes(dragEnd.getMinutes() + this.actionObj.slotInterval);
@@ -16912,7 +16953,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             datesCount = datesCount + this.verticalEvent.dateRender[i].length;
         }
         var dayIndex = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
-            : this.parent.getDateFromElement(this.actionObj.target).getDay();
+            : this.parent.getIndexOfDate(this.verticalEvent.dateRender[this.actionObj.groupIndex], resetTime(this.parent.getDateFromElement(this.actionObj.target)));
         var record = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
         var eStart = record[this.verticalEvent.fields.startTime];
         var eEnd = record[this.verticalEvent.fields.endTime];
@@ -20800,6 +20841,7 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
             var monthStart = new Date(this.parent.selectedDate.getFullYear(), row, 1);
             var monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
             var dayIndex = monthStart.getDay();
+            var isSpannedCollection = [];
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 var leftValue = void 0;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
@@ -20826,12 +20868,16 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
                         var isRendered = this_1.renderedEvents.filter(function (eventObj) {
                             return eventObj.Guid === eventData.Guid;
                         });
-                        if (isRendered.length > 0) {
+                        var isSpanned = isSpannedCollection.filter(function (eventObj) {
+                            return eventObj.Guid === eventData.Guid;
+                        });
+                        if (isRendered.length > 0 || isSpanned.length > 0) {
                             return "continue";
                         }
                     }
                     if (this_1.cellHeight > availedHeight) {
                         this_1.renderEvent(eventWrapper, eventData, row, leftValue, overlapIndex, dayIndex);
+                        isSpannedCollection.push(eventData);
                     }
                     else {
                         var moreIndex = this_1.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
@@ -20840,6 +20886,7 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
                             for (var a = index; a < dayEvents.length; a++) {
                                 var moreData = extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
                                 this_1.renderedEvents.push(moreData);
+                                isSpannedCollection.push(eventData);
                             }
                         }
                         return "break";
@@ -20879,7 +20926,9 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
             if (!eventArgs.cancel) {
                 wrapper.appendChild(wrap);
                 _this.wireAppointmentEvents(wrap, eventObj, true);
-                _this.renderedEvents.push(extend({}, eventObj, null, true));
+                if (!eventObj.isSpanned.isRight) {
+                    _this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
             }
         });
     };
@@ -20965,11 +21014,18 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
         var eventData = extend({}, eventObj, null, true);
         var eventStart = eventData[this.fields.startTime];
         var eventEnd = eventData[this.fields.endTime];
-        eventData.isSpanned = {
-            count: Math.ceil((eventEnd.getTime() - eventStart.getTime()) / MS_PER_DAY),
-            isLeft: eventStart.getTime() < monthStart.getTime(),
-            isRight: eventEnd.getTime() > monthEnd.getTime()
-        };
+        var isSpanned = { isLeft: false, isRight: false };
+        if (eventStart.getTime() < monthStart.getTime()) {
+            eventData[this.fields.startTime] = monthStart;
+            isSpanned.isLeft = true;
+        }
+        if (eventEnd.getTime() > monthEnd.getTime()) {
+            eventData[this.fields.endTime] = monthEnd;
+            isSpanned.isRight = true;
+        }
+        isSpanned.count = Math.ceil((eventData[this.fields.endTime].getTime() -
+            eventData[this.fields.startTime].getTime()) / MS_PER_DAY);
+        eventData.isSpanned = isSpanned;
         return eventData;
     };
     YearEvent.prototype.getOverlapEvents = function (date, appointments) {
@@ -21648,13 +21704,16 @@ var ICalendarImport = /** @__PURE__ @class */ (function () {
     }
     ICalendarImport.prototype.initializeCalendarImport = function (fileContent) {
         var _this = this;
-        if (fileContent) {
+        if (fileContent && fileContent instanceof Blob) {
             var fileReader_1 = new FileReader();
             fileReader_1.onload = function (event) {
                 var iCalString = fileReader_1.result;
                 _this.iCalendarParser(iCalString);
             };
             fileReader_1.readAsText(fileContent, 'ISO-8859-8');
+        }
+        else if (fileContent && typeof fileContent === 'string') {
+            this.iCalendarParser(fileContent);
         }
     };
     ICalendarImport.prototype.iCalendarParser = function (iCalString) {

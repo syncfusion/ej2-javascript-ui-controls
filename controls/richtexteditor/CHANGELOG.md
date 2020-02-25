@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `F151491` - Resolved the issue with RichTextEditor height that is not set properly when the toolbar is disabled.
+
+- `F151491` - Resolved the script errors thrown when opening an insert image dialog several times.
+
 ## 17.4.49 (2020-02-11)
 
 ### RichTextEditor

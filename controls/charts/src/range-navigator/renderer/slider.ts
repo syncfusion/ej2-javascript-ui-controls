@@ -230,9 +230,9 @@ export class RangeSlider {
     }
     /**
      * Trigger changed event
-     * @param range 
+     * @private
      */
-    private triggerEvent(range: VisibleRangeModel): void {
+    public triggerEvent(range: VisibleRangeModel): void {
         let argsData: IChangedEventArgs;
         let xAxis: Axis = this.control.chartSeries.xAxis;
         let valueType: RangeValueType = xAxis.valueType as RangeValueType;

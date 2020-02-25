@@ -1,6 +1,6 @@
 import { TreeGrid } from '../base/treegrid';
 import { ColumnModel } from '../models/column';
-import { isNullOrUndefined, removeClass, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { QueryCellInfoEventArgs, parentsUntil, getObject } from '@syncfusion/ej2-grids';
 import { CellSaveEventArgs } from '../base/interface';
@@ -79,6 +79,29 @@ export class Selection {
       checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
       this.triggerChkChangeEvent(checkBox, checkBoxvalue, target.closest('tr'));
 
+    }
+    let summaryLength: number = Object.keys(this.parent.aggregates).length;
+    let childSummary: boolean;
+    for (let i: number = 0; i < summaryLength; i++) {
+        if (this.parent.aggregates[i].showChildSummary) {
+            childSummary = true;
+            break;
+        }
+    }
+    if (childSummary) {
+      let checkedLen: number = this.parent.getSelectedRowIndexes().length;
+      let totalRecords: Object[] = []; let isSummaryRow: string = 'isSummaryRow';
+      for (let i: number = 0; i < this.parent.getCurrentViewRecords().length; i++) {
+          if (!this.parent.getCurrentViewRecords()[i][isSummaryRow]) {
+              totalRecords.push(this.parent.getCurrentViewRecords()[i]);
+          }
+      }
+      if (checkedLen === totalRecords.length) {
+          let getCheckAllBox: string = 'getCheckAllBox';
+          let spanEle: HTMLElement = this.parent.grid.selectionModule[getCheckAllBox]().nextElementSibling as HTMLElement;
+          removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
+          addClass([spanEle], ['e-check']);
+      }
     }
   }
 

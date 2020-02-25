@@ -1,4 +1,4 @@
-import { Component, Property, Complex, CollectionFactory, ChildProperty, Event } from '@syncfusion/ej2-base';import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';import { remove, EmitType } from '@syncfusion/ej2-base';import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel } from '../diagram/index';import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';import { SvgRenderer } from '../diagram/rendering/svg-renderer';import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';import { removeElementsByClass } from '../diagram/utility/dom-util';import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults, updateDefaultValues } from '../diagram/utility/diagram-util';import { getFunction, randomId } from '../diagram/utility/base-util';import { getOuterBounds } from '../diagram/utility/connector';import { Point } from '../diagram/primitives/point';import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';import { Rect } from '../diagram/primitives/rect';import { SymbolSizeModel } from '../diagram/objects/preview-model';
+import { Component, Property, Complex, CollectionFactory, ChildProperty, Event } from '@syncfusion/ej2-base';import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';import { remove, EmitType } from '@syncfusion/ej2-base';import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel } from '../diagram/index';import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';import { SvgRenderer } from '../diagram/rendering/svg-renderer';import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';import { removeElementsByClass, applyStyleAgainstCsp } from '../diagram/utility/dom-util';import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults, updateDefaultValues } from '../diagram/utility/diagram-util';import { getFunction, randomId } from '../diagram/utility/base-util';import { getOuterBounds } from '../diagram/utility/connector';import { Point } from '../diagram/primitives/point';import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';import { Rect } from '../diagram/primitives/rect';import { SymbolSizeModel } from '../diagram/objects/preview-model';
 import {SymbolInfo} from "./symbol-palette";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -53,7 +53,7 @@ export interface PaletteModel {
 export interface SymbolDragSizeModel {
 
     /**
-     * Defines diagram symbol width.
+     * Sets the drag width of the symbols
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -61,7 +61,7 @@ export interface SymbolDragSizeModel {
     width?: number;
 
     /**
-     * Defines diagram symbol height.
+     * Sets the drag height of the symbols
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
@@ -235,7 +235,7 @@ export interface SymbolPaletteModel extends ComponentModel{
     symbolPreview?: SymbolPreviewModel;
 
     /**
-     * Defines the symbol drag size that drops to the diagram and its applicable for all symbols in SymbolPalette.
+     * Defines the size of a drop symbol
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined

@@ -3117,3 +3117,31 @@ describe('numeric text box validating minimum and maximum value', () => {
     });
 });
 
+describe('EJ2-36298 - validation rules for columns => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog :false, newRowPosition:'Bottom' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string',validationRules: { required: true } },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    { field: 'ShipCity' },
+                ],
+            }, done);
+    });
+    it('add and delete', function () {
+        (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+        gridObj.element.click()
+        expect(document.querySelectorAll('.e-griderror').length).toBe(1);
+    });
+    afterAll(() => {
+        gridObj.notify('tooltip-destroy', {});
+        destroy(gridObj);
+    });
+});
+

@@ -8,7 +8,7 @@ import {
     SortSettingsModel, TextWrapSettingsModel, SelectionSettingsModel,
     FilterSettingsModel, SearchSettingsModel, InfiniteScrollSettingsModel
 } from './grid-model';
-import { PageSettingsModel, AggregateRowModel } from '../models/models';
+import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from '../models/models';
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel } from './grid-model';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
@@ -52,6 +52,9 @@ export interface IGrid extends Component<HTMLElement> {
     //public properties    
     currentViewData?: Object[];
     currentAction?: ActionArgs;
+
+    /** @hidden */
+    allowGroupReordering: boolean;
     /**
      * Specifies the columns for Grid.
      * @default []
@@ -220,6 +223,12 @@ export interface IGrid extends Component<HTMLElement> {
      * @default false
      */
     showColumnChooser?: boolean;
+
+    /**
+     * Specifies the 'columnChooserSettings' for Grid.
+     * @default []
+     */
+    columnChooserSettings?: ColumnChooserSettingsModel;
 
     /**
      * Specifies the editSettings for Grid.
@@ -445,6 +454,10 @@ export interface IGrid extends Component<HTMLElement> {
 
     renderModule?: Render;
 
+    headerModule?: IRenderer;
+
+    contentModule?: IRenderer;
+
     isPreventScrollEvent?: boolean;
 
     hierarchyPrintMode?: HierarchyGridPrintMode;
@@ -458,6 +471,7 @@ export interface IGrid extends Component<HTMLElement> {
     expandedRows?: { [index: number]: IExpandedRow };
     registeredTemplate?: Object;
     lockcolPositionCount?: number;
+    isWheelScrolled?: boolean;
     isPrinting?: boolean;
     id?: string;
     isSelectedRowIndexUpdating?: boolean;
@@ -516,6 +530,8 @@ export interface IGrid extends Component<HTMLElement> {
     getRowTemplate?(): Function;
     getDetailTemplate?(): Function;
     getEditTemplate?(): Function;
+    getEditFooterTemplate?(): Function;
+    getEditHeaderTemplate?(): Function;
     getFilterTemplate?(): Function;
     sortColumn?(columnName: string, sortDirection: SortDirection, isMultiSort?: boolean): void;
     removeSortColumn?(field: string): void;
@@ -587,6 +603,8 @@ export interface IGrid extends Component<HTMLElement> {
     getFilteredRecords(): Object[] | Promise<Object>;
     getRowElementByUID?(uid: string): Element;
     getMediaColumns?(): void;
+    isCollapseStateEnabled?(): boolean;
+    mergePersistGridData?(setData?: Object): void;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;
@@ -867,6 +885,7 @@ export interface IRow<T> {
     cssClass?: string;
 
     foreignKeyData?: Object;
+    parentUid?: string;
 }
 /**
  * @hidden
@@ -1001,6 +1020,29 @@ export interface RowSelectEventArgs extends RowDeselectEventArgs {
 }
 
 export interface RecordDoubleClickEventArgs {
+    /** Defines the target element. */
+    target?: Element;
+    /** Defines the cell element. */
+    cell?: Element;
+    /** Defines the cell index. */
+    cellIndex?: number;
+    /** Defines the column object. */
+    column?: Column;
+    /** Defines the name of the event. */
+    name?: string;
+    /** Defines the row element. */
+    row?: Element;
+    /** Defines the current row data.
+     * @isGenericType true
+     */
+    rowData?: Object;
+    /** Defines the row index. */
+    rowIndex?: number;
+    /** Define the foreignKey row data associated with this column */
+    foreignKeyData?: Object;
+}
+
+export interface RecordClickEventArgs {
     /** Defines the target element. */
     target?: Element;
     /** Defines the cell element. */
@@ -1207,6 +1249,17 @@ export interface FilterSearchBeginEventArgs {
     value?: Date | string | number | boolean;
 }
 
+export interface FilterUI {
+    /** Defines the field */
+    field?: string;
+    /** Defines the Operator */
+    operator?: string;
+    /** Defines the first operator for excel filter */
+    firstOperator?: string;
+    /** Defines the second Operator for excel filter */
+    secondOperator?: string;
+}
+
 export interface MultipleExport {
     /** Indicates whether to append the multiple grid in same sheet or different sheet */
     type?: MultipleExportType;
@@ -1346,6 +1399,8 @@ export interface ExcelExportProperties {
     header?: ExcelHeader;
     /** Defines the footer content for exported document */
     footer?: ExcelFooter;
+    /** Defines the columns which are to be customized for Export alone. */
+    columns?: Column[];
     /** Indicates to export current page or all page */
     exportType?: ExportType;
     /** Indicates whether to show the hidden columns in exported excel */
@@ -1433,6 +1488,8 @@ export interface VirtualInfo {
     nextInfo?: { page?: number };
     sentinelInfo?: SentinelType;
     offsets?: Offsets;
+    startIndex?: number;
+    endIndex?: number;
 }
 /**
  * @hidden
@@ -2036,6 +2093,8 @@ export interface PdfExportProperties {
     pageSize?: PdfPageSize;
     /** Defines the Pdf header. */
     header?: PdfHeader;
+    /** Defines the columns which are to be customized for Export alone. */
+    columns?: Column[];
     /** Defines the Pdf footer. */
     footer?: PdfFooter;
     /** Indicates whether to show the hidden columns in exported Pdf */

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### Splitter
+
+#### Bug Fixes
+
+- `F11801` - Resolved the script errors thrown when performing keyboard action in single pane.
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#263850` - The issue with the invalid cursor that is displayed in panel content or header, which is not in draggable element has been resolved.
+
 ## 17.4.50 (2020-02-18)
 
 ### Splitter

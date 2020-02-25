@@ -64,10 +64,16 @@ export class Crud {
         this.parent.trigger(events.actionBegin, args, (addArgs: ActionEventArgs) => {
             if (!addArgs.cancel) {
                 let promise: Promise<Object> = null;
+                let modifiedData: { [key: string]: Object }[] = [];
+                if (this.parent.cardSettings.priority) {
+                    cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
+                    modifiedData = this.priorityOrder(modifiedData, addArgs);
+                }
                 let editParms: SaveChanges = {
-                    addedRecords: (cardData instanceof Array) ? cardData : [cardData], changedRecords: [], deletedRecords: []
+                    addedRecords: (cardData instanceof Array) ? cardData : [cardData],
+                    changedRecords: this.parent.cardSettings.priority ? modifiedData : [], deletedRecords: []
                 };
-                if (cardData instanceof Array) {
+                if (cardData instanceof Array || modifiedData.length > 0) {
                     promise = this.parent.dataModule.dataManager.saveChanges(editParms, this.keyField, this.getTable(), this.getQuery()) as
                         Promise<Object>;
                 } else {
@@ -90,6 +96,11 @@ export class Crud {
         this.parent.trigger(events.actionBegin, args, (updateArgs: ActionEventArgs) => {
             if (!updateArgs.cancel) {
                 let promise: Promise<Object> = null;
+                if (this.parent.cardSettings.priority) {
+                    let modifiedData: { [key: string]: Object }[] = [];
+                    cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
+                    cardData = this.priorityOrder(modifiedData, updateArgs);
+                }
                 let editParms: SaveChanges = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
@@ -138,6 +149,58 @@ export class Crud {
                 this.refreshData(crudArgs);
             }
         });
+    }
+
+    private priorityOrder(cardData: { [key: string]: Object }[], args?: ActionEventArgs): { [key: string]: Object }[] {
+        let cardsId: string[] | number[] = cardData.map((obj: { [key: string]: string }) => obj[this.parent.cardSettings.headerField]);
+        let allModifiedKeys: string[] = cardData.map((obj: { [key: string]: string }) => obj[this.parent.keyField]);
+        let modifiedKey: string[] = allModifiedKeys.filter((key: string, index: number) => allModifiedKeys.indexOf(key) === index).sort();
+        let columnAllDatas: { [key: string]: Object }[];
+        let finalData: { [key: string]: Object }[] = [];
+        for (let columnKey of modifiedKey) {
+            let keyData: Object[] = cardData.filter((cardObj: { [key: string]: Object }) => cardObj[this.parent.keyField] === columnKey);
+            columnAllDatas = this.parent.getColumnData(columnKey) as { [key: string]: Object }[];
+            let customOrder: number = 1;
+            let initialOrder: number;
+            for (let data of keyData as { [key: string]: Object }[]) {
+                let order: number;
+                if (data[this.parent.cardSettings.priority]) {
+                    order = data[this.parent.cardSettings.priority] as number;
+                } else {
+                    if (customOrder === 1) {
+                        initialOrder = columnAllDatas.slice(-1)[0][this.parent.cardSettings.priority] as number;
+                    }
+                    order = data[this.parent.cardSettings.priority] = (customOrder > 1 ? initialOrder :
+                        columnAllDatas.slice(-1)[0][this.parent.cardSettings.priority] as number) + customOrder;
+                    customOrder++;
+                }
+                if (this.parent.swimlaneSettings.keyField) {
+                    let swimlaneDatas: Object[] = this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField] as string);
+                    columnAllDatas = this.parent.getColumnData(columnKey, swimlaneDatas) as { [key: string]: Object }[];
+                }
+                let count: number[] = [];
+                for (let j: number = 0; j < columnAllDatas.length; j++) {
+                    if (columnAllDatas[j][this.parent.cardSettings.priority] === order) {
+                        count.push(j + 1);
+                        break;
+                    }
+                }
+                if (args.requestType === 'cardChange') {
+                    finalData.push(data);
+                }
+                let finalCardsId: string[] = finalData.map((obj: { [key: string]: string }) => obj[this.parent.cardSettings.headerField]);
+                for (let i: number = count[0]; i <= columnAllDatas.length; i++) {
+                    let dataObj: { [key: string]: Object } = columnAllDatas[i - 1];
+                    let index: number = cardsId.indexOf(dataObj[this.parent.cardSettings.headerField] as string);
+                    if (index === -1 && order >= dataObj[this.parent.cardSettings.priority]) {
+                        dataObj[this.parent.cardSettings.priority] = ++order;
+                        let isData: number = finalCardsId.indexOf(dataObj[this.parent.cardSettings.headerField] as string);
+                        (isData === -1) ? finalData.push(dataObj) : finalData[isData] = dataObj;
+                    }
+                }
+            }
+        }
+        return finalData;
     }
 
 }

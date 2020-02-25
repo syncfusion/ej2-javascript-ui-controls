@@ -104,7 +104,7 @@ export class ExportHelper {
             rows[i].cells = [];
         }
         rows = this.processColumns(rows);
-        rows = this.processHeaderCells(rows);
+        rows = this.processHeaderCells(rows, columns);
         return { rows, columns: this.generateActualColumns(columns) };
     }
     public getConvertedWidth(input: string): number {
@@ -133,8 +133,8 @@ export class ExportHelper {
         return actualColumns;
     }
 
-    private processHeaderCells(rows: Row<Column>[]): Row<Column>[] {
-        let columns: Column[] = this.parent.columns as Column[];
+    private processHeaderCells(rows: Row<Column>[], cols: Column[]): Row<Column>[] {
+        let columns: Column[] = cols;
         for (let i: number = 0; i < columns.length; i++) {
             if (!columns[i].commands) {
                 rows = this.appendGridCells(columns[i], rows, 0);

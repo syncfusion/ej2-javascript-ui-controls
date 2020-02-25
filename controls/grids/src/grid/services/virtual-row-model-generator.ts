@@ -1,4 +1,4 @@
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, isBlazor } from '@syncfusion/ej2-base';
 import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
@@ -7,7 +7,7 @@ import { Column } from '../models/column';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
-
+import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 
 /**
  * Content module is used to render grid content
@@ -85,11 +85,13 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             }
         }
         info.blockIndexes = loadedBlocks;
-        let grouping: string = 'records';
-        if (this.parent.allowGrouping) {
-            this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
-        } else {
-            this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
+        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            let grouping: string = 'records';
+            if (this.parent.allowGrouping) {
+                this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
+            } else {
+                this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
+            }
         }
         return result;
     }
@@ -138,6 +140,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             }
             return left + calWidth < offsetVal;
         });
+        if (isBlazor() && this.parent.isServerRendered) {
+            (<VirtualContentRenderer>this.parent.contentModule).startColIndex = indexes[0];
+            (<VirtualContentRenderer>this.parent.contentModule).endColIndex = indexes[indexes.length - 1];
+        }
         return indexes;
     }
 

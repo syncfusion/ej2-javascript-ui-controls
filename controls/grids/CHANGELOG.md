@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### Grid
+
+#### Bug Fixes
+
+- `#150980` - script error while using item template issue has been fixed .
+- `#263885` - script error in IE11 while enabling persistence has been resolved.
+
 ## 17.4.50 (2020-02-18)
 
 ### Grid

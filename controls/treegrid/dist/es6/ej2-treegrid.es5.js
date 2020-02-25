@@ -529,6 +529,30 @@ var Selection = /** @__PURE__ @class */ (function () {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
             this.triggerChkChangeEvent(checkBox, checkBoxvalue, target.closest('tr'));
         }
+        var summaryLength = Object.keys(this.parent.aggregates).length;
+        var childSummary;
+        for (var i = 0; i < summaryLength; i++) {
+            if (this.parent.aggregates[i].showChildSummary) {
+                childSummary = true;
+                break;
+            }
+        }
+        if (childSummary) {
+            var checkedLen = this.parent.getSelectedRowIndexes().length;
+            var totalRecords = [];
+            var isSummaryRow = 'isSummaryRow';
+            for (var i = 0; i < this.parent.getCurrentViewRecords().length; i++) {
+                if (!this.parent.getCurrentViewRecords()[i][isSummaryRow]) {
+                    totalRecords.push(this.parent.getCurrentViewRecords()[i]);
+                }
+            }
+            if (checkedLen === totalRecords.length) {
+                var getCheckAllBox = 'getCheckAllBox';
+                var spanEle = this.parent.grid.selectionModule[getCheckAllBox]().nextElementSibling;
+                removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
+                addClass([spanEle], ['e-check']);
+            }
+        }
     };
     Selection.prototype.triggerChkChangeEvent = function (checkBox, checkState, rowElement) {
         var data = this.parent.getCurrentViewRecords()[rowElement.rowIndex];
@@ -1071,6 +1095,9 @@ var Render = /** @__PURE__ @class */ (function () {
         //addClass([args.row], 'e-gridrowindex' + index + 'level' + (<ITreeData>args.data).level);
         var summaryRow = getObject('isSummaryRow', args.data);
         if (summaryRow) {
+            if (args.row.querySelector('.e-gridchkbox')) {
+                args.row.querySelector('.e-gridchkbox').innerHTML = '';
+            }
             addClass([args.row], 'e-summaryrow');
         }
         if (args.row.querySelector('.e-treegridexpand')) {
@@ -2121,6 +2148,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.excelExport = function (excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
     workbook, isBlob) {
+        if (isBlazor()) {
+            this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, false);
+            return null;
+        }
         return this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, false);
     };
     /**
@@ -2135,6 +2166,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.csvExport = function (excelExportProperties, 
     /* tslint:disable-next-line:no-any */
     isMultipleExport, workbook, isBlob) {
+        if (isBlazor()) {
+            this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, true);
+            return null;
+        }
         return this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, true);
     };
     /**
@@ -2149,6 +2184,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.pdfExport = function (pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
     isMultipleExport, pdfDoc, isBlob) {
+        if (isBlazor()) {
+            this.pdfExportModule.Map(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+            return null;
+        }
         return this.pdfExportModule.Map(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
     };
     /**
@@ -2318,7 +2357,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     // Get Proper Row Element from the summary 
     TreeGrid.prototype.findnextRowElement = function (summaryRowElement) {
-        var rowElement = summaryRowElement.nextSibling;
+        var rowElement = summaryRowElement.nextElementSibling;
         if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
             rowElement.style.display === 'none')) {
             rowElement = this.findnextRowElement(rowElement);
@@ -2953,12 +2992,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 args[data] = args[data][0];
             }
             _this.trigger(actionBegin, args, function (actionArgs) {
-                if (!actionArgs.cancel) {
-                    _this.notify(beginEdit, actionArgs);
-                }
                 if (isBlazor() && actionArgs.requestType === 'delete' && !_this.isServerRendered) {
                     var data = 'data';
-                    actionArgs[data] = _this.getSelectedRecords();
+                    actionArgs[data] = [actionArgs[data]];
+                }
+                if (!actionArgs.cancel) {
+                    _this.notify(beginEdit, actionArgs);
                 }
                 if (isBlazor() && actionArgs.requestType === 'beginEdit' && !_this.isServerRendered) {
                     actionArgs.row = getElement(actionArgs.row);
@@ -2972,15 +3011,20 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             if (isBlazor() && _this.isServerRendered) {
                 var rows = _this.getRows();
                 for (var i = 0; i < rows.length; i++) {
-                    if (rows[i].classList.contains('e-treerowcollapsed')) {
-                        removeClass([rows[i]], 'e-treerowcollapsed');
-                        addClass([rows[i]], 'e-treerowexpanded');
+                    if (rows[i].classList.contains('e-treerowcollapsed') || rows[i].classList.contains('e-treerowexpanded')) {
+                        (_this.enableCollapseAll && args.requestType === 'paging') ? removeClass([rows[i]], 'e-treerowexpanded') :
+                            removeClass([rows[i]], 'e-treerowcollapsed');
+                        (_this.enableCollapseAll && args.requestType === 'paging') ? addClass([rows[i]], 'e-treerowcollapsed') :
+                            addClass([rows[i]], 'e-treerowexpanded');
                     }
                     var cells = rows[i].querySelectorAll('.e-rowcell');
-                    var expandicon = cells[_this.treeColumnIndex].getElementsByClassName('e-treegridcollapse')[0];
+                    var expandicon = cells[_this.treeColumnIndex].getElementsByClassName('e-treegridcollapse')[0] ||
+                        cells[_this.treeColumnIndex].getElementsByClassName('e-treegridexpand')[0];
                     if (expandicon) {
-                        removeClass([expandicon], 'e-treegridcollapse');
-                        addClass([expandicon], 'e-treegridexpand');
+                        (_this.enableCollapseAll && args.requestType === 'paging') ? removeClass([expandicon], 'e-treegridexpand') :
+                            removeClass([expandicon], 'e-treegridcollapse');
+                        (_this.enableCollapseAll && args.requestType === 'paging') ? addClass([expandicon], 'e-treegridcollapse') :
+                            addClass([expandicon], 'e-treegridexpand');
                     }
                 }
                 if (actionComplete$$1 && typeof actionComplete$$1 === 'function' && actionComplete$$1[name] === 'bound triggerEJEvents') {
@@ -5261,7 +5305,9 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
     if ((control.editSettings.newRowPosition === 'Above' || control.editSettings.newRowPosition === 'Below')
         && ((action === 'add' || action === 'batchsave')) && !isNullOrUndefined(child.parentItem)) {
         var parentData = getParentData(control, child.parentItem.uniqueID);
-        parentData.childRecords.push(child);
+        if (parentData.childRecords.indexOf(child) === -1) {
+            parentData.childRecords.push(child);
+        }
     }
     else {
         var currentRecords = control.grid.getCurrentViewRecords();
@@ -8442,6 +8488,7 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _this.isExpandCollapse = false;
         _this.translateY = 0;
         _this.maxiPage = 0;
+        /** @hidden */
         _this.startIndex = -1;
         _this.endIndex = -1;
         _this.addEventListener();

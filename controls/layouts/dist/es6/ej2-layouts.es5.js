@@ -337,25 +337,28 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Splitter.prototype.onMove = function (event) {
-        var index = this.getSeparatorIndex(this.currentSeparator);
-        var isPrevpaneCollapsed = this.previousPane.classList.contains(COLLAPSE_PANE);
-        var isPrevpaneExpanded = this.previousPane.classList.contains(EXPAND_PANE);
-        var isNextpaneCollapsed = this.nextPane.classList.contains(COLLAPSE_PANE);
-        if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' && event.keyCode === 39) ||
-            (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
-            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed) &&
-            document.activeElement.classList.contains(SPLIT_BAR)) {
-            this.checkPaneSize(event);
-            this.triggerResizing(event);
-        }
-        else if (event.keyCode === 13 && this.paneSettings[index].collapsible && document.activeElement.classList.contains(SPLIT_BAR)) {
-            if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
-                this.collapse(index);
-                addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
+        if (this.allPanes.length > 1) {
+            var index = this.getSeparatorIndex(this.currentSeparator);
+            var isPrevpaneCollapsed = this.previousPane.classList.contains(COLLAPSE_PANE);
+            var isPrevpaneExpanded = this.previousPane.classList.contains(EXPAND_PANE);
+            var isNextpaneCollapsed = this.nextPane.classList.contains(COLLAPSE_PANE);
+            if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' &&
+                event.keyCode === 39) ||
+                (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
+                && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)
+                && (this.paneSettings[index].resizable && this.paneSettings[index + 1].resizable)) {
+                this.checkPaneSize(event);
+                this.triggerResizing(event);
             }
-            else {
-                this.expand(index);
-                addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
+            else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+                if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+                    this.collapse(index);
+                    addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
+                }
+                else {
+                    this.expand(index);
+                    addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
+                }
             }
         }
     };
@@ -2065,7 +2068,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
 // constant class definitions
 var preventSelect = 'e-prevent';
 var dragging = 'e-dragging';
-var draggable = 'e-draggable';
+var drag = 'e-drag';
 var resize = 'e-resize';
 var responsive = 'e-responsive';
 var east = 'e-east';
@@ -3935,7 +3938,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             var containerEle = panelCollection[i].querySelector('.e-panel-container');
             if (this.allowDragging) {
                 if (this.draggableHandle && element.querySelectorAll(this.draggableHandle)[0]) {
-                    addClass([element.querySelectorAll(this.draggableHandle)[0]], [draggable]);
+                    addClass([element.querySelectorAll(this.draggableHandle)[0]], [drag]);
+                }
+                else {
+                    addClass([element], [drag]);
                 }
             }
             if (this.allowResizing &&
@@ -4755,6 +4761,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                         var draggableInstance = this.getDragInstance(ele.id);
                         draggableInstance.handle = this.draggableHandle;
                     }
+                    var dragPanels = this.element.querySelectorAll('.' + drag);
+                    removeClass(dragPanels, [drag]);
+                    this.setClasses(this.panelCollection);
                     break;
                 case 'allowFloating':
                     this.setProperties({ allowFloating: newProp.allowFloating }, true);

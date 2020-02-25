@@ -22,6 +22,13 @@ export class UploadSettings extends ChildProperty<UploadSettings> {
     public autoUpload: boolean;
 
     /**
+     * Defines whether to close the upload dialog after uploading all the files.
+     * @default false
+     */
+    @Property(false)
+    public autoClose: boolean;
+
+    /**
      * Specifies the minimum file size to be uploaded in bytes.
      * The property is used to make sure that you cannot upload empty files and small files.
      * @default 0

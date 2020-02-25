@@ -23,7 +23,8 @@ import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs } from './index';
-import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs } from './index';
+// tslint:disable-next-line:max-line-length
+import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
 import { Drawing, ClipBoardObject } from '../diagram/drawing';
@@ -33,6 +34,9 @@ import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from '../diagram/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 import { ValidateFormFieldsArgs } from './base';
+// tslint:disable-next-line:max-line-length
+import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs } from './base';
+
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -765,6 +769,11 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
      */
     @Property('Label')
     public labelContent: string;
+    /**
+     * specifies the default content of the label.
+     */
+    @Property('')
+    public notes: string;
 }
 
 /**
@@ -2699,6 +2708,41 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public annotationResize: EmitType<AnnotationResizeEventArgs>;
 
     /**
+     * Triggers when signature is added  over the page of the PDF document.
+     * @event
+     */
+    @Event()
+    public addSignature: EmitType<AddSignatureEventArgs>;
+
+    /**
+     * Triggers when signature is removed over the page of the PDF document.
+     * @event
+     */
+    @Event()
+    public removeSignature: EmitType<RemoveSignatureEventArgs>;
+
+    /**
+     * Triggers when an signature is moved over the page of the PDF document.
+     * @event
+     */
+    @Event()
+    public moveSignature: EmitType<MoveSignatureEventArgs>;
+
+    /**
+     * Triggers when the property of the signature is changed in the page of the PDF document.
+     * @event
+     */
+    @Event()
+    public signaturePropertiesChange: EmitType<SignaturePropertiesChangeEventArgs>;
+
+    /**
+     * Triggers when signature is resized over the page of the PDF document.
+     * @event
+     */
+    @Event()
+    public resizeSignature: EmitType<ResizeSignatureEventArgs>;
+
+    /**
      * Triggers when an annotation is selected over the page of the PDF document.
      * @event
      * @blazorProperty 'AnnotationSelected'
@@ -2776,6 +2820,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public exportFailed: EmitType<ExportFailureEventArgs>;
+
+    /**
+     * Triggers when an text extraction is completed in the PDF Viewer.
+     * @event
+     * @blazorProperty 'ExtractTextCompleted'
+     */
+    @Event()
+    public extractTextCompleted: EmitType<ExtractTextCompletedEventArgs>;
 
     /**
      * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
@@ -3517,6 +3569,51 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
+    public fireSignatureAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, opacity: number, strokeColor: string, thickness: number): void {
+        let eventArgs: AddSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds, opacity: opacity, strokeColor: strokeColor, thickness: thickness };
+        this.trigger('addSignature', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireSignatureRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any): void {
+        let eventArgs: RemoveSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds };
+        this.trigger('removeSignature', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireSignatureMove(pageNumber: number, id: string, type: AnnotationType, opacity: number, strokeColor: string, thickness: number, previousPosition: object, currentPosition: object): void {
+        let eventArgs: MoveSignatureEventArgs = { pageIndex: pageNumber, id: id, type: type, opacity: opacity, strokeColor: strokeColor, thickness: thickness, previousPosition: previousPosition, currentPosition: currentPosition };
+        this.trigger('moveSignature', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireSignaturePropertiesChange(pageNumber: number, index: string, type: AnnotationType, isStrokeColorChanged: boolean, isOpacityChanged: boolean, isThicknessChanged: boolean, oldProp: any, newProp: any): void {
+        let eventArgs: SignaturePropertiesChangeEventArgs = { pageIndex: pageNumber, id: index, type: type, isStrokeColorChanged: isStrokeColorChanged, isOpacityChanged: isOpacityChanged, isThicknessChanged: isThicknessChanged, oldValue: oldProp, newValue: newProp };
+        this.trigger('signaturePropertiesChange', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireSignatureResize(pageNumber: number, index: string, type: AnnotationType, opacity: number, strokeColor: string, thickness: number, currentPosition: any, previousPosition: any): void {
+        let eventArgs: ResizeSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, opacity: opacity, strokeColor: strokeColor, thickness: thickness, currentPosition: currentPosition, previousPosition: previousPosition };
+        this.trigger('resizeSignature', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
     public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any, multiPageCollection?: any, isSelected?: boolean): void {
         // tslint:disable-next-line:max-line-length
         let eventArgs: AnnotationSelectEventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
@@ -3676,6 +3773,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         // tslint:disable-next-line:max-line-length
         let eventArgs: ExportFailureEventArgs = { name: 'exportAnnotationsFailed', exportData: data, errorDetails: errorDetails };
         this.trigger('exportFailed', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireTextExtractionCompleted(documentCollection: any): void {
+        let eventArgs: ExtractTextCompletedEventArgs = { documentTextCollection: documentCollection };
+        this.trigger('extractTextCompleted', eventArgs);
     }
     /**
      * @private

@@ -947,6 +947,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var element = closest(ddlArgs.element, '.e-group-container');
         var groupID = element.id.replace(this.element.id + '_', '');
         var ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
+        var tooltipElem = ruleElem.querySelectorAll('.e-tooltip.e-input-group');
+        for (var i = 0; i < tooltipElem.length; i++) {
+            getComponent(tooltipElem[i], 'tooltip').destroy();
+        }
         if (!args.cancel) {
             tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
@@ -1667,7 +1671,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         if (closest(target, '.e-rule-filter')) {
             dropDownObj = getComponent(target, 'dropdownlist');
             if (!this.isImportRules && rule.rules[index].field.toLowerCase() !== this.columns[dropDownObj.index].field.toLowerCase()) {
-                if (!(rule.rules[index].operator.indexOf('null') > -1) || (rule.rules[index].operator.indexOf('empty') > -1)) {
+                if (!(ruleElem.querySelectorAll('.e-template')) && !(rule.rules[index].operator.indexOf('null') > -1)
+                    || (rule.rules[index].operator.indexOf('empty') > -1)) {
                     rule.rules[index].value = '';
                 }
             }

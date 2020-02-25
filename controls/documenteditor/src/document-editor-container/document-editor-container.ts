@@ -215,6 +215,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public sectionFormat: SectionFormatProperties;
     /**
+     * @private
+     */
+    public showHeaderProperties: boolean = true;
+
+    /**
      * Defines the settings for DocumentEditor customization.
      * @default {}
      */
@@ -764,12 +769,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         let currentContext: string = this.documentEditor.selection.contextType;
         let isInHeaderFooter: boolean = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;
+        if (!isInHeaderFooter) {
+            this.showHeaderProperties = true;
+        }
         if (!this.showPropertiesPane) {
             this.showHidePropertiesPane(false);
             this.propertiesPaneContainer.style.display = 'none';
         } else {
             this.propertiesPaneContainer.style.display = 'block';
-            if (isInHeaderFooter) {
+            if (isInHeaderFooter && this.showHeaderProperties) {
                 this.showProperties('headerfooter');
             } else if (currentContext.indexOf('Text') >= 0
                 && currentContext.indexOf('Table') < 0) {

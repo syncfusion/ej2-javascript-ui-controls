@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#263579` - Issue with "the performance issue while clear the selected items using clear button" issue has been resolved.
+
 ## 17.4.50 (2020-02-18)
 
 ### ListBox

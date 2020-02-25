@@ -2,7 +2,7 @@ import { EventHandler, remove, Browser, isBlazor, updateBlazorTemplate } from '@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Query, DataManager, Predicate } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
-import { DropDownList, AutoComplete } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, AutoComplete, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { RadioButton, CheckBox } from '@syncfusion/ej2-buttons';
 import { distinctStringValues, isComplexField, getComplexFieldID, getCustomDateFormat, applyBiggerTheme } from '../base/util';
@@ -10,7 +10,7 @@ import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { parentsUntil, appendChildren, extend } from '../base/util';
-import { IFilterArgs, EJ2Intance } from '../base/interface';
+import { IFilterArgs, EJ2Intance, FilterUI } from '../base/interface';
 import * as events from '../base/constant';
 import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PredicateModel } from '../base/grid-model';
@@ -37,6 +37,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private cmenu: HTMLUListElement;
     protected menuObj: ContextMenu;
     private isCMenuOpen: boolean;
+    private firstOperator: string;
+    private secondOperator: string;
 
     /**
      * Constructor for excel filtering module
@@ -493,7 +495,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 fields: { text: 'text', value: 'value' },
                 text: selectedValue,
                 open: this.dropDownOpen.bind(this),
-                enableRtl: this.parent.enableRtl
+                enableRtl: this.parent.enableRtl,
+                change: this.dropDownValueChange.bind(this)
             },
             col.filter.params));
         this.dropOptr.appendTo(optrInput);
@@ -503,6 +506,22 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private dropDownOpen(args: { popup: Popup }): void {
         args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
     }
+
+    private dropDownValueChange(args: ChangeEventArgs): void {
+        if (args.element.id.includes('-xlfl-frstoptr')) {
+            this.firstOperator = args.value.toString();
+        } else {
+            this.secondOperator = args.value.toString();
+        }
+    }
+
+    /**
+     * @hidden
+     */
+    public getFilterUIInfo(): FilterUI {
+        return { firstOperator: this.firstOperator, secondOperator: this.secondOperator, field: this.options.field };
+    }
+
     private getSelectedValue(text: string): string {
         let selectedField: Object = new DataManager(this.optrData).executeLocal(
             new Query().where('text', 'equal', text));
@@ -539,6 +558,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         //Renders first dropdown
         /* tslint:disable-next-line:max-line-length */
         let optr: { fieldElement: HTMLElement, operator: string } = this.renderOperatorUI(column, table, '-xlfl-frstoptr', predicates, true);
+        this.firstOperator = optr.operator;
 
         //Renders first value
         this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
@@ -551,6 +571,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
         //Renders second dropdown
         optr = this.renderOperatorUI(column, table, '-xlfl-secndoptr', predicates, false);
+        this.secondOperator = optr.operator;
+
         //Renders second text box
         this.renderFlValueUI(column, optr, '-xlfl-secndvalue', predicates, false);
     }

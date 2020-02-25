@@ -151,6 +151,7 @@ const PROGRESS: string = 'e-toast-progress';
 const ACTIOBUTTONS: string = 'e-toast-actions';
 const CLOSEBTN: string = 'e-toast-close-icon';
 const RTL: string = 'e-rtl';
+const TOAST_REF_ELEMENT: string = 'e-toast-ref-element';
 
 /**
  * An object that is used to configure the Toast X Y positions.
@@ -276,6 +277,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     private innerEle: Node;
     private toastCollection: CollectionToast[] = [];
     private l10n: L10n;
+    private isDestroy: boolean = false;
+    private refElement: HTMLElement;
 
     /**
      * Initializes a new instance of the Toast class.
@@ -497,6 +500,9 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      * Removes the component from the DOM and detaches all its related event handlers, attributes and classes.
      */
     public destroy(): void {
+        if ((isBlazor && this.isServerRendered)) {
+          this.isDestroy = true;
+        }
         this.hide('All');
         this.element.classList.remove(CONTAINER);
         setStyleAttribute(this.element, { 'position': '', 'z-index': '' });
@@ -558,6 +564,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           (target as HTEle).style.position = 'relative';
         }
         this.setPositioning(this.position);
+        if (isBlazor && this.isServerRendered) {
+          this.refElement = this.createElement('div', { className: TOAST_REF_ELEMENT });
+          this.toastContainer.parentElement.insertBefore(this.refElement, this.toastContainer);
+        }
         target.appendChild(this.toastContainer);
       }
       this.toastEle = this.createElement('div', { className: ROOT, id: getUniqueID('toast') });
@@ -650,14 +660,28 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       if (isNOU(this.toastContainer) || this.toastContainer.childElementCount === 0) { return; }
       if (typeof element === 'string' && element === 'All' ) {
         for (let i: number = 0; i < this.toastContainer.childElementCount; i++) {
-          this.destroyToast(this.toastContainer.children[i] as HTEle); }
-        return; }
+          this.destroyToast(this.toastContainer.children[i] as HTEle);
+        }
+        let target: HTEle = typeof (this.target) === 'string' ? <HTEle>document.querySelector(this.target) : <HTEle>document.body;
+        if (!isNOU(target) && this.isDestroy && !isNOU(this.refElement)) {
+          this.refElement.parentElement.insertBefore(this.toastContainer, this.refElement);
+          detach(this.refElement);
+          this.refElement = undefined;
+        }
+        return;
+      }
       if (isNOU(element)) {
-        element = <HTEle> (this.newestOnTop ? this.toastContainer.lastElementChild.classList.contains('blazor-template') ?
-        this.toastContainer.lastElementChild.previousSibling : this.toastContainer.lastElementChild :
+        element = <HTEle> (this.newestOnTop ? this.checkBlazorTemp(this.toastContainer.lastElementChild) :
         this.toastContainer.firstElementChild);
       }
       this.destroyToast(element as HTEle);
+    }
+
+    private checkBlazorTemp(element: Element): HTMLElement {
+      while (element.classList.contains('blazor-template')) {
+          element = element.previousElementSibling;
+      }
+      return element as HTMLElement;
     }
 
     private fetchEle (ele: HTEle, value: string, prob: string): HTEle {
@@ -783,11 +807,6 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           this.toastCollection.splice(i, 1);
         }
       }
-      let hideAnimate: ToastAnimationsModel = this.animation.hide;
-      let animate: AnimationModel = {
-        duration : hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
-       };
-      let intervalId: number = parseInt(toastEle.id.split('toast_')[1], 10);
       let toastClose: ToastCloseArgs = isBlazor() ? {
         options: toastObj,
         toastContainer: this.toastContainer } : {
@@ -795,15 +814,25 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           toastContainer: this.toastContainer,
           toastObj: this,
         };
-      if (!isNOU(this.progressObj[intervalId]) && !isNOU(toastEle.querySelector('.' + PROGRESS)) ) {
-        this.progressObj[intervalId].progressEle.style.width = '0%'; }
-      animate.end = () => {
-        this.clearProgress(intervalId);
+      if (!isNOU(this.isDestroy) && this.isDestroy) {
         if (!toastEle.querySelector('.blazor-inner-template')) { detach(toastEle); }
-        this.trigger('close', toastClose);
         if (this.toastContainer.childElementCount === 0) { this.clearContainerPos(); }
-      };
-      new Animation({}).animate(toastEle, animate);
+      } else {
+        let hideAnimate: ToastAnimationsModel = this.animation.hide;
+        let animate: AnimationModel = {
+          duration : hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
+        };
+        let intervalId: number = parseInt(toastEle.id.split('toast_')[1], 10);
+        if (!isNOU(this.progressObj[intervalId]) && !isNOU(toastEle.querySelector('.' + PROGRESS)) ) {
+          this.progressObj[intervalId].progressEle.style.width = '0%'; }
+        animate.end = () => {
+          this.clearProgress(intervalId);
+          if (!toastEle.querySelector('.blazor-inner-template')) { detach(toastEle); }
+          this.trigger('close', toastClose);
+          if (this.toastContainer.childElementCount === 0) { this.clearContainerPos(); }
+        };
+        new Animation({}).animate(toastEle, animate);
+      }
     }
 
     private personalizeToast(): void {

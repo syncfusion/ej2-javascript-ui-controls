@@ -1,6 +1,7 @@
 import { Sparkline, IAxisRenderingEventArgs, ISeriesRenderingEventArgs, SparklineValueType } from '../index';
 import { ISparklinePointEventArgs, IMarkerRenderingEventArgs, IDataLabelRenderingEventArgs } from '../index';
 import { extend, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { logBase } from '../../common/utils/helper';
 import { PathOption, SparkValues, drawPath, drawRectangle, RectOption, Rect, CircleOption, drawCircle } from '../utils/helper';
 import { measureText, renderTextElement, TextOption, Size } from '../utils/helper';
 import { PaddingModel, AxisSettingsModel, SparklineMarkerSettingsModel, SparklineFontModel } from '../model/base-model';
@@ -712,6 +713,25 @@ export class SparklineRenderer {
         return interval;
     }
     /**
+     * To find x axis interval.
+     */
+    private getPaddingInterval(data: Object[], x: string, type: SparklineValueType, delta: number): number {
+        let interval: number = 1;
+        let size: number = this.sparkline.availableSize.height;
+        let intervalCount: number = interval * data.length;
+        intervalCount = Math.max((size * (intervalCount / 100)), 1);
+        let niceInterval: number = delta / intervalCount;
+        let minInterval: number =  Math.pow(10, Math.floor(logBase(niceInterval, 10)));
+        for (let intervalVal of this.sparkline.intervalDivs) {
+            let currentInterval: number = interval * intervalVal;
+            if (intervalCount < (delta / currentInterval)) {
+                break;
+            }
+            niceInterval = currentInterval;
+        }
+        return niceInterval;
+    }
+    /**
      * To calculate axis ranges internally.
      */
     // tslint:disable-next-line:max-func-body-length
@@ -798,7 +818,9 @@ export class SparklineRenderer {
         this.axisHeight = y1 + padding.top;
         let percent: number; let x: number; let y: number;
         let visiblePoints: SparkValues[] = [];
+        let delta: number = max - min;
         let interval: number = this.getInterval(data, model.xName, model.valueType);
+        let interVal: number = this.getPaddingInterval(data, model.xName, model.valueType, delta);
         for (let i: number = 0; i < maxPointsLength; i++) {
             if (isNullOrUndefined(data[i][model.xName]) && isNullOrUndefined(data[i][model.yName]) && ((data[i][model.yName]) !== 0)
                 && isNumericArray) {
@@ -831,6 +853,27 @@ export class SparklineRenderer {
                         markerPosition: (y2 > y1) ? (y1 + Math.abs(y2 - y1)) : y2
                     };
                 } else {
+                    if (y === min && model.rangePadding === 'Additional') {
+                        min -= interVal + padding.top;
+                        max += interVal + padding.top;
+                        unitX = maxX - minX;
+                        unitY = max - min;
+                        unitX = (unitX === 0) ? 1 : unitX;
+                        unitY = (unitY === 0) ? 1 : unitY;
+                        this.unitX = unitX;
+                        this.unitY = unitY;
+                        this.min = min;
+                    } else if (y === min && model.rangePadding === 'Normal') {
+                        min -= interVal;
+                        max += interVal;
+                        unitX = maxX - minX;
+                        unitY = max - min;
+                        unitX = (unitX === 0) ? 1 : unitX;
+                        unitY = (unitY === 0) ? 1 : unitY;
+                        this.unitX = unitX;
+                        this.unitY = unitY;
+                        this.min = min;
+                    }
                     let z: number = ((height / this.unitY) * (y - min));
                     let z1: number = (y === min && y > value) ? ((maxPointsLength !== 1 && this.unitY !== 1) ?
                         (height / this.unitY) * (min / 2) : (z | 1)) :

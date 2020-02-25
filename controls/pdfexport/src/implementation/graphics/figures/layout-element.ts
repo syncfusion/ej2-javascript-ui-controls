@@ -4,6 +4,7 @@
 import { PdfPage } from './../../pages/pdf-page';
 import { RectangleF, PointF } from './../../drawing/pdf-drawing';
 import { PdfLayoutParams, PdfLayoutFormat, PdfLayoutResult } from './base/element-layouter';
+import { PdfBorders} from './../../structured-elements/grid/styles/pdf-borders';
 import { PdfGridBeginPageLayoutEventArgs, PdfGridEndPageLayoutEventArgs } from './../../structured-elements/grid/layout/grid-layouter';
 /**
  * `PdfLayoutElement` class represents the base class for all elements that can be layout on the pages.
@@ -103,6 +104,18 @@ export abstract class PdfLayoutElement {
             let temparg4 : PdfLayoutFormat = arg4 as PdfLayoutFormat;
             param.page = arg2;
             param.bounds = temparg3;
+            if (param != null ) {
+                let x : number = param.bounds.x;
+                let y : number = param.bounds.y;
+                if (param.bounds.x === 0) {
+                    x = PdfBorders.default.right.width / 2;
+                }
+                if (param.bounds.y === 0) {
+                    y = PdfBorders.default.top.width / 2;
+                }
+                let newBound : RectangleF = new RectangleF(x, y, param.bounds.width, param.bounds.height);
+                param.bounds = newBound;
+            }
             param.format = (temparg4 != null) ? temparg4 : new PdfLayoutFormat();
             let result : PdfLayoutResult = this.layout(param);
             return result;

@@ -44,6 +44,7 @@ export class ContextMenu {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             target: '#' + this.parent.element.id,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             beforeItemRender: this.onBeforeItemRender.bind(this),
             select: this.onSelect.bind(this),
             beforeOpen: this.onBeforeOpen.bind(this),

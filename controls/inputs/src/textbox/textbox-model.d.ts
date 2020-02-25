@@ -61,6 +61,7 @@ export interface TextBoxModel extends ComponentModel{
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * {% codeBlock src='textbox/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     htmlAttributes?: { [key: string]: string; };

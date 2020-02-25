@@ -2222,7 +2222,10 @@ class BasicFormulas {
             {
                 formulaName: 'INTERCEPT', category: 'Statistical',
                 description: 'Calculates the point of the Y-intercept line via linear regression.'
-            }
+            },
+            {
+                formulaName: 'LN', category: 'Math & Trig', description: 'Returns the natural logarithm of a number.'
+            },
         ];
         this.isConcat = false;
         this.parent = parent;
@@ -3403,6 +3406,37 @@ class BasicFormulas {
         }
         return result;
     }
+    /** @hidden */
+    ComputeLN(...logValue) {
+        let argArr = logValue;
+        let cellvalue = '';
+        let logVal;
+        let orgValue;
+        if (logValue.length === 0 || logValue.length > 1) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        if (this.parent.isCellReference(argArr[0])) {
+            cellvalue = this.parent.getValueFromArg(argArr[0]);
+            logVal = this.parent.parseFloat(cellvalue);
+            if (logVal <= 0 || cellvalue === '') {
+                return this.parent.getErrorStrings()[CommonErrors.num];
+            }
+            if (isNaN(logVal)) {
+                return this.parent.getErrorStrings()[CommonErrors.value];
+            }
+        }
+        else {
+            orgValue = this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join(''));
+            logVal = this.parent.parseFloat(orgValue);
+            if (logVal <= 0 || logVal.toString() === '') {
+                return this.parent.getErrorStrings()[CommonErrors.num];
+            }
+            if (isNaN(logVal)) {
+                return this.parent.getErrorStrings()[CommonErrors.value];
+            }
+        }
+        return Math.log(logVal);
+    }
     getDataCollection(cells) {
         let cellsData = [];
         for (let i = 0, len = cells.length; i < len; i++) {
@@ -3762,7 +3796,7 @@ class Parser {
         let condition;
         let ticLoc = tempString.indexOf(this.parent.tic);
         let singleTicLoc = tempString.indexOf(this.parent.singleTic);
-        if (ticLoc > -1 || singleTicLoc > -1) {
+        if (ticLoc > -1) {
             tempString = tempString.split(this.parent.singleTic).join(this.parent.tic);
             i = tempString.indexOf(this.parent.tic);
             while (i > -1 && tempString.length > 0) {
@@ -4100,7 +4134,9 @@ class Parser {
                                     right = 'u' + right;
                                 }
                             }
-                            noCellReference = !this.parent.isCellReference(right);
+                            if (noCellReference && right.startsWith(this.sheetToken)) {
+                                noCellReference = !this.parent.isCellReference(right);
+                            }
                             if (!noCellReference) {
                                 this.parent.updateDependentCell(right);
                             }
@@ -6564,12 +6600,12 @@ let Calculate = Calculate_1 = class Calculate extends Base {
             for (let n = 0; n < sortedSheetNamesCollection.length; n++) {
                 let token = family.sheetNameToToken.get(sortedSheetNamesCollection[n]);
                 token = token.split(this.sheetToken).join(this.tempSheetPlaceHolder);
-                let s = '"' + sortedSheetNamesCollection[n].toUpperCase() + '"' + this.sheetToken;
+                let s = this.singleTic + 'SHEET' + sortedSheetNamesCollection[n] + this.singleTic + this.sheetToken;
                 if (text.indexOf(s) === -1) {
-                    s = sortedSheetNamesCollection[n].toUpperCase() + this.sheetToken;
+                    s = 'SHEET' + sortedSheetNamesCollection[n] + this.sheetToken;
                 }
-                text = text.split('SHEET' + s).join(token);
-                s = sortedSheetNamesCollection[n].toUpperCase() + this.sheetToken;
+                text = text.split(s).join(token);
+                s = sortedSheetNamesCollection[n] + this.sheetToken;
                 text = text.split(s).join(token);
             }
         }
@@ -7402,7 +7438,7 @@ class WorkbookFormula {
     updateSheetInfo() {
         this.sheetInfo = [];
         this.parent.sheets.forEach((sheet, idx) => {
-            this.sheetInfo.push({ visibleName: sheet.name, sheet: sheet.name, index: idx });
+            this.sheetInfo.push({ visibleName: sheet.name, sheet: 'Sheet' + sheet.id, index: idx });
         });
     }
     sheetDeletion(delSheetName, sheetId, index) {
@@ -7519,15 +7555,28 @@ class WorkbookFormula {
         }
     }
     parseSheetRef(value) {
-        let sheetInfo = this.getSheetInfo();
+        let regx;
+        let escapeRegx = new RegExp('[!@#$%^&()+=\';,.{}|\":<>~_-]', 'g');
+        let i = 0;
         let sheetCount = this.parent.sheets.length;
-        for (let j = 0; j < sheetCount; j++) {
-            if (sheetInfo[j].sheet.toUpperCase() !== sheetInfo[j].visibleName.toUpperCase()) {
-                let name = sheetInfo[j].visibleName.toUpperCase();
-                if (value.toUpperCase().indexOf(name) > -1) {
-                    value = value.toUpperCase().split(name).join(sheetInfo[j].sheet);
+        let temp = [];
+        temp.length = 0;
+        let sheetInfo = this.getSheetInfo();
+        let exp = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
+        for (i = 0; i < sheetCount; i++) {
+            if (sheetInfo[i].sheet !== sheetInfo[i].visibleName) {
+                regx = new RegExp(sheetInfo[i].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
+                if (value.match(regx)) {
+                    value = value.replace(regx, i + '/');
+                    temp.push(i);
                 }
             }
+        }
+        i = 0;
+        while (i < temp.length) {
+            regx = new RegExp(temp[i] + '/' + exp, 'gi');
+            value = value.replace(regx, sheetInfo[temp[i]].sheet);
+            i++;
         }
         return value;
     }
@@ -19794,6 +19843,7 @@ let defaultLocale = {
     SUBTOTAL: 'Returns subtotal for a range using the given function number.',
     RADIANS: 'Converts degrees into radians.',
     MATCH: 'Returns the relative position of a specified value in given range.',
+    LN: 'Returns the natural logarithm of a number',
     DefineNameExists: 'This name already exists, try different name.',
     CircularReference: 'When a formula refers to one or more circular references, this may result in an incorrect calculation.',
     ShowRowsWhere: 'Show rows where:',

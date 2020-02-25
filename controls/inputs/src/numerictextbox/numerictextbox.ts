@@ -142,6 +142,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * {% codeBlock src='numerictextbox/htmlAttributes/index.md' %}{% endcodeBlock %}
      * @default {}
      */
     @Property({})
@@ -223,28 +224,11 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
 
     /**
      * Specifies a value that indicates whether the NumericTextBox control allows the value for the specified range.
-     * * If it is true, the input value will be restricted between the min and max range.
+     * If it is true, the input value will be restricted between the min and max range. 
      * The typed value gets modified to fit the range on focused out state.
-     * ```html
-     * <input type='text' id="numeric"/>
-     * ```
-     * ```typescript
-     * <script>
-     *   var numericObj = new NumericTextBox({ min: 10, max: 20, value: 15 });
-     *   numericObj.appendTo("#numeric");
-     * </script>
-     * ```
-     * * Else, it allows any value even out of range value,
+     * Else, it allows any value even out of range value, 
      * At that time of wrong value entered, the error class will be added to the component to highlight the error.
-     * ```html
-     * <input type='text' id="numeric"/>
-     * ```
-     * ```typescript
-     * <script>
-     *   var numericObj = new NumericTextBox({ strictMode: false, min: 10, max: 20, value: 15 });
-     *   numericObj.appendTo("#numeric");
-     * </script>
-     * ```
+     * {% codeBlock src='numerictextbox/strictMode/index.md' %}{% endcodeBlock %}
      * @default true
      */
     @Property(true)

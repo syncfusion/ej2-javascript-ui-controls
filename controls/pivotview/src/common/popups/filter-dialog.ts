@@ -60,7 +60,6 @@ export class FilterDialog {
             id: this.parent.parentID + '_EditorTreeView',
             className: cls.MEMBER_EDITOR_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
             attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
-            styles: 'visibility:hidden;'
         });
         let filterCaption: string = this.parent.engineModule.fieldList[fieldName].caption;
         let headerTemplate: string = this.parent.localeObj.getConstant('filter') + ' ' +

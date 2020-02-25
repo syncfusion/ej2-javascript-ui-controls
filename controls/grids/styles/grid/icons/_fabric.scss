@@ -8,6 +8,14 @@
   #{&}.e-grid,
   .e-grid-menu {
 
+    .e-group-animate .e-drag.e-icon-drag::before {
+      content: '\e330';
+    }
+
+    .e-group-animate .e-nextgroup.e-icon-next::before {
+      content: '\ebe0';
+    }
+
     .e-icon-ascending::before {
       content: '\e840';
     }

@@ -263,6 +263,9 @@ export class FocusStrategy {
                 (e.args && e.args.isFrozen) ? this.fHeader : this.header;
             let rows: Row<Column>[] = content ? e.rows.slice(this.parent.frozenRows) : e.rows;
             let updateRow: Row<Column>[] = content ? e.rows.slice(0, this.parent.frozenRows) : e.rows;
+            if (this.parent.isCollapseStateEnabled() && content) {
+                rows = rows.filter((x: Row<Column>) => x.visible !== false);
+            }
             let isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
             let matrix: number[][] = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             let frozenColumnsCount: number = this.parent.getFrozenColumns();
@@ -398,7 +401,7 @@ export class FocusStrategy {
             case 'grouping':
             case 'ungrouping':
                 current[1] = current.length &&
-                    !this.parent.groupSettings.showGroupedColumn ?
+                    !this.parent.groupSettings.showGroupedColumn && !isNullOrUndefined(matrix.matrix[current[0]]) ?
                     matrix.matrix[current[0]].indexOf(1) : e.requestType === 'grouping' ? current[1] + 1 : current[1] - 1;
                 break;
         }

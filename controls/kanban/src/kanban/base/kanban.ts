@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach } from '@syncfusion/ej2-base';
 import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -9,7 +9,7 @@ import { CardSettings } from '../models/card-settings';
 import { Columns } from '../models/columns';
 import { StackedHeaders } from '../models/stacked-headers';
 import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel } from '../models/index';
-import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs } from './interface';
+import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ColumnRenderedEventArgs } from './interface';
 import { ReturnType, ConstraintType } from './type';
 import { Action } from '../actions/action';
 import { Crud } from '../actions/crud';
@@ -49,6 +49,7 @@ export class Kanban extends Component<HTMLElement> {
     public kanbanData: Object[];
     public activeCardData: CardClickEventArgs;
     public localeObj: L10n;
+    public swimlaneToggleArray: string[];
 
     // Kanban Options
 
@@ -80,8 +81,8 @@ export class Kanban extends Component<HTMLElement> {
     public height: string | number;
 
     /**
-     * With this property, the event data will be bound to Kanban.
-     * The event data can be passed either as an array of JavaScript objects,
+     * With this property, the card data will be bound to Kanban.
+     * The card data can be passed either as an array of JavaScript objects,
      * or else can create an instance of [`DataManager`](http://ej2.syncfusion.com/documentation/data/api-dataManager.html)
      * in case of processing remote data and can be assigned to the `dataSource` property.
      * With the remote data assigned to dataSource, check the available
@@ -225,7 +226,7 @@ export class Kanban extends Component<HTMLElement> {
      * @event
      */
     @Event()
-    public columnRendered: EmitType<CardRenderedEventArgs>;
+    public columnRendered: EmitType<ColumnRenderedEventArgs>;
     /**
      * Triggers before each card of the Kanban rendering on the page.
      * @event
@@ -266,11 +267,15 @@ export class Kanban extends Component<HTMLElement> {
     protected preRender(): void {
         this.isAdaptive = Browser.isDevice;
         this.kanbanData = [];
+        if (!this.enablePersistence || !this.swimlaneToggleArray) {
+            this.swimlaneToggleArray = [];
+        }
         this.activeCardData = { data: null, element: null };
         let defaultLocale: Object = {
             items: 'items',
             min: 'Min',
-            max: 'Max'
+            max: 'Max',
+            cardsSelected: 'Cards Selected'
         };
         this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
     }
@@ -290,7 +295,7 @@ export class Kanban extends Component<HTMLElement> {
      * @private
      */
     protected getPersistData(): string {
-        return this.addOnPersist([]);
+        return this.addOnPersist(['columns', 'dataSource', 'swimlaneToggleArray']);
     }
 
     /**
@@ -306,9 +311,8 @@ export class Kanban extends Component<HTMLElement> {
      * @private
      */
     public render(): void {
-        let addClasses: string[] = [];
+        let addClasses: string[] = [cls.ROOT_CLASS];
         let removeClasses: string[] = [];
-        addClasses.push(cls.ROOT_CLASS);
         if (this.enableRtl) {
             addClasses.push(cls.RTL_CLASS);
         } else {
@@ -370,14 +374,11 @@ export class Kanban extends Component<HTMLElement> {
                     this.onCardSettingsPropertyChanged(newProp.cardSettings, oldProp.cardSettings);
                     break;
                 case 'allowDragAndDrop':
-                    let cards: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.CARD_CLASS));
-                    cards.forEach((card: HTMLElement) => {
-                        if (newProp.allowDragAndDrop) {
-                            this.dragAndDropModule.wireDragEvents(card);
-                        } else {
-                            this.dragAndDropModule.unWireDragEvents(card);
-                        }
-                    });
+                    if (newProp.allowDragAndDrop) {
+                        this.layoutModule.wireDragEvent();
+                    } else {
+                        this.layoutModule.unWireDragEvent();
+                    }
                     break;
                 case 'enableTooltip':
                     if (this.tooltipModule) {
@@ -434,7 +435,7 @@ export class Kanban extends Component<HTMLElement> {
                 case 'selectionType':
                     let cards: HTMLElement[] = this.getSelectedCards();
                     if (cards.length > 0) {
-                        removeClass(cards, cls.CARD_SELECTION);
+                        removeClass(cards, cls.CARD_SELECTION_CLASS);
                     }
                     break;
             }
@@ -506,12 +507,32 @@ export class Kanban extends Component<HTMLElement> {
     }
 
     /**
+     * Returns the column data based on column key input.
+     * @method getColumnData
+     * @param {string} columnKey Accepts the column key to get the objects.
+     * @returns {Object[]}
+     */
+    public getColumnData(columnKey: string, dataSource?: Object[]): Object[] {
+        return this.layoutModule.getColumnCards(dataSource)[columnKey] || [];
+    }
+
+    /**
+     * Returns the swimlane column data based on swimlane keyField input.
+     * @method getSwimlaneData
+     * @param {string} keyField Accepts the swimlane keyField to get the objects.
+     * @returns {Object[]}
+     */
+    public getSwimlaneData(keyField: string): Object[] {
+        return this.layoutModule.getSwimlaneCards()[keyField] || [];
+    }
+
+    /**
      * Gets the list of selected cards from the board.
      * @method getSelectedCards
      * @returns {HTMLElement[]}
      */
     public getSelectedCards(): HTMLElement[] {
-        return [].slice.call(this.element.querySelectorAll('.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION));
+        return [].slice.call(this.element.querySelectorAll('.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS));
     }
 
     /**
@@ -534,7 +555,7 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Adds the new card to the data source of Kanban and layout.
-     * @method addEvent
+     * @method addCard
      * @param {{[key: string]: Object}} cardData Single card objects to be added into Kanban.
      * @param {{[key: string]: Object}[]} cardData Collection of card objects to be added into Kanban.
      * @returns {void}
@@ -544,7 +565,7 @@ export class Kanban extends Component<HTMLElement> {
     }
 
     /**
-     * Updates the changes made in the event object by passing it as a parameter to the data source.
+     * Updates the changes made in the card object by passing it as a parameter to the data source.
      * @method updateCard
      * @param {{[key: string]: Object}} cardData Single card object to be updated into Kanban.
      * @param {{[key: string]: Object}[]} cardData Collection of card objects to be updated into Kanban.
@@ -615,13 +636,13 @@ export class Kanban extends Component<HTMLElement> {
      */
     public destroy(): void {
         this.destroyModules();
-        super.destroy();
-        this.element.innerHTML = '';
+        [].slice.call(this.element.childNodes).forEach((node: HTMLElement) => detach(node));
         let removeClasses: string[] = [cls.ROOT_CLASS];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
+        super.destroy();
     }
 
 }

@@ -75,6 +75,10 @@ export type ActionBlur = 'Cancel' | 'Submit' | 'Ignore';
  */
 export type EditableType = 'Click' | 'DblClick' | 'EditIconClick';
 /**
+ * Specifies the value to be set when initial rendering.
+ */
+export type textOptionType = 'Never' | 'Always';
+/**
  * Specifies the adaptor type that are used DataManager to communicate with DataSource.
  */
 export type AdaptorType = 'UrlAdaptor' | 'ODataV4Adaptor' | 'WebApiAdaptor';
@@ -262,6 +266,17 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     @Property('Click')
     public editableOn: EditableType;
     /**
+     * Specifies the option to be set on initial rendering. It is applicable for DropDownList,
+     * AutoComplete, ComboBox, and MultiSelect component types.
+     * The possible options are:
+     * 
+     * - `Never`: The corresponding field value will never be set initially in the component.
+     * - `Always`: The corresponding field value will be set initially in the component.
+     * @default 'Never'
+     */
+    @Property('Never')
+    public textOption: textOptionType;
+    /**
      * Specifies the action to be perform when user clicks outside the container, that is focus out of editable content.
      * The possible options are,
      * 
@@ -414,7 +429,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderInitialValue();
+        this.textOption === 'Never' ?
+        this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+        : this.renderInitialValue();
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -579,7 +596,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
 
     private showDropDownPopup(): void {
         if (this.type === 'DropDownList') {
-            (this.componentObj as DropDownList).focusIn();
+            if (!(this.model as AutoCompleteModel | ComboBoxModel | DropDownListModel
+            | MultiSelectModel).allowFiltering) {
+                (this.componentObj as DropDownList).focusIn();
+            }
             (this.componentObj as DropDownList).showPopup();
         } else {
             if (this.isExtModule) { this.notify(((this.type === 'MultiSelect') ? events.setFocus : events.showPopup), {}); }
@@ -1382,10 +1402,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderInitialValue();
+                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                    : this.renderInitialValue();
                     break;
                 case 'emptyText':
-                    this.renderInitialValue();
+                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                    : this.renderInitialValue();
                     break;
                 case 'template':
                     this.checkIsTemplate();

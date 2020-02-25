@@ -1078,6 +1078,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
       /* tslint:disable-next-line:no-any */
       workbook?: any, isBlob?: boolean): Promise<any> {
+      if (isBlazor()) {
+        this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, false);
+        return null;
+      }
       return this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, false);
     }
   /**
@@ -1093,6 +1097,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       excelExportProperties?: ExcelExportProperties,
       /* tslint:disable-next-line:no-any */
       isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): Promise<any> {
+      if (isBlazor()) {
+        this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, true);
+        return null;
+      }
       return this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, true);
   }
   /**
@@ -1108,6 +1116,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       pdfExportProperties?: PdfExportProperties,
       /* tslint:disable-next-line:no-any */
       isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
+      if (isBlazor()) {
+        this.pdfExportModule.Map(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+        return null;
+      }
       return this.pdfExportModule.Map(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
   }
 
@@ -1284,7 +1296,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   // Get Proper Row Element from the summary 
 
   private findnextRowElement(summaryRowElement: HTMLElement ): Element {
-    let rowElement: Element = <Element>summaryRowElement.nextSibling;
+    let rowElement: Element = <Element>summaryRowElement.nextElementSibling;
     if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
         (<HTMLTableRowElement>rowElement).style.display === 'none')) {
         rowElement = this.findnextRowElement(<HTMLElement>rowElement);
@@ -1911,11 +1923,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         let data: string = 'data'; args[data] = args[data][0];
       }
       this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
+        if (isBlazor() && actionArgs.requestType === 'delete' && !this.isServerRendered) {
+          let data: string = 'data'; actionArgs[data] = [actionArgs[data]];
+        }
         if (!actionArgs.cancel) {
           this.notify(events.beginEdit, actionArgs);
-        }
-        if (isBlazor() && actionArgs.requestType === 'delete' && !this.isServerRendered) {
-          let data: string = 'data'; actionArgs[data] = this.getSelectedRecords();
         }
         if (isBlazor() && actionArgs.requestType === 'beginEdit' && !this.isServerRendered) {
           actionArgs.row = getElement(actionArgs.row);
@@ -1924,20 +1936,25 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       });
       return callBackPromise;
     };
-    this.grid.actionComplete = (args: CellSaveEventArgs) => {
+    this.grid.actionComplete = (args: ActionEventArgs) => {
       let name: string = 'name';
       if (isBlazor() && this.isServerRendered) {
         let rows: HTMLTableRowElement[] = this.getRows();
         for (let i: number = 0; i < rows.length; i++) {
-          if (rows[i].classList.contains('e-treerowcollapsed')) {
-            removeClass([rows[i]], 'e-treerowcollapsed');
-            addClass([rows[i]], 'e-treerowexpanded');
+          if (rows[i].classList.contains('e-treerowcollapsed') || rows[i].classList.contains('e-treerowexpanded')) {
+            (this.enableCollapseAll && args.requestType === 'paging') ? removeClass([rows[i]], 'e-treerowexpanded') :
+                                                                       removeClass([rows[i]], 'e-treerowcollapsed');
+            (this.enableCollapseAll && args.requestType === 'paging') ? addClass([rows[i]], 'e-treerowcollapsed') :
+                                                                       addClass([rows[i]], 'e-treerowexpanded');
           }
           let cells: NodeListOf<Element> = rows[i].querySelectorAll('.e-rowcell');
-          let expandicon: Element = cells[this.treeColumnIndex].getElementsByClassName('e-treegridcollapse')[0];
+          let expandicon: Element = cells[this.treeColumnIndex].getElementsByClassName('e-treegridcollapse')[0] ||
+                                    cells[this.treeColumnIndex].getElementsByClassName('e-treegridexpand')[0];
           if (expandicon) {
-            removeClass([expandicon], 'e-treegridcollapse');
-            addClass([expandicon], 'e-treegridexpand');
+            (this.enableCollapseAll && args.requestType === 'paging') ? removeClass([expandicon], 'e-treegridexpand') :
+                                                                       removeClass([expandicon], 'e-treegridcollapse');
+            (this.enableCollapseAll && args.requestType === 'paging') ? addClass([expandicon], 'e-treegridcollapse') :
+                                                                       addClass([expandicon], 'e-treegridexpand');
           }
         }
         if (actionComplete && typeof actionComplete === 'function' && actionComplete[name] === 'bound triggerEJEvents') {

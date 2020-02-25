@@ -16,7 +16,7 @@ import { CellType, MultipleExportType, ExcelHAlign, ExportType } from '../base/e
 import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
-import { getPrintGridModel, getUid } from '../base/util';
+import { getPrintGridModel, getUid, isExportColumns, updateColumnTypeForExportColumns, prepareColumns } from '../base/util';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 
@@ -131,7 +131,9 @@ export class ExcelExport {
         } else {
             this.isCsvExport = false;
         }
-
+        if (isExportColumns(exportProperties)) {
+            updateColumnTypeForExportColumns(exportProperties, gObj);
+        }
         return this.processRecords(gObj, exportProperties, args[isMultiEx], args[workbk]);
     }
 
@@ -330,10 +332,10 @@ export class ExcelExport {
             gObj.hierarchyPrintMode = exportProperties.hierarchyExportMode || 'Expanded';
         }
         let helper: ExportHelper = new ExportHelper(gObj);
-        let headerRow: IHeader = helper.getHeaders(gObj.columns as Column[], this.includeHiddenColumn);
-
+        let gColumns: Column[] = isExportColumns(exportProperties) ?
+            prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns as Column[];
+        let headerRow: IHeader = helper.getHeaders(gColumns, this.includeHiddenColumn);
         let groupIndent: number = gObj.groupSettings.columns.length;
-
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
         /* tslint:disable-next-line:max-line-length */
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) && !(exportProperties.dataSource instanceof DataManager)) {

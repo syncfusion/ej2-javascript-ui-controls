@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection } from '@syncfusion/ej2-base';import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { Data } from './data';import { SwimlaneSettings } from '../models/swimlane-settings';import { CardSettings } from '../models/card-settings';import { Columns } from '../models/columns';import { StackedHeaders } from '../models/stacked-headers';import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel } from '../models/index';import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs } from './interface';import { ReturnType, ConstraintType } from './type';import { Action } from '../actions/action';import { Crud } from '../actions/crud';import { DragAndDrop } from '../actions/drag';import { Keyboard } from '../actions/keyboard';import { KanbanTooltip } from '../actions/tooltip';import { KanbanTouch } from '../actions/touch';import { LayoutRender } from './layout-render';import * as events from '../base/constant';import * as cls from './css-constant';
+import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach } from '@syncfusion/ej2-base';import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { Data } from './data';import { SwimlaneSettings } from '../models/swimlane-settings';import { CardSettings } from '../models/card-settings';import { Columns } from '../models/columns';import { StackedHeaders } from '../models/stacked-headers';import { CardSettingsModel, ColumnsModel, SwimlaneSettingsModel, StackedHeadersModel } from '../models/index';import { ActionEventArgs, CardClickEventArgs, CardRenderedEventArgs, DragEventArgs, ColumnRenderedEventArgs } from './interface';import { ReturnType, ConstraintType } from './type';import { Action } from '../actions/action';import { Crud } from '../actions/crud';import { DragAndDrop } from '../actions/drag';import { Keyboard } from '../actions/keyboard';import { KanbanTooltip } from '../actions/tooltip';import { KanbanTouch } from '../actions/touch';import { LayoutRender } from './layout-render';import * as events from '../base/constant';import * as cls from './css-constant';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -31,8 +31,8 @@ export interface KanbanModel extends ComponentModel{
     height?: string | number;
 
     /**
-     * With this property, the event data will be bound to Kanban.
-     * The event data can be passed either as an array of JavaScript objects,
+     * With this property, the card data will be bound to Kanban.
+     * The card data can be passed either as an array of JavaScript objects,
      * or else can create an instance of [`DataManager`](http://ej2.syncfusion.com/documentation/data/api-dataManager.html)
      * in case of processing remote data and can be assigned to the `dataSource` property.
      * With the remote data assigned to dataSource, check the available
@@ -163,7 +163,7 @@ export interface KanbanModel extends ComponentModel{
      * Triggers before each column of the Kanban rendering on the page.
      * @event
      */
-    columnRendered?: EmitType<CardRenderedEventArgs>;
+    columnRendered?: EmitType<ColumnRenderedEventArgs>;
 
     /**
      * Triggers before each card of the Kanban rendering on the page.

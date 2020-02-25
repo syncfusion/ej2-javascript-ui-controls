@@ -20,12 +20,14 @@ export interface ActionEventArgs extends BaseEventArgs {
 }
 
 export interface CardClickEventArgs extends BaseEventArgs {
-    /** Defines the type of the event. */
+    /** Returns the object of the element which is currently being clicked or double clicked. */
     data: { [key: string]: Object };
     /** Defines the cancel option for the action taking place. */
     cancel?: boolean;
     /** Returns the actual HTML element on which the required custom styling can be applied. */
     element: Element;
+    /** Defines the type of the event. */
+    event?: Event | MouseEvent | KeyboardEvent;
 }
 
 export interface ColumnRenderedEventArgs extends BaseEventArgs {
@@ -88,6 +90,7 @@ export interface DragArgs extends BaseEventArgs {
     pageY?: number;
     navigationInterval?: number;
     cardDetails?: { [key: string]: Object }[];
+    modifiedData?: { [key: string]: Object }[];
 }
 
 /** @hidden */

@@ -665,8 +665,9 @@ var CellColor = /** @__PURE__ @class */ (function () {
         var maxValue = heatMap.bubbleSizeWithColor ? heatMap.maxColorValue : heatMap.dataSourceMaxValue;
         heatMap.emptyPointColor = heatMap.paletteSettings.emptyPointColor ? heatMap.paletteSettings.emptyPointColor :
             heatMap.themeStyle.emptyCellColor;
-        var tempcolorMapping = this.orderbyOffset(heatMap.paletteSettings.palette && heatMap.paletteSettings.palette.length > 1 ?
-            heatMap.paletteSettings.palette : heatMap.themeStyle.palette);
+        var tempcolorMapping = this.orderbyOffset(this.heatMap.isColorRange ? heatMap.paletteSettings.palette :
+            heatMap.paletteSettings.palette && heatMap.paletteSettings.palette.length > 1 ?
+                heatMap.paletteSettings.palette : heatMap.themeStyle.palette);
         if (!tempcolorMapping.isCompact) {
             if (heatMap.paletteSettings.type === 'Gradient') {
                 range = (maxValue - minValue) / (tempcolorMapping.offsets.length - 1);

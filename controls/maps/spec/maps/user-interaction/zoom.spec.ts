@@ -165,14 +165,14 @@ describe('Zoom feature tesing for map control', () => {
         it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-               expect(element.getAttribute("transform")).toBe("scale( 3 ) translate( -222.9687258049999 -111.52205358992512 ) ");
+               expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -243.7363423664989 -129.16655152836194 ) ");
             };
             map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
         });
         it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-               expect(element.getAttribute("transform")).toBe("scale( 3 ) translate( -263.6094446499999 -137.31892683177944 ) ");
+               expect(element.getAttribute("transform")).toBe("scale( 10 ) translate( -320.00944464999986 -193.71892683177944 ) ");
             };
             map.zoomToCoordinates(19.1555762, 72.8849595, null, null);
         });
@@ -2018,7 +2018,7 @@ describe('Zoom feature tesing for map control', () => {
         it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-               expect(element.getAttribute("transform")).toBe("scale( 3 ) translate( -222.9687258049999 -111.52205358992512 ) ");
+               expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -243.7363423664989 -129.16655152836194 ) ");
             };
             map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
         }); 

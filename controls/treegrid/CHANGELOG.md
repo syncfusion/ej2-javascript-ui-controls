@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.49 (2020-02-11)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#262583`- Row Drag and drop works fine for newly added records in self-referential data binding.
+
 ## 17.4.46 (2020-01-30)
 
 ### TreeGrid

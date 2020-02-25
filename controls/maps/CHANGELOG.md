@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+## 17.4.51 (2020-02-25)
+
+### Maps
+
+#### Bug Fixes
+
+- `#244109` - Maps will now be center-aligned vertically while using the `zoomToCoordinates()` method.
+- `#263976` - Data labels will now be rendered properly in the correct positions.
+- `#264153` - Data labels will now be rendered properly when zooming.
+
 ## 17.4.50 (2020-02-18)
 
 ### Maps

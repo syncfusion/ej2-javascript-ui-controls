@@ -41,7 +41,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 responseText: JSON.stringify(data12)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             mouseEventArgs = {
                 preventDefault: (): void => { },
                 stopImmediatePropagation: (): void => { },
@@ -55,7 +55,6 @@ describe('FileManager control single selection LargeIcons view', () => {
                 originalEvent: mouseEventArgs,
                 tapCount: 1
             };
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -94,7 +93,6 @@ describe('FileManager control single selection LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
                     let li1: any = document.getElementById('file_largeicons').querySelectorAll('li');
                     expect(li1.length).toBe(5);
@@ -107,7 +105,6 @@ describe('FileManager control single selection LargeIcons view', () => {
                             status: 200,
                             responseText: JSON.stringify(data3)
                         });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                         setTimeout(function () {
                             let li3: any = document.getElementById('file_largeicons').querySelectorAll('li');
                             expect(li3.length).toBe(0);
@@ -299,7 +296,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 responseText: JSON.stringify(data1)
             });
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
             mouseEventArgs = {
                 preventDefault: (): void => { },
                 stopImmediatePropagation: (): void => { },
@@ -313,7 +310,6 @@ describe('FileManager control single selection LargeIcons view', () => {
                 originalEvent: mouseEventArgs,
                 tapCount: 1
             };
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 done();
             }, 500);
@@ -339,7 +335,6 @@ describe('FileManager control single selection LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(largeLi.length).toEqual(3);
@@ -352,7 +347,6 @@ describe('FileManager control single selection LargeIcons view', () => {
                     status: 200,
                     responseText: JSON.stringify(data1)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                     expect(largeLi.length).toEqual(5);
@@ -374,7 +368,6 @@ describe('FileManager control single selection LargeIcons view', () => {
                 status: 200,
                 responseText: JSON.stringify(data18)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(largeLi.length).toEqual(3);
@@ -387,19 +380,16 @@ describe('FileManager control single selection LargeIcons view', () => {
                         status: 200,
                         responseText: JSON.stringify(data1)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     this.request = jasmine.Ajax.requests.mostRecent();
                     this.request.respondWith({
                         status: 200,
                         responseText: JSON.stringify(data17)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     this.request = jasmine.Ajax.requests.mostRecent();
                     this.request.respondWith({
                         status: 200,
                         responseText: JSON.stringify(data19)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                         expect(largeLi.length).toEqual(1);

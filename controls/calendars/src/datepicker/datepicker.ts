@@ -527,7 +527,7 @@ export class DatePicker extends Calendar implements IInput {
                 this.disabledDates();
             }
         }
-        if (!+new Date(this.checkValue(this.value))) {
+        if (isNaN(+new Date(this.checkValue(this.value)))) {
             this.setProperties({ value: null }, true);
         }
         if (this.strictMode) {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.50 (2020-02-18)
+
+### PDF Viewer
+
+#### New Features
+
+- `#262787` - Exposed the event to notify the getPDFDocumentTexts method completed for all the pages.
+
 ## 17.4.49 (2020-02-11)
 
 ### PDF Viewer

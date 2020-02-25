@@ -520,6 +520,52 @@ describe('Map marker properties tesing', () => {
                 ]
             }]);
         });
+        it('checking the marker clustering balloon', () => {
+          map.loaded = (args: ILoadEventArgs) => {
+              let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+              expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+          }
+          map.layers[0].markerClusterSettings = {
+              allowClustering: true,
+              shape: 'Balloon',
+              height: 30,
+              width: 30,
+              fill: 'blue',
+              opacity: 0.5,
+          },
+              map.layers[0].markerSettings = [
+                  {
+                      visible: true,
+                      dataSource: [
+                        {latitude: 40.6971494,longitude: -74.2598747,city: "New York",area: 8683,Rank: 1},
+                        {latitude: 35.4526439,longitude: 139.4567198,city: "Tokyo",area: 6993,Rank: 2},
+                        {latitude: 41.8333925,longitude: -88.0121569,city: "Chicago",area: 5498,Rank: 3},
+                        {latitude: 33.1147951,longitude: -94.2114611,city: "Atlanta",area: 5083,Rank: 4},
+                        {latitude: 40.0024137,longitude: -75.2581194,city: "Philadelphia",area: 4661,Rank: 5},
+                        {latitude: 42.3142647,longitude: -71.11037,city: "Boston",area: 4497,Rank: 6},
+                        {latitude: 34.0201613,longitude: -118.6919306,city: "Los Angeles",area: 4320,Rank: 7},
+                        {latitude: 32.8203525,longitude: -97.0117413,city: "Dallas",area: 3644,Rank: 8},
+                        {latitude: 31.2590796,longitude: -95.6476923,city: "Houston",area: 3355,Rank: 9},
+                        {latitude: 42.3526257,longitude: -83.239291,city: "Detroit",area: 3267,Rank: 10},
+                        {latitude: 47.2510905,longitude: -123.1255834,city: "Washington",area: 2996,Rank: 11},
+                        {latitude: 25.7823907,longitude: -80.2994995,city: "Miami",area: 2891,Rank: 12},
+                        {latitude: 35.1468253,longitude: 136.7862238,city: "Nagoya",area: 2875,Rank: 13},
+                        {latitude: 48.8588377,longitude: 2.2770198,city: "Paris",area: 2723,Rank: 14},
+                        {latitude: 50.1781141,longitude: 2.4939991,city: "Essen",area: 2642,Rank: 15}
+                      ]
+                  },
+                  {
+                      visible: true,
+                      template: '<div id="marker1" class="markerTemplate">Asia' +
+                          '</div>',
+                      dataSource: [
+                          { latitude: 50.32087157990324, longitude: 90.015625 }
+                      ],
+                      animationDuration: 0
+                  },
+              ]
+          map.refresh();
+      })
         it('checking the marker clustering', () => {
             map.loaded = (args: ILoadEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');

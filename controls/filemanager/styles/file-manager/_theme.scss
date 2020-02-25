@@ -286,7 +286,9 @@
 
       .e-fe-content {
         background-color: $fe-clone-bg-color;
-        border-color: $fe-clone-border-color;
+        @if $fm-skin-name == 'highcontrast-light' or $fm-skin-name == 'fabric-dark' or $fm-skin-name == 'bootstrap-dark' {
+          border-color: $fe-clone-border-color;
+        }
         color: $fe-bc-color;
 
         @if $fm-skin-name == 'highcontrast' {

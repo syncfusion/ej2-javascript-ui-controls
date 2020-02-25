@@ -5059,6 +5059,8 @@ const FORMATTING_MENU = 'e-pivot-format-menu';
 const NUMBER_FORMATTING_MENU = 'e-pivot-number-format-menu';
 /** @hidden */
 const CONDITIONAL_FORMATTING_MENU = 'e-pivot-conditional-format-menu';
+/** @hidden */
+const EMPTY_FORMAT = 'e-pivot-conditional-empty-format';
 
 /**
  * `AggregateMenu` module to create aggregate type popup.
@@ -6773,8 +6775,9 @@ class Render {
                     let horizontalOverflow = contentWidth < tableWidth;
                     let verticalOverflow = contentHeight < tableHeight;
                     let commonOverflow = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
+                    let fixedOverflow = gridHeight <= (this.engine.valueContent.length * this.gridSettings.rowHeight);
                     if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
-                        !verticalOverflow && !commonOverflow) {
+                        !verticalOverflow && !commonOverflow && !fixedOverflow) {
                         this.parent.grid.height = 'auto';
                     }
                     else {
@@ -8891,8 +8894,7 @@ class DrillThroughDialog {
         this.removeDrillThroughDialog();
         let drillThroughDialog = createElement('div', {
             id: this.parent.element.id + '_drillthrough',
-            className: DRILLTHROUGH_DIALOG,
-            styles: 'visibility:hidden;'
+            className: DRILLTHROUGH_DIALOG
         });
         this.parent.element.appendChild(drillThroughDialog);
         this.dialogPopUp = new Dialog({
@@ -14130,7 +14132,7 @@ class OlapEngine {
                 childSets.push(item);
                 if (this.isPaging) {
                     let drillField = item.split('::[')[fieldPos];
-                    drillField = drillField[0] == '[' ? drillField : ('[' + drillField);
+                    drillField = drillField[0] === '[' ? drillField : ('[' + drillField);
                     let drillFieldSep = drillField.split('~~');
                     for (let fPos = drillFieldSep.indexOf(memberName); fPos < drillFieldSep.length; fPos++) {
                         memberObj[drillFieldSep[fPos]] = drillFieldSep[fPos];
@@ -19714,7 +19716,6 @@ class FilterDialog {
             id: this.parent.parentID + '_EditorTreeView',
             className: MEMBER_EDITOR_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
             attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
-            styles: 'visibility:hidden;'
         });
         let filterCaption = this.parent.engineModule.fieldList[fieldName].caption;
         let headerTemplate = this.parent.localeObj.getConstant('filter') + ' ' +
@@ -26601,8 +26602,8 @@ class ConditionalFormatting {
             let outerDiv = this.createDialogElements();
             let element = createElement('p', {
                 id: this.parentID + 'emptyFormat',
+                className: EMPTY_FORMAT,
                 innerHTML: this.parent.localeObj.getConstant('emptyFormat'),
-                styles: 'margin: 10px'
             });
             outerDiv.appendChild(element);
             format.appendChild(outerDiv);
@@ -28125,8 +28126,7 @@ class NumberFormatting {
         });
         let table = createElement('table', {
             id: this.parent.element.id + '_FormatTable',
-            className: FORMATTING_TABLE,
-            styles: 'width: 100%'
+            className: FORMATTING_TABLE
         });
         let tRow = createElement('tr');
         let tValue = createElement('td');

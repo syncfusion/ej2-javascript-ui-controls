@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { PageLayoutViewer, SfdtExport, DocumentHelper } from '../../src/index';
+import { PageLayoutViewer, SfdtExport, DocumentHelper, FontDialog } from '../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../test-helper.spec';
 import { TextPosition } from '../../src/index';
@@ -218,7 +218,7 @@ describe('Context Menu Testing - 3 ', () => {
             }
         ];
         menu.enableCustomContextMenu = true;
-        editor.contextMenu.addCustomMenu(menuItems,true, true);
+        editor.contextMenu.addCustomMenu(menuItems, true, true);
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
         editor.documentHelper.viewerContainer.dispatchEvent(event);
@@ -235,7 +235,7 @@ describe('Context Menu Testing - 3 ', () => {
 });
 describe('handle Context menu item validation-1 for editing', () => {
     let editor: DocumentEditor;
-    let documentHelper :DocumentHelper;
+    let documentHelper: DocumentHelper;
     let menu: ContextMenu;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
@@ -401,5 +401,35 @@ describe('Apply table auto fit types', () => {
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.allowAutoFit).toBe(false);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidthType).toBe('Auto');
         expect(editor.selection.start.paragraph.associatedCell.cellFormat.preferredWidthType).toBe('Point');
+    });
+});
+
+describe('Context Menu element show validation', () => {
+    let editor: DocumentEditor;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection, SfdtExport, FontDialog, ParagraphDialog);
+        editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false, enableComment: true, enableFontDialog: true, enableParagraphDialog: true });
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.contextMenuModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Show context menu with hyperlink dialog as false', () => {
+        (editor.contextMenu as any).showHideElements(editor.selection);
+        expect(document.getElementById(editor.element.id + '_contextmenu_hyperlink').style.display).toBe('none');
+        expect((document.getElementById(editor.element.id + '_contextmenu_font_dialog').previousSibling as HTMLElement).style.display).toBe('none');
     });
 });

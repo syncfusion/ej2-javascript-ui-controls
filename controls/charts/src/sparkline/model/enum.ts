@@ -18,6 +18,18 @@
  /** Define the Sparkline Area type series. */
  'Area';
 
+ /**
+  * Defines the range padding of series
+  * `None`, `Normal`, `Additional`, `Additional`
+  */
+ export type SparklineRangePadding =
+ /** Define the Sparkline Line type series. */
+ 'None' |
+ /** Define the Sparkline Column type series. */
+ 'Normal' |
+ /** Define the Sparkline WinLoss type series. */
+ 'Additional';
+
 /**
  * Specifies the sparkline data value types.
  * `Numeric`, `Category` and `DateTime`.

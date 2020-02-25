@@ -34,6 +34,8 @@ export const WORK_HOURS_CLASS: string = 'e-work-hours';
 /** @hidden */
 export const POPUP_OPEN: string = 'e-popup-open';
 /** @hidden */
+export const POPUP_CLOSE: string = 'e-popup-close';
+/** @hidden */
 export const DATE_HEADER_WRAP_CLASS: string = 'e-date-header-wrap';
 /** @hidden */
 export const DATE_HEADER_CONTAINER_CLASS: string = 'e-date-header-container';

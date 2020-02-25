@@ -529,6 +529,7 @@ export interface IFileManager extends Component<HTMLElement> {
     droppedObjects: Object[];
     uploadEventArgs: BeforeSendEventArgs;
     destinationPath: string;
+    enableHtmlSanitizer: boolean;
     refreshLayout(): void;
 }
 

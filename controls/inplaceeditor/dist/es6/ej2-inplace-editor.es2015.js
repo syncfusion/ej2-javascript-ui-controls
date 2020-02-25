@@ -271,7 +271,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderInitialValue();
+        this.textOption === 'Never' ?
+            this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+            : this.renderInitialValue();
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -441,7 +443,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     showDropDownPopup() {
         if (this.type === 'DropDownList') {
-            this.componentObj.focusIn();
+            if (!this.model.allowFiltering) {
+                this.componentObj.focusIn();
+            }
             this.componentObj.showPopup();
         }
         else {
@@ -1306,10 +1310,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderInitialValue();
+                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                        : this.renderInitialValue();
                     break;
                 case 'emptyText':
-                    this.renderInitialValue();
+                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                        : this.renderInitialValue();
                     break;
                 case 'template':
                     this.checkIsTemplate();
@@ -1376,6 +1382,9 @@ __decorate$1([
 __decorate$1([
     Property('Click')
 ], InPlaceEditor.prototype, "editableOn", void 0);
+__decorate$1([
+    Property('Never')
+], InPlaceEditor.prototype, "textOption", void 0);
 __decorate$1([
     Property('Submit')
 ], InPlaceEditor.prototype, "actionOnBlur", void 0);

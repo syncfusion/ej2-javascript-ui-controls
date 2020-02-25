@@ -35,7 +35,14 @@ export class CardSettings extends ChildProperty<CardSettings> {
     @Property()
     public template: string;
 
-    /**    
+    /**
+     * Defines the card order
+     * @default null
+     */
+    @Property()
+    public priority: string;
+
+    /**
      * Defines the card selection type.
      * @default 'Single'
      */

@@ -1922,10 +1922,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public setContentHeight(target?: string, isExpand?: boolean): void {
         let heightValue: string;
         let topValue: number = 0;
+        let rteHeightPercent: string;
+        let heightPercent: boolean;
         let cntEle: HTMLElement = (this.sourceCodeModule.getPanel() &&
             this.sourceCodeModule.getPanel().parentElement.style.display === 'block') ? this.sourceCodeModule.getPanel().parentElement :
             <HTMLElement>this.contentModule.getPanel();
         let rteHeight: number = this.element.offsetHeight;
+        if (this.element.offsetHeight === 0 && this.height !== 'auto' && !this.getToolbar()) {
+            rteHeight = parseInt(this.height as string, 10);
+            heightPercent = typeof (this.height) === 'string' && this.height.indexOf('%') > -1;
+            if (heightPercent) {
+                rteHeightPercent = this.height as string;
+            }
+        }
         let tbHeight: number = this.getToolbar() ? this.toolbarModule.getToolbarHeight() : 0;
         let rzHeight: number = this.enableResize ?
             (this.element.querySelector('.' + classes.CLS_RTE_RES_HANDLE) as HTMLElement).offsetHeight + 8 : 0;
@@ -1937,7 +1946,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (this.height === 'auto' && !(this.element.classList.contains('e-rte-full-screen'))) {
                 heightValue = 'auto';
             } else {
-                heightValue = rteHeight - (tbHeight + rzHeight)  + 'px';
+                heightValue = heightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
             }
         }
         setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });

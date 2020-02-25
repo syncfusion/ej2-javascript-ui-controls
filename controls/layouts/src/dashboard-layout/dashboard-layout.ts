@@ -9,6 +9,7 @@ import { DashboardLayoutModel, PanelModel } from './dashboard-layout-model';
 const preventSelect: string = 'e-prevent';
 const dragging: string = 'e-dragging';
 const draggable: string = 'e-draggable';
+const drag: string = 'e-drag';
 const resize: string = 'e-resize';
 const responsive: string = 'e-responsive';
 const east: string = 'e-east';
@@ -2196,7 +2197,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             let containerEle: HTMLElement = panelCollection[i].querySelector('.e-panel-container');
             if (this.allowDragging) {
                 if (this.draggableHandle && element.querySelectorAll(this.draggableHandle)[0]) {
-                    addClass([element.querySelectorAll(this.draggableHandle)[0]], [draggable]);
+                    addClass([element.querySelectorAll(this.draggableHandle)[0]], [drag]);
+                } else {
+                    addClass([element], [drag]);
                 }
             }
             if (this.allowResizing &&
@@ -3021,6 +3024,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         let draggableInstance: Draggable = this.getDragInstance(ele.id);
                         draggableInstance.handle = this.draggableHandle;
                     }
+                    let dragPanels: NodeListOf<Element> = this.element.querySelectorAll('.' + drag);
+                    removeClass(dragPanels, [drag]);
+                    this.setClasses(this.panelCollection);
                     break;
                 case 'allowFloating':
                     this.setProperties({ allowFloating: newProp.allowFloating }, true);
@@ -3040,9 +3046,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.isRenderComplete = false;
                         this.updatePanelsDynamically(newProp.panels);
                         this.isRenderComplete = true;
-                    } else {
-                        this.restrictDynamicUpdate = false;
-                    }
+                    } else { this.restrictDynamicUpdate = false; }
                     break;
                 case 'columns':
                     this.isRenderComplete = false;

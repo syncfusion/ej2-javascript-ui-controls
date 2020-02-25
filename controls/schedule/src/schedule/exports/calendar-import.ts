@@ -15,14 +15,16 @@ export class ICalendarImport {
         this.parent = parent;
     }
 
-    public initializeCalendarImport(fileContent: Blob): void {
-        if (fileContent) {
+    public initializeCalendarImport(fileContent: Blob | string): void {
+        if (fileContent && fileContent instanceof Blob) {
             let fileReader: FileReader = new FileReader();
             fileReader.onload = (event: Event) => {
                 let iCalString: string = fileReader.result as string;
                 this.iCalendarParser(iCalString);
             };
             fileReader.readAsText(fileContent as Blob, 'ISO-8859-8');
+        } else if (fileContent && typeof fileContent === 'string') {
+            this.iCalendarParser(fileContent);
         }
     }
 

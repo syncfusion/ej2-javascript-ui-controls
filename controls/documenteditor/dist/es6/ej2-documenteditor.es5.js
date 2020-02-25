@@ -24631,10 +24631,12 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         var restartAt = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         var autoFitTable = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
         var addComment = document.getElementById(id + CONTEXTMENU_ADD_COMMENT);
+        var isDialogHidden = false;
         cut.style.display = 'none';
         paste.style.display = 'none';
         paste.nextSibling.style.display = 'none';
         hyperlink.style.display = 'none';
+        font.previousSibling.style.display = 'none';
         openHyperlink.style.display = 'none';
         copyHyperlink.style.display = 'none';
         editHyperlink.style.display = 'none';
@@ -24714,10 +24716,13 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 }
                 removeHyperlink.style.display = 'block';
                 removeHyperlink.nextSibling.style.display = 'block';
+                isDialogHidden = true;
             }
             else {
                 if (owner.hyperlinkDialogModule) {
                     hyperlink.style.display = 'block';
+                    font.previousSibling.style.display = 'block';
+                    isDialogHidden = true;
                 }
             }
         }
@@ -24737,10 +24742,12 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         else {
             if (this.documentHelper.owner.fontDialogModule) {
                 font.style.display = 'block';
-                font.previousSibling.style.display = 'block';
             }
             if (this.documentHelper.owner.paragraphDialogModule) {
                 paragraph.style.display = 'block';
+            }
+            else if (!isDialogHidden && !this.documentHelper.owner.fontDialogModule && !isHideComment) {
+                addComment.nextSibling.style.display = 'none';
             }
         }
         if (selection.contextType === 'Image') {
@@ -40098,7 +40105,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.highlightEditRegions = function (editRangeStart, startPosition, endPosition) {
-        if (!editRangeStart.line.paragraph.isInsideTable) {
+        if (!editRangeStart.line.paragraph.isInsideTable
+            || (editRangeStart.line.paragraph.isInsideTable && !editRangeStart.editRangeEnd.line.paragraph.isInsideTable)) {
             this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
             if (this.isHighlightNext) {
                 this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
@@ -40109,13 +40117,15 @@ var Selection = /** @__PURE__ @class */ (function () {
         else {
             var row = editRangeStart.line.paragraph.associatedCell.ownerRow;
             var cell = row.childWidgets[editRangeStart.columnFirst];
-            for (var i = 0; i < cell.childWidgets.length; i++) {
-                if (cell.childWidgets[i] instanceof ParagraphWidget) {
-                    this.highlight(cell.childWidgets[i], startPosition, endPosition);
-                    if (this.isHighlightNext) {
-                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
-                        this.isHighlightNext = false;
-                        this.hightLightNextParagraph = undefined;
+            if (cell) {
+                for (var i = 0; i < cell.childWidgets.length; i++) {
+                    if (cell.childWidgets[i] instanceof ParagraphWidget) {
+                        this.highlight(cell.childWidgets[i], startPosition, endPosition);
+                        if (this.isHighlightNext) {
+                            this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                            this.isHighlightNext = false;
+                            this.hightLightNextParagraph = undefined;
+                        }
                     }
                 }
             }
@@ -44970,8 +44980,8 @@ var Editor = /** @__PURE__ @class */ (function () {
                     insertFormat.bidi = isBidi;
                 }
                 // tslint:disable-next-line:max-line-length
-                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && inline.text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && (!isBidi || (isBidi && insertLangId === inlineLangId))
-                    || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
+                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && inline.text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat)
+                    && (insertLangId === inlineLangId) || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                 }
                 else {
@@ -44986,7 +44996,8 @@ var Editor = /** @__PURE__ @class */ (function () {
                             inline = inline.fieldBegin;
                             insertIndex = inline.indexInOwner;
                         }
-                        inline.line.children.splice(isParaBidi ? insertIndex : insertIndex + 1, 0, tempSpan);
+                        var index = isParaBidi || inline instanceof EditRangeEndElementBox ? insertIndex : insertIndex + 1;
+                        inline.line.children.splice(index, 0, tempSpan);
                     }
                     else if (indexInInline === 0) {
                         if (isRtl && !isBidi) {
@@ -45508,8 +45519,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.insertFieldEndText(element, selection, text, index);
             }
         }
-        else if (element instanceof BookmarkElementBox) {
-            this.insertBookMarkText(element, selection, text, index);
+        else if (element instanceof BookmarkElementBox || element instanceof EditRangeStartElementBox
+            || element instanceof EditRangeEndElementBox) {
+            this.insertBookMarkText(element, text);
         }
     };
     Editor.prototype.insertFieldBeginText = function (fieldBegin, selection, text, index) {
@@ -45522,13 +45534,18 @@ var Editor = /** @__PURE__ @class */ (function () {
         spanObj.line = fieldBegin.line;
         this.documentHelper.layout.reLayoutParagraph(fieldBegin.line.paragraph, lineIndex, spanIndex);
     };
-    Editor.prototype.insertBookMarkText = function (element, selection, text, index) {
+    Editor.prototype.insertBookMarkText = function (element, text) {
         var spanObj = new TextElementBox();
         spanObj.text = text;
         var lineIndex = element.line.paragraph.childWidgets.indexOf(element.line);
         var spanIndex = element.line.children.indexOf(element);
         spanObj.characterFormat.copyFormat(element.characterFormat);
-        element.line.children.splice(spanIndex, 0, spanObj);
+        if (element instanceof EditRangeEndElementBox || element instanceof BookmarkElementBox) {
+            element.line.children.splice(spanIndex, 0, spanObj);
+        }
+        else {
+            element.line.children.splice(spanIndex + 1, 0, spanObj);
+        }
         spanObj.line = element.line;
         this.documentHelper.layout.reLayoutParagraph(element.line.paragraph, lineIndex, spanIndex);
     };
@@ -72760,7 +72777,7 @@ var TableOptionsDialog = /** @__PURE__ @class */ (function () {
             id: this.documentHelper.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
         var innerDiv = createElement('div', {
-            styles: 'width: 504px;position: relative;height: auto;margin-bottom: 14px'
+            className: 'e-de-table-options-dlg-div'
         });
         var innerDivLabel = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',
@@ -77846,6 +77863,10 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.container.showPropertiesPane = true;
             this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
         }
+        else if (this.container.previousContext.indexOf('Header') >= 0
+            || this.container.previousContext.indexOf('Footer') >= 0) {
+            this.container.showHeaderProperties = !this.container.showHeaderProperties;
+        }
         else {
             this.container.showPropertiesPane = false;
         }
@@ -79747,7 +79768,8 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
             _this.footerFromTop.element.addEventListener('blur', function () { _this.changeFooterValue(); _this.isFooterTopApply = false; });
         };
         this.onClose = function () {
-            _this.documentEditor.selection.closeHeaderFooter();
+            _this.container.showHeaderProperties = true;
+            _this.container.documentEditor.selection.closeHeaderFooter();
         };
         this.changeFirstPageOptions = function () {
             if (!_this.documentEditor.isReadOnly) {
@@ -81521,6 +81543,10 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
          */
         _this.previousContext = '';
         /**
+         * @private
+         */
+        _this.showHeaderProperties = true;
+        /**
          * default locale
          * @private
          */
@@ -82043,13 +82069,16 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         var currentContext = this.documentEditor.selection.contextType;
         var isInHeaderFooter = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;
+        if (!isInHeaderFooter) {
+            this.showHeaderProperties = true;
+        }
         if (!this.showPropertiesPane) {
             this.showHidePropertiesPane(false);
             this.propertiesPaneContainer.style.display = 'none';
         }
         else {
             this.propertiesPaneContainer.style.display = 'block';
-            if (isInHeaderFooter) {
+            if (isInHeaderFooter && this.showHeaderProperties) {
                 this.showProperties('headerfooter');
             }
             else if (currentContext.indexOf('Text') >= 0
