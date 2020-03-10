@@ -148,7 +148,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         if (column.clipMode === 'Clip' || (!column.clipMode && this.parent.clipMode === 'Clip')) {
             node.classList.add('e-gridclip');
         } else if (column.clipMode === 'EllipsisWithTooltip' || (!column.clipMode && this.parent.clipMode === 'EllipsisWithTooltip')) {
-            node.classList.add('e-ellipsistooltip');
+            if (column.type !== 'checkbox') {
+                node.classList.add('e-ellipsistooltip');
+            }
         }
         node.setAttribute('aria-rowspan', (!isNullOrUndefined(cell.rowSpan) ? cell.rowSpan : 1).toString());
         node.setAttribute('aria-colspan', '1');

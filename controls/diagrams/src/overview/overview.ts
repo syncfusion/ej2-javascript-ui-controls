@@ -196,7 +196,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         }
         let attribute: Object = {
             'id': this.element.id + '_canvas', 'class': 'drawing',
-            'style': 'position:relative; height:' + this.getSizeValue(this.model.height) + '; width:' +
+            'style': 'position:relative; margin-top:6px; height:' + this.getSizeValue(this.model.height) + '; width:' +
                 this.getSizeValue(this.model.width) +
                 ';style:-ms-touch-action: none;touch-action: none;'
         };
@@ -564,14 +564,14 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let rect: HTMLElement = document.getElementById(this.canvas.id + 'overviewrect');
         let attr: Object = { x: x, y: y, width: Math.max(1, width), height: Math.max(1, height) };
         setAttributeHtml(rect, attr);
-        this.updateOverviewCorner('top', x + 8, y - 2, Math.max(0, width - 16), 2);
-        this.updateOverviewCorner('bottom', x + 8, y + height, Math.max(0, width - 16), 2);
-        this.updateOverviewCorner('left', x - 2, y + 8, 2, Math.max(0, height - 16));
-        this.updateOverviewCorner('right', x + width, y + 8, 2, Math.max(0, height - 16));
-        this.updateOverviewCorner('topleft', x, y, 5, 5);
-        this.updateOverviewCorner('topright', x + width, y, 5, 5);
-        this.updateOverviewCorner('bottomleft', x, y + height, 5, 5);
-        this.updateOverviewCorner('bottomright', x + width, y + height, 5, 5);
+        this.updateOverviewCorner('top', x + 8, y + 1, Math.max(0, width - 16), 2);
+        this.updateOverviewCorner('bottom', x + 8, y + height + 3, Math.max(0, width - 16), 2);
+        this.updateOverviewCorner('left', x - 2, y + 11, 2, Math.max(0, height - 16));
+        this.updateOverviewCorner('right', x + width, y + 11, 2, Math.max(0, height - 16));
+        this.updateOverviewCorner('topleft', x, y + 3, 5, 5);
+        this.updateOverviewCorner('topright', x + width, y + 3, 5, 5);
+        this.updateOverviewCorner('bottomleft', x, y + height + 3, 5, 5);
+        this.updateOverviewCorner('bottomright', x + width, y + height + 3, 5, 5);
     }
 
     private updateOverviewCorner(name: string, x: number, y: number, width: number, height: number): void {

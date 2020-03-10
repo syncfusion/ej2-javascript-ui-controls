@@ -2142,4 +2142,56 @@ describe('Checkbox Filter module => ', () => {
             gridObj = checkBoxFilter = actionBegin = actionComplete = null;
         });
     });
+	
+	describe('EJ2-36047- Incorrect datetime filter predicates ', function () {
+        let gridObj: Grid;
+        let fData: Object[] = [
+            { OrderID: 10248, OrderDate: new Date(2019, 8, 28, 18, 33, 36), Freight: 32.38 },
+            { OrderID: 10249, OrderDate: new Date(2019, 8, 28, 18, 33, 37), Freight: 11.61 },
+            { OrderID: 10250, OrderDate: new Date(2019, 8, 28, 18, 33, 38), Freight: 65.83 },
+            { OrderID: 10251, OrderDate: new Date(2019, 8, 28, 18, 35, 53), Freight: 41.34 }];
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: fData,
+                    allowFiltering: true,
+                    allowPaging: false,
+                    filterSettings: { type: 'CheckBox' },
+                    columns: [{ field: 'OrderID', type: 'number', visible: true },
+                    { field: 'OrderDate', type: 'datetime' },
+                    { field: 'Freight', format: 'C2', type: 'number' }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('Filter OrderDate dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                expect(gridObj.currentViewData.length).toBe(4);
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderDate').querySelector('.e-filtermenudiv')));
+        });
+        it('OrderDate dialog filter testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filtering'){
+                expect(gridObj.currentViewData.length).toBe(2);
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-checkboxlist .e-frame:not(.e-selectall)')[0] as any).click();
+            (gridObj.element.querySelectorAll('.e-checkboxlist .e-frame:not(.e-selectall)')[1] as any).click();
+            (gridObj.element.querySelectorAll('.e-checkboxfilter .e-btn')[0] as any).click();
+        });
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

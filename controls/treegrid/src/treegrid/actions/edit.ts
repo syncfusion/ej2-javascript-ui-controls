@@ -5,6 +5,7 @@ import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue, isBlazor } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Deferred, RemoteSaveAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
 import { findChildrenRecords, getParentData, isRemoteData } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
@@ -309,7 +310,7 @@ export class Edit {
                  if (e[primaryKeys[0]] === args.rowData[primaryKeys[0]]) { rowIndex = i; return; }
                 });
           } else {
-            rowIndex = this.parent.getDataRows().indexOf(row);
+            rowIndex = this.parent.getRows().indexOf(row);
           }
           let arg: CellSaveEventArgs = {};
           extend(arg, args);
@@ -318,6 +319,7 @@ export class Edit {
           row = <HTMLTableRowElement>this.parent.grid.getRows()[row.rowIndex];
           this.parent.trigger(events.actionBegin, arg);
           if (!arg.cancel) {
+            this.blazorTemplates(args);
             this.updateCell(args, rowIndex);
             if (this.parent.grid.aggregateModule) {
               this.parent.grid.aggregateModule.refresh(args.rowData);
@@ -342,6 +344,29 @@ export class Edit {
           }
       }
     }
+
+    private blazorTemplates(args: CellSaveArgs): void {
+      if (isBlazor() && this.parent.isServerRendered) {
+        let cols: Column[] = this.parent.grid.getColumns();
+        let colModel: string = 'columnModel';
+        let columnModel: Column[] = this.parent.grid[colModel];
+        let str: string = 'isStringTemplate';
+        for (let i: number = 0; i < cols.length; i++) {
+          if (columnModel[i].template) {
+            let templateID: string = this.parent.grid.element.id + cols[i].uid;
+            columnModel[i].getColumnTemplate()(extend({ 'index': [i] }, args.rowData), this.parent.grid, 'template',
+                                               templateID, this.parent.grid[str], null);
+          }
+          if (cols[i].editTemplate) {
+            updateBlazorTemplate(this.parent.grid.element.id + cols[i].uid + 'editTemplate', 'EditTemplate', cols[i]);
+          }
+          if (cols[i].template) {
+            updateBlazorTemplate(this.parent.grid.element.id + cols[i].uid, 'Template', cols[i], false);
+          }
+        }
+      }
+    }
+
     private updateCell(args: CellSaveArgs, rowIndex: number): void {
       this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
       this.parent.grid.getRowsObject()[rowIndex].data = args.rowData;

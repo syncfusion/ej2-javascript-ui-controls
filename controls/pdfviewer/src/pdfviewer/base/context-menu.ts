@@ -132,7 +132,9 @@ export class ContextMenu {
                 } else if (isClickWithinSelectionBounds && this.pdfViewer.textSelectionModule) {
                     // tslint:disable-next-line:max-line-length
                     if ((!(args.event.target as HTMLElement).classList.contains('e-pv-maintaincontent') && (args.event.target as HTMLElement).classList.contains('e-pv-text') || (args.event.target as HTMLElement).classList.contains('e-pv-text-layer'))) {
-                        args.cancel = true;
+                        if (this.pdfViewerBase.checkIsNormalText()) {
+                            args.cancel = true;
+                        }
                         // tslint:disable-next-line:max-line-length
                     } else if ((Browser.isIE || Browser.info.name === 'edge') && (args.event.target as HTMLElement).classList.contains('e-pv-page-container')) {
                         args.cancel = true;

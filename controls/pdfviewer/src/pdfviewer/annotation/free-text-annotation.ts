@@ -582,6 +582,9 @@ export class FreeTextAnnotation {
                     annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
                     customData: this.pdfViewer.freeTextSettings.customData
                 };
+                if (this.pdfViewer.enableRtl) {
+                    annot.textAlign = 'Right';
+                }
                 let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                 // tslint:disable-next-line
                 let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
@@ -733,7 +736,13 @@ export class FreeTextAnnotation {
         if (this.isStrikethrough) {
             this.inputBoxElement.style.textDecoration = 'line-through';
         }
-        this.inputBoxElement.style.textAlign = this.textAlign.toLowerCase();
+        if (this.pdfViewer.enableRtl) {
+            this.inputBoxElement.style.textAlign = 'right';
+            this.inputBoxElement.style.direction = 'rtl';
+            this.inputBoxElement.style.left = ((currentPosition.x)) - ((this.defautWidth * zoomFactor / 2));
+        } else {
+            this.inputBoxElement.style.textAlign = this.textAlign.toLowerCase();
+        }
         this.inputBoxElement.style.borderColor = this.borderColor;
         this.inputBoxElement.style.color = this.fontColor;
         this.inputBoxElement.style.background = this.fillColor;
@@ -771,7 +780,10 @@ export class FreeTextAnnotation {
             if (this.selectedAnnotation.font.isStrikeout === true) {
                 this.inputBoxElement.style.textDecoration = 'line-through';
             }
-            if (this.selectedAnnotation.textAlign) {
+            if (this.pdfViewer.enableRtl) {
+                this.inputBoxElement.style.textAlign = 'right';
+                this.inputBoxElement.style.direction = 'rtl';
+            } else if (this.selectedAnnotation.textAlign) {
                 this.inputBoxElement.style.textAlign = this.selectedAnnotation.textAlign;
             }
             this.inputBoxElement.style.fontSize = (this.selectedAnnotation.fontSize * zoomFactor) + 'px';

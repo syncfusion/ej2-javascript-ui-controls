@@ -2,7 +2,7 @@ import { Maps, doubleClick, Orientation, ITouches, ZoomSettings } from '../../in
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
 import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker,
-markerTemplate, removeElement, getElement, clusterSeparate, markerColorChoose, markerShapeChoose } from '../utils/helper';
+    markerTemplate, removeElement, getElement, clusterSeparate, markerColorChoose, markerShapeChoose } from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
 import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering, } from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
@@ -125,7 +125,7 @@ export class Zoom {
         this.maps.zoomNotApplied = false;
     }
 
-    private triggerZoomEvent(prevTilePoint: Point, prevLevel: number): void {
+     private triggerZoomEvent(prevTilePoint: Point, prevLevel: number): void {
         let map: Maps = this.maps; let zoomArgs: IMapZoomEventArgs;
         if (!map.isTileMap) {
             zoomArgs = {
@@ -450,6 +450,7 @@ export class Zoom {
         ): void {
             let markerSVGObject: Element;
             let templateFn: Function;
+            let nullCount: number = 0;
             let markerCounts: number = 0;
             let markerTemplateCounts : number = 0;  
             let layerIndex: number = parseInt((element ? element : layerElement).id.split('_LayerIndex_')[1].split('_')[0], 10);   
@@ -457,6 +458,9 @@ export class Zoom {
                 id: this.maps.element.id + '_Markers_Group',
                 style: 'pointer-events: auto;'
             });
+            if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
+            }
             if (document.getElementById(markerSVGObject.id)) {
                 removeElement(markerSVGObject.id);
             }
@@ -509,22 +513,23 @@ export class Zoom {
                             ) : convertGeoToPoint(lati, long, factor, currentLayers, this.maps);
                             let animate: boolean = currentLayers.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
                             let transPoint: Point = {x: x, y:y};
-                            if (eventArgs.template) {
+                            if (eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                                 markerTemplateCounts++;
                                 markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateElements, location,
                                     scale, offset, this.maps);   
-                            } else {
+                            } else  if (!eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                                 markerCounts++;
                                 marker(eventArgs, markerSettings, markerDatas, dataIndex, location, transPoint,
                                     markerID, offset, scale, this.maps, markerSVGObject);
                             }
                         }
-                        markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;                        
+                        nullCount += (!isNullOrUndefined(lati) && !isNullOrUndefined(long)) ? 0 : 1;
+                        markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;
                         markerCounts += (eventArgs.cancel) ? 1 : 0;
                         this.maps.markerNullCount = (!isNullOrUndefined(lati) || !isNullOrUndefined(long))
                             ? this.maps.markerNullCount : this.maps.markerNullCount + 1;
                         let markerDataLength: number = markerDatas.length - this.maps.markerNullCount;
-                        if (markerSVGObject.childElementCount === (markerDataLength - markerTemplateCounts) && (type !== 'Template')) {
+                        if (markerSVGObject.childElementCount === (markerDatas.length - markerTemplateCounts - nullCount) && (type !== 'Template')) {
                             layerElement.appendChild(markerSVGObject);
                             if (currentLayers.markerClusterSettings.allowClustering) {
                                 this.maps.svgObject.appendChild(markerSVGObject);
@@ -532,7 +537,7 @@ export class Zoom {
                                 clusterTemplate(currentLayers, markerSVGObject, this.maps, layerIndex, markerSVGObject, layerElement, true, true);
                             }
                         }
-                        if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+                        if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                             getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
                             if (currentLayers.markerClusterSettings.allowClustering) {
                                 clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false, true) ;
@@ -915,11 +920,16 @@ export class Zoom {
                     direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
                     direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
                     direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
-                    if (this.maps.zoomSettings.enablePanning && !this.maps.zoomModule.isDragZoom) {
+                    if (this.maps.zoomSettings.enablePanning && !this.maps.zoomSettings.enableSelectionZooming) {
                         fillColor = fill;
                         strokeColor = this.maps.themeStyle.zoomFillColor;
-                    }
-                    else {
+                    } else if (this.maps.zoomSettings.enablePanning && this.maps.zoomSettings.enableSelectionZooming){
+                        fillColor = fill;
+                        strokeColor = this.maps.themeStyle.zoomFillColor;                           
+                    } else if (!this.maps.zoomSettings.enablePanning && !this.maps.zoomSettings.enableSelectionZooming) {
+                        fillColor = fill;
+                        strokeColor = this.maps.themeStyle.zoomFillColor;
+                    } else {
                         fillColor = this.selectionColor;
                         strokeColor = this.selectionColor;
                     }
@@ -1320,7 +1330,9 @@ export class Zoom {
         }
         if (this.isTouch ? (touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
             e.preventDefault();
-            this.drawZoomRectangle();
+            if (this.maps.zoomSettings.enableSelectionZooming) {
+                this.drawZoomRectangle();
+            }
         }
     }
 
@@ -1340,7 +1352,7 @@ export class Zoom {
             this.distanceX = this.distanceY = null;
         }
         let zoomRectElement: HTMLElement = <HTMLElement>getElementByID(this.maps.element.id + '_Selection_Rect_Zooming');
-        if (zoomRectElement && this.maps.zoomSettings.enable) {
+        if (zoomRectElement && this.maps.zoomSettings.enable && this.maps.zoomSettings.enableSelectionZooming) {
             isDragZoom = true;
             remove(zoomRectElement);
             this.performRectZooming();

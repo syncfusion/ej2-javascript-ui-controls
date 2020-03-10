@@ -4,7 +4,6 @@ import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@s
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
-import { VirtualInfo } from '../base/interface';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
@@ -32,10 +31,6 @@ export class ContentRender implements IRenderer {
     private rowElements: Element[];
     private freezeRowElements: Element[] = [];
     private index: number;
-    /** @hidden */
-    public prevInfo: VirtualInfo;
-    /** @hidden */
-    public currentInfo: VirtualInfo = {};
     public colgroup: Element;
     private isLoaded: boolean = true;
     private tbody: HTMLElement;
@@ -45,11 +40,12 @@ export class ContentRender implements IRenderer {
         remove(e.droppedElement);
     }
     private args: NotifyArgs;
-    public infiniteCache: { [x: number]: Row<Column>[] } = {};
+    private infiniteCache: { [x: number]: Row<Column>[] } = {};
     private isRemove: boolean = false;
     private pressedKey: string;
     private visibleRows: Row<Column>[] = [];
     private isAddRows: boolean = false;
+
     private rafCallback: Function = (args: NotifyArgs) => {
         let arg: NotifyArgs = args;
         return () => {
@@ -111,7 +107,6 @@ export class ContentRender implements IRenderer {
         this.parent.on(events.uiUpdate, this.enableAfterRender, this);
         this.parent.on(events.refreshInfiniteModeBlocks, this.refreshContentRows, this);
         this.parent.on(events.beforeCellFocused, this.beforeCellFocused, this);
-        this.parent.on(events.resetInfiniteBlocks, this.resetInfiniteBlocks, this);
     }
 
     private beforeCellFocused(e: CellFocusArgs): void {
@@ -150,8 +145,7 @@ export class ContentRender implements IRenderer {
         let contentDiv: Element = this.getPanel();
         let virtualTable: Element = contentDiv.querySelector('.e-virtualtable');
         let virtualTrack: Element = contentDiv.querySelector('.e-virtualtrack');
-        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)
-            && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered))) {
+        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)) {
             remove(virtualTable);
             remove(virtualTrack);
         }
@@ -216,7 +210,7 @@ export class ContentRender implements IRenderer {
         let trElement: Element;
         let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll
-            && (args as InfiniteScrollArgs).requestType === 'scroll';
+            && (args as InfiniteScrollArgs).requestType === 'infiniteScroll';
         if (!isInfiniteScroll) {
             this.rowElements = [];
             this.rows = [];
@@ -235,11 +229,6 @@ export class ContentRender implements IRenderer {
         let isServerRendered: string = 'isServerRendered';
         if (isBlazor() && this.parent[isServerRendered]) {
             modelData = this.generator.generateRows(dataSource, args);
-            if (this.parent.enableVirtualization) {
-                this.prevInfo = this.prevInfo ? this.prevInfo : args.virtualInfo;
-                this.prevInfo = args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
-                                this.currentInfo.page !== args.virtualInfo.page ? this.currentInfo : args.virtualInfo;
-            }
             this.rows = modelData;
             this.freezeRows = modelData;
             this.rowElements = <Element[]>[].slice.call(this.getTable().querySelectorAll('tr.e-row[data-uid]'));
@@ -296,24 +285,12 @@ export class ContentRender implements IRenderer {
             this.isAddRows = isInfiniteScroll && !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage]);
             if (this.isAddRows && this.parent.infiniteScrollSettings.enableCache) {
                 modelData = this.infiniteCache[this.parent.pageSettings.currentPage];
-                // this.isAddRows = true;
             } else {
                 this.isAddRows = false;
                 modelData = this.generator.generateRows(dataSource, args);
             }
         }
-        if (this.parent.infiniteScrollSettings.enableScroll && this.parent.infiniteScrollSettings.enableCache) {
-            if (!Object.keys(this.infiniteCache).length) {
-                this.setInitialCache(modelData);
-            }
-            if (isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
-                this.infiniteCache[this.parent.pageSettings.currentPage] = modelData;
-            }
-            this.parent.notify(events.shareInfiniteCache, this.infiniteCache);
-        }
-        if (isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && !this.isRemove) {
-            this.isRemove = (this.parent.pageSettings.currentPage - 1) % this.parent.infiniteScrollSettings.maxBlock === 0;
-        }
+        this.parent.notify(events.setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData });
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
         }
@@ -392,7 +369,7 @@ export class ContentRender implements IRenderer {
             if (!this.isAddRows) {
                 this.rows.push(modelData[i]);
             }
-            if (!this.isRemove) {
+            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && !this.isRemove) {
                 this.visibleRows.push(modelData[i]);
             }
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
@@ -505,9 +482,12 @@ export class ContentRender implements IRenderer {
                             args.renderMovableContent = false;
                         }
                     } else {
-                        if (this.parent.infiniteScrollSettings.enableScroll) {
-                            this.removeInfiniteCacheRows(args);
-                            this.appendInfiniteRows(this.tbody, frag, args);
+                        if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.infiniteScrollSettings.enableScroll) {
+                            this.parent.notify(events.removeInfiniteRows, { args: args });
+                            this.parent.notify(events.appendInfiniteContent, {
+                                tbody: this.tbody, frag: frag, args: args, rows: this.rows,
+                                rowElements: this.rowElements, visibleRows: this.visibleRows
+                            });
                         } else {
                             this.appendContent(this.tbody, frag, args);
                         }
@@ -526,109 +506,6 @@ export class ContentRender implements IRenderer {
     public appendContent(tbody: Element, frag: DocumentFragment, args: NotifyArgs): void {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
-    }
-
-    private resetInfiniteBlocks(args: InfiniteScrollArgs): void {
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType !== 'scroll';
-        if (isInfiniteScroll) {
-            this.parent.getContent().firstElementChild.scrollTop = 0;
-            this.parent.pageSettings.currentPage = 1;
-            this.infiniteCache = {};
-            (this.parent as Grid).scrollModule.infiniteCache = {};
-            this.isRemove = false;
-        }
-    }
-
-    private setInitialCache(data: Row<Column>[]): void {
-        for (let i: number = 1; i <= this.parent.pageSettings.currentPage; i++) {
-            let startIndex: number = (i - 1) * this.parent.pageSettings.pageSize;
-            let endIndex: number = i * this.parent.pageSettings.pageSize;
-            this.infiniteCache[i] = data.slice(startIndex, endIndex);
-        }
-    }
-
-    private removeInfiniteCacheRows(args: InfiniteScrollArgs): void {
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
-        if (isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
-            let rows: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
-            let scrollCnt: Element = this.parent.getContent().firstElementChild;
-            let top: number;
-            if (args.direction === 'down') {
-                let value: number = this.parent.pageSettings.pageSize * (this.parent.infiniteScrollSettings.maxBlock - 1);
-                let currentViewRowCount: number = 0;
-                let i: number = 0;
-                while (currentViewRowCount < scrollCnt.clientHeight) {
-                    i++;
-                    currentViewRowCount = i * this.parent.getRowHeight();
-                }
-                i = i - 1;
-                top = (value - i) * this.parent.getRowHeight();
-                this.removeTopRows(rows, this.parent.pageSettings.pageSize - 1);
-                if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-                    let captionRows: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
-                    this.removeTopRows(captionRows, this.parent.pageSettings.pageSize - 1);
-                }
-            }
-            if (args.direction === 'up') {
-                top = this.parent.pageSettings.pageSize * this.parent.getRowHeight();
-                top = top + getScrollBarWidth();
-                this.removeBottomRows(rows, rows.length - 1, args);
-                if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-                    let captionRows: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
-                    this.removeBottomRows(captionRows, captionRows.length - 1, args);
-                }
-            }
-            this.parent.notify(events.infiniteScrollListener, { isScroll: false, top: top });
-            scrollCnt.scrollTop = top;
-        }
-    }
-
-    private removeTopRows(rows: Element[], maxIndx: number): void {
-        for (let i: number = 0; i <= maxIndx; i++) {
-            remove(rows[i]);
-        }
-    }
-
-    private removeBottomRows(rows: Element[], maxIndx: number, args: InfiniteScrollArgs): void {
-        let cnt: number = 0;
-        if (this.infiniteCache[args.prevPage].length < this.parent.pageSettings.pageSize) {
-            cnt = this.parent.pageSettings.pageSize - this.infiniteCache[args.prevPage].length;
-        }
-        for (let i: number = maxIndx; cnt < this.parent.pageSettings.pageSize; i--) {
-            cnt++;
-            remove(rows[i]);
-        }
-    }
-
-    private appendInfiniteRows(tbody: Element, frag: DocumentFragment, args: InfiniteScrollArgs): void {
-        let target: Element = document.activeElement;
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
-        if (isInfiniteScroll && args.direction === 'up') {
-            tbody.insertBefore(frag, tbody.firstElementChild);
-        } else {
-            tbody.appendChild(frag);
-        }
-        this.getTable().appendChild(tbody);
-        if (isInfiniteScroll) {
-            if (this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
-                if (args.direction === 'down') {
-                    let startIndex: number = (this.parent.pageSettings.currentPage -
-                        this.parent.infiniteScrollSettings.maxBlock) * this.parent.pageSettings.pageSize;
-                    this.visibleRows = this.rows.slice(startIndex, this.rows.length);
-                }
-                if (args.direction === 'up') {
-                    let startIndex: number = (this.parent.pageSettings.currentPage - 1) * this.parent.pageSettings.pageSize;
-                    let endIndex: number = ((this.parent.pageSettings.currentPage
-                        + this.parent.infiniteScrollSettings.maxBlock) - 1) * this.parent.pageSettings.pageSize;
-                    this.visibleRows = this.rows.slice(startIndex, endIndex);
-                }
-                this.rowElements = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
-            }
-            if (this.pressedKey === 'downArrow' || (this.parent.infiniteScrollSettings.enableCache && this.pressedKey === 'upArrow')) {
-                this.pressedKey = undefined;
-                this.parent.focusModule.onClick({ target }, true);
-            }
-        }
     }
 
     /**

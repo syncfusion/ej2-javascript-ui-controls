@@ -1437,3 +1437,37 @@ describe('Grid base module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('changed data feature testing', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: false,
+                    allowGrouping: true,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true  },
+                        { headerText: 'CustomerID', field: 'CustomerID', visible: false },
+                        { headerText: 'Freight', field: 'Freight' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipAddress', field: 'Shipping Address of the order' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+        it('changing the freight value in edit mode false', (done:Function) => {
+            gridObj.updateRowValue(10248,{OrderID:10248,Freight:200});
+            let actionComplete = (args: any) => {
+                expect(gridObj.dataSource[0].Freight).toBe(200);
+                done();
+            };
+           gridObj.actionComplete=actionComplete;            
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            gridObj.actionComplete = null;
+        });
+    });

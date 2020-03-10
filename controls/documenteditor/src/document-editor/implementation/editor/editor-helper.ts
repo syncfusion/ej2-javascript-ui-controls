@@ -301,6 +301,7 @@ export class HelperMethods {
     }
     public static ReverseString(text: string): string {
         if (!isNullOrUndefined(text) && text !== '') {
+
             // return a new array
             let splitString: string[] = text.split('');
             // reverse the new created array

@@ -987,3 +987,28 @@ export type LayoutType =
     'Pages' |
     // Specifies the content to be displayed continuously in single page.
     'Continuous';
+
+
+/**
+ * Defines Predefined toolbar items.
+ */
+export type ToolbarItem =
+'New' |
+'Open' |
+'Separator' |
+'Undo' |
+'Redo' |
+'Comments'|
+'Image' |
+'Table' |
+'Hyperlink' |
+'Bookmark' |
+'TableOfContents' |
+'Header' |
+'Footer' |
+'PageSetup'|
+'PageNumber'|
+'Break'|
+'Find'|
+'LocalClipboard'|
+'RestrictEditing';

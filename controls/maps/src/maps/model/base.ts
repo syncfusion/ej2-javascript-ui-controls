@@ -761,6 +761,13 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public enablePanning: boolean;
 
     /**
+     * Toggle the visibility of Selection Zooming
+     * @default true
+     */
+    @Property(true)
+    public enableSelectionZooming: boolean;
+
+    /**
      * Configures tool bar orientation
      * @default Horizontal
      * @blazorProperty 'ToolbarOrientation'

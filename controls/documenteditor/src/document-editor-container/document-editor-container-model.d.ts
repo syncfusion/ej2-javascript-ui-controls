@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor, DocumentEditorSettings } from '../document-editor/document-editor';import { TextProperties } from './properties-pane/text-properties-pane';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel } from '../document-editor/document-editor-model';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor, DocumentEditorSettings } from '../document-editor/document-editor';import { TextProperties } from './properties-pane/text-properties-pane';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel } from '../document-editor/document-editor-model';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';import { ToolbarItem } from '../document-editor/base/types';import { CustomToolbarItemModel } from '../document-editor/base/events-helper';import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -35,6 +35,18 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * @default Pages
      */
     layoutType?: LayoutType;
+
+    /**
+     * Current User
+     * @default ''
+     */
+    currentUser?: string;
+
+    /**
+     * User Selection Highlight Color
+     * @default '#FFFF00'
+     */
+    userColor?: string;
 
     /**
      * Enable local paste
@@ -102,6 +114,14 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     documentChange?: EmitType<ContainerDocumentChangeEventArgs>;
 
     /**
+     * Triggers when toolbar item is clicked.
+     * @event
+     * @blazorproperty 'OnToolbarClick'
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
+     */
+    toolbarClick?: EmitType<ClickEventArgs>;
+
+    /**
      * Triggers while selecting the custom context-menu option.
      * @event
      * @blazorproperty 'ContextMenuItemSelected'
@@ -133,6 +153,12 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      */
     // tslint:disable-next-line:max-line-length
     serverActionSettings?: ContainerServerActionSettingsModel;
+
+    /**
+     * Defines toolbar items for DocumentEditorContainer.
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','Comments','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','Separator','Find','Separator','LocalClipboard','RestrictEditing']
+     */
+    toolbarItems?: (CustomToolbarItemModel | ToolbarItem)[];
 
     /**
      * Add custom headers to XMLHttpRequest.

@@ -2231,12 +2231,14 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets the horizontalAlignment of the node
      * @default 'Stretch'
+     * @blazorDefaultValue 'Left'
      */
     @Property('Left')
     public horizontalAlignment: HorizontalAlignment;
     /**
      * Sets the verticalAlignment of the node
      * @default 'Stretch'
+     * @blazorDefaultValue 'Top'
      */
     @Property('Top')
     public verticalAlignment: VerticalAlignment;

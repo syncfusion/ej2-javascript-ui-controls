@@ -34,6 +34,15 @@ export const gaugeMouseDown: string = 'gaugeMouseDown';
 export const gaugeMouseUp: string = 'gaugeMouseUp';
 
 /** @private */
+export const dragStart : string = 'dragStart';
+
+/** @private */
+export const dragMove : string = 'dragMove';
+
+/** @private */
+export const dragEnd : string = 'dragEnd';
+
+/** @private */
 export const valueChange: string = 'valueChange';
 
 /** @private */

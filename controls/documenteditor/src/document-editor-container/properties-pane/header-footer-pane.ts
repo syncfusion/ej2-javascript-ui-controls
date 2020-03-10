@@ -91,8 +91,8 @@ export class HeaderFooterProperties {
         }
         let closeIcon: HTMLElement = createElement('span', {
             id: '_header_footer_close',
-            className: 'e-de-ctnr-close e-icons',
-            styles: 'display:inline-block;cursor:pointer;color: #4A4A4A;' + closeButtonFloat
+            className: 'e-de-ctnr-close e-de-close-icon e-icons',
+            styles: 'display:inline-block;cursor:pointer;' + closeButtonFloat
         });
         closeIcon.addEventListener('click', (): void => { this.onClose(); });
         headerDiv.appendChild(headerLabel);

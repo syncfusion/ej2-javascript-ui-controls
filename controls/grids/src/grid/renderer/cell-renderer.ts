@@ -228,7 +228,9 @@ export class CellRenderer implements ICellRenderer<Column> {
         if (column.clipMode === 'Clip' || (!column.clipMode && this.parent.clipMode === 'Clip')) {
             node.classList.add('e-gridclip');
         } else if (column.clipMode === 'EllipsisWithTooltip' || (!column.clipMode && this.parent.clipMode === 'EllipsisWithTooltip')) {
-            node.classList.add('e-ellipsistooltip');
+            if (column.type !== 'checkbox') {
+                node.classList.add('e-ellipsistooltip');
+            }
         }
     }
 

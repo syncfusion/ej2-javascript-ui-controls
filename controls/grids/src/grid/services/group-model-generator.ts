@@ -3,7 +3,7 @@ import { Row } from '../models/row';
 import { isNullOrUndefined, extend, setValue, isBlazor } from '@syncfusion/ej2-base';
 import { Group } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
-import { CellType } from '../base/enum';
+import { CellType, Action } from '../base/enum';
 import { Cell } from '../models/cell';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
@@ -16,6 +16,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
 
     private rows: Row<Column>[] = [];
     private index: number = 0;
+    private prevKey: string;
 
     private summaryModelGen: GroupSummaryModelGenerator;
     private captionModelGen: CaptionSummaryModelGenerator;
@@ -27,11 +28,11 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         this.captionModelGen = new CaptionSummaryModelGenerator(parent);
     }
 
-    public generateRows(data: { length: number }, args?: { startIndex?: number, requestType?: string }): Row<Column>[] {
+    public generateRows(data: { length: number }, args?: { startIndex?: number, requestType?: Action }): Row<Column>[] {
         if (this.parent.groupSettings.columns.length === 0) {
             return super.generateRows(data, args);
         }
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
+        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'infiniteScroll';
         this.rows = [];
         this.index = this.parent.enableVirtualization || isInfiniteScroll ? args.startIndex : 0;
         for (let i: number = 0, len: number = data.length; i < len; i++) {
@@ -46,6 +47,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
 
     private getGroupedRecords(
         index: number, data: GroupedData, raw?: Object, parentid?: number, childId?: number, tIndex?: number, parentUid?: string): void {
+        let isRenderCaption: boolean = this.parent.infiniteScrollSettings.enableScroll && this.prevKey === data.key;
         let level: number = <number>raw;
         if (isNullOrUndefined(data.items)) {
             if (isNullOrUndefined(data.GroupGuid)) {
@@ -57,7 +59,9 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
             }
         } else {
             let captionRow: Row<Column> = this.generateCaptionRow(data, index, parentid, childId, tIndex, parentUid);
-            this.rows = this.rows.concat(captionRow);
+            if (!isRenderCaption) {
+                this.rows = this.rows.concat(captionRow);
+            }
             if (data.items && (data.items as Object[]).length) {
                 this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length, captionRow.uid);
             }
@@ -75,6 +79,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
 
             }
         }
+        this.prevKey = data.key;
     }
 
     private getCaptionRowCells(field: string, indent: number, data: Object): Cell<Column>[] {

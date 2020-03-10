@@ -5639,6 +5639,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         this.maxBaseline = 0;
         this.maxTextBaseline = 0;
         this.isFieldCode = false;
+        this.isRtlFieldCode = false;
         this.isRTLLayout = false;
         /**
          * @private
@@ -6195,7 +6196,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         }
         else if (element instanceof TextElementBox) {
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
-            this.splitBySpecialCharacters(element);
+            if (element.text.length > 1 && element.line.paragraph.bidi) {
+                var splittedText = this.splitTextByConsecutiveLtrAndRtl(element);
+                this.updateSplittedText(element, splittedText);
+            }
             text = element.text;
         }
         // Here field code width and height update need to skipped based on the hidden property.
@@ -6344,43 +6348,208 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Layout.prototype.splitBySpecialCharacters = function (span) {
-        if (this.documentHelper.textHelper.isRTLText(span.text) && this.documentHelper.textHelper.containsSpecialChar(span.text)) {
-            var inlineIndex = span.line.children.indexOf(span);
-            var text = span.text;
-            var specialChars = '*|.\:[]{}`\;()@&$#%!~';
-            var textToReplace = '';
-            var spanTextUpdated = false;
-            for (var i = 0; i < text.length; i++) {
-                if (specialChars.indexOf(text.charAt(i)) !== -1) {
-                    if (spanTextUpdated && textToReplace !== '') {
-                        var newSpan1 = new TextElementBox();
-                        newSpan1.line = span.line;
-                        newSpan1.characterFormat.copyFormat(span.characterFormat);
-                        span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan1);
-                        newSpan1.text = textToReplace;
-                    }
-                    var newSpan = new TextElementBox();
-                    newSpan.line = span.line;
-                    newSpan.characterFormat.copyFormat(span.characterFormat);
-                    span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan);
-                    newSpan.text = text.charAt(i);
-                    if (!spanTextUpdated) {
-                        span.text = textToReplace;
-                        spanTextUpdated = true;
-                    }
-                    textToReplace = '';
+    Layout.prototype.splitTextByConsecutiveLtrAndRtl = function (element) {
+        var text = element.text;
+        var charTypeIndex = 0;
+        var splittedText = [];
+        var hasRTLCharacter = false;
+        var characterRangeTypes = [];
+        var lastLtrIndex = -1;
+        var ltrText = '';
+        var rtlText = '';
+        var wordSplitChars = '';
+        var numberText = '';
+        var isTextBidi = element.characterFormat.bidi;
+        for (var i = 0; i < text.length; i++) {
+            var currentCharacterType = 0;
+            var separateEachWordSplitChars = false;
+            // if ((isPrevLTRText.HasValue ? !isPrevLTRText.Value : isTextBidi) && char.IsNumber(text[i]))
+            if (isTextBidi && /^[0-9]+$/.test(text[i])) {
+                numberText += text[i];
+                currentCharacterType = 4;
+            }
+            else if (this.documentHelper.textHelper.containsSpecialCharAlone(text.charAt(i))) {
+                currentCharacterType = 2;
+                if (separateEachWordSplitChars = (isTextBidi || (text.charAt(i) === ' ' && wordSplitChars === ''))) {
+                    wordSplitChars += text[i];
                 }
                 else {
-                    textToReplace += text.charAt(i);
+                    wordSplitChars += text[i];
                 }
             }
-            if (spanTextUpdated && textToReplace !== '') {
-                var newSpan2 = new TextElementBox();
-                newSpan2.line = span.line;
-                newSpan2.characterFormat.copyFormat(span.characterFormat);
-                span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan2);
-                newSpan2.text = textToReplace;
+            else if (this.documentHelper.textHelper.isRTLText(text.charAt(i))) {
+                hasRTLCharacter = true;
+                rtlText += text[i];
+                currentCharacterType = 1;
+            }
+            else {
+                ltrText += text[i];
+            }
+            if (numberText !== '' && currentCharacterType !== 4) {
+                splittedText.push(numberText);
+                characterRangeTypes.push('Number');
+                numberText = '';
+            }
+            if (rtlText !== '' && currentCharacterType !== 1) {
+                splittedText.push(rtlText);
+                characterRangeTypes.push('RTL');
+                rtlText = '';
+            }
+            if (ltrText !== '' && currentCharacterType !== 0) {
+                splittedText.push(ltrText);
+                lastLtrIndex = splittedText.length - 1;
+                characterRangeTypes.push('LTR');
+                ltrText = '';
+            }
+            if (wordSplitChars !== '' && (currentCharacterType !== 2 || separateEachWordSplitChars)) {
+                splittedText.push(wordSplitChars);
+                characterRangeTypes.push('WordSplit');
+                wordSplitChars = '';
+            }
+        }
+        if (numberText !== '') {
+            splittedText.push(numberText);
+            characterRangeTypes.push('Number');
+        }
+        else if (rtlText !== '') {
+            splittedText.push(rtlText);
+            characterRangeTypes.push('RTL');
+        }
+        else if (ltrText !== '') {
+            splittedText.push(ltrText);
+            lastLtrIndex = splittedText.length - 1;
+            characterRangeTypes.push('LTR');
+        }
+        else if (wordSplitChars !== '') {
+            splittedText.push(wordSplitChars);
+            characterRangeTypes.push('WordSplit');
+        }
+        if (hasRTLCharacter) {
+            for (var i = 1; i < splittedText.length; i++) {
+                //Combines the consecutive LTR,RTL,and Number(Number get combined only if it's splitted by non reversing characters (.,:)) 
+                //along with single in-between word split character.
+                var charType = characterRangeTypes[i + charTypeIndex];
+                if (charType === 'WordSplit' && splittedText[i].length === 1
+                    && i + charTypeIndex + 1 < characterRangeTypes.length
+                    && characterRangeTypes[i + charTypeIndex - 1] !== 'WordSplit'
+                    && (characterRangeTypes[i + charTypeIndex - 1] !== 'Number'
+                        //Else handled to combine consecutive number 
+                        //when text bidi is false and middle word split character is not white space.
+                        || this.isNumberNonReversingCharacter(splittedText[i], isTextBidi))
+                    && characterRangeTypes[i + charTypeIndex - 1] === characterRangeTypes[i + charTypeIndex + 1]) {
+                    /* tslint:disable */
+                    splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + splittedText[i + 1];
+                    splittedText.splice(i, 1);
+                    splittedText.splice(i, 1);
+                    characterRangeTypes.splice(i + charTypeIndex, 1);
+                    characterRangeTypes.splice(i + charTypeIndex, 1);
+                    i--;
+                    /* tslint:enable */
+                }
+            }
+        }
+        else if (lastLtrIndex !== -1) {
+            if (isTextBidi) {
+                for (var i = 1; i < lastLtrIndex; i++) {
+                    //Combines the first and last LTR along with all in-between splited text's.
+                    var charType = characterRangeTypes[i + charTypeIndex];
+                    if (charType === 'WordSplit' && i < lastLtrIndex
+                        && characterRangeTypes[i + charTypeIndex - 1] === 'LTR') {
+                        ltrText = '';
+                        for (var j = i + 1; j <= lastLtrIndex; j++) {
+                            ltrText += splittedText[j];
+                            splittedText.splice(j, 1);
+                            characterRangeTypes.splice(j + charTypeIndex);
+                            j--;
+                            lastLtrIndex--;
+                        }
+                        splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + ltrText;
+                        splittedText.splice(i, 1);
+                        characterRangeTypes.splice(i + charTypeIndex);
+                        i--;
+                        lastLtrIndex--;
+                    }
+                }
+            }
+            else {
+                //Return the input text if text bidi is false.
+                splittedText = [];
+                splittedText.push(text);
+            }
+        }
+        else if (!isTextBidi) {
+            //Return the input text if text bidi is false.
+            splittedText = [];
+            splittedText.push(text);
+        }
+        if (isTextBidi) {
+            for (var i = 1; i < splittedText.length; i++) {
+                //Combines the consecutive LTR, RTL, and Number(Number get combined only if it's splitted by non reversing characters (.,:)
+                //or if it's lang attribute is represent a RTL language)
+                //along with single in-between number non reversing word split character.
+                var charType = characterRangeTypes[i + charTypeIndex];
+                if (charType === 'WordSplit' && splittedText[i].length === 1
+                    && i + charTypeIndex + 1 < characterRangeTypes.length
+                    && characterRangeTypes[i + charTypeIndex - 1] !== 'WordSplit'
+                    && (characterRangeTypes[i + charTypeIndex - 1] !== 'Number'
+                        || this.isNumberNonReversingCharacter(splittedText[i], isTextBidi))
+                    && characterRangeTypes[i + charTypeIndex - 1] === characterRangeTypes[i + charTypeIndex + 1]) {
+                    splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + splittedText[i + 1];
+                    splittedText.splice(i, 1);
+                    splittedText.splice(i, 1);
+                    characterRangeTypes.splice(i + charTypeIndex, 1);
+                    characterRangeTypes.splice(i + charTypeIndex);
+                    i--;
+                    // //Combines the Number along with single non-word split characters (% $ #).
+                    // else if (charType=='WordSplit'
+                    //     && characterRangeTypes[i + charTypeIndex - 1]=='Number') {
+                    //     splittedText[i - 1] = splittedText[i - 1] + splittedText[i];
+                    //     splittedText.splice(i, 1);
+                    //     characterRangeTypes.splice(i + charTypeIndex, 1);
+                    //     i--;
+                    // }
+                    //Combines the consecutive LTR and Number
+                }
+                else if (charType === 'LTR'
+                    && (characterRangeTypes[i + charTypeIndex - 1] === 'Number'
+                        || characterRangeTypes[i + charTypeIndex - 1] === 'LTR')) {
+                    splittedText[i - 1] = splittedText[i - 1] + splittedText[i];
+                    characterRangeTypes[i + charTypeIndex - 1] = 'LTR';
+                    splittedText.splice(i, 1);
+                    characterRangeTypes.splice(i + charTypeIndex, 1);
+                    i--;
+                }
+            }
+        }
+        return splittedText;
+    };
+    Layout.prototype.isNumberNonReversingCharacter = function (character, isTextBidi) {
+        var numberNonReversingCharacters = ',.:';
+        //(.,:) are the number non-reversing characters.
+        if (numberNonReversingCharacters.indexOf(character[0]) !== -1) {
+            if (character[0] === '.' ? !isTextBidi : true) {
+                return true;
+            }
+        }
+        return false;
+    };
+    Layout.prototype.updateSplittedText = function (span, splittedText) {
+        var text = '';
+        var inlineIndex = span.line.children.indexOf(span);
+        if (splittedText.length > 1) {
+            for (var j = 0; j < splittedText.length; j++) {
+                text = splittedText[j];
+                if (j > 0) {
+                    var newSpan2 = new TextElementBox();
+                    newSpan2.line = span.line;
+                    newSpan2.characterFormat.copyFormat(span.characterFormat);
+                    span.line.children.splice(inlineIndex + j, 0, newSpan2);
+                    newSpan2.text = text;
+                }
+                else {
+                    //Replace the source text range with splitted text.
+                    span.text = text;
+                }
             }
         }
     };
@@ -7166,7 +7335,7 @@ var Layout = /** @__PURE__ @class */ (function () {
      */
     // tslint:disable-next-line:max-line-length
     Layout.prototype.alignLineElements = function (element, topMargin, bottomMargin, maxDescent, addSubWidth, subWidth, textAlignment, whiteSpaceCount, isLastElement) {
-        if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
+        if (element.width > 0 && (element instanceof TextElementBox || element instanceof ListTextElementBox)) {
             var textElement = element instanceof TextElementBox ? element : undefined;
             //Updates the text to base line offset.
             // tslint:disable-next-line:max-line-length
@@ -7854,7 +8023,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         var lineText = '';
         for (var i = lineWidget.children.length - 1; i >= 0; i--) {
             var element = lineWidget.children[i];
-            if (element instanceof TextElementBox) {
+            if (element.width > 0 && element instanceof TextElementBox) {
                 var elementText = element.text;
                 lineText = elementText + lineText;
                 if (trimSpace && (elementText.trim() !== '' || elementText === '\t')) {
@@ -9687,7 +9856,8 @@ var Layout = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Layout.prototype.reLayoutParagraph = function (paragraphWidget, lineIndex, elementBoxIndex, isBidi) {
+    // tslint:disable-next-line:max-line-length
+    Layout.prototype.reLayoutParagraph = function (paragraphWidget, lineIndex, elementBoxIndex, isBidi, isSkip) {
         isBidi = isNullOrUndefined(isBidi) ? false : isBidi;
         if (this.documentHelper.blockToShift === paragraphWidget) {
             this.layoutBodyWidgetCollection(paragraphWidget.index, paragraphWidget.containerWidget, paragraphWidget, false);
@@ -9707,7 +9877,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         }
         else {
             // this.isRelayout = true;
-            this.reLayoutLine(paragraphWidget, lineIndex, isBidi);
+            this.reLayoutLine(paragraphWidget, lineIndex, isBidi, isSkip);
         }
         if (paragraphWidget.bodyWidget instanceof HeaderFooterWidget &&
             paragraphWidget.bodyWidget.headerFooterType.indexOf('Footer') !== -1) {
@@ -10197,7 +10367,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             paragraphWidget.characterFormat = new WCharacterFormat();
             paragraphWidget.paragraphFormat = new WParagraphFormat();
             paragraphWidget.index = 0;
-            var lineWidget = new LineWidget(undefined);
+            var lineWidget = new LineWidget(paragraphWidget);
             paragraphWidget.childWidgets.push(lineWidget);
             cell.childWidgets.push(paragraphWidget);
         }
@@ -10763,7 +10933,7 @@ var Layout = /** @__PURE__ @class */ (function () {
      * @param lineIndex start line index to reLayout
      * @private
      */
-    Layout.prototype.reLayoutLine = function (paragraph, lineIndex, isBidi) {
+    Layout.prototype.reLayoutLine = function (paragraph, lineIndex, isBidi, isSkip) {
         if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
             this.viewer.owner.editorModule.updateWholeListItems(paragraph);
         }
@@ -10777,7 +10947,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         if (!this.isBidiReLayout && (paragraph.paragraphFormat.bidi || this.isContainsRtl(lineWidget))) {
             var newLineIndex = lineIndex <= 0 ? 0 : lineIndex - 1;
             for (var i = newLineIndex; i < paragraph.childWidgets.length; i++) {
-                if (isBidi || !(paragraph.paragraphFormat.bidi && this.isContainsRtl(lineWidget))) {
+                if (isBidi || !(paragraph.paragraphFormat.bidi && this.isContainsRtl(lineWidget)) && !isSkip) {
                     if (i === lineIndex) {
                         continue;
                     }
@@ -10843,7 +11013,6 @@ var Layout = /** @__PURE__ @class */ (function () {
         if (line.children.length === 0) {
             return;
         }
-        var isFieldCode = false;
         var lastAddedElementIsRtl = false;
         var lastAddedRtlElementIndex = -1;
         var tempElements = [];
@@ -10877,29 +11046,36 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             if (element instanceof TextElementBox) {
                 text = element.text;
-                containsSpecchrs = this.documentHelper.textHelper.containsSpecialCharAlone(text);
+                containsSpecchrs = this.documentHelper.textHelper.containsSpecialCharAlone(text.trim());
                 if (containsSpecchrs) {
-                    if (text.length > 1 && elementCharacterFormat.bidi) {
+                    if (elementCharacterFormat.bidi && isParaBidi) {
                         text = HelperMethods.ReverseString(text);
+                        for (var k = 0; k < text.length; k++) {
+                            var ch = this.documentHelper.textHelper.inverseCharacter(text.charAt(k));
+                            text = text.replace(text.charAt(k), ch);
+                        }
                         element.text = text;
                     }
                 }
             }
+            var isRTLText = false;
+            // let isNumber: boolean = false;
             // The list element box shold be added in the last position in line widget for the RTL paragraph 
             // and first in the line widget for LTR paragrph.
             if (element instanceof ListTextElementBox) {
                 isRtl = isParaBidi;
             }
             else { // For Text element box we need to check the character format and unicode of text to detect the RTL text. 
-                isRtl = this.documentHelper.textHelper.isRTLText(text) || elementCharacterFormat.bidi
+                isRTLText = this.documentHelper.textHelper.isRTLText(text);
+                isRtl = isRTLText || elementCharacterFormat.bidi
                     || elementCharacterFormat.bdo === 'RTL';
             }
-            if (element instanceof FieldElementBox || isFieldCode) {
+            if (element instanceof FieldElementBox || this.isRtlFieldCode) {
                 if (element.fieldType === 0) {
-                    isFieldCode = true;
+                    this.isRtlFieldCode = true;
                 }
                 else if (element.fieldType === 1) {
-                    isFieldCode = false;
+                    this.isRtlFieldCode = false;
                 }
                 isRtl = false;
             }
@@ -12509,7 +12685,8 @@ var TextHelper = /** @__PURE__ @class */ (function () {
      * @param text
      */
     TextHelper.prototype.containsSpecialCharAlone = function (text) {
-        var specialChars = '*|.\:[]{}`\;()@&$#%!~';
+        // tslint:disable
+        var specialChars = '*|.\:[]{}-`\;()@&$#%!~?' + ' ' + "'";
         for (var i = 0; i < text.length; i++) {
             if (specialChars.indexOf(text.charAt(i)) === -1) {
                 return false;
@@ -12519,10 +12696,52 @@ var TextHelper = /** @__PURE__ @class */ (function () {
     };
     /**
      * @private
+     * @param ch
+     */
+    TextHelper.prototype.inverseCharacter = function (ch) {
+        switch (ch) {
+            //Specify the '('
+            case '(':
+                //Specify the ')'
+                return ')';
+            //Specify the ')'
+            case ')':
+                //Specify the '('
+                return '(';
+            //Specify the '<'
+            case '<':
+                //Specify the '>'
+                return '>';
+            //Specify the '>'
+            case '>':
+                //Specify the '<'
+                return '<';
+            //Specify the '{'
+            case '{':
+                //Specify the '}'
+                return '}';
+            //Specify the '}'
+            case '}':
+                //Specify the '{'
+                return '{';
+            //Specify the '['
+            case '[':
+                //Specify the ']'
+                return ']';
+            //Specify the ']'
+            case ']':
+                //Specify the '['
+                return '[';
+            default:
+                return ch;
+        }
+    };
+    /**
+     * @private
      * @param text
      */
     TextHelper.prototype.containsSpecialChar = function (text) {
-        var specialChars = '*|.\:[]{}`\;()@&$#%!~';
+        var specialChars = '*|.\:[]{}-`\;()@&$#%!~?' + ' ';
         for (var i = 0; i < text.length; i++) {
             if (specialChars.indexOf(text.charAt(i)) !== -1) {
                 return true;
@@ -12731,8 +12950,10 @@ var AddUserDialog = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.okButtonClick = function () {
+            _this.documentHelper.restrictEditingPane.isAddUser = true;
             _this.documentHelper.restrictEditingPane.showStopProtectionPane(false);
             _this.documentHelper.restrictEditingPane.loadPaneValue();
+            _this.documentHelper.restrictEditingPane.isAddUser = false;
             _this.documentHelper.dialog.hide();
         };
         /**
@@ -12889,7 +13110,7 @@ var EnforceProtectionDialog = /** @__PURE__ @class */ (function () {
             }
             else {
                 _this.password = _this.passwordTextBox.value;
-                _this.viewer.owner.editor.addProtection(_this.password);
+                _this.viewer.owner.editor.addProtection(_this.password, _this.owner.protectionType);
             }
         };
         this.documentHelper = documentHelper;
@@ -13018,6 +13239,7 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
         this.protectionType = 'NoProtection';
         this.restrictFormatting = false;
         this.isShowRestrictPane = false;
+        this.isAddUser = false;
         this.usersCollection = ['Everyone'];
         this.closePane = function () {
             _this.restrictPane.style.display = 'none';
@@ -13026,6 +13248,14 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
         /* tslint:disable:no-any */
         this.enableFormatting = function (args) {
             _this.restrictFormatting = !args.checked;
+        };
+        this.stopProtectionTriggered = function (args) {
+            if ((isNullOrUndefined(_this.documentHelper.saltValue) || _this.documentHelper.saltValue === '')
+                && (isNullOrUndefined(_this.documentHelper.hashValue) || _this.documentHelper.hashValue === '')) {
+                _this.documentHelper.owner.editor.unProtectDocument();
+                return;
+            }
+            _this.unProtectDialog.show();
         };
         this.readOnlyChanges = function (args) {
             if (args.checked) {
@@ -13099,12 +13329,12 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
             innerHTML: localValue.getConstant('Restrict Editing'), className: 'e-de-rp-header'
         });
         this.closeButton = createElement('button', {
-            className: 'e-de-rp-close-icon e-btn e-flat e-icon-btn', id: 'close',
+            className: 'e-de-rp-close-icon e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         });
         headerWholeDiv.appendChild(this.closeButton);
         headerWholeDiv.appendChild(headerDiv1);
-        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
+        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.restrictPane.appendChild(headerWholeDiv);
         this.initRestrictEditingPane(localValue);
@@ -13177,7 +13407,8 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
         this.addUser = createElement('button', {
             id: this.viewer.owner.containerId + '_addUser',
             className: 'e-btn e-primary e-flat',
-            innerHTML: localObj.getConstant('More users')
+            innerHTML: localObj.getConstant('More users') + '...',
+            styles: 'margin-top: 3px'
         });
         userWholeDiv.appendChild(this.addUser);
         this.restrictPaneWholeDiv.appendChild(userWholeDiv);
@@ -13249,7 +13480,7 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
     RestrictEditing.prototype.wireEvents = function () {
         this.addUser.addEventListener('click', this.addUserDialog.show);
         this.enforceProtection.addEventListener('click', this.protectDocument);
-        this.stopProtection.addEventListener('click', this.unProtectDialog.show);
+        this.stopProtection.addEventListener('click', this.stopProtectionTriggered);
         this.closeButton.addEventListener('click', this.closePane);
         this.allowFormat.addEventListener('change', this.enableFormatting);
         this.readonly.addEventListener('change', this.readOnlyChanges);
@@ -13261,9 +13492,11 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
         return checkBox;
     };
     RestrictEditing.prototype.loadPaneValue = function () {
-        this.protectionType = this.documentHelper.protectionType;
+        if (!this.isAddUser) {
+            this.protectionType = this.documentHelper.protectionType;
+        }
         this.allowFormat.checked = !this.documentHelper.restrictFormatting;
-        this.readonly.checked = this.documentHelper.protectionType === 'ReadOnly';
+        this.readonly.checked = this.documentHelper.protectionType === 'ReadOnly' || this.protectionType !== 'NoProtection';
         this.highlightCheckBox.checked = true;
         this.addedUser.enablePersistence = true;
         this.addedUser.dataSource = this.documentHelper.userCollection;
@@ -13334,6 +13567,10 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.isWebPrinting = false;
+        /**
+         * @private
+         */
+        this.isHeaderFooter = false;
         /**
          * @private
          */
@@ -13994,9 +14231,10 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                         _this.currentSelectedComment = undefined;
                     }
                 }
+                var isCtrlkeyPressed = _this.isIosDevice ? event.metaKey : event.ctrlKey;
                 if (!isNullOrUndefined(_this.currentPage) && !isNullOrUndefined(_this.owner.selection.start)
                     && (_this.owner.selection.isEmpty || _this.owner.selection.isImageSelected) &&
-                    (((event.ctrlKey && _this.owner.useCtrlClickToFollowHyperlink ||
+                    (((isCtrlkeyPressed && _this.owner.useCtrlClickToFollowHyperlink ||
                         !_this.owner.useCtrlClickToFollowHyperlink) && _this.isLeftButtonPressed(event) === true))) {
                     _this.selection.navigateHyperLinkOnEvent(touchPoint, false);
                 }
@@ -14603,6 +14841,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         if (this.owner.commentReviewPane) {
             this.owner.commentReviewPane.clear();
         }
+        this.isHeaderFooter = false;
         this.defaultTabWidth = 36;
         this.isDocumentProtected = false;
         this.protectionType = 'NoProtection';
@@ -15748,7 +15987,8 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             top = this.selection.getTop(widget);
             this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x);
         }
-        if (!isNullOrUndefined(hyperlinkField) && (event.ctrlKey &&
+        var isCtrlkeyPressed = this.isIosDevice ? event.metaKey : event.ctrlKey;
+        if (!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
             this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) {
             div.style.cursor = 'pointer';
             return;
@@ -20432,7 +20672,8 @@ var LineWidget = /** @__PURE__ @class */ (function () {
         var line = inline.line;
         var lineIndex = inline.line.paragraph.childWidgets.indexOf(inline.line);
         var bidi = line.paragraph.bidi;
-        if (!bidi) {
+        var isContainsRtl = this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
+        if (!bidi && !isContainsRtl) {
             for (var i = 0; i < line.children.length; i++) {
                 var inlineElement = line.children[i];
                 if (inline === inlineElement) {
@@ -20444,8 +20685,12 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                 textIndex += inlineElement.length;
             }
         }
-        else {
+        else if (bidi) {
             var elementInfo = this.getInlineForOffset(textIndex, true, inline);
+            textIndex = elementInfo.index;
+        }
+        else {
+            var elementInfo = this.getInlineForRtlLine(textIndex, true, inline);
             textIndex = elementInfo.index;
         }
         return textIndex;
@@ -20458,7 +20703,7 @@ var LineWidget = /** @__PURE__ @class */ (function () {
         var count = 0;
         // let line: LineWidget = this.line as LineWidget;
         // let lineIndex: number = thtis.line.paragraph.childWidgets.indexOf(inline.line);
-        var bidi = this.paragraph.bidi;
+        var bidi = this.paragraph.bidi || this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
         if (!bidi) {
             for (var i = 0; i < this.children.length; i++) {
                 var inlineElement = this.children[i];
@@ -20504,9 +20749,14 @@ var LineWidget = /** @__PURE__ @class */ (function () {
         while (element) {
             if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
                 (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
+                    // tslint:disable-next-line:max-line-length
+                    && !((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)
                     || !(element instanceof TextElementBox))) {
                 while (element.previousElement && (element.previousElement instanceof TextElementBox
-                    && !textHelper.isRTLText(element.previousElement.text) || element.previousElement instanceof FieldElementBox
+                    // tslint:disable-next-line:max-line-length
+                    && !textHelper.isRTLText(element.previousElement.text) && !((textHelper.containsSpecialCharAlone(element.previousElement.text)
+                    || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi)
+                    || element.previousElement instanceof FieldElementBox
                     || element.previousElement instanceof BookmarkElementBox
                         && !isNullOrUndefined(element.previousElement.previousElement) &&
                         !(element.previousElement.previousElement instanceof BookmarkElementBox)
@@ -20524,7 +20774,9 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                     continue;
                 }
                 if (element.previousElement && (isApplied
-                    || (element.previousElement instanceof TextElementBox && textHelper.isRTLText(element.previousElement.text)))) {
+                    || (element.previousElement instanceof TextElementBox && (textHelper.isRTLText(element.previousElement.text) ||
+                        // tslint:disable-next-line:max-line-length
+                        ((textHelper.containsSpecialCharAlone(element.previousElement.text) || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi))))) {
                     endElement = element.previousElement;
                 }
                 else if (!element.previousElement) {
@@ -20549,6 +20801,9 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                 if (offset === lineLength) {
                     return { 'element': element, 'index': offset };
                 }
+                else if (offset > lineLength) {
+                    return { 'element': element, 'index': lineLength };
+                }
             }
             else if (isNxtOffset) {
                 if (offset < count + element.length) {
@@ -20571,7 +20826,8 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                 }
                 count += element.length;
             }
-            if (element.previousElement && (element instanceof TextElementBox && textHelper.isRTLText(element.text) ||
+            if (element.previousElement && (element instanceof TextElementBox && (textHelper.isRTLText(element.text) ||
+                ((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)) ||
                 (element instanceof TabElementBox && element.text === '\t' || (element instanceof BookmarkElementBox
                     && (element instanceof BookmarkElementBox && element.previousElement instanceof BookmarkElementBox
                         && !element.previousElement.previousElement
@@ -20583,7 +20839,10 @@ var LineWidget = /** @__PURE__ @class */ (function () {
             }
             else {
                 if (endElement && (!element.nextElement || element === startElement || element.nextElement instanceof TextElementBox
-                    && textHelper.isRTLText(element.nextElement.text) || element.nextElement instanceof ListTextElementBox)) {
+                    && (textHelper.isRTLText(element.nextElement.text) ||
+                        // tslint:disable-next-line:max-line-length
+                        ((textHelper.containsSpecialCharAlone(element.nextElement.text) || /^[0-9]+$/.test(element.nextElement.text)) && element.nextElement.characterFormat.bidi))
+                    || element.nextElement instanceof ListTextElementBox)) {
                     if (offset === count + 1 && count === lineLength) {
                         break;
                     }
@@ -20609,6 +20868,80 @@ var LineWidget = /** @__PURE__ @class */ (function () {
             return { 'element': element, 'index': isEndOffset ? offset : 0 };
         }
     };
+    LineWidget.prototype.getInlineForRtlLine = function (offset, isOffset, inline) {
+        var startElement = this.children[0];
+        var endElement;
+        var element = startElement;
+        var documentHelper = this.paragraph.bodyWidget.page.documentHelper;
+        var textHelper = documentHelper.textHelper;
+        var isUpdated = false;
+        var count = 0;
+        var lineLength = documentHelper.selection.getLineLength(this);
+        var lastRtlIndex = -1;
+        var indexInInline = -1;
+        var isStarted = false;
+        while (element) {
+            if (element instanceof ListTextElementBox) {
+                element = element.nextElement;
+                continue;
+            }
+            if (!isStarted && (element instanceof TextElementBox || element instanceof ImageElementBox
+                || element instanceof BookmarkElementBox || element instanceof EditRangeEndElementBox
+                || element instanceof EditRangeStartElementBox
+                || element instanceof FieldElementBox
+                    && HelperMethods.isLinkedFieldCharacter(element))) {
+                isStarted = true;
+            }
+            if (!endElement) {
+                while (element && element instanceof TextElementBox && (textHelper.isRTLText(element.text) ||
+                    textHelper.containsSpecialCharAlone(element.text))) {
+                    if (!endElement) {
+                        endElement = element;
+                    }
+                    lastRtlIndex = this.children.indexOf(element);
+                    element = element.nextElement;
+                    isUpdated = true;
+                }
+            }
+            if (lastRtlIndex !== -1 && isUpdated) {
+                element = this.children[lastRtlIndex];
+            }
+            if (isOffset && !isNullOrUndefined(inline)) {
+                if (inline === element) {
+                    return { 'element': element, 'index': offset };
+                }
+                offset += element.length;
+            }
+            else {
+                if (isStarted && offset <= count + element.length) {
+                    indexInInline = (offset - count);
+                    return { 'element': element, 'index': indexInInline };
+                }
+                count += element.length;
+            }
+            if (endElement === element) {
+                endElement = undefined;
+                if (lastRtlIndex !== -1) {
+                    element = this.children[lastRtlIndex];
+                }
+                lastRtlIndex = -1;
+            }
+            if (endElement && element.previousElement) {
+                element = element.previousElement;
+            }
+            else if (element.nextElement) {
+                element = element.nextElement;
+            }
+            else {
+                if (offset > count) {
+                    indexInInline = isNullOrUndefined(element) ? offset : element.length;
+                }
+                return { 'element': element, 'index': indexInInline };
+            }
+            isUpdated = false;
+        }
+        return { 'element': element, 'index': indexInInline };
+    };
     /**
      * @private
      */
@@ -20627,7 +20960,8 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        if (!bidi) {
+        var isContainsRtl = this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
+        if (!bidi && !isContainsRtl) {
             for (var i = 0; i < this.children.length; i++) {
                 inlineElement = this.children[i];
                 if (inlineElement instanceof ListTextElementBox) {
@@ -20664,8 +20998,13 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                 indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
             }
         }
-        else {
+        else if (bidi) {
             var elementInfo = this.getInlineForOffset(offset);
+            inlineElement = elementInfo.element;
+            indexInInline = elementInfo.index;
+        }
+        else {
+            var elementInfo = this.getInlineForRtlLine(offset);
             inlineElement = elementInfo.element;
             indexInInline = elementInfo.index;
         }
@@ -24158,7 +24497,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 id: id + CONTEXTMENU_UPDATE_FIELD
             },
             {
-                text: localValue.getConstant('Edit Field'),
+                text: localValue.getConstant('Edit Field') + '...',
                 iconCss: 'e-icons e-de-edit_field',
                 id: id + CONTEXTMENU_EDIT_FIELD
             },
@@ -24176,7 +24515,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 separator: true
             },
             {
-                text: localValue.getConstant('Hyperlink'),
+                text: localValue.getConstant('Hyperlink') + '...',
                 iconCss: 'e-icons e-de-insertlink',
                 id: id + CONTEXTMENU_HYPERLINK
             },
@@ -24204,12 +24543,12 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 separator: true
             },
             {
-                text: localValue.getConstant('Font'),
+                text: localValue.getConstant('Font') + '...',
                 iconCss: 'e-icons e-de-fonts',
                 id: id + CONTEXTMENU_FONT_DIALOG
             },
             {
-                text: localValue.getConstant('Paragraph'),
+                text: localValue.getConstant('Paragraph') + '...',
                 iconCss: 'e-icons e-de-paragraph',
                 id: id + CONTEXTMENU_PARAGRAPH
             },
@@ -24217,7 +24556,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 separator: true,
             },
             {
-                text: localValue.getConstant('Table Properties'),
+                text: localValue.getConstant('Table Properties') + '...',
                 id: id + CONTEXTMENU_TABLE,
                 iconCss: 'e-icons e-de-table'
             },
@@ -24486,6 +24825,8 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
      * @param {MenuItemModel[]} items - To add custom menu item
      * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
      * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
+     * @returns {void}
+     * @blazorArgsType items|List<Syncfusion.EJ2.Blazor.Navigations.MenuItem>,isEnable|Boolean,isBottom|Boolean
      */
     ContextMenu$$1.prototype.addCustomMenu = function (items, isEnable, isBottom) {
         var menuItems = JSON.parse(JSON.stringify(items));
@@ -24587,10 +24928,10 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
             }
         }
-        contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_seperator' });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_separator' });
         if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
             contextMenuItems.push({ text: 'More Suggestion', items: splittedSuggestion });
-            contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_seperator' });
+            contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
         }
         else {
             // tslint:disable-next-line:max-line-length
@@ -24598,10 +24939,10 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
         contextMenuItems.push({ text: 'Ignore Once', id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
         contextMenuItems.push({ text: 'Ignore All', id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
-        contextMenuItems.push({ separator: true, id: '_contextmenu_change_seperator' });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_change_separator' });
         // tslint:disable-next-line:max-line-length
         contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
-        contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_seperator' });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_separator' });
         return contextMenuItems;
     };
     ContextMenu$$1.prototype.showHideElements = function (selection) {
@@ -24728,7 +25069,6 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
         if (this.documentHelper.owner.selection.start.paragraph.isInsideTable
             && this.documentHelper.owner.selection.end.paragraph.isInsideTable) {
-            paragraph.nextSibling.style.display = 'block';
             if (owner.tablePropertiesDialogModule) {
                 tableProperties.style.display = 'block';
             }
@@ -30336,7 +30676,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
         }
         else if (inline instanceof FieldElementBox && inline.fieldType === 2 || inline instanceof BookmarkElementBox) {
             // tslint:disable-next-line:max-line-length
-            this.getNextWordOffsetFieldSeperator(inline, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
+            this.getNextWordOffsetFieldSeparator(inline, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
         }
         else if (inline instanceof FieldElementBox && inline.fieldType === 1) {
             // tslint:disable-next-line:max-line-length
@@ -30356,7 +30696,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
         }
         else if (type === 0) {
             // tslint:disable-next-line:max-line-length
-            this.getNextWordOffsetFieldSeperator(fieldBegin.fieldSeparator, 0, type, isInField, endSelection, endPosition, excludeSpace);
+            this.getNextWordOffsetFieldSeparator(fieldBegin.fieldSeparator, 0, type, isInField, endSelection, endPosition, excludeSpace);
         }
         else if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
             var inline = fieldBegin.fieldSeparator;
@@ -30494,7 +30834,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    TextPosition.prototype.getNextWordOffsetFieldSeperator = function (fieldSeparator, indexInInline, type, isInField, endSelection, endPosition, excludeSpace) {
+    TextPosition.prototype.getNextWordOffsetFieldSeparator = function (fieldSeparator, indexInInline, type, isInField, endSelection, endPosition, excludeSpace) {
         if (!isNullOrUndefined(fieldSeparator.nextNode)) {
             this.getNextWordOffset(fieldSeparator.nextNode, 0, type, isInField, endSelection, endPosition, excludeSpace);
         }
@@ -32243,6 +32583,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.checkLayout = function () {
         if (this.owner.layoutType === 'Continuous') {
             this.isWebLayout = true;
+            this.documentHelper.isHeaderFooter = true;
             this.owner.layoutType = 'Pages';
             this.owner.viewer.destroy();
             this.owner.viewer = new PageLayoutViewer(this.owner);
@@ -32273,6 +32614,10 @@ var Selection = /** @__PURE__ @class */ (function () {
      */
     Selection.prototype.closeHeaderFooter = function () {
         this.disableHeaderFooter();
+        if (this.documentHelper.isHeaderFooter && this.owner.layoutType === 'Pages') {
+            this.owner.layoutType = 'Continuous';
+            this.documentHelper.isHeaderFooter = false;
+        }
     };
     /**
      * Moves the selection to the start of specified page number.
@@ -39236,7 +39581,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
         }
         else {
-            right = page.boundingRectangle.width + left;
+            right = page.boundingRectangle.width - this.owner.viewer.padding.right - this.documentHelper.scrollbarWidth;
         }
         if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
             if (this.isHideSelection(this.start.paragraph)) {
@@ -42060,11 +42405,11 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         this.optionsPane.appendChild(this.searchDiv);
         // tslint:disable-next-line:max-line-length
         this.closeButton = createElement('button', {
-            className: 'e-de-op-close-button e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
+            className: 'e-de-op-close-button e-de-close-icon e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         });
         this.optionsPane.appendChild(this.closeButton);
-        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
+        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.focusedElement.push(this.closeButton);
         //Find tab header
@@ -42700,12 +43045,12 @@ var TableResizer = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(cellWidget)) {
                 this.currentResizingTable = cellWidget.ownerTable;
                 // tslint:disable-next-line:max-line-length
-                if (this.documentHelper.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height, touchPoint)) {
+                if (this.documentHelper.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
                     return position = cellWidget.columnIndex;
                     // tslint:disable-next-line:max-line-length
                 }
                 else if (isNullOrUndefined(cellWidget.nextRenderedWidget)
-                    && this.documentHelper.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height, touchPoint)) {
+                    && this.documentHelper.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
                     return position = (cellWidget.columnIndex + cellWidget.cellFormat.columnSpan);
                 }
                 else if (cellWidget.childWidgets.length > 0) {
@@ -43651,6 +43996,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.isSkipHistory = false;
         this.isPaste = false;
         this.isPasteListUpdated = false;
+        /**
+         * @private
+         */
         this.isInsertField = false;
         /**
          * @private
@@ -43940,7 +44288,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.documentHelper.restrictFormatting = limitToFormatting;
         this.documentHelper.protectionType = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
         this.selection.isHighlightEditRegion = true;
-        this.addProtection(credential);
+        this.addProtection(credential, this.documentHelper.protectionType);
     };
     Editor.prototype.getCommentHierarchicalIndex = function (comment) {
         var index = '';
@@ -44264,24 +44612,30 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.addProtection = function (password) {
-        var enforceProtectionHandler = new XmlHttpRequestHandler();
-        var passwordBase64 = this.base64.encodeString(password);
-        /* tslint:disable:no-any */
-        var formObject = {
-            passwordBase64: passwordBase64,
-            saltBase64: '',
-            spinCount: 100000
-        };
-        /* tslint:enable:no-any */
-        var url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
-        enforceProtectionHandler.url = url;
-        enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
-        enforceProtectionHandler.onSuccess = this.enforceProtectionInternal.bind(this);
-        enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
-        enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
-        enforceProtectionHandler.customHeaders = this.owner.headers;
-        enforceProtectionHandler.send(formObject);
+    Editor.prototype.addProtection = function (password, protectionType) {
+        if (password === '') {
+            this.protectDocument(protectionType);
+        }
+        else {
+            this.currentProtectionType = protectionType;
+            var enforceProtectionHandler = new XmlHttpRequestHandler();
+            var passwordBase64 = this.base64.encodeString(password);
+            /* tslint:disable:no-any */
+            var formObject = {
+                passwordBase64: passwordBase64,
+                saltBase64: '',
+                spinCount: 100000
+            };
+            /* tslint:enable:no-any */
+            var url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
+            enforceProtectionHandler.url = url;
+            enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
+            enforceProtectionHandler.onSuccess = this.enforceProtectionInternal.bind(this);
+            enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
+            enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
+            enforceProtectionHandler.customHeaders = this.owner.headers;
+            enforceProtectionHandler.send(formObject);
+        }
     };
     /* tslint:disable:no-any */
     Editor.prototype.protectionFailureHandler = function (result) {
@@ -44294,15 +44648,15 @@ var Editor = /** @__PURE__ @class */ (function () {
             console.error(result.statusText);
         }
     };
-    Editor.prototype.enforceProtectionInternal = function (result) {
+    Editor.prototype.enforceProtectionInternal = function (result, protectionType) {
         var data = JSON.parse(result.data);
         this.documentHelper.saltValue = data[0];
         this.documentHelper.hashValue = data[1];
-        this.protectDocument();
+        this.protectDocument(this.currentProtectionType);
     };
     /* tslint:enable:no-any */
-    Editor.prototype.protectDocument = function () {
-        this.protect(this.documentHelper.protectionType);
+    Editor.prototype.protectDocument = function (protectionType) {
+        this.protect(protectionType);
         var restrictPane = this.documentHelper.restrictEditingPane.restrictPane;
         if (restrictPane && restrictPane.style.display === 'block') {
             this.documentHelper.restrictEditingPane.showStopProtectionPane(true);
@@ -44356,18 +44710,24 @@ var Editor = /** @__PURE__ @class */ (function () {
             stopProtection = false;
         }
         if (stopProtection) {
-            this.documentHelper.isDocumentProtected = false;
-            this.documentHelper.restrictFormatting = false;
-            this.documentHelper.selection.highlightEditRegion();
-            var restrictPane = this.documentHelper.restrictEditingPane.restrictPane;
-            if (restrictPane && restrictPane.style.display === 'block') {
-                this.documentHelper.restrictEditingPane.showStopProtectionPane(false);
-            }
-            this.documentHelper.dialog.hide();
+            this.unProtectDocument();
         }
         else {
             DialogUtility.alert(localeValue.getConstant('The password is incorrect'));
         }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.unProtectDocument = function () {
+        this.documentHelper.isDocumentProtected = false;
+        this.documentHelper.restrictFormatting = false;
+        this.documentHelper.selection.highlightEditRegion();
+        var restrictPane = this.documentHelper.restrictEditingPane.restrictPane;
+        if (restrictPane && restrictPane.style.display === 'block') {
+            this.documentHelper.restrictEditingPane.showStopProtectionPane(false);
+        }
+        this.documentHelper.dialog.hide();
     };
     /**
      * Notify content change event
@@ -44914,9 +45274,6 @@ var Editor = /** @__PURE__ @class */ (function () {
         var paragraphInfo = this.selection.getParagraphInfo(selection.start);
         selection.editPosition = selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         var bidi = selection.start.paragraph.paragraphFormat.bidi;
-        if (!bidi && this.documentHelper.layout.isContainsRtl(selection.start.currentWidget)) {
-            this.documentHelper.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
-        }
         if ((!selection.isEmpty && !selection.isImageSelected) ||
             this.documentHelper.isListTextSelected && selection.contextType === 'List') {
             selection.isSkipLayouting = true;
@@ -44929,6 +45286,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.documentHelper.isTextInput = true;
         }
         paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        var isSpecialChars = this.documentHelper.textHelper.containsSpecialCharAlone(text);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
             this.updateInsertPosition();
@@ -44940,6 +45298,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 span.text = text;
                 var isBidi = this.documentHelper.textHelper.getRtlLanguage(text).isRtl;
                 span.characterFormat.bidi = isBidi;
+                span.isRightToLeft = isBidi;
                 span.line = insertPosition.paragraph.childWidgets[0];
                 span.margin = new Margin(0, 0, 0, 0);
                 span.line.children.push(span);
@@ -44972,22 +45331,26 @@ var Editor = /** @__PURE__ @class */ (function () {
                 var insertLangId = this.documentHelper.textHelper.getRtlLanguage(text).id;
                 var inlineLangId = 0;
                 var isRtl = false;
+                var isInlineContainsSpecChar = false;
                 if (inline instanceof TextElementBox) {
                     inlineLangId = this.documentHelper.textHelper.getRtlLanguage(inline.text).id;
                     isRtl = this.documentHelper.textHelper.getRtlLanguage(inline.text).isRtl;
+                    isInlineContainsSpecChar = this.documentHelper.textHelper.containsSpecialCharAlone(inline.text);
                 }
                 if (isBidi || !this.documentHelper.owner.isSpellCheck) {
                     insertFormat.bidi = isBidi;
                 }
                 // tslint:disable-next-line:max-line-length
-                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && inline.text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat)
-                    && (insertLangId === inlineLangId) || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
+                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && inline.text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && (insertLangId === inlineLangId)
+                    || (text.trim() === '' && !isBidi && inline.characterFormat.bidi) || isRtl && insertFormat.isSameFormat(inline.characterFormat) && isSpecialChars) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                 }
                 else {
+                    var isContainsRtl = this.documentHelper.layout.isContainsRtl(selection.start.currentWidget);
                     var tempSpan = new TextElementBox();
                     tempSpan.text = text;
                     tempSpan.line = inline.line;
+                    tempSpan.isRightToLeft = isRtl;
                     tempSpan.characterFormat.copyFormat(insertFormat);
                     var insertIndex = inline.indexInOwner;
                     if (indexInInline === inline.length) {
@@ -44996,7 +45359,14 @@ var Editor = /** @__PURE__ @class */ (function () {
                             inline = inline.fieldBegin;
                             insertIndex = inline.indexInOwner;
                         }
-                        var index = isParaBidi || inline instanceof EditRangeEndElementBox ? insertIndex : insertIndex + 1;
+                        var index = -1;
+                        if (isParaBidi || inline instanceof EditRangeEndElementBox || isContainsRtl && isInlineContainsSpecChar
+                            || isRtl && isBidi) {
+                            index = insertIndex;
+                        }
+                        else {
+                            index = insertIndex + 1;
+                        }
                         inline.line.children.splice(index, 0, tempSpan);
                     }
                     else if (indexInInline === 0) {
@@ -45026,6 +45396,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                             inline.line.children.splice(insertIndex + 1, 0, splittedSpan);
                         }
                         inline.line.children.splice(insertIndex + 1, 0, tempSpan);
+                    }
+                    if (!bidi && this.documentHelper.layout.isContainsRtl(selection.start.currentWidget)) {
+                        this.documentHelper.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
                     }
                     this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
                 }
@@ -45500,7 +45873,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             var paragraph = element.line.paragraph;
             var lineIndex = paragraph.childWidgets.indexOf(element.line);
             var elementIndex = element.line.children.indexOf(element);
-            if (element.line.paragraph.bidi) {
+            if (element.line.paragraph.bidi || this.documentHelper.layout.isContainsRtl(element.line)) {
                 this.documentHelper.layout.reArrangeElementsForRtl(element.line, element.line.paragraph.bidi);
             }
             this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex, element.line.paragraph.bidi);
@@ -46149,14 +46522,14 @@ var Editor = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         fieldSeparatorPosition.setPositionParagraph(fieldSeparator.line, (fieldSeparator.line).getOffset(fieldSeparator, fieldSeparator.length));
         blockInfo = this.selection.getParagraphInfo(fieldSeparatorPosition);
-        var fieldSeperatorString = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        var fieldSeparatorString = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         this.initComplexHistory('RemoveHyperlink');
         selection.start.setPositionParagraph(fieldEnd.line, (fieldEnd.line).getOffset(fieldEnd, 0));
         blockInfo = this.selection.getParagraphInfo(selection.start);
         var startIndex = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         selection.end.setPositionInternal(selection.start);
         this.delete();
-        selection.start.setPositionInternal(this.selection.getTextPosBasedOnLogicalIndex(fieldSeperatorString));
+        selection.start.setPositionInternal(this.selection.getTextPosBasedOnLogicalIndex(fieldSeparatorString));
         this.initHistory('Underline');
         this.updateCharacterFormatWithUpdate(selection, 'underline', 'None', false);
         if (this.editorHistory) {
@@ -46288,7 +46661,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.isPasteListUpdated = false;
         }
         this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : result.data);
-        this.applyPasteOptions(this.currentPasteOptions);
+        if (this.currentPasteOptions !== 'KeepSourceFormatting') {
+            this.applyPasteOptions(this.currentPasteOptions);
+        }
         hideSpinner(this.owner.element);
     };
     Editor.prototype.onPasteFailure = function (result) {
@@ -46928,10 +47303,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         if (paragraphFormat) {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
-        if (paragraph.paragraphFormat.bidi && this.isInsertField) {
-            this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, paragraph.paragraphFormat.bidi);
-        }
-        this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, paragraph.paragraphFormat.bidi);
+        // tslint:disable-next-line:max-line-length
+        this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, this.isInsertField ? undefined : paragraph.paragraphFormat.bidi);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     };
     Editor.prototype.insertElementInternal = function (element, newElement, index, relayout) {
@@ -46940,35 +47313,47 @@ var Editor = /** @__PURE__ @class */ (function () {
         var lineIndex = line.indexInOwner;
         var insertIndex = element.indexInOwner;
         var isBidi = paragraph.paragraphFormat.bidi && element.isRightToLeft;
-        if (index === element.length) {
-            // Add new Element in current 
-            if (!isBidi) {
-                insertIndex++;
-            }
-            line.children.splice(insertIndex, 0, newElement);
+        var isEqualFormat = false;
+        if (this.owner.editorHistory && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing)
+            && newElement instanceof TextElementBox) {
+            isEqualFormat = element.characterFormat.isEqualFormat(newElement.characterFormat)
+                && this.documentHelper.textHelper.isRTLText(newElement.text);
         }
-        else if (index === 0) {
-            if (isNullOrUndefined(element.previousNode)) {
-                element.line.children.splice(0, 0, newElement);
-                insertIndex = 0;
+        if (!isEqualFormat) {
+            if (index === element.length) {
+                // Add new Element in current 
+                if (!isBidi) {
+                    insertIndex++;
+                }
+                line.children.splice(insertIndex, 0, newElement);
+            }
+            else if (index === 0) {
+                if (isNullOrUndefined(element.previousNode)) {
+                    element.line.children.splice(0, 0, newElement);
+                    insertIndex = 0;
+                }
+                else {
+                    element.line.children.splice(insertIndex, 0, newElement);
+                }
             }
             else {
-                element.line.children.splice(insertIndex, 0, newElement);
+                if (!isBidi) {
+                    insertIndex++;
+                }
+                var textElement = new TextElementBox();
+                textElement.characterFormat.copyFormat(element.characterFormat);
+                textElement.text = element.text.substring(index);
+                element.text = element.text.substr(0, index);
+                line.children.splice(insertIndex, 0, textElement);
+                textElement.line = element.line;
+                //Inserts the new inline.
+                line.children.splice(isBidi ? insertIndex + 1 : insertIndex, 0, newElement);
+                insertIndex -= 1;
             }
         }
         else {
-            if (!isBidi) {
-                insertIndex++;
-            }
-            var textElement = new TextElementBox();
-            textElement.characterFormat.copyFormat(element.characterFormat);
-            textElement.text = element.text.substring(index);
-            element.text = element.text.substr(0, index);
-            line.children.splice(insertIndex, 0, textElement);
-            textElement.line = element.line;
-            //Inserts the new inline.
-            line.children.splice(isBidi ? insertIndex + 1 : insertIndex, 0, newElement);
-            insertIndex -= 1;
+            // tslint:disable-next-line:max-line-length
+            element.text = element.text.substring(0, index) + newElement.text + element.text.substring(index);
         }
         newElement.line = element.line;
         newElement.linkFieldCharacter(this.documentHelper);
@@ -48950,10 +49335,39 @@ var Editor = /** @__PURE__ @class */ (function () {
                 endOffset = selection.getLineLength(line);
             }
             var count = 0;
-            for (var j = 0; j < line.children.length; j++) {
+            var isBidi = line.paragraph.paragraphFormat.bidi;
+            var isContainsRtl = this.documentHelper.layout.isContainsRtl(line);
+            var childLength = line.children.length;
+            var isStarted = true;
+            var endElement = undefined;
+            var indexOf = -1;
+            var isIncrease = true;
+            for (var j = !isBidi ? 0 : childLength - 1; !isBidi ? j < childLength : j >= 0; isBidi ? j-- : isIncrease ? j++ : j--) {
                 var inlineObj = line.children[j];
+                if (!isBidi && isContainsRtl) {
+                    while ((isStarted || isNullOrUndefined(endElement)) && inlineObj instanceof TextElementBox
+                        && (this.documentHelper.textHelper.isRTLText(inlineObj.text)
+                            || this.documentHelper.textHelper.containsSpecialCharAlone(inlineObj.text)) && inlineObj.nextElement) {
+                        if (!endElement) {
+                            endElement = inlineObj;
+                        }
+                        if (indexOf === -1) {
+                            indexOf = line.children.indexOf(inlineObj);
+                        }
+                        j = inlineObj.line.children.indexOf(inlineObj);
+                        inlineObj = inlineObj.nextElement;
+                        isIncrease = false;
+                    }
+                }
+                isStarted = false;
                 if (inlineObj instanceof ListTextElementBox) {
                     continue;
+                }
+                if (endElement === inlineObj) {
+                    endElement = undefined;
+                    j = indexOf;
+                    indexOf = -1;
+                    isIncrease = true;
                 }
                 if (startOffset >= count + inlineObj.length) {
                     count += inlineObj.length;
@@ -48968,7 +49382,13 @@ var Editor = /** @__PURE__ @class */ (function () {
                 if (endIndex > inlineLength) {
                     endIndex = inlineLength;
                 }
-                j += this.applyCharFormatInline(inlineObj, selection, startIndex, endIndex, property, value, update);
+                var index = this.applyCharFormatInline(inlineObj, selection, startIndex, endIndex, property, value, update);
+                if (isBidi || isContainsRtl && !isIncrease) {
+                    j -= index;
+                }
+                else {
+                    j += index;
+                }
                 if (endOffset <= count + inlineLength) {
                     break;
                 }
@@ -48976,7 +49396,12 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
         var endParagraph = end.paragraph;
-        this.documentHelper.layout.reLayoutParagraph(paragraph, startLineWidget, 0);
+        if (!paragraph.bidi && this.documentHelper.layout.isContainsRtl(paragraph.childWidgets[startLineWidget])) {
+            this.documentHelper.layout.reLayoutParagraph(paragraph, startLineWidget, 0, false, true);
+        }
+        else {
+            this.documentHelper.layout.reLayoutParagraph(paragraph, startLineWidget, 0);
+        }
         if (paragraph.equals(endParagraph)) {
             return;
         }
@@ -49127,8 +49552,11 @@ var Editor = /** @__PURE__ @class */ (function () {
             textElement.characterFormat.copyFormat(inline.characterFormat);
             textElement.line = inline.line;
             textElement.text = inline.text.substr(startIndex, endIndex - startIndex);
+            textElement.isRightToLeft = inline.isRightToLeft;
             this.applyCharFormatValue(textElement.characterFormat, property, value, update);
-            index++;
+            if (!paragraph.paragraphFormat.bidi && !this.documentHelper.layout.isContainsRtl(inline.line)) {
+                index++;
+            }
             node.line.children.splice(index, 0, textElement);
             x++;
             // this.addToLinkedFields(span);                      
@@ -49138,7 +49566,10 @@ var Editor = /** @__PURE__ @class */ (function () {
             textElement.characterFormat.copyFormat(inline.characterFormat);
             textElement.text = node.text.substring(endIndex);
             textElement.line = inline.line;
-            index++;
+            textElement.isRightToLeft = inline.isRightToLeft;
+            if (!paragraph.paragraphFormat.bidi && !this.documentHelper.layout.isContainsRtl(inline.line)) {
+                index++;
+            }
             node.line.children.splice(index, 0, textElement);
             x++;
             // this.addToLinkedFields(span);                       
@@ -51720,8 +52151,8 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.removeContent = function (lineWidget, startOffset, endOffset) {
         var count = this.selection.getLineLength(lineWidget);
         var isBidi = lineWidget.paragraph.paragraphFormat.bidi;
-        var childLength = lineWidget.children.length;
-        for (var i = isBidi ? 0 : childLength - 1; isBidi ? i < childLength : i >= 0; isBidi ? i++ : i--) {
+        // tslint:disable-next-line:max-line-length
+        for (var i = isBidi ? 0 : lineWidget.children.length - 1; isBidi ? i < lineWidget.children.length : i >= 0; isBidi ? i++ : i--) {
             var inline = lineWidget.children[i];
             if (endOffset <= count - inline.length) {
                 count -= inline.length;
@@ -51753,6 +52184,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.unLinkFieldCharacter(inline);
                 this.addRemovedNodes(lineWidget.children[i]);
                 lineWidget.children.splice(i, 1);
+                if (isBidi) {
+                    i++;
+                }
                 // }
             }
             else if (inline instanceof TextElementBox) {
@@ -52532,7 +52966,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.onApplyParagraphFormat('leftIndent', 0, false, false);
                 return;
             }
-            if (paragraph.paragraphFormat.textAlignment !== 'Left') {
+            if (!paragraph.paragraphFormat.bidi && paragraph.paragraphFormat.textAlignment !== 'Left') {
                 this.onApplyParagraphFormat('textAlignment', 'Left', false, true);
                 return;
             }
@@ -52613,38 +53047,91 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.removeAtOffset = function (lineWidget, selection, offset) {
         var count = 0;
         var lineIndex = lineWidget.paragraph.childWidgets.indexOf(lineWidget);
-        for (var i = 0; i < lineWidget.children.length; i++) {
-            var inline = lineWidget.children[i];
-            if (inline instanceof ListTextElementBox) {
-                continue;
-            }
-            if (offset < count + inline.length) {
-                var indexInInline = offset - count;
-                inline.ischangeDetected = true;
-                if (this.owner.isSpellCheck) {
-                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': inline.text });
+        var isBidi = lineWidget.paragraph.paragraphFormat.bidi;
+        var childLength = lineWidget.children.length;
+        if (!isBidi && this.viewer.documentHelper.layout.isContainsRtl(lineWidget)) {
+            var inline = lineWidget.children[0];
+            var endElement = undefined;
+            var indexOf = -1;
+            var isStarted = true;
+            while (inline) {
+                while ((isStarted || isNullOrUndefined(endElement)) && inline instanceof TextElementBox
+                    && (this.documentHelper.textHelper.isRTLText(inline.text)
+                        || this.documentHelper.textHelper.containsSpecialCharAlone(inline.text))
+                    && inline.nextElement) {
+                    if (!endElement) {
+                        endElement = inline;
+                    }
+                    if (indexOf === -1) {
+                        indexOf = lineWidget.children.indexOf(inline);
+                    }
+                    inline = inline.nextElement;
                 }
-                if (!inline.canTrigger) {
-                    this.documentHelper.triggerSpellCheck = false;
+                isStarted = false;
+                var currentIndex = lineWidget.children.indexOf(inline);
+                var isBreak = this.removeCharacter(inline, offset, count, lineWidget, lineIndex, currentIndex, true);
+                if (isBreak) {
+                    break;
                 }
-                if (offset === count && inline.length === 1) {
-                    this.unLinkFieldCharacter(inline);
-                    lineWidget.children.splice(i, 1);
-                    this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i);
-                    this.addRemovedNodes(inline);
+                count += inline.length;
+                if (endElement === inline) {
+                    if (indexOf !== -1) {
+                        inline = lineWidget.children[indexOf + 1];
+                    }
+                    endElement = undefined;
+                    indexOf = -1;
+                }
+                else if (endElement) {
+                    inline = inline.previousElement;
                 }
                 else {
-                    var span = new TextElementBox();
-                    span.characterFormat.copyFormat(inline.characterFormat);
-                    span.text = inline.text.substr(indexInInline, 1);
-                    inline.text = HelperMethods.remove(inline.text, indexInInline, 1);
-                    this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i);
-                    this.addRemovedNodes(span);
+                    inline = inline.nextElement;
                 }
-                break;
             }
-            count += inline.length;
         }
+        else {
+            for (var i = !isBidi ? 0 : childLength - 1; !isBidi ? i < childLength : i >= 0; isBidi ? i-- : i++) {
+                var inline = lineWidget.children[i];
+                if (inline instanceof ListTextElementBox) {
+                    continue;
+                }
+                var isBreak = this.removeCharacter(inline, offset, count, lineWidget, lineIndex, i);
+                if (isBreak) {
+                    break;
+                }
+                count += inline.length;
+            }
+        }
+    };
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.removeCharacter = function (inline, offset, count, lineWidget, lineIndex, i, isRearrange) {
+        var isBreak = false;
+        if (offset < count + inline.length) {
+            var indexInInline = offset - count;
+            inline.ischangeDetected = true;
+            if (this.owner.isSpellCheck) {
+                this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': inline.text });
+            }
+            if (!inline.canTrigger) {
+                this.documentHelper.triggerSpellCheck = false;
+            }
+            if (offset === count && inline.length === 1) {
+                this.unLinkFieldCharacter(inline);
+                lineWidget.children.splice(i, 1);
+                this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i, undefined, isRearrange);
+                this.addRemovedNodes(inline);
+            }
+            else {
+                var span = new TextElementBox();
+                span.characterFormat.copyFormat(inline.characterFormat);
+                span.text = inline.text.substr(indexInInline, 1);
+                inline.text = HelperMethods.remove(inline.text, indexInInline, 1);
+                this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i, undefined, isRearrange);
+                this.addRemovedNodes(span);
+            }
+            isBreak = true;
+        }
+        return isBreak;
     };
     /**
      * Remove the current selected content or one character right of cursor.
@@ -62404,11 +62891,13 @@ var WordExport = /** @__PURE__ @class */ (function () {
     };
     // Serialize the table indentation.
     WordExport.prototype.serializeTableIndentation = function (writer, format) {
-        writer.writeStartElement(undefined, 'tblInd', this.wNamespace);
-        var tableIndent = Math.round(format.leftIndent * this.twipsInOnePoint);
-        writer.writeAttributeString(undefined, 'w', this.wNamespace, tableIndent.toString());
-        writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
-        writer.writeEndElement();
+        if (!isNullOrUndefined(format.leftIndent)) {
+            writer.writeStartElement(undefined, 'tblInd', this.wNamespace);
+            var tableIndent = Math.round(format.leftIndent * this.twipsInOnePoint);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, tableIndent.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
     };
     // Serialize the cell spacing.
     WordExport.prototype.serializeCellSpacing = function (writer, format) {
@@ -65706,7 +66195,7 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.onCancelButtonClick = function () {
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.dialog2.hide();
             _this.unWireEventsAndBindings();
         };
         /* tslint:disable:no-any */
@@ -65877,7 +66366,7 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
             };
             _this.applyLevelSetting(tocSettings);
             _this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.dialog2.hide();
         };
         /**
          * @private
@@ -66249,7 +66738,7 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
         var modifyButtonDiv = createElement('div', { className: 'e-de-toc-modify-button' });
         rightBottomGeneralDiv.appendChild(modifyButtonDiv);
         var modifyElement = createElement('button', {
-            innerHTML: locale.getConstant('Modify'), id: 'modify',
+            innerHTML: locale.getConstant('Modify') + '...', id: 'modify',
             attrs: { type: 'button' }
         });
         modifyButtonDiv.appendChild(modifyElement);
@@ -66273,13 +66762,14 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
         if (!this.target) {
             this.initTableOfContentDialog(localValue, this.documentHelper.owner.enableRtl);
         }
-        this.documentHelper.dialog.header = localValue.getConstant('Table of Contents');
-        this.documentHelper.dialog.width = 'auto';
-        this.documentHelper.dialog.height = 'auto';
-        this.documentHelper.dialog.content = this.target;
-        this.documentHelper.dialog.beforeOpen = this.loadTableofContentDialog;
-        this.documentHelper.dialog.close = this.closeTableOfContentDialog;
-        this.documentHelper.dialog.buttons = [{
+        this.documentHelper.dialog2.header = localValue.getConstant('Table of Contents');
+        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog2.width = 'auto';
+        this.documentHelper.dialog2.height = 'auto';
+        this.documentHelper.dialog2.content = this.target;
+        this.documentHelper.dialog2.beforeOpen = this.loadTableofContentDialog;
+        this.documentHelper.dialog2.close = this.closeTableOfContentDialog;
+        this.documentHelper.dialog2.buttons = [{
                 click: this.applyTableOfContentProperties,
                 buttonModel: { content: localValue.getConstant('Ok'), cssClass: 'e-flat e-toc-okay', isPrimary: true }
             },
@@ -66287,8 +66777,8 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
                 click: this.onCancelButtonClick,
                 buttonModel: { content: localValue.getConstant('Cancel'), cssClass: 'e-flat e-toc-cancel' }
             }];
-        this.documentHelper.dialog.dataBind();
-        this.documentHelper.dialog.show();
+        this.documentHelper.dialog2.dataBind();
+        this.documentHelper.dialog2.show();
     };
     TableOfContentsDialog.prototype.checkLevel = function () {
         if (this.heading1.value !== '') {
@@ -68660,7 +69150,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                     name_1 = styleName;
                     _this.documentHelper.owner.editorModule.applyStyle(name_1);
                 }
-                _this.documentHelper.dialog2.hide();
+                _this.documentHelper.dialog.hide();
             }
             else {
                 throw new Error('Enter valid Style name');
@@ -68685,7 +69175,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                 name = _this.editStyleName;
             }
             /* tslint:disable-next-line:max-line-length */
-            _this.okButton = _this.documentHelper.dialog2.element.getElementsByClassName('e-flat e-style-okay').item(0);
+            _this.okButton = _this.documentHelper.dialog.element.getElementsByClassName('e-flat e-style-okay').item(0);
             _this.enableOrDisableOkButton();
             _this.updateStyleNames(_this.getTypeValue(), name);
             _this.updateCharacterFormat(_this.style.characterFormat);
@@ -68698,7 +69188,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
             if (!_this.isEdit && _this.style) {
                 _this.style.destroy();
             }
-            _this.documentHelper.dialog2.hide();
+            _this.documentHelper.dialog.hide();
         };
         /**
          * @private
@@ -68989,11 +69479,11 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(header)) {
             header = localObj.getConstant('Create New Style');
         }
-        this.documentHelper.dialog2.header = header;
-        this.documentHelper.dialog2.height = 'auto';
-        this.documentHelper.dialog2.width = 'auto';
-        this.documentHelper.dialog2.content = this.target;
-        this.documentHelper.dialog2.buttons = [{
+        this.documentHelper.dialog.header = header;
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.buttons = [{
                 click: this.onOkButtonClick,
                 buttonModel: { content: localObj.getConstant('Ok'), cssClass: 'e-flat e-style-okay', isPrimary: true }
             },
@@ -69002,11 +69492,11 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                 buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-style-cancel' }
             }];
         this.toggleDisable();
-        this.documentHelper.dialog2.dataBind();
-        this.documentHelper.dialog2.beforeOpen = this.loadStyleDialog;
-        this.documentHelper.dialog2.close = this.closeStyleDialog;
-        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
-        this.documentHelper.dialog2.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.beforeOpen = this.loadStyleDialog;
+        this.documentHelper.dialog.close = this.closeStyleDialog;
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog.show();
     };
     StyleDialog.prototype.updateList = function () {
         var listId = this.style.paragraphFormat.listFormat.listId;
@@ -70843,12 +71333,12 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
             tableOptionContiner.style.cssFloat = 'left';
         }
         this.bordersAndShadingButton = createElement('button', {
-            innerHTML: localValue.getConstant('Borders and Shading'),
+            innerHTML: localValue.getConstant('Borders and Shading') + '...',
             id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button',
             attrs: { type: 'button' }
         });
         this.tableOptionButton = createElement('button', {
-            className: 'e-control e-btn e-flat', innerHTML: localValue.getConstant('Options'),
+            className: 'e-control e-btn e-flat', innerHTML: localValue.getConstant('Options') + '...',
             id: element.id + '_table_cellmargin', attrs: { type: 'button' }
         });
         this.tableOptionButton.addEventListener('click', this.showTableOptionsDialog);
@@ -71117,7 +71607,7 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         parentDiv.appendChild(child2);
         element.appendChild(parentDiv);
         var alignmentDiv = createElement('div', {
-            innerHTML: localValue.getConstant('Options'), styles: 'width: 100%;',
+            innerHTML: localValue.getConstant('Options') + '...', styles: 'width: 100%;',
             className: 'e-de-table-dialog-options-label'
         });
         // tslint:disable-next-line:max-line-length
@@ -71337,7 +71827,7 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
             innerHTML: localValue.getConstant('Bottom'), className: 'e-de-table-dia-align-label'
         });
         this.cellOptionButton = createElement('button', {
-            innerHTML: localValue.getConstant('Options'), id: element.id + '_table_cellmargin',
+            innerHTML: localValue.getConstant('Options') + '...', id: element.id + '_table_cellmargin',
             className: 'e-control e-btn e-flat', attrs: { type: 'button' }
         });
         this.cellOptionButton.style.cssFloat = isRtl ? 'left' : 'right';
@@ -73053,7 +73543,7 @@ var CellOptionsDialog = /** @__PURE__ @class */ (function () {
             styles: 'padding-bottom: 8px;padding-top: 8px;', className: 'e-de-cell-margin-top'
         });
         var tr = createElement('tr');
-        var td = createElement('td', { className: 'e-de-tbl-btn-seperator' });
+        var td = createElement('td', { className: 'e-de-tbl-btn-separator' });
         var sameAsTableCheckBox = createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_sameAsCheckBox'
         });
@@ -73236,7 +73726,7 @@ var CellOptionsDialog = /** @__PURE__ @class */ (function () {
             });
             td1.appendChild(topLabel);
             td1.appendChild(topTextBox);
-            var td2 = createElement('td', { className: 'e-de-tbl-btn-seperator' });
+            var td2 = createElement('td', { className: 'e-de-tbl-btn-separator' });
             var leftLabel = createElement('label', {
                 innerHTML: locale.getConstant('Left'), className: 'e-de-cell-dia-label-common',
                 id: dialog.target.id + '_leftLabel'
@@ -73375,7 +73865,7 @@ var StylesDialog = /** @__PURE__ @class */ (function () {
         var newButtonDiv = createElement('div', { className: 'e-styles-addbutton' });
         buttonDiv.appendChild(newButtonDiv);
         var newButtonElement = createElement('button', {
-            innerHTML: localValue.getConstant('New'), id: 'new',
+            innerHTML: localValue.getConstant('New') + '...', id: 'new',
             attrs: { type: 'button' }
         });
         newButtonDiv.appendChild(newButtonElement);
@@ -73385,7 +73875,7 @@ var StylesDialog = /** @__PURE__ @class */ (function () {
         var modifybuttonDiv = createElement('div', { className: 'e-styles-addbutton' });
         buttonDiv.appendChild(modifybuttonDiv);
         var modifyButtonElement = createElement('button', {
-            innerHTML: localValue.getConstant('Modify'), id: 'modify',
+            innerHTML: localValue.getConstant('Modify') + '...', id: 'modify',
             attrs: { type: 'button' }
         });
         modifybuttonDiv.appendChild(modifyButtonElement);
@@ -74998,13 +75488,13 @@ var CommentReviewPane = /** @__PURE__ @class */ (function () {
             innerHTML: localValue.getConstant('Comments'), className: 'e-de-cp-header'
         });
         this.closeButton = createElement('button', {
-            className: 'e-de-cp-close e-btn e-flat e-icon-btn', id: 'close',
+            className: 'e-de-cp-close e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         });
         this.closeButton.title = localValue.getConstant('Close');
         headerWholeDiv.appendChild(this.closeButton);
         headerWholeDiv.appendChild(headerDiv1);
-        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
+        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.headerContainer.appendChild(headerWholeDiv);
         this.headerContainer.appendChild(this.initToolbar(localValue));
@@ -75361,9 +75851,14 @@ var CommentPane = /** @__PURE__ @class */ (function () {
         }
     };
     CommentPane.prototype.getCommentStart = function (comment) {
+        var localValue = new L10n('documenteditor', this.owner.defaultLocale);
+        localValue.setLocale(this.owner.locale);
         var commentStart = undefined;
         if (comment && comment.commentStart) {
             commentStart = comment.commentStart;
+        }
+        if (commentStart.commentMark !== undefined) {
+            commentStart.commentMark.title = localValue.getConstant('Click to see this comment');
         }
         return this.getFirstCommentInLine(commentStart);
     };
@@ -75499,6 +75994,7 @@ var CommentView = /** @__PURE__ @class */ (function () {
             cssClass: 'e-caret-hide',
             enableRtl: this.owner.enableRtl
         });
+        this.menuBar.title = localObj.getConstant('More Options') + '...';
         menuItem.appendTo(this.menuBar);
         commentUserInfo.appendChild(this.menuBar);
         this.dropDownButton = menuItem;
@@ -75545,12 +76041,14 @@ var CommentView = /** @__PURE__ @class */ (function () {
         var editRegionFooter = createElement('div', { className: 'e-de-cmt-action-button' });
         var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
         //tslint:disable-next-line:max-line-length
-        this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
+        this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary e-de-overlay', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postComment.bind(this));
+        postButton.title = localObj.getConstant('Post');
         var cancelButton = createElement('button', {
             className: 'e-de-cmt-cancel-btn e-btn e-flat'
         });
         this.cancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
+        cancelButton.title = localObj.getConstant('Cancel');
         cancelButton.addEventListener('click', this.cancelEditing.bind(this));
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
@@ -75592,15 +76090,17 @@ var CommentView = /** @__PURE__ @class */ (function () {
         this.replyViewTextBox.addEventListener('keydown', this.updateReplyTextAreaHeight.bind(this));
         this.replyViewTextBox.addEventListener('keyup', this.enableDisableReplyPostButton.bind(this));
         var editRegionFooter = createElement('div', { styles: 'display:none', className: 'e-de-cmt-action-button' });
-        var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
         //tslint:disable-next-line:max-line-length
+        var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat' });
         this.replyPostButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postReply.bind(this));
+        postButton.title = localObj.getConstant('Post');
         var cancelButton = createElement('button', {
             className: 'e-de-cmt-cancel-btn e-btn e-flat'
         });
         this.replyCancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
         cancelButton.addEventListener('click', this.cancelReply.bind(this));
+        cancelButton.title = localObj.getConstant('Cancel');
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
         this.replyFooter = editRegionFooter;
@@ -75641,6 +76141,12 @@ var CommentView = /** @__PURE__ @class */ (function () {
     };
     CommentView.prototype.enableDisableReplyPostButton = function () {
         this.replyPostButton.disabled = this.replyViewTextBox.value === '';
+        if (this.replyPostButton.disabled) {
+            classList(this.replyPostButton.element, ['e-de-overlay'], []);
+        }
+        else if (this.replyPostButton.element.classList.contains('e-de-overlay')) {
+            classList(this.replyPostButton.element, [], ['e-de-overlay']);
+        }
     };
     CommentView.prototype.enableReplyView = function () {
         var _this = this;
@@ -75711,6 +76217,12 @@ var CommentView = /** @__PURE__ @class */ (function () {
     };
     CommentView.prototype.enableDisablePostButton = function () {
         this.postButton.disabled = this.textArea.value === '';
+        if (this.postButton.disabled) {
+            classList(this.postButton.element, ['e-de-overlay'], []);
+        }
+        else if (this.postButton.element.classList.contains('e-de-overlay')) {
+            classList(this.postButton.element, [], ['e-de-overlay']);
+        }
     };
     CommentView.prototype.editComment = function () {
         var _this = this;
@@ -76011,7 +76523,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             'Table': 'Table',
             'Row': 'Row',
             'Cell': 'Cell',
-            'Ok': 'Ok',
+            'Ok': 'OK',
             'Cancel': 'Cancel',
             'Size': 'Size',
             'Preferred Width': 'Preferred width',
@@ -76313,7 +76825,9 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             // tslint:disable-next-line:max-line-length
             'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.',
             'No Headings': 'No Heading Found!',
-            'Add Headings': 'This document has no headings. Please add headings and try again.'
+            'Add Headings': 'This document has no headings. Please add headings and try again.',
+            'More Options': 'More Options',
+            'Click to see this comment': 'Click to see this comment'
         };
         _this.documentHelper = new DocumentHelper(_this);
         if (_this.layoutType === 'Pages') {
@@ -77777,9 +78291,20 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         return 'toolbar';
     };
     /**
+     * Enables or disables the specified Toolbar item.
+     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {boolean} isEnable  - Boolean value that determines whether the toolbar item should be enabled or disabled.
+     * By default, `isEnable` is set to true.
+     * @returns void.
+     */
+    Toolbar$$1.prototype.enableItems = function (items, isEnable) {
+        this.toolbar.enableItems(items, isEnable);
+    };
+    /**
      * @private
      */
-    Toolbar$$1.prototype.initToolBar = function () {
+    Toolbar$$1.prototype.initToolBar = function (items) {
+        this.toolbarItems = items;
         this.renderToolBar();
         this.wireEvent();
     };
@@ -77812,51 +78337,63 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         EventHandler.add(buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);
         this.toolbar.appendTo(toolbarTarget);
+        this.initToolbarDropdown(toolbarTarget);
+    };
+    Toolbar$$1.prototype.initToolbarDropdown = function (toolbarTarget) {
         var locale = this.container.localObj;
         var id = this.container.element.id + TOOLBAR_ID;
-        var imageButton = toolbarTarget.getElementsByClassName('e-de-image-splitbutton')[0].firstChild;
-        var items = {
-            items: [
-                {
-                    text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
-                    id: id + INSERT_IMAGE_LOCAL_ID
-                }
-            ],
-            //,{ text: locale.getConstant('By URL'), iconCss: 'e-icons e-de-ctnr-link', id: id + INSERT_IMAGE_ONLINE_ID }],
-            cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-            iconCss: 'e-icons e-de-ctnr-image',
-            select: this.onDropDownButtonSelect.bind(this),
-        };
-        this.imgDropDwn = new DropDownButton(items, imageButton);
-        var breakButton = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild;
-        items = {
-            items: [
-                { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
-                { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }
-            ],
-            cssClass: 'e-caret-hide',
-            iconCss: 'e-icons e-de-ctnr-break',
-            select: this.onDropDownButtonSelect.bind(this),
-        };
-        this.breakDropDwn = new DropDownButton(items, breakButton);
+        if (this.toolbarItems.indexOf('Image') >= 0) {
+            var imageButton = toolbarTarget.getElementsByClassName('e-de-image-splitbutton')[0].firstChild;
+            var items = {
+                items: [
+                    {
+                        text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
+                        id: id + INSERT_IMAGE_LOCAL_ID
+                    }
+                ],
+                //,{ text: locale.getConstant('By URL'), iconCss: 'e-icons e-de-ctnr-link', id: id + INSERT_IMAGE_ONLINE_ID }],
+                cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                iconCss: 'e-icons e-de-ctnr-image',
+                select: this.onDropDownButtonSelect.bind(this),
+            };
+            this.imgDropDwn = new DropDownButton(items, imageButton);
+        }
+        if (this.toolbarItems.indexOf('Break') >= 0) {
+            var breakButton = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild;
+            var items = {
+                items: [
+                    { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
+                    { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }
+                ],
+                cssClass: 'e-caret-hide',
+                iconCss: 'e-icons e-de-ctnr-break',
+                select: this.onDropDownButtonSelect.bind(this),
+            };
+            this.breakDropDwn = new DropDownButton(items, breakButton);
+        }
         this.filePicker = createElement('input', {
             attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
         });
         this.imagePicker = createElement('input', {
             attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp' }, className: 'e-de-ctnr-file-picker'
         });
-        this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
-        this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
-        var restrictEditing = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild;
-        var lockItems = {
-            items: [
-                { text: locale.getConstant('Read only'), id: id + READ_ONLY },
-                { text: locale.getConstant('Protections'), id: id + PROTECTIONS }
-            ],
-            cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-            select: this.onDropDownButtonSelect.bind(this)
-        };
-        this.restrictDropDwn = new DropDownButton(lockItems, restrictEditing);
+        if (this.toolbarItems.indexOf('LocalClipboard') >= 0) {
+            this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
+        }
+        if (this.toolbarItems.indexOf('RestrictEditing') >= 0) {
+            this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
+            // tslint:disable-next-line:max-line-length
+            var restrictEditing = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild;
+            var items = {
+                items: [
+                    { text: locale.getConstant('Read only'), id: id + READ_ONLY },
+                    { text: locale.getConstant('Protections'), id: id + PROTECTIONS }
+                ],
+                cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                select: this.onDropDownButtonSelect.bind(this)
+            };
+            this.restrictDropDwn = new DropDownButton(items, restrictEditing);
+        }
     };
     Toolbar$$1.prototype.showHidePropertiesPane = function () {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
@@ -77887,112 +78424,192 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         EventHandler.add(this.filePicker, 'change', this.onFileChange, this);
         EventHandler.add(this.imagePicker, 'change', this.onImageChange, this);
     };
-    // tslint:disable-next-line:max-func-body-length
     Toolbar$$1.prototype.initToolbarItems = function () {
-        var id = this.container.element.id + TOOLBAR_ID;
-        var locale = this.container.localObj;
         this.toolbar = new Toolbar({
             enableRtl: this.container.enableRtl,
             clicked: this.clickHandler.bind(this),
-            items: [
-                {
-                    prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document'),
-                    id: id + NEW_ID, text: locale.getConstant('New'), cssClass: 'e-de-toolbar-btn-start'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document'), id: id + OPEN_ID,
-                    text: locale.getConstant('Open'), cssClass: 'e-de-toolbar-btn-last'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo Tooltip'),
-                    id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: 'e-de-toolbar-btn-first'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo Tooltip'),
-                    id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: 'e-de-toolbar-btn-last'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    tooltipText: locale.getConstant('Insert inline picture from a file'), id: id + INSERT_IMAGE_ID,
-                    text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton e-de-image-focus'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
-                    id: id + INSERT_TABLE_ID, text: locale.getConstant('Table'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-link',
-                    tooltipText: locale.getConstant('Create Hyperlink'),
-                    id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-bookmark',
-                    tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document'),
-                    id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-cnt-cmt-add',
-                    tooltipText: locale.getConstant('New comment'),
-                    id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-tableofcontent',
-                    tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents'),
-                    id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
-                    cssClass: 'e-de-toolbar-btn-last'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header'),
-                    id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: 'e-de-toolbar-btn-first'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer'),
-                    id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog'),
-                    id: id + PAGE_SET_UP_ID, text: this.onWrapText(locale.getConstant('Page Setup')),
-                    cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
-                    id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
-                    cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    tooltipText: locale.getConstant('Break'), text: locale.getConstant('Break'), id: BREAK_ID,
-                    cssClass: 'e-de-toolbar-btn-last e-de-break-splitbutton'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find Text'),
-                    id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: 'e-de-toolbar-btn'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-paste',
-                    tooltipText: locale.getConstant('Toggle between the internal clipboard and system clipboard'),
-                    id: id + CLIPBOARD_ID, text: this.onWrapText(locale.getConstant('Local Clipboard')),
-                    cssClass: 'e-de-toolbar-btn-first'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict Editing'), id: id + RESTRICT_EDITING_ID,
-                    text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: 'e-de-toolbar-btn-end e-de-lock-dropdownbutton'
-                }
-            ]
+            items: this.getToolbarItems()
         });
+    };
+    /**
+     * @private
+     */
+    Toolbar$$1.prototype.reInitToolbarItems = function (items) {
+        var _this = this;
+        this.toolbarItems = items;
+        var toolbarTarget = this.container.toolbarContainer;
+        this.toolbar.items = this.getToolbarItems();
+        /* tslint:disable:align */
+        this.toolbarTimer = setTimeout(function () {
+            if (_this.toolbarTimer) {
+                clearTimeout(_this.toolbarTimer);
+            }
+            _this.initToolbarDropdown(toolbarTarget);
+            if (items.indexOf('Open') >= 0) {
+                EventHandler.add(_this.filePicker, 'change', _this.onFileChange, _this);
+            }
+            if (items.indexOf('Image') >= 0) {
+                EventHandler.add(_this.imagePicker, 'change', _this.onImageChange, _this);
+            }
+        }, 200);
+    };
+    /* tslint:disable:no-any */
+    // tslint:disable-next-line:max-func-body-length
+    Toolbar$$1.prototype.getToolbarItems = function () {
+        var locale = this.container.localObj;
+        var id = this.container.element.id + TOOLBAR_ID;
+        var toolbarItems = [];
+        var className;
+        var tItem = this.toolbarItems;
+        for (var i = 0; i < this.toolbarItems.length; i++) {
+            if (i === 0) {
+                className = 'e-de-toolbar-btn-start';
+            }
+            else if ((tItem[i + 1] === 'Separator') && (tItem[i - 1] === 'Separator')) {
+                className = 'e-de-toolbar-btn';
+            }
+            else if (tItem[i + 1] === 'Separator') {
+                className = 'e-de-toolbar-btn-last';
+            }
+            else if (tItem[i - 1] === 'Separator') {
+                className = 'e-de-toolbar-btn-first';
+            }
+            else if (i === (this.toolbarItems.length - 1)) {
+                className = 'e-de-toolbar-btn-end';
+            }
+            else {
+                className = 'e-de-toolbar-btn-middle';
+            }
+            switch (tItem[i]) {
+                case 'Separator':
+                    toolbarItems.push({
+                        type: 'Separator', cssClass: 'e-de-separator'
+                    });
+                    break;
+                case 'New':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document.'),
+                        id: id + NEW_ID, text: locale.getConstant('New'), cssClass: className
+                    });
+                    break;
+                case 'Open':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document.'), id: id + OPEN_ID,
+                        text: locale.getConstant('Open'), cssClass: className
+                    });
+                    break;
+                case 'Undo':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo the last operation (Ctrl+Z).'),
+                        id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: className
+                    });
+                    break;
+                case 'Redo':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo the last operation (Ctrl+Y).'),
+                        id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: className
+                    });
+                    break;
+                case 'Comments':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-cnt-cmt-add',
+                        tooltipText: locale.getConstant('Show comments'),
+                        id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: className
+                    });
+                    break;
+                case 'Image':
+                    toolbarItems.push({
+                        tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
+                        text: locale.getConstant('Image'), cssClass: className + ' e-de-image-splitbutton e-de-image-focus'
+                    });
+                    break;
+                case 'Table':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
+                        id: id + INSERT_TABLE_ID, text: locale.getConstant('Table'), cssClass: className
+                    });
+                    break;
+                case 'Hyperlink':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-link',
+                        tooltipText: locale.getConstant('Create a link in your document for quick access to webpages and files (Ctrl+K).'),
+                        id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: className
+                    });
+                    break;
+                case 'Bookmark':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-bookmark',
+                        tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document.'),
+                        id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: className
+                    });
+                    break;
+                case 'TableOfContents':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-tableofcontent',
+                        tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents.'),
+                        id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
+                        cssClass: className
+                    });
+                    break;
+                case 'Header':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header.'),
+                        id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: className
+                    });
+                    break;
+                case 'Footer':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer.'),
+                        id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: className
+                    });
+                    break;
+                case 'PageSetup':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog.'),
+                        id: id + PAGE_SET_UP_ID, text: this.onWrapText(locale.getConstant('Page Setup')),
+                        cssClass: className
+                    });
+                    break;
+                case 'PageNumber':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers.'),
+                        id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
+                        cssClass: className
+                    });
+                    break;
+                case 'Break':
+                    toolbarItems.push({
+                        tooltipText: locale.getConstant('Break'), text: locale.getConstant('Break'), id: BREAK_ID,
+                        cssClass: className + ' e-de-break-splitbutton'
+                    });
+                    break;
+                case 'Find':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find text in the document (Ctrl+F).'),
+                        id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: className
+                    });
+                    break;
+                case 'LocalClipboard':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-paste',
+                        tooltipText: locale.getConstant('Toggle between the internal clipboard and system clipboard'),
+                        id: id + CLIPBOARD_ID, text: this.onWrapText(locale.getConstant('Local Clipboard')),
+                        cssClass: className
+                    });
+                    break;
+                case 'RestrictEditing':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing.'), id: id + RESTRICT_EDITING_ID,
+                        text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: className + ' e-de-lock-dropdownbutton'
+                    });
+                    break;
+                default:
+                    //Here we need to process the items
+                    toolbarItems.push(tItem[i]);
+                    break;
+            }
+        }
+        return toolbarItems;
     };
     Toolbar$$1.prototype.clickHandler = function (args) {
         var id = this.container.element.id + TOOLBAR_ID;
@@ -78044,6 +78661,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 break;
             case id + CLIPBOARD_ID:
                 this.toggleLocalPaste(args.item.id);
+                break;
+            default:
+                this.container.trigger('toolbarClick', args);
                 break;
         }
         if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
@@ -78202,9 +78822,16 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      */
     Toolbar$$1.prototype.enableDisableUndoRedo = function () {
         var id = this.container.element.id + TOOLBAR_ID;
-        // tslint:disable-next-line:max-line-length
-        this.toolbar.enableItems(document.getElementById(id + UNDO_ID).parentElement, this.container.documentEditor.editorHistory.canUndo());
-        this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
+        if (this.toolbarItems.indexOf('Undo') >= 0) {
+            // We can optimize this condition check to single bool validation instead of array collection.
+            // tslint:disable-next-line:max-line-length
+            this.toolbar.enableItems(document.getElementById(id + UNDO_ID).parentElement, this.container.documentEditor.editorHistory.canUndo());
+        }
+        if (this.toolbarItems.indexOf('Redo') >= 0) {
+            // We can optimize this condition check to single bool validation instead of array collection.
+            // tslint:disable-next-line:max-line-length
+            this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
+        }
     };
     Toolbar$$1.prototype.onToc = function () {
         if (this.container.previousContext === 'TableOfContents' && this.container.propertiesPaneContainer.style.display === 'none') {
@@ -79272,9 +79899,9 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         this.createBulletListDropButton(bulletIconCss, bulletButton);
         this.createNumberListDropButton(numberIconCss, numberingList);
     };
-    Paragraph.prototype.createSeperator = function (parentDiv) {
-        var seperator = createElement('div', { className: 'e-de-prop-vline' });
-        parentDiv.appendChild(seperator);
+    Paragraph.prototype.createSeparator = function (parentDiv) {
+        var separator = createElement('div', { className: 'e-de-prop-vline' });
+        parentDiv.appendChild(separator);
     };
     Paragraph.prototype.createDivElement = function (id, parentDiv, style) {
         var element;
@@ -79476,7 +80103,8 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         if (!this.container.enableCsp) {
             this.style.open = this.updateOptions;
             this.style.itemTemplate = '<span style="${Style}">${StyleName}</span>';
-            this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>';
+            this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">'
+                + this.localObj.getConstant('Manage Styles') + '...' + '</span>';
             this.style.isStringTemplate = true;
         }
         this.style.appendTo(selectElement);
@@ -79890,8 +80518,8 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         }
         var closeIcon = createElement('span', {
             id: '_header_footer_close',
-            className: 'e-de-ctnr-close e-icons',
-            styles: 'display:inline-block;cursor:pointer;color: #4A4A4A;' + closeButtonFloat
+            className: 'e-de-ctnr-close e-de-close-icon e-icons',
+            styles: 'display:inline-block;cursor:pointer;' + closeButtonFloat
         });
         closeIcon.addEventListener('click', function () { _this.onClose(); });
         headerDiv.appendChild(headerLabel);
@@ -81187,8 +81815,7 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             _this.localObj = new L10n('documenteditorcontainer', _this.container.defaultLocale, _this.container.locale);
             // tslint:disable-next-line:max-line-length
-            var styles = 'padding-top:8px;';
-            styles += isRtl ? 'padding-right:16px' : 'padding-left:16px';
+            var styles = isRtl ? 'padding-right:16px' : 'padding-left:16px';
             // tslint:disable-next-line:max-line-length
             var div = createElement('div', { className: (_this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout', styles: styles });
             _this.statusBarDiv.appendChild(div);
@@ -81196,9 +81823,9 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             label.textContent = _this.localObj.getConstant('Page') + ' ';
             div.appendChild(label);
             // tslint:disable-next-line:max-line-length
-            _this.pageNumberLabel = createElement('label', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text;height:17px;max-width:150px' });
-            _this.editablePageNumber = createElement('div', { styles: 'display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-input e-de-pagenumber-text' });
-            _this.editablePageNumber.appendChild(_this.pageNumberLabel);
+            _this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text' }, className: 'e-de-pagenumber-input' });
+            _this.editablePageNumber = createElement('div', { styles: 'display: inline-flex', className: 'e-input e-de-pagenumber-text' });
+            _this.editablePageNumber.appendChild(_this.pageNumberInput);
             if (isRtl) {
                 label.style.marginLeft = '6px';
                 _this.editablePageNumber.style.marginLeft = '6px';
@@ -81218,15 +81845,15 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             div.appendChild(_this.pageCount);
             _this.updatePageCount();
             if (_this.documentEditor.enableSpellCheck) {
-                var verticalLine = createElement('div', { className: 'e-de-statusbar-seperator' });
+                var verticalLine = createElement('div', { className: 'e-de-statusbar-separator' });
                 _this.statusBarDiv.appendChild(verticalLine);
                 var spellCheckBtn = _this.addSpellCheckElement();
                 _this.spellCheckButton.appendTo(spellCheckBtn);
             }
             // tslint:disable-next-line:max-line-length   
-            _this.pageButton = _this.createButtonTemplate((_this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', _this.localObj.getConstant('Print layout'), _this.statusBarDiv, _this.pageButton, (_this.documentEditor.layoutType === 'Pages') ? true : false);
+            _this.pageButton = _this.createButtonTemplate((_this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e-icons', _this.localObj.getConstant('Print layout'), _this.statusBarDiv, _this.pageButton, (_this.documentEditor.layoutType === 'Pages') ? true : false);
             // tslint:disable-next-line:max-line-length   
-            _this.webButton = _this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e icons', _this.localObj.getConstant('Web layout'), _this.statusBarDiv, _this.webButton, (_this.documentEditor.layoutType === 'Continuous') ? true : false);
+            _this.webButton = _this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e-icons', _this.localObj.getConstant('Web layout'), _this.statusBarDiv, _this.webButton, (_this.documentEditor.layoutType === 'Continuous') ? true : false);
             _this.pageButton.addEventListener('click', function () {
                 _this.documentEditor.layoutType = 'Pages';
                 _this.addRemoveClass(_this.pageButton, _this.webButton);
@@ -81337,7 +81964,8 @@ var StatusBar = /** @__PURE__ @class */ (function () {
          * Updates page number.
          */
         this.updatePageNumber = function () {
-            _this.pageNumberLabel.textContent = _this.startPage.toString();
+            _this.pageNumberInput.value = _this.startPage.toString();
+            _this.updatePageNumberWidth();
         };
         this.updatePageNumberOnViewChange = function (args) {
             if (_this.documentEditor.selection
@@ -81350,23 +81978,23 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             _this.updatePageNumber();
         };
         this.wireEvents = function () {
-            _this.editablePageNumber.addEventListener('keydown', function (e) {
+            _this.pageNumberInput.addEventListener('keydown', function (e) {
                 if (e.which === 13) {
                     e.preventDefault();
-                    var pageNumber = parseInt(_this.editablePageNumber.textContent, 0);
+                    var pageNumber = parseInt(_this.pageNumberInput.value, 0);
                     if (pageNumber > _this.editorPageCount) {
                         _this.updatePageNumber();
                     }
                     else {
                         if (_this.documentEditor.selection) {
-                            _this.documentEditor.selection.goToPage(parseInt(_this.editablePageNumber.textContent, 0));
+                            _this.documentEditor.selection.goToPage(parseInt(_this.pageNumberInput.value, 0));
                         }
                         else {
-                            _this.documentEditor.scrollToPage(parseInt(_this.editablePageNumber.textContent, 0));
+                            _this.documentEditor.scrollToPage(parseInt(_this.pageNumberInput.value, 0));
                         }
                     }
-                    _this.editablePageNumber.contentEditable = 'false';
-                    if (_this.editablePageNumber.textContent === '') {
+                    _this.pageNumberInput.contentEditable = 'false';
+                    if (_this.pageNumberInput.value === '') {
                         _this.updatePageNumber();
                     }
                 }
@@ -81374,29 +82002,23 @@ var StatusBar = /** @__PURE__ @class */ (function () {
                     e.preventDefault();
                 }
             });
-            _this.editablePageNumber.addEventListener('blur', function () {
-                if (_this.editablePageNumber.textContent === '' || parseInt(_this.editablePageNumber.textContent, 0) > _this.editorPageCount) {
+            _this.pageNumberInput.addEventListener('keyup', function () {
+                _this.updatePageNumberWidth();
+            });
+            _this.pageNumberInput.addEventListener('blur', function () {
+                if (_this.pageNumberInput.value === '' || parseInt(_this.pageNumberInput.value, 0) > _this.editorPageCount) {
                     _this.updatePageNumber();
                 }
-                _this.editablePageNumber.contentEditable = 'false';
-                _this.editablePageNumber.style.border = 'none';
+                _this.pageNumberInput.contentEditable = 'false';
             });
-            _this.editablePageNumber.addEventListener('focus', function () {
-                _this.editablePageNumber.style.border = '1px solid #F1F1F1';
+            _this.pageNumberInput.addEventListener('focus', function () {
+                _this.pageNumberInput.select();
             });
-            _this.editablePageNumber.addEventListener('click', function () {
-                _this.updateDocumentEditorPageNumber();
-            });
-        };
-        this.updateDocumentEditorPageNumber = function () {
-            _this.editablePageNumber.contentEditable = 'true';
-            _this.editablePageNumber.focus();
-            window.getSelection().selectAllChildren(_this.editablePageNumber);
         };
         this.addRemoveClass = function (addToElement, removeFromElement) {
-            addToElement.classList.add('e-btn-pageweb-toggle');
-            if (removeFromElement.classList.contains('e-btn-pageweb-toggle')) {
-                removeFromElement.classList.remove('e-btn-pageweb-toggle');
+            addToElement.classList.add('e-btn-toggle');
+            if (removeFromElement.classList.contains('e-btn-toggle')) {
+                removeFromElement.classList.remove('e-btn-toggle');
             }
         };
         this.statusBarDiv = parentElement;
@@ -81465,6 +82087,11 @@ var StatusBar = /** @__PURE__ @class */ (function () {
         });
         return spellCheckBtn;
     };
+    StatusBar.prototype.updatePageNumberWidth = function () {
+        if (this.pageNumberInput) {
+            this.pageNumberInput.style.width = this.pageNumberInput.value.length >= 3 ? '30px' : '22px';
+        }
+    };
     /**
      * @private
      */
@@ -81479,7 +82106,7 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             cssClass: className, iconCss: iconcss, enableRtl: this.container.enableRtl
         });
         if (toggle === true) {
-            appendDiv.classList.add('e-btn-pageweb-toggle');
+            appendDiv.classList.add('e-btn-toggle');
         }
         btn.appendTo(appendDiv);
         appendDiv.setAttribute('title', toolTipText);
@@ -81712,6 +82339,17 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DocumentEditorContainer.prototype, "toolbar", {
+        /**
+         * Gets toolbar instance.
+         * @blazorType Toolbar
+         */
+        get: function () {
+            return this.toolbarModule;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * @private
      */
@@ -81781,6 +82419,26 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                         this.customizeDocumentEditorSettings();
                     }
                     break;
+                case 'toolbarItems':
+                    if (this.toolbarModule) {
+                        this.toolbarModule.reInitToolbarItems(newModel.toolbarItems);
+                    }
+                    break;
+                case 'currentUser':
+                    if (this.documentEditor) {
+                        this.documentEditor.currentUser = newModel.currentUser;
+                    }
+                    break;
+                case 'userColor':
+                    if (this.documentEditor) {
+                        this.documentEditor.userColor = newModel.userColor;
+                    }
+                    break;
+                case 'layoutType':
+                    if (this.documentEditor) {
+                        this.documentEditor.layoutType = newModel.layoutType;
+                    }
+                    break;
             }
         }
     };
@@ -81797,7 +82455,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
      */
     DocumentEditorContainer.prototype.render = function () {
         if (this.toolbarModule) {
-            this.toolbarModule.initToolBar();
+            this.toolbarModule.initToolBar(this.toolbarItems);
             this.toolbarModule.enableDisableInsertComment(this.enableComment);
         }
         if (this.element.getBoundingClientRect().height < 320) {
@@ -81917,7 +82575,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
             layoutType: this.layoutType,
-            pageOutline: '#E0E0E0'
+            pageOutline: '#E0E0E0',
+            currentUser: this.currentUser,
+            userColor: this.userColor
         });
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
@@ -82216,6 +82876,12 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         Property('Pages')
     ], DocumentEditorContainer.prototype, "layoutType", void 0);
     __decorate$1([
+        Property('')
+    ], DocumentEditorContainer.prototype, "currentUser", void 0);
+    __decorate$1([
+        Property('#FFFF00')
+    ], DocumentEditorContainer.prototype, "userColor", void 0);
+    __decorate$1([
         Property(false)
     ], DocumentEditorContainer.prototype, "enableLocalPaste", void 0);
     __decorate$1([
@@ -82247,6 +82913,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     ], DocumentEditorContainer.prototype, "documentChange", void 0);
     __decorate$1([
         Event()
+    ], DocumentEditorContainer.prototype, "toolbarClick", void 0);
+    __decorate$1([
+        Event()
     ], DocumentEditorContainer.prototype, "customContextMenuSelect", void 0);
     __decorate$1([
         Event()
@@ -82260,6 +82929,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
+    __decorate$1([
+        Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing'])
+    ], DocumentEditorContainer.prototype, "toolbarItems", void 0);
     __decorate$1([
         Property([])
     ], DocumentEditorContainer.prototype, "headers", void 0);

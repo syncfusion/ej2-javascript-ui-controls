@@ -1029,6 +1029,51 @@ describe('Row Drag and Drop module', () => {
         gridObj = null;
     });
     })
+
+    describe('EJ2-36585 => AllowRowDragAndDrop on property changing', () => {
+        let gridObj: Grid;
+        window['browserDetails'].isIE = false;
+        let actionComplete: (e?: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: JSON.parse(JSON.stringify(<any>data)),
+                    allowRowDragAndDrop: true,
+                    rowDropSettings: { targetID: undefined },
+                    allowSelection: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Row' },
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                    allowSorting: true,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 6, currentPage: 1 },
+                }, done);
+        });
+   
+        it('disabling rowDrag and drop', (done: Function) => {
+            actionComplete = (args: any): any => {
+                expect(gridObj.element.getElementsByClassName('e-rowdragheader').length).toBe(0);
+                expect(gridObj.element.getElementsByClassName('e-rowdragdrop').length).toBe(0);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.allowRowDragAndDrop = false;
+        });
+        it('enabling rowDrag and drop', (done: Function) => {
+            actionComplete = (args: any): any => {
+                expect(gridObj.element.getElementsByClassName('e-rowdragheader').length).toBe(1);
+                expect(gridObj.element.getElementsByClassName('e-rowdragdrop').length).toBe(gridObj.currentViewData.length);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.allowRowDragAndDrop = true;
+        });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+    })
     
 
 });

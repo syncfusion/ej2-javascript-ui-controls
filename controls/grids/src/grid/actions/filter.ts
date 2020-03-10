@@ -632,11 +632,18 @@ export class Filter implements IAction {
                 if (this.refresh) {
                     if (isBlazor() && !this.parent.isJsComponent) {
                         this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
+                        this.parent.notify(events.modelChanged, {
+                            requestType: 'filtering', type: events.actionBegin, currentFilterObject: {
+                                field: column.field, operator: this.operator, value: this.value, predicate: this.predicate,
+                                matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
+                            }, currentFilterColumn: column
+                        });
+                    } else {
+                        this.parent.notify(events.modelChanged, {
+                            requestType: 'filtering', type: events.actionBegin, currentFilterObject: currentPred,
+                            currentFilterColumn: column, action: 'clearFilter'
+                        });
                     }
-                    this.parent.notify(events.modelChanged, {
-                        requestType: 'filtering', type: events.actionBegin, currentFilterObject: currentPred,
-                        currentFilterColumn: column, action: 'clearFilter'
-                    });
                 }
                 break;
             }

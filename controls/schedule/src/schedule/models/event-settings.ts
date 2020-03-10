@@ -113,4 +113,11 @@ export class EventSettings extends ChildProperty<EventSettings> {
     @Property(false)
     public enableIndicator: boolean;
 
+    /**
+     * This property ignores or include the Events element bottom white space.
+     * @default false
+     */
+    @Property(false)
+    public ignoreWhitespace: boolean;
+
 }

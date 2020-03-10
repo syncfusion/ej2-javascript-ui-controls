@@ -92,7 +92,7 @@ export class CellOptionsDialog {
             styles: 'padding-bottom: 8px;padding-top: 8px;', className: 'e-de-cell-margin-top'
         });
         let tr: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
-        let td: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-seperator' });
+        let td: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
         let sameAsTableCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_sameAsCheckBox'
         });
@@ -317,7 +317,7 @@ export class CellOptionsDialog {
                 attrs: { 'type': 'text' }, styles: 'width:100%', id: dialog.target.id + '_Top'
             });
             td1.appendChild(topLabel); td1.appendChild(topTextBox);
-            let td2: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-seperator' });
+            let td2: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
             let leftLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
                 innerHTML: locale.getConstant('Left'), className: 'e-de-cell-dia-label-common',
                 id: dialog.target.id + '_leftLabel'

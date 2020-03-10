@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 17.4.55 (2020-03-10)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#227953` - The issue "Line routing does not consider for some nodes" has been fixed.
+- `266374` - The issue "Tool tip does not hide while mouse move on diagram" has been fixed.
+- `264862` - The Performance issue with overview sample has been fixed.
+- `F151374` - The issue "Connector stroke style does not update properly" has been fixed.
+
 ## 17.4.51 (2020-02-25)
 
 ### Diagram
@@ -12,6 +23,7 @@
 - `F151027` - The issue "Cannot get the TextAnnotation node margin values dropped in the swimlane" has been fixed.
 - `F151264` - The issue  "Need to change evt.args node/connector type as DiagramNode/DiagramConnector in Blazor Validated" has been fixed.
 - `266664` - The issue "Ruler disappears after the diagram moves beyond viewport" has been fixed
+- `F151098` - The issue "Port constraints is not working while draw connector through port" has been fixed
 
 ## 17.4.50 (2020-02-18)
 

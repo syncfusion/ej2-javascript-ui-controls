@@ -436,6 +436,7 @@ export class Selection {
     private checkLayout(): void {
         if (this.owner.layoutType === 'Continuous') {
             this.isWebLayout = true;
+            this.documentHelper.isHeaderFooter = true;
             this.owner.layoutType = 'Pages';
             this.owner.viewer.destroy();
             this.owner.viewer = new PageLayoutViewer(this.owner);
@@ -466,6 +467,10 @@ export class Selection {
      */
     public closeHeaderFooter(): void {
         this.disableHeaderFooter();
+        if (this.documentHelper.isHeaderFooter && this.owner.layoutType === 'Pages') {
+            this.owner.layoutType = 'Continuous';
+            this.documentHelper.isHeaderFooter = false;
+        }
     }
     /**
      * Moves the selection to the start of specified page number.
@@ -7233,7 +7238,7 @@ export class Selection {
         if (this.viewer instanceof PageLayoutViewer) {
             right = page.boundingRectangle.width * this.documentHelper.zoomFactor + left;
         } else {
-            right = page.boundingRectangle.width + left;
+            right = page.boundingRectangle.width - this.owner.viewer.padding.right - this.documentHelper.scrollbarWidth;
         }
         if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
             if (this.isHideSelection(this.start.paragraph)) {

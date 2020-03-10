@@ -853,7 +853,7 @@ export class SparklineRenderer {
                         markerPosition: (y2 > y1) ? (y1 + Math.abs(y2 - y1)) : y2
                     };
                 } else {
-                    if (y === min && model.rangePadding === 'Additional') {
+                    if (y === min && model.rangePadding === 'Additional' || y === max && model.rangePadding === 'Additional') {
                         min -= interVal + padding.top;
                         max += interVal + padding.top;
                         unitX = maxX - minX;
@@ -863,7 +863,7 @@ export class SparklineRenderer {
                         this.unitX = unitX;
                         this.unitY = unitY;
                         this.min = min;
-                    } else if (y === min && model.rangePadding === 'Normal') {
+                    } else if (y === min && model.rangePadding === 'Normal' || y === max && model.rangePadding === 'Normal') {
                         min -= interVal;
                         max += interVal;
                         unitX = maxX - minX;

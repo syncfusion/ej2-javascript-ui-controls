@@ -355,8 +355,10 @@ export class DiagramEventHandler {
                         this.userHandleObject = this.diagram.selectedItems.userHandles[i].name;
                     }
                     let element: HTMLElement = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_userhandle');
+
                     if (eventName === DiagramEvent.onUserHandleMouseUp) {
-                        if (element && element.id === this.userHandleObject + '_userhandle') {
+                        if (this.commandHandler.isUserHandle(this.currentPosition)
+                            && element && element.id === this.userHandleObject + '_userhandle') {
                             this.diagram.triggerEvent(eventName, arg);
                         }
                     } else {
@@ -365,7 +367,6 @@ export class DiagramEventHandler {
                 }
             }
         }
-
     }
 
     public mouseDown(evt: PointerEvent): void {
@@ -765,7 +766,7 @@ export class DiagramEventHandler {
                     position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
                     actualObject: cloneBlazorObject(this.eventArgs.actualObject)
                 };
-                if (isBlazor()) { arg = this.getBlazorClickEventArgs(arg); }
+                if (isBlazor() && this.diagram.click) { arg = this.getBlazorClickEventArgs(arg); }
                 this.diagram.triggerEvent(DiagramEvent.click, arg);
             }
             this.eventArgs = {};
@@ -919,6 +920,7 @@ export class DiagramEventHandler {
         this.focus = false;
         this.touchStartList = null;
         this.touchMoveList = null;
+        this.elementLeave();
         this.commandHandler.removeSnap();
         this.inAction = false;
         this.eventArgs = {};
@@ -1185,7 +1187,9 @@ export class DiagramEventHandler {
                 target.splice(i, 1);
             }
         }
-        let arg: IMouseEventArgs | IBlazorMouseEventArgs;
+        let arg: IMouseEventArgs | IBlazorMouseEventArgs = {
+            targets: {} as NodeModel[]
+        } as IMouseEventArgs;
         if (!isBlazor()) {
             arg = {
                 targets: cloneBlazorObject(target) as NodeModel[],
@@ -2035,6 +2039,7 @@ class ObjectFinder {
         //Find the object that is under mouse
 
         let eventHandler: string = 'eventHandler';
+        let endPoint: string = 'endPoint';
         let inPort: PointPortModel;
         let outPort: PointPortModel;
         let actualTarget: NodeModel | ConnectorModel = null;
@@ -2049,7 +2054,11 @@ class ObjectFinder {
                 let connector: ConnectorModel = diagram.selectedItems.connectors[0];
                 for (let i: number = objects.length - 1; i >= 0; i--) {
                     outPort = getInOutConnectPorts(objects[i] as Node, false);
-                    if (objects[i] instanceof Node && (canOutConnect(objects[i] as NodeModel) || (canPortOutConnect(outPort)))) {
+                    inPort = getInOutConnectPorts(objects[i]as Node, true);
+                    let tool: ConnectTool  = (diagram[eventHandler].tool as ConnectTool);
+                    if (objects[i] instanceof Node && ((canOutConnect(objects[i] as NodeModel) || (canPortOutConnect(outPort))) ||
+                    (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] == 'ConnectorTargetEnd' &&
+                         (canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort)))))) {
                         actualTarget = objects[i];
                         if (connector) {
                             actualTarget = this.isTarget(actualTarget as Node, diagram, action);
@@ -2096,7 +2105,7 @@ class ObjectFinder {
                     eventArg.actualObject = actualTarget as Node;
                 }
                 return actualTarget as IElement;
-            } else if (action === 'Select' && diagram[eventHandler].tool) {
+            } else if ((action === 'Select' || action === 'Pan') && diagram[eventHandler].tool) {
                 for (let i: number = objects.length - 1; i >= 0; i--) {
                     if (objects[i] instanceof Connector) {
                         let objj1 = objects[i - 1] as NodeModel

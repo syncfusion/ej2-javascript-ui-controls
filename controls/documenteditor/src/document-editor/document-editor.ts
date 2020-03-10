@@ -1284,7 +1284,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Table': 'Table',
         'Row': 'Row',
         'Cell': 'Cell',
-        'Ok': 'Ok',
+        'Ok': 'OK',
         'Cancel': 'Cancel',
         'Size': 'Size',
         'Preferred Width': 'Preferred width',
@@ -1586,7 +1586,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         // tslint:disable-next-line:max-line-length
         'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.',
         'No Headings': 'No Heading Found!',
-        'Add Headings': 'This document has no headings. Please add headings and try again.'
+        'Add Headings': 'This document has no headings. Please add headings and try again.',
+        'More Options': 'More Options',
+        'Click to see this comment': 'Click to see this comment'
     };
     // Public Implementation Starts
     /**

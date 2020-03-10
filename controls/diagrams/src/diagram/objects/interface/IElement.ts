@@ -355,7 +355,7 @@ export interface IBlazorConnectionChangeEventArgs {
  */
 export interface IBlazorDragLeaveEventArgs {
     /** returns the id of the diagram */
-    diagram: DiagramModel;
+    diagramId: string;
     /** returns the node or connector that is dragged outside of the diagram */
     element: DiagramEventObject;
 }
@@ -579,7 +579,7 @@ export interface ScrollValues {
  */
 export interface IBlazorScrollChangeEventArgs {
     /** returns the object that is clicked or id of the diagram */
-    source: Diagram;
+    sourceId: string;
     /** returns the previous delay value between subsequent auto scrolls */
     oldValue: ScrollValues;
     /** returns the new delay value between subsequent auto scrolls */
@@ -634,7 +634,7 @@ export interface IBlazorDragEnterEventArgs {
     /** returns the node or connector that is dragged into diagram */
     element: DiagramEventObject;
     /** returns the id of the diagram */
-    diagram: DiagramModel;
+    diagramId: string;
     /** parameter returns whether to add or remove the symbol from diagram */
     cancel: boolean;
 }
@@ -809,7 +809,7 @@ export interface DiagramEventDropObject {
      */
     connector?: ConnectorModel;
     /** returns a diagram objects  */
-    diagram?: DiagramModel;
+    diagramId?: string;
 }
 /**
  * IBlazorDropEventArgs notifies when the element is dropped in the diagram in blazor

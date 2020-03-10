@@ -592,6 +592,8 @@ export class PolarRadarPanel extends LineBase {
             width = 0;
          } else if (labelX2 > legendX1 && labelX2 < legendX2 && labelX1 < legendX1) {
             width = legendX1 - labelX1;
+         } else if (labelX2 > legendX1 && labelX2 > legendX2 && labelX1 < legendX1) {
+            width = legendX1 - labelX1;
          }
         return width;
     }

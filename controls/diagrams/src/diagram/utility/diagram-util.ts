@@ -2067,6 +2067,22 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
 };
 
 /** @private */
+export let cloneSelectedObjects: Function = (diagram: Diagram): object => {
+    let nodes: NodeModel[] = diagram.selectedItems.nodes;
+    let connectors: ConnectorModel[] = diagram.selectedItems.connectors;
+    diagram.selectedItems.nodes = [];
+    diagram.selectedItems.connectors = [];
+    let clonedSelectedItems: object = cloneObject(diagram.selectedItems);
+    for (let i: number = 0; i < nodes.length; i++) {
+        diagram.selectedItems.nodes.push(diagram.nameTable[nodes[i].id]);
+    }
+    for (let i: number = 0; i < connectors.length; i++) {
+        diagram.selectedItems.connectors.push(diagram.nameTable[connectors[i].id]);
+    }
+    return clonedSelectedItems as object;
+};
+
+/** @private */
 export let updatePathElement: Function = (anglePoints: PointModel[], connector: ConnectorModel): PathElement => {
     let pathElement: PathElement = new PathElement();
     let pathseqData: object;

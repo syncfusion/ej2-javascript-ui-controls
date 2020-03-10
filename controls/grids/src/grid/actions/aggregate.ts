@@ -1,5 +1,5 @@
 import { remove, isBlazor } from '@syncfusion/ej2-base';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { IAction, IGrid, NotifyArgs, ICellRenderer } from '../base/interface';
 import { CellType } from '../base/enum';
@@ -40,6 +40,11 @@ export class Aggregate implements IAction {
         this.footerRenderer = new FooterRenderer(this.parent, this.locator);
         this.footerRenderer.renderPanel();
         this.footerRenderer.renderTable();
+
+        let footerContent: Element = this.footerRenderer.getPanel();
+        if (this.parent.element.scrollHeight > this.parent.height && footerContent) {
+            addClass([footerContent], ['e-footerpadding']);
+        }
 
         this.locator.register('footerRenderer', this.footerRenderer);
         let fn: Function = () => {

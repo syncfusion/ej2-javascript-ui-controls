@@ -29,18 +29,18 @@
   .e-diagram-endpoint-handle {
     fill: $diagram-endpoint-handle-color;
     stroke: $diagram-resize-handle-stroke;
-  }
+   }
+
+  .e-diagram-endpoint-handle.e-connected {
+    fill: $diagram-endpoint-handle-connected-color;
+    stroke: $diagram-endpoint-handle-connected-border;
+   }
 
   .e-diagram-endpoint-handle.e-disabled {
     fill: $diagram-resize-handle-disable-color;
     opacity: 1;
     stroke: $diagram-resize-handle-disable-stroke;
-  }
-
-  .e-diagram-endpoint-handle.e-connected {
-    fill: $diagram-endpoint-handle-connected-color;
-    stroke: $diagram-endpoint-handle-connected-border;
-  }
+   }
 
   .e-diagram-bezier-handle {
     fill: $diagram-bezier-handle-color;
@@ -101,10 +101,12 @@
 
   .e-symbolpalette .e-symbol-hover:hover {
     background: $diagram-symbolpalette-hover;
+    border-radius: $diagram-symbolpalette-shape-radius;
   }
 
   .e-symbolpalette .e-symbol-selected {
     background: $diagram-symbolpalette-selected;
+    border-radius: $diagram-symbolpalette-shape-radius;
   }
 
   .e-diagram-tooltip {

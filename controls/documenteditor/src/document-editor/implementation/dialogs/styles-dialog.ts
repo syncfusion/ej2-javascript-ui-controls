@@ -64,7 +64,7 @@ export class StylesDialog {
         let newButtonDiv: HTMLElement = createElement('div', { className: 'e-styles-addbutton' });
         buttonDiv.appendChild(newButtonDiv);
         let newButtonElement: HTMLElement = createElement('button', {
-            innerHTML: localValue.getConstant('New'), id: 'new',
+            innerHTML: localValue.getConstant('New') + '...', id: 'new',
             attrs: { type: 'button' }
         });
         newButtonDiv.appendChild(newButtonElement);
@@ -75,7 +75,7 @@ export class StylesDialog {
         let modifybuttonDiv: HTMLElement = createElement('div', { className: 'e-styles-addbutton' });
         buttonDiv.appendChild(modifybuttonDiv);
         let modifyButtonElement: HTMLElement = createElement('button', {
-            innerHTML: localValue.getConstant('Modify'), id: 'modify',
+            innerHTML: localValue.getConstant('Modify') + '...', id: 'modify',
             attrs: { type: 'button' }
         });
         modifybuttonDiv.appendChild(modifyButtonElement);

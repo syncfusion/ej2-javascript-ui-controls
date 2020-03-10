@@ -706,6 +706,8 @@ const ICON_DISABLE_CLASS = 'e-icon-disable';
 /** @hidden */
 const AUTO_HEIGHT = 'e-auto-height';
 /** @hidden */
+const IGNORE_WHITESPACE = 'e-ignore-whitespace';
+/** @hidden */
 const EVENT_TEMPLATE = 'e-template';
 /** @hidden */
 const READ_ONLY = 'e-read-only';
@@ -1328,7 +1330,10 @@ class ScheduleTouch {
             return;
         }
         this.isScrollTriggered = false;
-        if (e.swipeDirection === 'Left' || e.swipeDirection === 'Right') {
+        let swipeDate = e.swipeDirection === 'Left' ?
+            this.parent.activeView.renderDates[0] : this.parent.activeView.renderDates.slice(-1)[0];
+        if ((e.swipeDirection === 'Left' && swipeDate < this.parent.maxDate) ||
+            (e.swipeDirection === 'Right' && swipeDate >= this.parent.minDate)) {
             let time = Date.now() - this.timeStampStart;
             let offsetDist = (e.distanceX * (Browser.isDevice ? 6 : 1.66));
             if (offsetDist > time || (e.distanceX > (this.parent.element.offsetWidth / 2))) {
@@ -6393,6 +6398,22 @@ class QuickPopups {
         }
         this.renderQuickDialog();
     }
+    refreshQuickPopup() {
+        if (this.quickPopup.element) {
+            this.quickPopup.destroy();
+            remove(this.quickPopup.element);
+            this.quickPopup.element = null;
+        }
+        this.renderQuickPopup();
+    }
+    refreshMorePopup() {
+        if (this.morePopup.element) {
+            this.morePopup.destroy();
+            remove(this.morePopup.element);
+            this.morePopup.element = null;
+        }
+        this.renderMorePopup();
+    }
     destroy() {
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
             this.fieldValidator.destroy();
@@ -9789,7 +9810,7 @@ class Crud {
     }
     saveEvent(eventData, action) {
         if (this.parent.eventSettings.allowEditing) {
-            if (this.parent.eventBase.isBlockRange(eventData)) {
+            if (this.parent.currentAction !== 'EditFollowingEvents' && this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
                 return;
             }
@@ -10012,8 +10033,10 @@ class Crud {
                             if (!this.parent.uiStateValues.isIgnoreOccurrence) {
                                 childEvent[fields.recurrenceException] = null;
                                 if (followData.occurrence.length > 0) {
-                                    childEvent[fields.recurrenceRule] =
-                                        followData.occurrence.slice(-1)[0][fields.recurrenceRule];
+                                    let rule = followData.occurrence.slice(-1)[0][fields.recurrenceRule];
+                                    if (rule.indexOf('COUNT') === -1) {
+                                        childEvent[fields.recurrenceRule] = rule;
+                                    }
                                 }
                                 if (followData.follow.length > 0) {
                                     childEvent[fields.recurrenceRule] =
@@ -10201,7 +10224,7 @@ class Crud {
         else {
             endDate = followEvent[fields.startTime];
             let startDate = parentEvent[fields.startTime];
-            let ruleException = followEvent[fields.recurrenceException];
+            let ruleException = (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] : null;
             let dateCollection = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
             let untilDate = new Date(dateCollection.slice(-1)[0]);
             followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
@@ -10494,6 +10517,9 @@ __decorate$6([
 __decorate$6([
     Property(false)
 ], EventSettings.prototype, "enableIndicator", void 0);
+__decorate$6([
+    Property(false)
+], EventSettings.prototype, "ignoreWhitespace", void 0);
 
 var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -10619,6 +10645,9 @@ class ResourceBase {
         if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], AUTO_HEIGHT);
+        }
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            addClass([tbl], IGNORE_WHITESPACE);
         }
         let tBody = tbl.querySelector('tbody');
         let resData = this.generateTreeData(true);
@@ -11420,9 +11449,22 @@ class ResourceBase {
                 let resourceData = resource.dataSource.filter((e) => e[resource.idField] === id)[0];
                 index = this.lastResourceLevel.map((e) => e.resourceData).indexOf(resourceData);
             }
-            let td = this.parent.element.querySelector(`.${WORK_CELLS_CLASS}[data-group-index="${index}"]`);
-            if (td && !td.parentElement.classList.contains(HIDDEN_CLASS)) {
-                scrollElement.scrollTop = td.offsetTop;
+            if (this.parent.virtualScrollModule) {
+                let virtual = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
+                let averageRowHeight = Math.round(virtual.offsetHeight / this.expandedResources.length);
+                if (this.renderedResources[0].resourceData[this.renderedResources[0].resource.idField] > index) {
+                    scrollElement.scrollTop =
+                        (index * averageRowHeight) + ((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight);
+                }
+                else {
+                    scrollElement.scrollTop = (index * averageRowHeight);
+                }
+            }
+            else {
+                let td = this.parent.element.querySelector(`.${WORK_CELLS_CLASS}[data-group-index="${index}"]`);
+                if (td && !td.parentElement.classList.contains(HIDDEN_CLASS)) {
+                    scrollElement.scrollTop = td.offsetTop;
+                }
             }
         }
         else {
@@ -11792,6 +11834,7 @@ let Schedule = class Schedule extends Component {
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
     }
+    /** @hidden */
     onServerDataBind() {
         //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
         if (this.bulkChanges && this.bulkChanges.selectedDate) {
@@ -12522,6 +12565,7 @@ let Schedule = class Schedule extends Component {
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
                     break;
                 case 'enableRtl':
+                    this.setRtlClass();
                     state.isRefresh = true;
                     break;
                 case 'rowAutoHeight':
@@ -12633,6 +12677,38 @@ let Schedule = class Schedule extends Component {
                 break;
         }
     }
+    setRtlClass() {
+        if (this.enableRtl) {
+            addClass([this.element], 'e-rtl');
+        }
+        else {
+            removeClass([this.element], 'e-rtl');
+        }
+    }
+    /**
+     * Refreshes the Scheduler
+     */
+    refresh() {
+        if (!this.isServerRenderer()) {
+            super.refresh();
+        }
+        else {
+            if (this.quickPopup) {
+                this.quickPopup.refreshQuickDialog();
+                this.quickPopup.refreshQuickPopup();
+                this.quickPopup.refreshMorePopup();
+            }
+            if (this.eventWindow) {
+                this.eventWindow.refresh();
+            }
+            this.destroyHeaderModule();
+            if (this.showHeaderBar) {
+                this.headerModule = new HeaderRenderer(this);
+            }
+            this.notify(scrollUiUpdate, { cssProperties: this.getCssProperties() });
+            this.notify(dataReady, {});
+        }
+    }
     onGroupSettingsPropertyChanged(newProp, oldProp, state) {
         for (let prop of Object.keys(newProp)) {
             if (prop === 'headerTooltipTemplate') {
@@ -12695,6 +12771,9 @@ let Schedule = class Schedule extends Component {
                     this.notify(dataReady, {
                         processedData: this.eventBase.processData(this.eventsData)
                     });
+                    break;
+                case 'ignoreWhitespace':
+                    state.isLayout = true;
                     break;
             }
         }
@@ -13885,6 +13964,8 @@ class MonthEvent extends EventBase {
         this.withIndicator = this.parent.eventSettings.enableMaxHeight && this.parent.eventSettings.enableIndicator
             && !this.parent.rowAutoHeight;
         this.maxOrIndicator = (this.maxHeight || this.withIndicator);
+        this.moreIndicatorHeight =
+            (this.parent.rowAutoHeight && this.parent.eventSettings.ignoreWhitespace) ? 0 : this.moreIndicatorHeight;
         this.addEventListener();
     }
     renderAppointments() {
@@ -16314,8 +16395,9 @@ class DragAndDrop extends ActionBase {
             * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
-            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint + this.actionObj.cellHeight :
-                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight) +
+            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint +
+                this.actionObj.cellHeight + window.pageYOffset :
+                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight + window.pageYOffset) +
                     (this.actionObj.clone.offsetHeight - this.heightUptoCursorPoint);
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
@@ -17147,6 +17229,11 @@ class ViewBase {
             addClass([element], AUTO_HEIGHT);
         }
     }
+    addIgnoreWhitespaceClass(element) {
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            addClass([element], IGNORE_WHITESPACE);
+        }
+    }
     getColElements() {
         return [].slice.call(this.element.querySelectorAll('.' + CONTENT_WRAP_CLASS
             + ' col, .' + DATE_HEADER_WRAP_CLASS + ' col'));
@@ -17732,6 +17819,7 @@ class VerticalView extends ViewBase {
         let wrap = createElement('div', { className: CONTENT_WRAP_CLASS });
         let tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
+        this.addIgnoreWhitespaceClass(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
         wrap.appendChild(tbl);
@@ -18366,6 +18454,7 @@ class Month extends ViewBase {
     renderContentArea() {
         let tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
+        this.addIgnoreWhitespaceClass(tbl);
         if (this.parent.currentView === 'TimelineMonth') {
             this.createColGroup(tbl, this.colLevels[this.colLevels.length - 1]);
         }
@@ -19390,7 +19479,7 @@ class MonthAgenda extends Month {
         this.viewClass = 'e-month-agenda-view';
         this.agendaDates = {};
         this.agendaBase = new AgendaBase(parent);
-        this.monthAgendaDate = parent.selectedDate;
+        this.monthAgendaDate = new Date('' + parent.selectedDate);
     }
     renderAppointmentContainer() {
         if (this.parent.isServerRenderer()) {

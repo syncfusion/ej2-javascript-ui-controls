@@ -39,6 +39,8 @@ export class MonthEvent extends EventBase {
         this.withIndicator = this.parent.eventSettings.enableMaxHeight && this.parent.eventSettings.enableIndicator
             && !this.parent.rowAutoHeight;
         this.maxOrIndicator = (this.maxHeight || this.withIndicator);
+        this.moreIndicatorHeight =
+            (this.parent.rowAutoHeight && this.parent.eventSettings.ignoreWhitespace) ? 0 : this.moreIndicatorHeight;
         this.addEventListener();
     }
 

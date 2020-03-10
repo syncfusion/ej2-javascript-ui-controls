@@ -72,6 +72,9 @@ export class ResourceBase {
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], cls.AUTO_HEIGHT);
         }
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            addClass([tbl], cls.IGNORE_WHITESPACE);
+        }
         let tBody: Element = tbl.querySelector('tbody');
         let resData: TdData[] = this.generateTreeData(true) as TdData[];
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
@@ -879,9 +882,21 @@ export class ResourceBase {
                     e[resource.idField] === id)[0] as { [key: string]: Object };
                 index = this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resourceData);
             }
-            let td: HTMLElement = this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-group-index="${index}"]`) as HTMLElement;
-            if (td && !td.parentElement.classList.contains(cls.HIDDEN_CLASS)) {
-                scrollElement.scrollTop = td.offsetTop;
+            if (this.parent.virtualScrollModule) {
+                let virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
+                let averageRowHeight: number = Math.round(virtual.offsetHeight / this.expandedResources.length);
+                if (this.renderedResources[0].resourceData[this.renderedResources[0].resource.idField] > index) {
+                    scrollElement.scrollTop =
+                        (index * averageRowHeight) + ((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight);
+                } else {
+                    scrollElement.scrollTop = (index * averageRowHeight);
+                }
+            } else {
+                let td: HTMLElement =
+                    this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-group-index="${index}"]`) as HTMLElement;
+                if (td && !td.parentElement.classList.contains(cls.HIDDEN_CLASS)) {
+                    scrollElement.scrollTop = td.offsetTop;
+                }
             }
         } else {
             if (!this.parent.activeViewOptions.group.byGroupID) {

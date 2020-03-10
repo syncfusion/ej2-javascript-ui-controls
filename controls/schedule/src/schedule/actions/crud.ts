@@ -101,7 +101,7 @@ export class Crud {
 
     public saveEvent(eventData: { [key: string]: Object } | { [key: string]: Object }[], action: CurrentAction): void {
         if (this.parent.eventSettings.allowEditing) {
-            if (this.parent.eventBase.isBlockRange(eventData)) {
+            if (this.parent.currentAction !== 'EditFollowingEvents' && this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
                 return;
             }
@@ -323,8 +323,11 @@ export class Crud {
                             if (!this.parent.uiStateValues.isIgnoreOccurrence) {
                                 childEvent[fields.recurrenceException] = null;
                                 if (followData.occurrence.length > 0) {
-                                    childEvent[fields.recurrenceRule] =
-                                        (<{ [key: string]: Object }>followData.occurrence.slice(-1)[0])[fields.recurrenceRule];
+                                    let rule: string =
+                                        (<{ [key: string]: Object }>followData.occurrence.slice(-1)[0])[fields.recurrenceRule] as string;
+                                    if (rule.indexOf('COUNT') === -1) {
+                                        childEvent[fields.recurrenceRule] = rule;
+                                    }
                                 }
                                 if (followData.follow.length > 0) {
                                     childEvent[fields.recurrenceRule] =
@@ -518,7 +521,8 @@ export class Crud {
         } else {
             endDate = followEvent[fields.startTime] as Date;
             let startDate: Date = parentEvent[fields.startTime] as Date;
-            let ruleException: string = followEvent[fields.recurrenceException] as string;
+            let ruleException: string =
+                (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] as string : null;
             let dateCollection: number[] = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
             let untilDate: Date = new Date(dateCollection.slice(-1)[0]);
             followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
@@ -546,5 +550,4 @@ export class Crud {
         }
         return updatedRule;
     }
-
 }

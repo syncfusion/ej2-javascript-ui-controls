@@ -7638,7 +7638,7 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
             case 'deleteSheetTab':
                 var length_1 = this.sheetInfo.length;
                 for (var i = 0; i < length_1; i++) {
-                    if (this.sheetInfo[i].index === args.index) {
+                    if (this.sheetInfo[i].index === args.index + 1) {
                         args.sheetName = this.sheetInfo[i].sheet;
                         this.sheetInfo.splice(i, 1);
                         break;

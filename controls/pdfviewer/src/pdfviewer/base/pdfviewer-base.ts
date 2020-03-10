@@ -1186,6 +1186,7 @@ export class PdfViewerBase {
         this.annotationStorage = {};
         this.downloadCollections = {};
         this.annotationEvent = null;
+        this.isDocumentEdited = false;
         this.initiateTextSelectMode();
         if (!Browser.isDevice) {
             if (this.navigationPane.sideBarToolbar) {
@@ -1254,7 +1255,7 @@ export class PdfViewerBase {
         }
         let measureElement: HTMLElement = document.getElementById('measureElement');
         if (measureElement) {
-            measureElement.parentElement.removeChild(measureElement);
+            measureElement = undefined;
         }
     }
     /**
@@ -1924,7 +1925,32 @@ export class PdfViewerBase {
             }
         }
     }
-
+    private checkIsRtlText(text: string): boolean {
+        // tslint:disable-next-line:max-line-length
+        let ltrChars: string = 'A-Za-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02B8\\u0300-\\u0590\\u0800-\\u1FFF' + '\\u2C00-\\uFB1C\\uFDFE-\\uFE6F\\uFEFD-\\uFFFF';
+        let rtlChars: string = '\\u0591-\\u07FF\\uFB1D-\\uFDFD\\uFE70-\\uFEFC';
+        // tslint:disable-next-line
+        let rtlDirCheck: any = new RegExp('^[^' + ltrChars + ']*[' + rtlChars + ']');
+        return rtlDirCheck.test(text);
+    }
+    /**
+     * @private
+     */
+    public checkIsNormalText(): boolean {
+        let isText: boolean = true;
+        let currentText: string = '';
+        // tslint:disable-next-line
+        let textSelectionModule: any = this.pdfViewer.textSelectionModule;
+        if (textSelectionModule && textSelectionModule.selectionRangeArray && textSelectionModule.selectionRangeArray.length === 1) {
+            currentText = textSelectionModule.selectionRangeArray[0].textContent;
+        } else if (window.getSelection() && window.getSelection().anchorNode) {
+            currentText = window.getSelection().toString();
+        }
+        if (currentText !== '' && this.checkIsRtlText(currentText)) {
+            isText = false;
+        }
+        return isText;
+    }
     private viewerContainerOnMouseup = (event: MouseEvent): void => {
         if (!this.getPopupNoteVisibleStatus()) {
             if (this.isViewerMouseDown) {
@@ -1964,10 +1990,23 @@ export class PdfViewerBase {
             if (event.button === 0 && !this.isClickedOnScrollBar(event, false)) {
                 // 0 is for left button.
                 let eventTarget: HTMLElement = event.target as HTMLElement;
-                if (eventTarget && eventTarget.classList && eventTarget.classList.contains('e-pv-page-canvas')) {
+                let offsetX: number;
+                let offsetY: number;
+                if (this.pdfViewer.annotation) {
+                    let zoomFactor: number = this.getZoomFactor();
+                    let pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
+                    let pageDiv: HTMLElement = this.getElement('_pageDiv_' + pageIndex);
+                    if (pageDiv) {
+                        let pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
+                        offsetX = (event.clientX - pageCurrentRect.left) / zoomFactor;
+                        offsetY = (event.clientY - pageCurrentRect.top) / zoomFactor;
+                    }
+                }
+                // tslint:disable-next-line:max-line-length
+                if (eventTarget && eventTarget.classList && !eventTarget.classList.contains('e-pv-hyperlink') && !eventTarget.classList.contains('e-pv-page-container')) {
                     let idStringArray: string[] = eventTarget.id.split('_');
                     // tslint:disable-next-line
-                    this.pdfViewer.firePageClick(event.offsetX, event.offsetY, parseInt(idStringArray[idStringArray.length - 1]) + 1);
+                    this.pdfViewer.firePageClick(offsetX, offsetY, parseInt(idStringArray[idStringArray.length - 1]) + 1);
                 }
                 if (this.isTextMarkupAnnotationModule()) {
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.onTextMarkupAnnotationMouseUp(event);
@@ -2462,7 +2501,9 @@ export class PdfViewerBase {
                 }
             } else if (event.button === 2) {
                 if (this.viewerContainer.contains(event.target as HTMLElement) && this.skipPreventDefault(event.target as HTMLElement)) {
-                    window.getSelection().removeAllRanges();
+                    if (this.checkIsNormalText()) {
+                        window.getSelection().removeAllRanges();
+                    }
                 }
             }
             if (this.isViewerMouseDown) {
@@ -3901,7 +3942,7 @@ export class PdfViewerBase {
         };
     }
 
-    /** 
+    /**
      * @public
      */
     // tslint:disable-next-line

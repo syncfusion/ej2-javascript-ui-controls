@@ -215,10 +215,12 @@ public isRemote(): boolean {
           }
         }
       } else {
-        this.convertToFlatData(records);
+        if (!isNullOrUndefined(records)) {
+          this.convertToFlatData(records);
+        }
       }
     }
-    args.result = (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender])
+    args.result = (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender] && !isNullOrUndefined(records))
                       || this.parent.loadChildOnDemand ? this.parent.flatData : records;
     this.parent.notify('updateResults', args);
   }

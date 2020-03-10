@@ -2166,10 +2166,12 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
         this.parent.notify(toolbarCreated, this);
     };
     ToolbarRenderer.prototype.toolbarClicked = function (args) {
-        if (this.parent.readonly || !this.parent.enabled) {
+        if (!this.parent.enabled) {
             return;
         }
-        this.parent.notify(toolbarClick, args);
+        if (!this.parent.readonly) {
+            this.parent.notify(toolbarClick, args);
+        }
         this.parent.trigger('toolbarClick', args);
     };
     ToolbarRenderer.prototype.dropDownSelected = function (args) {
@@ -5141,7 +5143,7 @@ var Count = /** @__PURE__ @class */ (function () {
      * @deprecated
      */
     Count.prototype.destroy = function () {
-        if (this.element && !isNullOrUndefined(document.querySelector('.' + CLS_COUNT))) {
+        if (this.element && !isNullOrUndefined(this.parent.element.querySelector('.' + CLS_COUNT))) {
             detach(this.element);
         }
         this.removeEventListener();
@@ -8735,7 +8737,8 @@ var DOMNode = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     var lastNode = start.lastChild;
-                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text') {
+                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text' &&
+                        lastNode.nodeName !== 'BR') {
                         lastNode = lastNode.lastChild;
                     }
                     start = lastNode;
@@ -9214,6 +9217,9 @@ var Lists = /** @__PURE__ @class */ (function () {
         this.domNode.setMarker(this.saveSelection);
         var listsNodes = this.domNode.blockNodes();
         for (var i = 0; i < listsNodes.length; i++) {
+            if (listsNodes[i].tagName === 'TABLE') {
+                listsNodes.splice(i, 1);
+            }
             if (listsNodes[i].tagName !== 'LI' && 'LI' === listsNodes[i].parentNode.tagName) {
                 listsNodes[i] = listsNodes[i].parentNode;
             }
@@ -10067,6 +10073,11 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
     InsertHtml.pasteInsertHTML = function (nodes, node, range, nodeSelection, nodeCutter, docElement, isCollapsed, closestParentNode, editNode) {
         var isCursor = range.startOffset === range.endOffset &&
             range.startContainer === range.endContainer;
+        if (isCursor && range.startContainer === editNode && editNode.textContent === '') {
+            var currentBlockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            nodeSelection.setSelectionText(docElement, currentBlockNode, currentBlockNode, 0, 0);
+            range = nodeSelection.getRange(docElement);
+        }
         var lasNode;
         var sibNode;
         var isSingleNode;
@@ -10175,6 +10186,9 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
             }
             node.parentNode.replaceChild(fragment, node);
         }
+        this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+    };
+    InsertHtml.placeCursorEnd = function (lastSelectionNode, node, nodeSelection, docElement, editNode) {
         lastSelectionNode = lastSelectionNode.nodeName === 'BR' ? lastSelectionNode.previousSibling : lastSelectionNode;
         while (!isNullOrUndefined(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
             lastSelectionNode.nodeName !== 'BR') {
@@ -14375,11 +14389,11 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
             success: function (e) {
                 setTimeout(function () { _this.popupClose(popupObj, uploadObj, imgElem, e); }, 900);
             },
+            uploading: function (e) {
+                _this.parent.trigger(imageUploading, e);
+            },
             failure: function (e) {
-                if (popupObj) {
-                    popupObj.close();
-                }
-                _this.parent.trigger(imageUploadFailed, e);
+                setTimeout(function () { _this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
             }
         });
         uploadObj.appendTo(popupObj.element.childNodes[0]);
@@ -14399,12 +14413,19 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         popupObj.element.getElementsByClassName('e-file-select-wrap')[0].style.display = 'none';
         detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap'));
     };
+    PasteCleanup.prototype.uploadFailure = function (imgElem, uploadObj, popupObj, e) {
+        detach(imgElem);
+        if (popupObj) {
+            popupObj.close();
+        }
+        this.parent.trigger(imageUploadFailed, e);
+        uploadObj.destroy();
+    };
     PasteCleanup.prototype.popupClose = function (popupObj, uploadObj, imgElem, e) {
         var _this = this;
         this.parent.trigger(imageUploadSuccess, e, function (e) {
             if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
-                var url = _this.parent.insertImageSettings.path + e.file.name + '.' +
-                    e.file.type.split('image/')[1];
+                var url = _this.parent.insertImageSettings.path + e.file.name;
                 imgElem.src = url;
                 imgElem.setAttribute('alt', e.file.name);
             }
@@ -14432,13 +14453,14 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
     PasteCleanup.prototype.base64ToFile = function (base64, filename) {
         var baseStr = base64.split(',');
         var typeStr = baseStr[0].match(/:(.*?);/)[1];
+        var extension = typeStr.split('/')[1];
         var decodeStr = atob(baseStr[1]);
         var strLen = decodeStr.length;
         var decodeArr = new Uint8Array(strLen);
         while (strLen--) {
             decodeArr[strLen] = decodeStr.charCodeAt(strLen);
         }
-        return new File([decodeArr], filename, { type: typeStr });
+        return new File([decodeArr], filename + '.' + (!isNullOrUndefined(extension) ? extension : ''), { type: extension });
     };
     /**
      * Method for image formatting when pasting
@@ -17306,6 +17328,7 @@ var Image = /** @__PURE__ @class */ (function () {
             this.popupObj.close();
         }
         this.parent.trigger(imageUploadFailed, e);
+        this.uploadObj.destroy();
     };
     /**
      * Called when drop image upload was successful
@@ -20725,7 +20748,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         this.notify(contentscroll, { args: e });
     };
     RichTextEditor.prototype.focusHandler = function (e) {
-        if ((!this.isRTE || this.isFocusOut) && !this.readonly) {
+        if ((!this.isRTE || this.isFocusOut)) {
             this.isRTE = this.isFocusOut ? false : true;
             this.isFocusOut = false;
             addClass([this.element], [CLS_FOCUS]);
@@ -20817,7 +20840,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 trg = null;
             }
         }
-        if (this.isBlur && isNullOrUndefined(trg) && !this.readonly) {
+        if (this.isBlur && isNullOrUndefined(trg)) {
             removeClass([this.element], [CLS_FOCUS]);
             this.notify(focusChange, {});
             var value = this.getUpdatedValue();

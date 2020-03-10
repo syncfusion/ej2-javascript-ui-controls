@@ -307,15 +307,18 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 attrs: { 'role': 'menuItem', 'tabindex': '-1' },
                 id: item.id ? item.id : getUniqueID('e-' + this.getModuleName() + '-item')
             });
+            if (item.url) {
+                li.appendChild(this.createAnchor(item));
+                li.classList.add('e-url');
+            }
             if (item.iconCss) {
                 span = this.createElement('span', { className: classNames.ICON + ' ' + item.iconCss });
-                li.insertBefore(span, li.childNodes[0]);
+                (item.url) ? li.childNodes[0].appendChild(span) : li.insertBefore(span, li.childNodes[0]);
             } else {
                 if (showIcon && !item.separator) {
                     li.classList.add('e-blank-icon');
                 }
             }
-            if (item.url) { li.appendChild(this.createAnchor(item)); }
             eventArgs = { item: item, element: li as HTMLElement };
             this.trigger('beforeItemRender', eventArgs);
             ul.appendChild(li);

@@ -501,7 +501,8 @@ export class DOMNode {
                     start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] as Element : start;
                 } else {
                     let lastNode: Node = start.lastChild;
-                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text') {
+                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text' &&
+                    lastNode.nodeName !== 'BR') {
                         lastNode = lastNode.lastChild;
                     }
                     start = lastNode as Element;

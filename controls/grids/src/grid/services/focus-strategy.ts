@@ -147,6 +147,25 @@ export class FocusStrategy {
                 && closest(target, '.e-headerchkcelldiv') === null))) || closest(target, '.e-filter-popup') !== null;
     }
 
+    private focusVirtualElement(e?: KeyboardEventArgs): void {
+        if (this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll) {
+            let data: { virtualData: Object, isAdd: boolean, isCancel: boolean } = { virtualData: {}, isAdd: false, isCancel: false };
+            this.parent.notify(event.getVirtualData, data);
+            let isKeyFocus: boolean = this.actions.some((value: string) => value === this.activeKey);
+            if (data.isAdd || Object.keys(data.virtualData).length || isKeyFocus || data.isCancel) {
+                data.isCancel = false;
+                if (isKeyFocus) {
+                    this.activeKey = this.empty;
+                    this.parent.notify('virtaul-key-handler', e);
+                }
+                // tslint:disable-next-line:no-any
+                (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
+            } else {
+                this.currentInfo.elementToFocus.focus();
+            }
+        }
+    }
+
     public getFocusedElement(): HTMLElement {
         return this.currentInfo.elementToFocus;
     }
@@ -165,11 +184,8 @@ export class FocusStrategy {
         setTimeout(
             () => {
                 if (!isNullOrUndefined(this.currentInfo.elementToFocus)) {
-                    if (this.parent.enableVirtualization && this.actions.some((value: string) => value === this.activeKey)) {
-                        this.activeKey = this.empty;
-                        this.parent.notify('virtaul-key-handler', e);
-                        // tslint:disable-next-line:no-any
-                        (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
+                    if (this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll) {
+                        this.focusVirtualElement(e);
                     } else {
                         this.currentInfo.elementToFocus.focus();
                     }
@@ -395,18 +411,20 @@ export class FocusStrategy {
     }
 
     public restoreFocusWithAction(e: NotifyArgs): void {
-        let matrix: Matrix = this.getContent().matrix;
-        let current: number[] = matrix.current;
-        switch (e.requestType) {
-            case 'grouping':
-            case 'ungrouping':
-                current[1] = current.length &&
-                    !this.parent.groupSettings.showGroupedColumn && !isNullOrUndefined(matrix.matrix[current[0]]) ?
-                    matrix.matrix[current[0]].indexOf(1) : e.requestType === 'grouping' ? current[1] + 1 : current[1] - 1;
-                break;
+        if (!this.parent.infiniteScrollSettings.enableScroll) {
+            let matrix: Matrix = this.getContent().matrix;
+            let current: number[] = matrix.current;
+            switch (e.requestType) {
+                case 'grouping':
+                case 'ungrouping':
+                    current[1] = current.length &&
+                        !this.parent.groupSettings.showGroupedColumn && !isNullOrUndefined(matrix.matrix[current[0]]) ?
+                        matrix.matrix[current[0]].indexOf(1) : e.requestType === 'grouping' ? current[1] + 1 : current[1] - 1;
+                    break;
+            }
+            this.getContent().matrix.current = current;
+            this.addFocus(this.getContent().getFocusInfo());
         }
-        this.getContent().matrix.current = current;
-        this.addFocus(this.getContent().getFocusInfo());
     }
 
     public clearOutline(): void {

@@ -367,7 +367,7 @@ describe('Selection Public APi testing - 2', () => {
 //         let range: SelectionRange = editor.selection.selectionRanges.last;
 //         editor.selection.selectionRanges.addRange(range);
 //         expect(editor.selection.selectionRanges.length).toBe(1);
-//         expect(() => { (editor.selection.start as any).getNextWordOffsetFieldSeperator({} as any); }).not.toThrowError();
+//         expect(() => { (editor.selection.start as any).getNextWordOffsetFieldSeparator({} as any); }).not.toThrowError();
 //     });
 //     it('Navigate Hyperlink texting', () => {
 //         viewer.document = editor.createEmptyDocument();

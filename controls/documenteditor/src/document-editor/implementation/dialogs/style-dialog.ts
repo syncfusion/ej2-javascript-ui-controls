@@ -548,11 +548,11 @@ export class StyleDialog {
         if (isNullOrUndefined(header)) {
             header = localObj.getConstant('Create New Style');
         }
-        this.documentHelper.dialog2.header = header;
-        this.documentHelper.dialog2.height = 'auto';
-        this.documentHelper.dialog2.width = 'auto';
-        this.documentHelper.dialog2.content = this.target;
-        this.documentHelper.dialog2.buttons = [{
+        this.documentHelper.dialog.header = header;
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = 'auto';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.buttons = [{
             click: this.onOkButtonClick,
             buttonModel: { content: localObj.getConstant('Ok'), cssClass: 'e-flat e-style-okay', isPrimary: true }
         },
@@ -561,11 +561,11 @@ export class StyleDialog {
             buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-style-cancel' }
         }];
         this.toggleDisable();
-        this.documentHelper.dialog2.dataBind();
-        this.documentHelper.dialog2.beforeOpen = this.loadStyleDialog;
-        this.documentHelper.dialog2.close = this.closeStyleDialog;
-        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
-        this.documentHelper.dialog2.show();
+        this.documentHelper.dialog.dataBind();
+        this.documentHelper.dialog.beforeOpen = this.loadStyleDialog;
+        this.documentHelper.dialog.close = this.closeStyleDialog;
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog.show();
     }
     /**
      * @private
@@ -621,7 +621,7 @@ export class StyleDialog {
                 name = styleName;
                 this.documentHelper.owner.editorModule.applyStyle(name);
             }
-            this.documentHelper.dialog2.hide();
+            this.documentHelper.dialog.hide();
         } else {
             throw new Error('Enter valid Style name');
         }
@@ -675,7 +675,7 @@ export class StyleDialog {
             name = this.editStyleName;
         }
         /* tslint:disable-next-line:max-line-length */
-        this.okButton = this.documentHelper.dialog2.element.getElementsByClassName('e-flat e-style-okay').item(0) as HTMLButtonElement;
+        this.okButton = this.documentHelper.dialog.element.getElementsByClassName('e-flat e-style-okay').item(0) as HTMLButtonElement;
         this.enableOrDisableOkButton();
         this.updateStyleNames(this.getTypeValue(), name);
         this.updateCharacterFormat(this.style.characterFormat);
@@ -859,7 +859,7 @@ export class StyleDialog {
         if (!this.isEdit && this.style) {
             this.style.destroy();
         }
-        this.documentHelper.dialog2.hide();
+        this.documentHelper.dialog.hide();
     }
     /**
      * @private

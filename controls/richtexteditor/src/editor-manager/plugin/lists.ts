@@ -298,6 +298,9 @@ export class Lists {
         this.domNode.setMarker(this.saveSelection);
         let listsNodes: Node[] = this.domNode.blockNodes();
         for (let i: number = 0; i < listsNodes.length; i++) {
+            if ((listsNodes[i] as Element).tagName === 'TABLE') {
+                listsNodes.splice(i, 1);
+            }
             if ((listsNodes[i] as Element).tagName !== 'LI' && 'LI' === (listsNodes[i].parentNode as Element).tagName) {
                 listsNodes[i] = listsNodes[i].parentNode;
             }

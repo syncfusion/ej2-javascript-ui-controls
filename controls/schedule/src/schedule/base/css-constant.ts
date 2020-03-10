@@ -438,6 +438,8 @@ export const ICON_DISABLE_CLASS: string = 'e-icon-disable';
 /** @hidden */
 export const AUTO_HEIGHT: string = 'e-auto-height';
 /** @hidden */
+export const IGNORE_WHITESPACE: string = 'e-ignore-whitespace';
+/** @hidden */
 export const EVENT_TEMPLATE: string = 'e-template';
 /** @hidden */
 export const READ_ONLY: string = 'e-read-only';

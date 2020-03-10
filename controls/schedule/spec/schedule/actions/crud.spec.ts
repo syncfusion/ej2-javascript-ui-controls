@@ -249,6 +249,13 @@ describe('Schedule CRUD', () => {
             schObj.saveEvent(schObj.eventsData[0] as { [key: string]: Object });
             expect(schObj.eventsData.length).toEqual(3);
         });
+
+        it('test saveEvent with array type', () => {
+            schObj.eventSettings.allowEditing = true;
+            schObj.dataBind();
+            schObj.saveEvent([schObj.eventsData[0]] as { [key: string]: Object }[]);
+            expect(schObj.eventsData.length).toEqual(3);
+        });
     });
 
     describe('Delete Actions', () => {

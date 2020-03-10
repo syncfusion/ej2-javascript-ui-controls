@@ -1340,6 +1340,24 @@ export class QuickPopups {
         this.renderQuickDialog();
     }
 
+    public refreshQuickPopup(): void {
+        if (this.quickPopup.element) {
+            this.quickPopup.destroy();
+            remove(this.quickPopup.element);
+            this.quickPopup.element = null;
+        }
+        this.renderQuickPopup();
+    }
+
+    public refreshMorePopup(): void {
+        if (this.morePopup.element) {
+            this.morePopup.destroy();
+            remove(this.morePopup.element);
+            this.morePopup.element = null;
+        }
+        this.renderMorePopup();
+    }
+
     public destroy(): void {
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
             this.fieldValidator.destroy();

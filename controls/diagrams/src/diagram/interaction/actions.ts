@@ -434,7 +434,7 @@ let cursors: Object = {
     'BezierTargetThumb': 'move',
     'OrthoThumb': 'move',
     'SegmentEnd': 'move',
-    'Pan': 'pointer',
+    'Pan': 'grab',
     'Hyperlink': 'pointer',
     'PortDrag': 'pointer',
     'LabelSelect': 'pointer',

@@ -69,7 +69,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     public renderTable() : void {
       super.renderTable();
       getValue('observer', this).options.debounceEvent = false;
-      this.observers = new TreeInterSectionObserver(this.parent, getValue('observer', this).element, getValue('observer', this).options);
+      this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
       this.contents = this.getPanel().firstChild as HTMLElement;
     }
     public scrollListeners(scrollArgs: ScrollArg) : void {

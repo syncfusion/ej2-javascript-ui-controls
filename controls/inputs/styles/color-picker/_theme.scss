@@ -73,8 +73,15 @@
     & .e-split-btn-wrapper .e-split-colorpicker.e-split-btn {
       @if $skin-name == 'bootstrap4' {
         background-color: $cpicker-handler-tooltip-color;
-        }
+        border-color: $gray-400;
       }
+    }
+
+    & .e-split-btn-wrapper .e-split-colorpicker+.e-dropdown-btn {
+      @if $skin-name == 'bootstrap4' {
+        border-color: $gray-400;
+      }
+    }
 
     & .e-btn.e-icon-btn {
       @if $skin-name == 'bootstrap4' {

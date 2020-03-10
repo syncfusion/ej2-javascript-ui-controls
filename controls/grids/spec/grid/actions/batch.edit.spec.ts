@@ -3145,3 +3145,41 @@ describe('EJ2-36298 - validation rules for columns => ', () => {
     });
 });
 
+describe('EJ2-37034 - batch edit creates new record after add a record and tab from the last row=> ', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let cell: HTMLElement;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                pageSettings: { pageCount: 5, pageSize:5 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch',newRowPosition:'Top' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd', width: 170 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } } }
+                ],
+            }, done);
+    });
+    it('add and delete', function () {
+        (gridObj.element.querySelector('#'+gridObj.element.id+'_add') as any).click();
+        let tr = gridObj.getContent().querySelectorAll('tr')[5];
+        cell = tr.cells[tr.cells.length - 1];
+        cell.click();
+        gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cell } as any);
+        expect(gridObj.isEdit).toBeTruthy();
+        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(1);
+        expect(gridObj.getContent().querySelectorAll('tr').length).toBe(7);  
+    });
+    afterAll(() => {
+        gridObj.notify('tooltip-destroy', {});
+        destroy(gridObj);
+    });
+});
+

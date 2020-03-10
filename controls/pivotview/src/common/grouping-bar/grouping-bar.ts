@@ -2,14 +2,12 @@ import { createElement, remove, Droppable, setStyleAttribute, removeClass } from
 import { EventHandler, Touch, TapEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, formatUnit } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
-import { Common } from '../actions/common';
 import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from './axis-field-renderer';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { Column, ColumnModel } from '@syncfusion/ej2-grids';
-PivotView.Inject(Common);
 
 /**
  * Module for GroupingBar rendering

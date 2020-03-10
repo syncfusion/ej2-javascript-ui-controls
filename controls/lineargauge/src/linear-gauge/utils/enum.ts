@@ -188,3 +188,17 @@ export type ExportType =
     'SVG' |
     /** Used to export a file as pdf format */
     'PDF';
+/**
+ * Tooltip Position
+ */
+export type TooltipPosition =
+     /** To draw the normal rectangle box */
+     'Start' |
+     /**
+      * To draw the thermometer box
+      */
+     'Center' |
+     /**
+      * To draw the rounded rectangle box
+      */
+     'End';

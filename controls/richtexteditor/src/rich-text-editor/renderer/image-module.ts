@@ -1634,6 +1634,7 @@ export class Image {
             this.popupObj.close();
         }
         this.parent.trigger(events.imageUploadFailed, e);
+        this.uploadObj.destroy();
     }
     /**
      * Called when drop image upload was successful

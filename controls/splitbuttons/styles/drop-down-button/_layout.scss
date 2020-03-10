@@ -104,8 +104,13 @@
         line-height: $drop-down-btn-li-height;
         padding: $drop-down-btn-li-padding;
 
+        &.e-url {
+          padding: 0;
+        }
+
         & .e-menu-url {
           display: inline-block;
+          padding: $drop-down-btn-li-padding;
           text-decoration: none;
         }
 
@@ -156,6 +161,10 @@
       height: $drop-down-btn-bigger-li-height;
       line-height: $drop-down-btn-bigger-li-height;
       padding: $drop-down-btn-bigger-li-padding;
+
+      &.e-url {
+        padding: 0;
+      }
 
       & .e-menu-icon {
         font-size: $drop-down-btn-menu-icon-bigger-font-size;

@@ -12,7 +12,7 @@ export class VirtualScroll {
     private parent: Schedule;
     private translateY: number = 0;
     private itemSize: number = 60;
-    private bufferCount: number = 3;
+    public bufferCount: number = 3;
     private renderedLength: number = 0;
     private averageRowHeight: number = 0;
 

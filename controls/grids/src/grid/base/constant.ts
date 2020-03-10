@@ -383,10 +383,34 @@ export const virtaulKeyHandler: string = 'virtaul-key-handler';
 /** @hidden */
 export const virtaulCellFocus: string = 'virtaul-cell-focus';
 /** @hidden */
+export const virtualScrollEditActionBegin: string = 'virtual-scroll-edit-action-begin';
+/** @hidden */
+export const virtualScrollEditSuccess: string = 'virtual-scroll-edit-success';
+/** @hidden */
+export const virtualScrollEditCancel: string = 'virtual-scroll-edit-cancel';
+/** @hidden */
+export const virtualScrollEdit: string = 'virtual-scroll-edit';
+/** @hidden */
+export const refreshVirtualCache: string = 'refresh-virtual-cache';
+/** @hidden */
+export const editReset: string = 'edit-reset';
+/** @hidden */
+export const virtualScrollAddActionBegin: string = 'virtual-scroll-add-action-begin';
+/** @hidden */
+export const getVirtualData: string = 'get-virtual-data';
+/** @hidden */
 export const refreshInfiniteModeBlocks: string = 'refresh-infinite-mode-blocks';
 /** @hidden */
 export const resetInfiniteBlocks: string = 'reset-infinite-blocks';
 /** @hidden */
-export const shareInfiniteCache: string = 'share-infinite-cache';
+export const infiniteScrollHandler: string = 'infinite-scroll-handler';
 /** @hidden */
-export const infiniteScrollListener: string = 'infinite-scroll-listener';
+export const infinitePageQuery: string = 'infinite-page-query';
+/** @hidden */
+export const appendInfiniteContent: string = 'append-infinite-content';
+/** @hidden */
+export const removeInfiniteRows: string = 'remove-infinite-rows';
+/** @hidden */
+export const setInfiniteCache: string = 'set-infinite-cache';
+/** @hidden */
+export const initialCollapse: string = 'initial-collapse';

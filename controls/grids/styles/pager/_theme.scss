@@ -10,6 +10,10 @@
       color: $pager-icon-color;
     }
 
+    div.e-icons.e-disable {
+      color: $pager-numeric-txt-bg-color;
+    }
+
     .e-pager-default:hover {
       background: $pager-hover-bg-color;
       color: $pager-hover-color;
@@ -23,6 +27,10 @@
     .e-spacing {
       color: $page-content-color;
       opacity: $pager-content-opacity;
+    }
+
+    .e-spacing.e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
+      background: $pager-numeric-hover-bg-color;
     }
 
     .e-numericitem:hover {

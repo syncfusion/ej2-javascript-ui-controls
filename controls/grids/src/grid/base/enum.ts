@@ -56,7 +56,9 @@ export type Action =
     /** Defines current Action as filterSearchBegin */
     'filterSearchBegin' |
     /** represents the column state */
-    'columnstate';
+    'columnstate' |
+    /** Defines current Action as Infinite Scroll */
+    'infiniteScroll';
 
 
 

@@ -237,9 +237,8 @@ export class Sort implements IAction {
     public removeSortColumn(field: string): void {
         let gObj: IGrid = this.parent;
         let cols: SortDescriptorModel[] = this.sortSettings.columns;
-        if (this.sortedColumns.indexOf(field) < 0) {
-            return;
-        }
+        if (cols.length === 0 && this.sortedColumns.indexOf(field) < 0) {
+            return; }
         if (this.isActionPrevent()) {
             this.parent.notify(events.preventBatch, { instance: this, handler: this.removeSortColumn, arg1: field });
             return;

@@ -4,7 +4,7 @@ import { Layout, ILayout } from '../layout/layout-base';
 import { ConnectorModel } from '../objects/connector-model';
 import { NodeModel } from '../objects/node-model';
 import { Container } from '../core/containers/container';
-import { DiagramEvent } from '../enum/enum';
+import { DiagramEvent, RealAction } from '../enum/enum';
 import { IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { cloneObject as clone } from '../utility/base-util';
 import { cloneBlazorObject } from '../utility/diagram-util';
@@ -22,6 +22,7 @@ export class LayoutAnimation {
         let setIntervalObject: Object = {};
         let i: number = 0;
         let j: number = 0;
+        diagram.realActions = diagram.realActions | RealAction.AnimationClick;
         setIntervalObject[i] = setInterval(
             () => {
                 j++;
@@ -64,6 +65,8 @@ export class LayoutAnimation {
         }
         if (stop) {
             clearInterval(layoutTimer[0]);
+            diagram.realActions = diagram.realActions & ~RealAction.AnimationClick;
+            diagram.refreshCanvasLayers();
             diagram.protectPropertyChange(true);
             diagram.triggerEvent(DiagramEvent.animationComplete, undefined);
             diagram.organizationalChartModule.isAnimation = false;

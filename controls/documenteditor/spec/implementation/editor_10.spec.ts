@@ -353,7 +353,7 @@ describe('Field insert with rtl para', () => {
         let text = 'Lead#Email';
 
         editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[8] instanceof FieldElementBox).toBe(true);
+        expect(editor.selection.start.currentWidget.children[9] instanceof FieldElementBox).toBe(true);
     });
     it('Insert field at middle of RTL paragraph', () => {
         editor.selection.handleControlRightKey();
@@ -367,7 +367,7 @@ describe('Field insert with rtl para', () => {
         let text = 'Lead#Email';
 
         editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[10] instanceof FieldElementBox).toBe(true);
+        expect(editor.selection.start.currentWidget.children[11] instanceof FieldElementBox).toBe(true);
     });
     it('Insert field at last of RTL paragraph', () => {
         editor.selection.handleControlRightKey();
@@ -380,5 +380,5 @@ describe('Field insert with rtl para', () => {
         editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
         expect(editor.selection.start.currentWidget.children[0] instanceof FieldElementBox).toBe(true);
     });
-    
+
 });

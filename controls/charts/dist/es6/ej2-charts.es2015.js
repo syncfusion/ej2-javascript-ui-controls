@@ -12372,6 +12372,9 @@ class PolarRadarPanel extends LineBase {
         else if (labelX2 > legendX1 && labelX2 < legendX2 && labelX1 < legendX1) {
             width = legendX1 - labelX1;
         }
+        else if (labelX2 > legendX1 && labelX2 > legendX2 && labelX1 < legendX1) {
+            width = legendX1 - labelX1;
+        }
         return width;
     }
     /**
@@ -40475,7 +40478,7 @@ class SparklineRenderer {
                     };
                 }
                 else {
-                    if (y === min && model.rangePadding === 'Additional') {
+                    if (y === min && model.rangePadding === 'Additional' || y === max && model.rangePadding === 'Additional') {
                         min -= interVal + padding.top;
                         max += interVal + padding.top;
                         unitX = maxX - minX;
@@ -40486,7 +40489,7 @@ class SparklineRenderer {
                         this.unitY = unitY;
                         this.min = min;
                     }
-                    else if (y === min && model.rangePadding === 'Normal') {
+                    else if (y === min && model.rangePadding === 'Normal' || y === max && model.rangePadding === 'Normal') {
                         min -= interVal;
                         max += interVal;
                         unitX = maxX - minX;

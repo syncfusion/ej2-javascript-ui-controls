@@ -475,6 +475,9 @@ export class Group implements IAction {
             this.parent.notify('group-expand-collapse', { isExpand: isExpand });
             return;
         }
+        if (!isExpand) {
+            this.parent.notify(events.initialCollapse, isExpand);
+        }
         let rowNodes: HTMLCollection = this.parent.getContentTable().querySelector('tbody').children;
         let row: Element;
         for (let i: number = 0, len: number = rowNodes.length; i < len; i++) {

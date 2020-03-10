@@ -14,14 +14,12 @@ export interface ILinearGaugeEventArgs {
     name: string;
     cancel: boolean;
 }
-
 /**
  * specifies Print Events
  */
 export interface IPrintEventArgs extends ILinearGaugeEventArgs {
     htmlContent: Element;
 }
-
 /**
  * Gauge Loaded event arguments
  */
@@ -55,7 +53,6 @@ export interface IAnimationCompleteEventArgs extends ILinearGaugeEventArgs {
 }
 /**
  * Gauge axis label rendering event arguments
- * @deprecated
  */
 export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
     /**
@@ -74,7 +71,6 @@ export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
 
 /**
  * Gauge tooltip event arguments
- * @deprecated
  */
 export interface ITooltipRenderEventArgs extends ILinearGaugeEventArgs {
     /**
@@ -143,6 +139,37 @@ export interface IMouseEventArgs extends ILinearGaugeEventArgs {
      * event argument y position
      */
     y: number;
+}
+export interface IPointerDragEventArgs {
+    /**
+     * name event argument 
+     */
+    name: string;
+    /**
+     * axis event argument 
+     */
+    axis?: Axis;
+    /**
+     * pointer event argument 
+     */
+    pointer?: Pointer;
+    /**
+     * currentValue event argument 
+     */
+    currentValue: number;
+    /**
+     * previousValue event argument 
+     */
+    previousValue?: number;
+    /**
+     * index of the current pointer argument 
+     */
+    pointerIndex: number;
+    /**
+     * index of the current pointer`s axis argument 
+     */
+    axisIndex: number;
+
 }
 /**
  * Gauge resize event arguments

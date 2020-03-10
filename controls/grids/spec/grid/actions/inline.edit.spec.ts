@@ -25,6 +25,51 @@ import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, Freeze, VirtualScroll);
 
+let virtualData: Object[] = [];
+function virtualdataSource() {
+    let names: string[] = ['VINET', 'TOMSP', 'HANAR', 'VICTE', 'SUPRD', 'HANAR', 'CHOPS', 'RICSU', 'WELLI', 'HILAA', 'ERNSH', 'CENTC',
+        'OTTIK', 'QUEDE', 'RATTC', 'ERNSH', 'FOLKO', 'BLONP', 'WARTH', 'FRANK', 'GROSR', 'WHITC', 'WARTH', 'SPLIR', 'RATTC', 'QUICK', 'VINET',
+        'MAGAA', 'TORTU', 'MORGK', 'BERGS', 'LEHMS', 'BERGS', 'ROMEY', 'ROMEY', 'LILAS', 'LEHMS', 'QUICK', 'QUICK', 'RICAR', 'REGGC', 'BSBEV',
+        'COMMI', 'QUEDE', 'TRADH', 'TORTU', 'RATTC', 'VINET', 'LILAS', 'BLONP', 'HUNGO', 'RICAR', 'MAGAA', 'WANDK', 'SUPRD', 'GODOS', 'TORTU',
+        'OLDWO', 'ROMEY', 'LONEP', 'ANATR', 'HUNGO', 'THEBI', 'DUMON', 'WANDK', 'QUICK', 'RATTC', 'ISLAT', 'RATTC', 'LONEP', 'ISLAT', 'TORTU',
+        'WARTH', 'ISLAT', 'PERIC', 'KOENE', 'SAVEA', 'KOENE', 'BOLID', 'FOLKO', 'FURIB', 'SPLIR', 'LILAS', 'BONAP', 'MEREP', 'WARTH', 'VICTE',
+        'HUNGO', 'PRINI', 'FRANK', 'OLDWO', 'MEREP', 'BONAP', 'SIMOB', 'FRANK', 'LEHMS', 'WHITC', 'QUICK', 'RATTC', 'FAMIA'];
+    for (let i: number = 0; i < 1000; i++) {
+        virtualData.push({
+            'FIELD1': names[Math.floor(Math.random() * names.length)],
+            'FIELD2': i,
+            'FIELD3': i,
+            'FIELD4': i === 0 ? 1 : Math.floor(Math.random() * 100),
+            'FIELD5': i === 0 ? 2 : Math.floor(Math.random() * 2000),
+            'FIELD6': i === 0 ? 3 : Math.floor(Math.random() * 1000),
+            'FIELD7': i === 0 ? 4 : Math.floor(Math.random() * 100),
+            'FIELD8': i,
+            'FIELD9': i === 0 ? 6 : Math.floor(Math.random() * 10),
+            'FIELD10': i === 0 ? 7 : Math.floor(Math.random() * 100),
+            'FIELD11': i === 0 ? 8 : Math.floor(Math.random() * 100),
+            'FIELD12': i,
+            'FIELD13': i === 0 ? 10 : Math.floor(Math.random() * 10),
+            'FIELD14': i === 0 ? 11 : Math.floor(Math.random() * 10),
+            'FIELD15': i === 0 ? 12 : Math.floor(Math.random() * 1000),
+            'FIELD16': i,
+            'FIELD17': i === 0 ? 14 : Math.floor(Math.random() * 300),
+            'FIELD18': i === 0 ? 15 : Math.floor(Math.random() * 400),
+            'FIELD19': i,
+            'FIELD20': i === 0 ? 17 : Math.floor(Math.random() * 700),
+            'FIELD21': i === 0 ? 18 : Math.floor(Math.random() * 800),
+            'FIELD22': i === 0 ? 19 : Math.floor(Math.random() * 1000),
+            'FIELD23': i === 0 ? 20 : Math.floor(Math.random() * 2000),
+            'FIELD24': i,
+            'FIELD25': i === 0 ? 22 : Math.floor(Math.random() * 1000),
+            'FIELD26': i === 0 ? 23 : Math.floor(Math.random() * 100),
+            'FIELD27': i === 0 ? 24 : Math.floor(Math.random() * 400),
+            'FIELD28': i,
+            'FIELD29': i === 0 ? 26 : Math.floor(Math.random() * 500),
+            'FIELD30': i === 0 ? 27 : Math.floor(Math.random() * 300),
+        });
+    }
+}
+
 describe('Inline Editing module', () => {
 
     let dataSource: Function = (): Object[] => {
@@ -2239,6 +2284,563 @@ describe('Inline Editing module', () => {
             destroy(gridObj);
             gridObj = actionBegin = actionComplete = null;
         });
+    });
+
+    describe('Row virtualization with inline edit support', () => {
+        virtualdataSource();
+        let actionBegin: () => void;
+        let actionComplete: () => void;
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: virtualData,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    enableVirtualization: true,
+                    pageSettings: { pageSize: 50 },
+                    height: 400,
+                    columns: [
+                        { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                        { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                        { field: 'FIELD3', headerText: 'FIELD3', allowEditing: false, width: 120 },
+                        { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                        { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('edit start - 1', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                    let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.columns.length);
+                    //primary key check
+                    expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
+                    // allow Editing false
+                    expect(cells[2].querySelectorAll('input.e-disabled').length).toBe(1);
+                    //focus check
+                    expect(document.activeElement.id).toBe(gridObj.element.id + 'FIELD1');
+                    //toolbar status check
+                    expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+                    expect(gridObj.isEdit).toBeTruthy();
+                    done();
+                }
+            };
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.isEdit).toBeFalsy();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            //toolbar status check
+            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
+            gridObj.clearSelection();
+            let formFunc: any = (args?: any): void => {
+                expect(args.name).toBe('edit-form');
+                gridObj.off(events.beforeStartEdit, formFunc);
+            };
+            gridObj.on(events.beforeStartEdit, formFunc, this);
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 500;
+            setTimeout(done, 600);
+        });
+
+        it('ensure edit form', () => {
+            expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(0);
+            expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
+            expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
+            expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+            expect(gridObj.isEdit).toBeTruthy();
+            let data: Object = (<{ virtualData?: Object }>(gridObj as Grid).contentModule).virtualData;
+            expect(Object.keys(data).length).not.toBe(0);
+            expect(gridObj.contentModule.editedRowIndex).toBe(0);
+            expect(gridObj.getRowsObject()[0].data.FIELD2).toBe((data as any).FIELD2);
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 0;
+            setTimeout(done, 600);
+        });
+
+        it('edit complete - 2', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+
+                    //updatated data cehck
+                    expect((gridObj.currentViewData[0] as any).FIELD1).toBe('updated');
+                    //row count check
+                    expect(gridObj.getContent().querySelectorAll('.e-row').length).toBe(50);
+                    //record count check
+                    expect(gridObj.currentViewData.length).toBe(50);
+                    expect(gridObj.isEdit).toBeFalsy();
+                    let data: Object = (<{ virtualData?: Object }>(gridObj as Grid).contentModule).virtualData;
+                    expect(Object.keys(data).length).toBe(0);
+                    done();
+                }
+            };
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.isEdit).toBeTruthy();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        });
+
+        it('Edit after scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 4000;
+            setTimeout(done, 600);
+        });
+
+        it('edit start - 2', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                    let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.columns.length);
+                    //primary key check
+                    expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
+                    // allow Editing false
+                    expect(cells[2].querySelectorAll('input.e-disabled').length).toBe(1);
+                    //focus check
+                    expect(document.activeElement.id).toBe(gridObj.element.id + 'FIELD1');
+                    //toolbar status check
+                    expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+                    expect(gridObj.isEdit).toBeTruthy();
+                    expect(cells[3].querySelector('.e-input').value).not.toBe('');
+                    expect(cells[3].querySelector('.e-input').value).not.toBe(null);
+                    expect(cells[3].querySelector('.e-input').value).not.toBe(undefined);
+                    done();
+                }
+            };
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.isEdit).toBeFalsy();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            //toolbar status check
+            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
+            gridObj.clearSelection();
+            let formFunc: any = (args?: any): void => {
+                expect(args.name).toBe('edit-form');
+                gridObj.off(events.beforeStartEdit, formFunc);
+            };
+            gridObj.on(events.beforeStartEdit, formFunc, this);
+            gridObj.selectRow(109, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        it('edit complete - 3', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+
+                    //updatated data cehck
+                    expect((gridObj.currentViewData[9] as any).FIELD1).toBe('updated');
+                    //row count check
+                    expect(gridObj.getContent().querySelectorAll('.e-row').length).toBe(50);
+                    //record count check
+                    expect(gridObj.currentViewData.length).toBe(50);
+                    expect(gridObj.isEdit).toBeFalsy();
+                    done();
+                }
+            };
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.isEdit).toBeTruthy();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 0;
+            setTimeout(done, 600);
+        });
+
+        it('edit start - 3', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(2, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 6000;
+            setTimeout(done, 600);
+        });
+
+        it('edit complete - 4', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    //updatated data cehck
+                    expect(gridObj.contentModule.vgenerator.cache[1][2].data.FIELD1).toBe('updated');
+                    expect(gridObj.isEdit).toBeFalsy();
+                    done();
+                }
+            };
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.isEdit).toBeTruthy();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        });
+
+        it('edit start - 4', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(165, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 1500;
+            setTimeout(done, 600);
+        });
+
+        it('Edit-cancel complete', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'cancel') {
+                    //form destroy check
+                    expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+                    expect(gridObj.isEdit).toBeFalsy();
+                    done();
+                }
+            };
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'cancel') {
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+                    expect(gridObj.contentModule.vgenerator.cache[7][15].data.FIELD1).not.toBe('updated');
+                    expect(gridObj.isEdit).toBeTruthy();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            //toolbar status check
+            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
+        });
+
+        it('edit start - 5', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(44, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 5500;
+            setTimeout(done, 600);
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 1500;
+            setTimeout(done, 600);
+        });
+
+        it('Edit-cancel complete', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'cancel') {
+                    //form destroy check
+                    expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+                    expect(gridObj.isEdit).toBeFalsy();
+                    expect(gridObj.contentModule.vgenerator.cache[2][19].data.FIELD1).not.toBe('updated');
+                    done();
+                }
+            };
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'cancel') {
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                    expect((gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value).toBe('updated');
+                    expect(gridObj.isEdit).toBeTruthy();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            //toolbar status check
+            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 0;
+            setTimeout(done, 600);
+        });
+
+        it('Add start - 1', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                    let cells = gridObj.element.querySelector('.e-addedrow').querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.columns.length);
+                    //primary key check
+                    expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(0);
+                    // allow Editing false
+                    expect(cells[2].querySelectorAll('input.e-disabled').length).toBe(1);
+                    //focus check
+                    expect(document.activeElement.id).toBe(gridObj.element.id + 'FIELD2');
+                    //toolbar status check
+                    expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+                    expect(gridObj.isEdit).toBeTruthy();
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value = 1234567;
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    done();
+                }
+            };
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect(gridObj.isEdit).toBeFalsy();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            //toolbar status check for last action
+            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
+            //edited class check for last action
+            expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(0);
+            gridObj.clearSelection();
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 1000;
+            setTimeout(done, 600);
+        });
+
+        it('ensure add form after scroll', () => {
+            expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(0);
+            expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
+            expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
+            expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+            expect(Object.keys(gridObj.contentModule.virtualData).length).not.toBe(0);
+            expect(gridObj.contentModule.editedRowIndex).toBe(undefined);
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 0;
+            setTimeout(done, 600);
+        });
+
+        it('Add complete - 1', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+                    //form destroy check
+                    expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+                    //updatated data cehck
+                    expect((gridObj.currentViewData[0] as any).FIELD2).toBe(1234567);
+                    expect((gridObj.currentViewData[0] as any).FIELD1).toBe('updated');
+                    //row count check
+                    expect(gridObj.getContent().querySelectorAll('.e-row').length).toBe(50);
+                    //record count check
+                    expect(gridObj.currentViewData.length).toBe(50);
+                    expect(gridObj.isEdit).toBeFalsy();
+                    done();
+                }
+            };
+
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                    expect((gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value).toBe('1234567');
+                    expect((gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value).toBe('updated');
+                    expect(gridObj.isEdit).toBeTruthy();
+                    gridObj.actionBegin = undefined;
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.actionBegin = actionBegin;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 2300;
+            setTimeout(done, 600);
+        });
+
+        it('Add start - 2', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect((<HTMLElement>gridObj.getContent().firstChild).scrollTop).toBe(0);
+                    expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value = 12345678;
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    done();
+                }
+            };
+
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+
+        it('Add complete - 2', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+                    //updatated data cehck
+                    expect((gridObj.currentViewData[0] as any).FIELD2).toBe(12345678);
+                    expect((gridObj.currentViewData[0] as any).FIELD1).toBe('updated');
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        });
+
+        it('Add start - 3', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value = 123456789;
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    done();
+                }
+            };
+
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 2700;
+            setTimeout(done, 600);
+        });
+
+        it('Add complete - 3', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.dataSource[0].FIELD2).toBe(123456789);
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        });
+
+        it('Add-cancel start', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD2') as any).value = 123456;
+                    (gridObj.element.querySelector('#' + gridObj.element.id + 'FIELD1') as any).value = 'updated';
+                    done();
+                }
+            };
+
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+
+        it('scroll', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollTop = 2800;
+            setTimeout(done, 600);
+        });
+
+        it('Add-cancel complete', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'cancel') {
+                    //updatated data cehck
+                    expect(gridObj.dataSource[0].FIELD2).toBe(123456789);
+                    expect((<HTMLElement>gridObj.getContent().firstChild).scrollTop).toBe(2800);
+                    gridObj.actionComplete = undefined;
+                    done();
+                }
+            };
+
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
+        });
+
+        afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
+        });
+    });
+
+    describe('EJ2-36215 Script error in empty dropDownList', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    columns: [
+                        { field: 'ShipCountry', type: 'string', editType: 'dropdownedit' },
+                    ],
+                }, done);
+        });
+
+        it('Adding Null values', () => {
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+            expect(((gridObj.element.querySelector('.e-dropdownlist') as any).ej2_instances[0]).dataSource.dataSource.json.length).toBe(0);
+            ((gridObj.element.querySelector('.e-dropdownlist') as any).ej2_instances[0]).dataSource.dataSource.json[0] = { ShipCountry: null };
+            ((gridObj.element.querySelector('.e-dropdownlist') as any).ej2_instances[0]).showPopup();
+            expect(((gridObj.element.querySelector('.e-dropdownlist') as any).ej2_instances[0]).dataSource.dataSource.json.length).toBe(1);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+
     });
 
 });

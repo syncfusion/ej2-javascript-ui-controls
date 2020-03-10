@@ -382,6 +382,7 @@ export class Month extends ViewBase implements IRenderer {
     public renderContentArea(): Element {
         let tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
+        this.addIgnoreWhitespaceClass(tbl);
         if (this.parent.currentView === 'TimelineMonth') {
             this.createColGroup(tbl, this.colLevels[this.colLevels.length - 1]);
         }

@@ -13,11 +13,12 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { removeClass } from '@syncfusion/ej2-base';
+import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as events from '../../../src/grid/base/constant';
+import { Edit } from '../../../src/grid/actions/edit';
 
 
-Grid.Inject(Page, Toolbar, ColumnChooser, Freeze, DetailRow);
+Grid.Inject(Page, Toolbar, ColumnChooser, Freeze, DetailRow, Edit);
 describe('Column chooser module', () => {
     describe('Column chooser testing', () => {
         let gridObj: Grid;
@@ -730,4 +731,90 @@ describe('Column chooser module', () => {
 
     });
 
+    describe('EJ2-37190 => Form not closed for the Column choooser action', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [{ field: 'OrderID', isPrimaryKey: true }, { field: 'CustomerID' },
+                    { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    selectedRowIndex: 2,
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                    pageSettings: { pageSize: 5 },
+                }, done);
+        });
+        
+        it('Check form is ceated', (done: Function) => {
+            gridObj.actionComplete = (e)=>{
+                if (e.requestType === 'beginedit') {
+                    expect(isNullOrUndefined(document.querySelector(".e-gridform"))).toBe(false);
+                }
+                done();
+            }
+            gridObj.startEdit();
+        });
+        it('Check form is closed after column choooser action', (done: Function) => {
+            gridObj.columnChooserModule.openColumnChooser();
+            let cheEle: any = gridObj.element.querySelectorAll('.e-icons.e-check')[2];
+            cheEle.click();
+            let okButton: any = gridObj.element.querySelector(".e-cc_okbtn");
+            okButton.click();
+            expect(gridObj.getVisibleColumns().length).toBe(4);
+            expect(isNullOrUndefined(document.querySelector(".e-gridform"))).toBe(true);
+            done();
+        });
+
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
+
+    describe('EJ2-37361 => Columns does not render properly while using column chooser to select columns', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    showColumnChooser: true,
+                        toolbar: ['ColumnChooser'],
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                            { field: 'CustomerName', headerText: 'Customer Name', width: 150, showInColumnChooser: false },
+                            { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                            { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                            { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                            { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                            { field: 'ShipCity', visible: false, headerText: 'Ship City', width: 150 }
+                        ]
+                }, done);
+        });
+        it('check ok button are disable', (done: Function) => {
+            let columnchooser: HTMLElement = gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_columnchooser');
+            columnchooser.click();
+            let cheEle: any = gridObj.element.querySelectorAll('.e-cc-selectall .e-selectall')[0];
+            cheEle.click();
+            cheEle.click();
+            columnchooser.click();
+            columnchooser.click();
+            expect(gridObj.element.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
+            done();
+        });
+
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
 });

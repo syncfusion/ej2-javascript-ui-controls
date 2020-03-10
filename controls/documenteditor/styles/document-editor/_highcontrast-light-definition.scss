@@ -192,7 +192,7 @@ $de-cell-subheader-top: 57px !default;
 $de-cell-margin-header-left: -7px !default;
 $de-cell-margin-header-top: 310px !default;
 $de-tbl-margin-sub-header: 20px !default;
-$de-tbl-btn-seperator: 57% !default;
+$de-tbl-btn-separator: 57% !default;
 $de-op-container-messagediv-color: #000 !default;
 $de-save-dlg-format-type-padding: 10px !default;
 $de-op-search-tab-content-margin-top: 1px !default;
@@ -270,7 +270,6 @@ $de-font-checkbox-label-font-size: 12px !default;
 $de-op-icon-font-size: 10px !default;
 $de-op-close-icon-size: 12px !default;
 $de-op-close-icon-margin-left: -4px !default;
-$de-op-close-icon-margin-top: -3px !default;
 $de-table-align-hover-color: #f17eb8 !default;
 $de-table-tab-hover-color: $de-table-align-hover-color !default;
 $de-cell-align-hover-color: $de-table-align-hover-color !default;
@@ -556,7 +555,7 @@ $de-cell-subheader-top: 61px !default;
 $de-cell-margin-header-left: -7px !default;
 $de-cell-margin-header-top: 319px !default;
 $de-tbl-margin-sub-header: 5px !default;
-$de-tbl-btn-seperator: 62% !default;
+$de-tbl-btn-separator: 62% !default;
 $de-op-container-messagediv-color: #fff !default;
 $de-save-dlg-format-type-padding: 1px !default;
 $de-op-search-tab-content-margin-top: 1px !default;
@@ -630,7 +629,6 @@ $de-font-checkbox-label-font-size: 12px !default;
 $de-op-icon-font-size: 12px !default;
 $de-op-close-icon-size: 12px !default;
 $de-op-close-icon-margin-left: -4px !default;
-$de-op-close-icon-margin-top: -3px !default;
 $de-table-align-hover-color: $border-fg-alt !default;
 $de-table-tab-hover-color: $de-table-align-hover-color !default;
 $de-cell-align-hover-color: $de-table-align-hover-color !default;
@@ -776,11 +774,7 @@ $de-reply-footer-margin-top: 8px !default;
     }
 
     .e-de-op-close-icon {
-      font-size: $de-op-close-icon-size;
       height: $de-op-close-icon-width;
-      margin-left: $de-op-close-icon-margin-left;
-      margin-top: $de-op-close-icon-margin-top;
-      width: auto;
     }
 
     .e-de-op-close-icon::before {
@@ -1264,11 +1258,9 @@ $de-reply-footer-margin-top: 8px !default;
     }
 
     .e-de-op-close-button {
-      height: $de-op-close-icon-width;
       left: 267px;
       position: absolute;
       top: $de-op-close-button-top;
-      width: $de-op-close-icon-width;
     }
   }
 }
@@ -2129,8 +2121,8 @@ $de-reply-footer-margin-top: 8px !default;
     margin-top: $de-tbl-margin-sub-header;
   }
 
-  .e-de-tbl-btn-seperator {
-    width: $de-tbl-btn-seperator;
+  .e-de-tbl-btn-separator {
+    width: $de-tbl-btn-separator;
   }
 
 
@@ -2305,7 +2297,7 @@ $de-reply-footer-margin-top: 8px !default;
     color: $de-checkbox-wrapper-color;
   }
 
-  .e-de-tbl-btn-seperator .e-checkbox-wrapper .e-label {
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label {
     color: $de-checkbox-wrapper-color;
   }
 
@@ -2540,7 +2532,7 @@ $de-reply-footer-margin-top: 8px !default;
   .e-de-table-ppty-options-break .e-checkbox-wrapper .e-frame,
   .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-frame,
   .e-de-table-cell-header-div .e-checkbox-wrapper .e-frame,
-  .e-de-tbl-btn-seperator .e-checkbox-wrapper .e-frame,
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-frame,
   .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-frame,
   .e-de-tbl-margin-sub-header .e-frame {
     height: $de-checkbox-height;
@@ -2553,7 +2545,7 @@ $de-reply-footer-margin-top: 8px !default;
   .e-de-table-ppty-options-break .e-checkbox-wrapper .e-label,
   .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-label ,
   .e-de-table-cell-header-div .e-checkbox-wrapper .e-label,
-  .e-de-tbl-btn-seperator .e-checkbox-wrapper .e-label,
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label,
   .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-label,
   .e-de-tbl-margin-sub-header .e-label {
     font-size: 14px;

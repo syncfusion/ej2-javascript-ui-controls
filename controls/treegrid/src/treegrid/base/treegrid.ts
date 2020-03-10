@@ -1538,6 +1538,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.grid[isJsComponent] = true;
     }
     this.setBlazorGUID();
+    this.setColIndex(this.grid.columns as GridColumnModel[]);
     this.bindGridEvents();
     let headerCheckbox: string = 'headerCheckbox';
     this.grid.on('colgroup-refresh', this.selectionModule[headerCheckbox], this.selectionModule);
@@ -1548,6 +1549,21 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let processModel: string = 'processModel';
     this.grid[processModel]();
     gridObserver.off('component-rendered', this.gridRendered);
+  }
+  private setColIndex(columnModel: GridColumnModel[], ind: number = 0): number {
+    for (let i: number = 0, len: number = columnModel.length; i < len; i++) {
+      if ((columnModel[i] as GridColumn).columns) {
+        (columnModel[i] as GridColumn).index = isNullOrUndefined((columnModel[i] as GridColumn).index) ? ind :
+                                               (columnModel[i] as GridColumn).index;
+        ind++;
+        ind = this.setColIndex(<GridColumn[]>(columnModel[i] as GridColumn).columns, ind);
+      } else {
+        (columnModel[i] as GridColumn).index = isNullOrUndefined((columnModel[i] as GridColumn).index) ? ind :
+                                               (columnModel[i] as GridColumn).index;
+        ind++;
+      }
+    }
+    return ind;
   }
   private setBlazorGUID(): void {
     let guid: string = 'guid';
@@ -1702,7 +1718,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.columnDrop = this.triggerEvents.bind(this);
     this.grid.beforePrint = this.triggerEvents.bind(this);
     this.grid.printComplete = this.triggerEvents.bind(this);
-    this.grid.cellEdit = this.triggerEvents.bind(this);
     this.grid.actionFailure = this.triggerEvents.bind(this);
     this.grid.dataBound = (args: Object): void => {
       this.updateRowTemplate(args); this.updateColumnModel();
@@ -1749,6 +1764,13 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.bindCallBackEvents();
   }
   private bindCallBackEvents(): void {
+    let beginEdit: Function;
+    let name: string = 'name';
+    if (isBlazor() && this.isServerRendered) {
+      if (!isNullOrUndefined(this.grid.beginEdit) && this.grid.beginEdit[name] === 'bound triggerEJEvents') {
+        beginEdit = this.grid.beginEdit;
+      }
+    }
     this.grid.toolbarClick = (args: ClickEventArgs): Deferred | void => {
       let callBackPromise: Deferred = new Deferred();
       this.trigger(events.toolbarClick, args, (toolbarargs: ClickEventArgs) => {
@@ -1767,6 +1789,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       return callBackPromise;
     };
     this.grid.beginEdit = (args: BeginEditArgs): Deferred | void => {
+      if (isBlazor() && this.isServerRendered) {
+        if (beginEdit && typeof beginEdit === 'function' && beginEdit[name] === 'bound triggerEJEvents') {
+          beginEdit.apply(this, [args]);
+        }
+      }
       let callBackPromise: Deferred = new Deferred();
       this.trigger(events.beginEdit, args, (begineditArgs: BeginEditArgs) => {
         callBackPromise.resolve(begineditArgs);
@@ -1778,6 +1805,13 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let keypressed: string = 'key-pressed';
     let editKeyPress: string = 'keyPressed';
     let localobserver: string = 'localObserver';
+    let cellEdit: Function;
+    let name: string = 'name';
+    if (isBlazor() && this.isServerRendered) {
+      if (!isNullOrUndefined(this.grid.cellEdit) && this.grid.cellEdit[name] === 'bound triggerEJEvents') {
+        cellEdit = this.grid.cellEdit;
+      }
+    }
     if (this.editModule && isBlazor() && this.isServerRendered) {
       this.grid.on(keypressed, this.editModule[editKeyPress], this.editModule);
       let events: [] = this.grid[localobserver].boundedEvents['key-pressed'];
@@ -1816,6 +1850,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     //   this.notify(events.cellSaved, args);
     // };
     this.grid.cellEdit = (args: BatchAddArgs): Deferred | void => {
+        if (isBlazor() && this.isServerRendered) {
+          if (cellEdit && typeof cellEdit === 'function' && cellEdit[name] === 'bound triggerEJEvents') {
+            cellEdit.apply(this, [args]);
+          }
+        }
         let prom: string = 'promise';
         let promise: Deferred = new Deferred();
         args[prom] = promise;

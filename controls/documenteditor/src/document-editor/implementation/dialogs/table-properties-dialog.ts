@@ -524,12 +524,12 @@ export class TablePropertiesDialog {
             tableOptionContiner.style.cssFloat = 'left';
         }
         this.bordersAndShadingButton = createElement('button', {
-            innerHTML: localValue.getConstant('Borders and Shading'),
+            innerHTML: localValue.getConstant('Borders and Shading') + '...',
             id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.tableOptionButton = createElement('button', {
-            className: 'e-control e-btn e-flat', innerHTML: localValue.getConstant('Options'),
+            className: 'e-control e-btn e-flat', innerHTML: localValue.getConstant('Options') + '...',
             id: element.id + '_table_cellmargin', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.tableOptionButton.addEventListener('click', this.showTableOptionsDialog);
@@ -826,7 +826,7 @@ export class TablePropertiesDialog {
         controlDiv.appendChild(rowHeightType); child3.appendChild(labeltext); child4.appendChild(controlDiv);
         child2.appendChild(child3); child2.appendChild(child4); parentDiv.appendChild(child2); element.appendChild(parentDiv);
         let alignmentDiv: HTMLDivElement = createElement('div', {
-            innerHTML: localValue.getConstant('Options'), styles: 'width: 100%;',
+            innerHTML: localValue.getConstant('Options') + '...', styles: 'width: 100%;',
             className: 'e-de-table-dialog-options-label'
         }) as HTMLDivElement;
         // tslint:disable-next-line:max-line-length
@@ -1067,7 +1067,7 @@ export class TablePropertiesDialog {
             innerHTML: localValue.getConstant('Bottom'), className: 'e-de-table-dia-align-label'
         }) as HTMLLabelElement;
         this.cellOptionButton = createElement('button', {
-            innerHTML: localValue.getConstant('Options'), id: element.id + '_table_cellmargin',
+            innerHTML: localValue.getConstant('Options') + '...', id: element.id + '_table_cellmargin',
             className: 'e-control e-btn e-flat', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.cellOptionButton.style.cssFloat = isRtl ? 'left' : 'right';

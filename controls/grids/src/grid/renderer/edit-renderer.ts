@@ -12,7 +12,7 @@ import { RowModelGenerator } from '../services/row-model-generator';
 import { IModelGenerator, ICellRenderer } from '../base/interface';
 import { Cell } from '../models/cell';
 import { FocusStrategy } from '../services/focus-strategy';
-import { getComplexFieldID, getObject, appendChildren } from '../base/util';
+import { getComplexFieldID, getObject, appendChildren, parentsUntil } from '../base/util';
 import * as events from '../base/constant';
 /**
  * Edit render module is used to render grid edit row.
@@ -137,7 +137,14 @@ export class EditRender {
         if (this.parent.editSettings.mode === 'Batch') {
             this.focus.onClick({ target: closest(elem, 'td') }, true);
         } else {
-            elem.focus();
+            let isFocus: boolean = this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' ? false : true;
+            if (isFocus || (this.parent.enableVirtualization && this.parent.editSettings.newRowPosition === 'Bottom'
+                && parentsUntil(elem, 'e-addedrow'))) {
+                elem.focus();
+            } else {
+                // tslint:disable-next-line:no-any
+                (elem as any).focus({ preventScroll: true });
+            }
         }
         if (elem.classList.contains('e-defaultcell')) {
             elem.setSelectionRange(elem.value.length, elem.value.length);

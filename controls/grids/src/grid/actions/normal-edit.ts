@@ -31,6 +31,7 @@ export class NormalEdit {
     private originalRow: Element;
     private frozen: Element;
     private cloneFrozen: Element;
+    private currentVirtualData: Object = {};
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, renderer?: EditRender) {
         this.parent = parent;
@@ -99,6 +100,13 @@ export class NormalEdit {
         let primaryKeys: string[] = gObj.getPrimaryKeyFieldNames();
         let primaryKeyValues: string[] = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
+        if (gObj.enableVirtualization) {
+            let selector: string = '.e-row[aria-rowindex="' + this.rowIndex + '"]';
+            let virtualRow: Element = this.parent.getContent().querySelector(selector);
+            if (!virtualRow) {
+                return;
+            }
+        }
         if (isBlazor()) {
             let cols: Column[] = this.parent.getColumns();
             for (let i: number = 0; i < cols.length; i++) {
@@ -111,6 +119,10 @@ export class NormalEdit {
         if (isGroupAdaptive(gObj)) {
             let rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
+        } else if (this.parent.enableVirtualization) {
+            let e: { data: Object, index: number } = { data: this.previousData, index: this.rowIndex };
+            this.parent.notify(events.virtualScrollEditActionBegin, e);
+            this.previousData = e.data;
         } else {
             this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
         }
@@ -210,7 +222,15 @@ export class NormalEdit {
         let isDlg: Boolean = gObj.editSettings.mode === 'Dialog';
         let dlgWrapper: Element = document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper');
         let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
-        editedData = gObj.editModule.getCurrentEditedData(dlgForm, editedData);
+        let data: { virtualData: Object, isAdd: boolean } = { virtualData: {}, isAdd: false };
+        this.parent.notify(events.getVirtualData, data);
+        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' && !dlgForm) {
+            if (this.parent.isEdit) {
+                this.currentVirtualData = editedData = args.data = data.virtualData;
+            }
+        } else {
+            editedData = gObj.editModule.getCurrentEditedData(dlgForm, editedData);
+        }
         if (gObj.getFrozenColumns() && gObj.editSettings.mode === 'Normal') {
             let mForm: Element = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
             if (gObj.frozenRows && mForm) {
@@ -227,7 +247,11 @@ export class NormalEdit {
             args[movableForm] = null;
             args.row = {};
         }
-        if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : gObj.element.querySelectorAll('.e-editedrow').length) {
+        let eleLength: number = [].slice.call(gObj.element.querySelectorAll('.e-editedrow')).length;
+        if (!data.isAdd && Object.keys(this.currentVirtualData).length && !eleLength) {
+            eleLength = 1;
+        }
+        if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : eleLength) {
             args.action = 'edit';
             gObj.trigger(events.actionBegin, args, (endEditArgs: SaveEventArgs) => {
                 if (endEditArgs.cancel) {
@@ -240,6 +264,7 @@ export class NormalEdit {
             args.action = 'add';
             args.selectedRow = 0;
             args.index = this.addedRowIndex;
+            gObj.notify(events.virtualScrollEditSuccess, {});
             gObj.notify(events.modelChanged, args);
             this.addedRowIndex = null;
             if (args.cancel) {
@@ -279,7 +304,9 @@ export class NormalEdit {
     }
 
     private updateCurrentViewData(data: Object): void {
-        this.parent.getCurrentViewRecords()[this.editRowIndex] = data;
+        if (!this.parent.enableVirtualization) {
+            this.parent.getCurrentViewRecords()[this.editRowIndex] = data;
+        }
     }
 
     private requestSuccess(args: Object): void {
@@ -312,6 +339,7 @@ export class NormalEdit {
         } else {
             this.refreshRow(args.data);
         }
+        this.parent.notify(events.virtualScrollEditSuccess, args);
         this.parent.editModule.checkLastRow(args.row);
         this.parent.editModule.isLastRow = false;
         this.updateCurrentViewData(args.data);
@@ -372,14 +400,26 @@ export class NormalEdit {
         this.parent.log('actionfailure', { error: e });
     }
 
+    private needRefresh(): boolean {
+        let refresh: boolean = true;
+        let editedRow: Element = this.parent.element.querySelector('.e-gridform');
+        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' && !editedRow) {
+            refresh = false;
+        }
+        return refresh;
+    }
+
     private refreshRow(data: Object): void {
         let frzCols: number = this.parent.getFrozenColumns();
         let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         let rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.uid);
         if (rowObj) {
             rowObj.changes = data;
+            this.parent.notify(events.refreshVirtualCache, data);
             refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
-            row.refresh(rowObj, this.parent.getColumns() as Column[], true);
+            if (this.needRefresh()) {
+                row.refresh(rowObj, this.parent.getColumns() as Column[], true);
+            }
             if (frzCols) {
                 let uid: string;
                 let tr: Element = this.parent.element.querySelector('[data-uid=' + rowObj.uid + ']');
@@ -402,6 +442,7 @@ export class NormalEdit {
         let args: { data: Object, requestType: string, selectedRow: Number, type: string } = extend(this.args, {
             requestType: 'cancel', type: events.actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
         }) as { data: Object, requestType: string, selectedRow: Number, type: string };
+        gObj.notify(events.virtualScrollEditCancel, args);
         this.blazorTemplate();
         if (isBlazor()) {
             let form: string = 'form';
@@ -463,6 +504,11 @@ export class NormalEdit {
             requestType: 'add', data: this.previousData, type: events.actionBegin, index: index,
             rowData: this.previousData, target: undefined
         };
+        let rowData: { virtualData: Object } = { virtualData: {} };
+        this.parent.notify(events.getVirtualData, rowData);
+        if (this.parent.enableVirtualization && Object.keys(rowData.virtualData).length) {
+            args.data = args.rowData = rowData.virtualData;
+        }
         if (isBlazor()) {
             let form: string = 'form';
             args[form] = null;
@@ -510,6 +556,10 @@ export class NormalEdit {
             requestType: 'delete', type: events.actionBegin, foreignKeyData: {}, //foreign key support
             data: data ? data : this.parent.getSelectedRecords(), tr: this.parent.getSelectedRows(), cancel: false
         };
+        if (this.parent.enableVirtualization && (<{ data?: Object[] }>args).data.length > 1) {
+            let uid: string = this.parent.getSelectedRows()[0].getAttribute('data-uid');
+            (<{ data?: Object[] }>args).data = [this.parent.getRowObjectFromUID(uid).data];
+        }
         let dataInString: string = 'data';
         if (isBlazor() && !this.parent.isJsComponent) {
             args[dataInString] = args[dataInString][0];

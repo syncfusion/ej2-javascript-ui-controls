@@ -2979,6 +2979,21 @@ var IntlBase;
         return actualPattern;
     }
     IntlBase.getActualDateTimeFormat = getActualDateTimeFormat;
+    // tslint:disable-next-line:no-any
+    function processSymbol(actual, option) {
+        for (let i = 0; i < actual.length; i++) {
+            let mapper = { '.': 'decimal', ',': 'group' };
+            // tslint:disable-next-line:no-any
+            let matched = mapper[actual[i]];
+            if (matched === 'decimal') {
+                actual = actual.replace(/\./g, getValue('numberMapper.numberSymbols.decimal', option) || '.');
+            }
+            else if (matched === 'group') {
+                actual = actual.replace(/,/g, getValue('numberMapper.numberSymbols.group', option) || '.');
+            }
+        }
+        return actual;
+    }
     /**
      * Returns Native Number pattern
      * @private
@@ -2993,8 +3008,8 @@ var IntlBase;
         let minFrac;
         let curObj = {};
         let curMatch = (options.format || '').match(IntlBase.currencyFormatRegex);
+        let dOptions = {};
         if (curMatch) {
-            let dOptions = {};
             dOptions.numberMapper = ParserBase.getNumberMapper(dependable.parserObject, ParserBase.getNumberingSystem(cldr), true);
             let curCode = getCurrencySymbol(dependable.numericObject, options.currency || defaultCurrencyCode, options.altSymbol);
             let symbolPattern = getSymbolPattern('currency', dOptions.numberMapper.numberSystem, dependable.numericObject, (/a/i).test(options.format));
@@ -3039,6 +3054,9 @@ var IntlBase;
         }
         else {
             actualPattern = options.format.replace(/\'/g, '"');
+        }
+        if (Object.keys(dOptions).length > 0) {
+            actualPattern = processSymbol(actualPattern, dOptions);
         }
         return actualPattern;
     }

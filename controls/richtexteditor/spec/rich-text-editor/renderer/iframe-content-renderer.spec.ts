@@ -66,7 +66,7 @@ describe('Iframe Content renderer module', () => {
         it('click action to editpanel focus testing', () => {
             expect(document.activeElement.nodeName).toBe('BODY');
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            expect(document.activeElement.classList.contains('e-rte-content')).toBe(false);
+            expect(document.activeElement.classList.contains('e-rte-content')).toBe(true);
         });
 
         afterAll(() => {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.55 (2020-03-10)
+
+### SplitButton
+
+#### Bug Fixes
+
+- Items not created dynamically in split button has been fixed.
+
 ## 17.4.49 (2020-02-11)
 
 ### Button Group

@@ -434,6 +434,7 @@ export class Render {
                 return;
             }
             this.parent.isEdit = false;
+            this.parent.notify(events.editReset, {});
             this.parent.notify(events.tooltipDestroy, {});
             gObj.currentViewData = <Object[]>dataArgs.result;
             if (isBlazor() && gObj.filterSettings.type === 'FilterBar'

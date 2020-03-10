@@ -2247,7 +2247,7 @@ export enum DiagramAction {
     /** Indicates whether group dragging has been activated */
     isGroupDragging  = 1 << 14,
     /** Indicates whether drag is initiated by mouse  */
-    DragUsingMouse  = 1 << 15,
+    DragUsingMouse  = 1 << 15
 }
 /** @private */
 export type DiagramHistoryAction = 'AddNodeToLane';
@@ -2273,7 +2273,9 @@ export enum RealAction {
     /** Indicates when the diagram is scrolled horizontal using scroll bar */
     hScrollbarMoved = 1 << 4,
     /** Indicates when the diagram is scrolled vertical using scroll bar */
-    vScrollbarMoved = 1 << 5
+    vScrollbarMoved = 1 << 5,
+    /** Indicates whether animation happens or not  */
+    AnimationClick  = 1 << 6
 }
 
 /** @private */

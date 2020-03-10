@@ -15,6 +15,9 @@ import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEv
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
+import { ToolbarItem } from '../document-editor/base/types';
+import { CustomToolbarItemModel } from '../document-editor/base/events-helper';
+import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 /**
  * Document Editor container component.
@@ -51,6 +54,18 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property('Pages')
     public layoutType: LayoutType;
+    /**
+     * Current User
+     * @default ''
+     */
+    @Property('')
+    public currentUser: string;
+    /**
+     * User Selection Highlight Color
+     * @default '#FFFF00'
+     */
+    @Property('#FFFF00')
+    public userColor: string;
     /**
      * Enable local paste
      * @default false
@@ -117,6 +132,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public documentChange: EmitType<ContainerDocumentChangeEventArgs>;
+    /**      
+     * Triggers when toolbar item is clicked.
+     * @event
+     * @blazorproperty 'OnToolbarClick'
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
+     */
+    @Event()
+    public toolbarClick: EmitType<ClickEventArgs>;
     /**
      * Triggers while selecting the custom context-menu option.
      * @event
@@ -232,6 +255,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     public serverActionSettings: ContainerServerActionSettingsModel;
 
+    //tslint:disable:max-line-length
+    /**    
+     * Defines toolbar items for DocumentEditorContainer.
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','Comments','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','Separator','Find','Separator','LocalClipboard','RestrictEditing']
+     */
+    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing'])
+    public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
+    //tslint:enable:max-line-length
     /**
      * Add custom headers to XMLHttpRequest.
      * @default []
@@ -246,6 +277,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public get documentEditor(): DocumentEditor {
         return this.documentEditorInternal;
+    }
+    /**
+     * Gets toolbar instance.
+     * @blazorType Toolbar
+     */
+    public get toolbar(): Toolbar {
+        return this.toolbarModule;
     }
     /** 
      * Initialize the constructor of DocumentEditorContainer
@@ -475,6 +513,26 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.customizeDocumentEditorSettings();
                     }
                     break;
+                case 'toolbarItems':
+                    if (this.toolbarModule) {
+                        this.toolbarModule.reInitToolbarItems(newModel.toolbarItems);
+                    }
+                    break;
+                case 'currentUser':
+                    if (this.documentEditor) {
+                        this.documentEditor.currentUser = newModel.currentUser;
+                    }
+                    break;
+                case 'userColor':
+                    if (this.documentEditor) {
+                        this.documentEditor.userColor = newModel.userColor;
+                    }
+                    break;
+                case 'layoutType':
+                    if (this.documentEditor) {
+                        this.documentEditor.layoutType = newModel.layoutType;
+                    }
+                    break;
             }
         }
     }
@@ -493,7 +551,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     protected render(): void {
         if (this.toolbarModule) {
-            this.toolbarModule.initToolBar();
+            this.toolbarModule.initToolBar(this.toolbarItems);
             this.toolbarModule.enableDisableInsertComment(this.enableComment);
         }
         if (this.element.getBoundingClientRect().height < 320) {
@@ -616,7 +674,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
             layoutType: this.layoutType,
-            pageOutline: '#E0E0E0'
+            pageOutline: '#E0E0E0',
+            currentUser: this.currentUser,
+            userColor: this.userColor
         });
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;

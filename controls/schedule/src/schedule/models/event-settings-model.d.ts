@@ -98,4 +98,10 @@ export interface EventSettingsModel {
      */
     enableIndicator?: boolean;
 
+    /**
+     * This property ignores or include the Events element bottom white space.
+     * @default false
+     */
+    ignoreWhitespace?: boolean;
+
 }

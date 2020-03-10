@@ -88,7 +88,7 @@ export class Count {
      * @deprecated
      */
     public destroy(): void {
-        if (this.element && !isNullOrUndefined(document.querySelector('.' + CLS_COUNT))) {
+        if (this.element && !isNullOrUndefined(this.parent.element.querySelector('.' + CLS_COUNT))) {
             detach(this.element);
         }
         this.removeEventListener();

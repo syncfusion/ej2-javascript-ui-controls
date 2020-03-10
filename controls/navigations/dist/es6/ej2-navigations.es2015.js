@@ -7622,7 +7622,7 @@ let Tab = class Tab extends Component {
                     this.select(trgIndex);
                 }
             }
-            else if (!isNullOrUndefined(trgParent) && trgIndex !== this.selectedItem) {
+            else if (!isNullOrUndefined(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
                 this.select(trgIndex);
             }
         }

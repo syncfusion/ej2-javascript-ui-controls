@@ -2742,19 +2742,66 @@ client side. Customer easy to edit the contents and get the HTML content for
                 done(); 
             }, 2000);
        });
-       it(" Check uploadFailure method", function (done: Function) {
-        let image: HTMLElement = createElement("IMG");
-        image.classList.add('upload-image');
-        var popupEle = createElement('div', { className: 'e-rte-pop e-popup-open' });
-        rteObj.inputElement.appendChild(popupEle);      
-        rteObj.inputElement.appendChild(image);       
-        let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [] }, preventDefault: function () { return; } };
-        var args = { args: event, type: 'Images', isNotify: (undefined as any), elements: image };
-         (rteObj.imageModule as any).uploadFailure(image,args);
-         setTimeout(() => {
-            expect(document.querySelector('.e-upload-image')).toBe(null);
+    });
+
+    describe('RTE Drag and Drop Image - Failure Test Case', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                        <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                        </textarea>
+                        <div id="dateError"></div>
+                    </div>
+                    ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something'
+            });
+            rteObj.appendTo('#defaultRTE');
             done();
-         }, 2000);
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-imginline'))
+            done();
+        });
+       it(" Check image after drop", function (done: Function) {
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            (rteObj.imageModule as any).getDropRange(event.clientX, event.clientY);
+            (rteObj.imageModule as any).dragDrop(event);
+            ele = rteObj.element.getElementsByTagName('img')[0];
+            setTimeout(() => {
+                expect(rteObj.element.getElementsByTagName('img').length).toBe(1);
+                expect(ele.classList.contains('e-rte-image')).toBe(true);
+                expect(ele.classList.contains('e-imginline')).toBe(true);
+                expect(ele.classList.contains('e-resize')).toBe(true);
+                done();
+            }, 2000);
+        
+        });
+       it(" Check uploadFailure method", function (done: Function) {
+            let image: HTMLElement = createElement("IMG");
+            image.classList.add('upload-image');
+            var popupEle = createElement('div', { className: 'e-rte-pop e-popup-open' });
+            rteObj.inputElement.appendChild(popupEle);
+            rteObj.inputElement.appendChild(image);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [] }, preventDefault: function () { return; } };
+            var args = { args: event, type: 'Images', isNotify: (undefined as any), elements: image };
+            (rteObj.imageModule as any).uploadFailure(image,args);
+            setTimeout(() => {
+                expect(document.querySelector('.e-upload-image')).toBe(null);
+                done();
+            }, 2000);
         });
     });
     describe('Drag and Drop - Text', function() {

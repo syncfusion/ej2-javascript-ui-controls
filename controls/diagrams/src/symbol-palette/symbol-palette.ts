@@ -1129,7 +1129,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 let index: number = 2;
                 if (symbol instanceof Connector) { index = 1.9; }
                 canvas.getContext('2d').setTransform(index, 0, 0, index, 0, 0);
-                this.diagramRenderer.renderElement(symbol.wrapper, gElement || canvas, undefined, undefined, undefined, undefined, true);
+                this.diagramRenderer.renderElement(
+                    symbol.wrapper, gElement || canvas, undefined, undefined, undefined, undefined, true, undefined, true);
             }
         }
         if (!preview) {

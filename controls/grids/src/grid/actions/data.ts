@@ -26,7 +26,6 @@ export class Data implements IDataProcessor {
     protected parent: IGrid;
     protected serviceLocator: ServiceLocator;
     protected dataState: PendingState = { isPending: false, resolver: null, group: [] };
-    private initialRender: boolean = true;
 
     /**
      * Constructor for data module.
@@ -154,9 +153,8 @@ export class Data implements IDataProcessor {
                     }
                 }
             }
-            if (this.initialRender && gObj.infiniteScrollSettings.enableScroll) {
-                this.initialRender = false;
-                this.initalInfinitePageQuery(gObj, query);
+            if (!isNullOrUndefined(gObj.infiniteScrollModule) && gObj.infiniteScrollSettings.enableScroll) {
+                this.parent.notify(events.infinitePageQuery, query);
             } else {
                 query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
             }
@@ -311,19 +309,6 @@ export class Data implements IDataProcessor {
             }
         }
         return query;
-    }
-
-    private initalInfinitePageQuery(gObj: IGrid, query: Query): void {
-        if (gObj.pageSettings.pageSize < 100) {
-            gObj.pageSettings.pageSize = 100;
-        }
-        if (gObj.infiniteScrollSettings.enableCache
-            && gObj.infiniteScrollSettings.initialBlocks > gObj.infiniteScrollSettings.maxBlock) {
-            gObj.infiniteScrollSettings.initialBlocks = gObj.infiniteScrollSettings.maxBlock;
-        }
-        let pageSize: number = gObj.pageSettings.pageSize * gObj.infiniteScrollSettings.initialBlocks;
-        gObj.pageSettings.currentPage = gObj.infiniteScrollSettings.initialBlocks;
-        query.page(1, pageSize);
     }
 
     private fGeneratePredicate(col: Column, predicateList: Predicate[]): Predicate[] {

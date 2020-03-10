@@ -724,6 +724,12 @@ export interface ZoomSettingsModel {
     enablePanning?: boolean;
 
     /**
+     * Toggle the visibility of Selection Zooming
+     * @default true
+     */
+    enableSelectionZooming?: boolean;
+
+    /**
      * Configures tool bar orientation
      * @default Horizontal
      * @blazorProperty 'ToolbarOrientation'

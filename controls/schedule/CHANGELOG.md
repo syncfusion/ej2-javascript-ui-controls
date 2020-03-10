@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 17.4.55 (2020-03-10)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#266530` - An issue with the property `editFollowingEvents` with count repeat type has been fixed.
+- `#266933` - An issue with the property `editFollowingEvents` does not work properly when block events presents has been fixed.
+- `#266725` - An issue with the method `scrollToResource()` which does not work properly when the virtual scroll property is enabled has been fixed.
+- `#151209` - An issue with swipe action in mobile mode when `minDate/maxDate` applied has been fixed.
+
 ## 17.4.51 (2020-02-25)
 
 ### Schedule
@@ -13,7 +24,8 @@
 - `#151209` - An issue with misplaced dragging events in different time intervals has been fixed.
 - `#149561` - An issue with scheduler throwing script error while dragging the event with the option `groupByDate` in day view has been fixed.
 - `#263624` - An issue with the scheduler rendered with the block events shows the misplaced header cells on the Timeline month view has been fixed.
-- `#I151455` - An issue in long spanned events in year view has been fixed.
+- `#151455` - An issue in long spanned events in year view has been fixed.
+- `#263715` - An issue with dragging not working properly when page scrolling is enabled has been fixed.
 
 ## 17.4.50 (2020-02-18)
 

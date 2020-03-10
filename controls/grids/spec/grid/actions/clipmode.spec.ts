@@ -116,4 +116,38 @@ describe('ClipMode module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-36833 Checkbox column has empty tooltips when grid level clipMode is EllipsisWithTooltip', () => {
+        let gridObj: Grid;
+        let row: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    clipMode: 'EllipsisWithTooltip',
+                    columns: [
+                        { type: 'checkbox', width: 30 },
+                        { headerText: 'OrderID', field: 'OrderID'},
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'OrderDate', field: 'OrderDate' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipAddress', field: 'Shipping Address of the order' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+
+        it('Checkbox class testing', () => {
+            row = [gridObj.contentModule.getTable().children['1'].children];
+            expect(row[0][0].cells[0].classList.contains('e-ellipsistooltip')).toBeFalsy();
+            expect(row[0][1].cells[0].classList.contains('e-ellipsistooltip')).toBeFalsy();
+            expect(row[0][2].cells[0].classList.contains('e-ellipsistooltip')).toBeFalsy();
+            expect((gridObj.getHeaderTable().querySelector('.e-columnheader').children[0]).classList.contains("e-ellipsistooltip")).toBeFalsy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

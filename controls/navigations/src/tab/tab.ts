@@ -1354,7 +1354,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 if (parseInt(trgParent.getAttribute('data-index'), 10) !== this.selectedItem) {
                     this.select(trgIndex);
                 }
-            } else if (!isNOU(trgParent) && trgIndex !== this.selectedItem) {
+            } else if (!isNOU(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
                 this.select(trgIndex);
             }
         }

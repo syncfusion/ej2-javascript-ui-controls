@@ -3611,11 +3611,13 @@ export class WordExport {
     }
     // Serialize the table indentation.
     private serializeTableIndentation(writer: XmlWriter, format: any): void {
-        writer.writeStartElement(undefined, 'tblInd', this.wNamespace);
-        let tableIndent: number = Math.round(format.leftIndent * this.twipsInOnePoint);
-        writer.writeAttributeString(undefined, 'w', this.wNamespace, tableIndent.toString());
-        writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
-        writer.writeEndElement();
+        if (!isNullOrUndefined(format.leftIndent)) {
+            writer.writeStartElement(undefined, 'tblInd', this.wNamespace);
+            let tableIndent: number = Math.round(format.leftIndent * this.twipsInOnePoint);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, tableIndent.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
     }
     // Serialize the cell spacing.
     private serializeCellSpacing(writer: XmlWriter, format: any): void {

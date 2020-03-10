@@ -117,11 +117,11 @@ export class TableResizer {
             if (!isNullOrUndefined(cellWidget)) {
                 this.currentResizingTable = cellWidget.ownerTable;
                 // tslint:disable-next-line:max-line-length
-                if (this.documentHelper.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height, touchPoint)) {
+                if (this.documentHelper.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
                     return position = cellWidget.columnIndex;
                     // tslint:disable-next-line:max-line-length
                 } else if (isNullOrUndefined(cellWidget.nextRenderedWidget)
-                    && this.documentHelper.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height, touchPoint)) {
+                    && this.documentHelper.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
                     return position = (cellWidget.columnIndex + cellWidget.cellFormat.columnSpan);
                 } else if (cellWidget.childWidgets.length > 0) {
                     return this.getCellReSizerPositionInternal(cellWidget, touchPoint); // Gets the nested table resizer position.

@@ -2422,10 +2422,7 @@ describe('Checking with default Selection', function () {
     it('Checking with Selection in Interactive Legend in Bottom', (done: Function) => {
         browser.load('/demos/default-selection.html');
         browser.sleep(2000);
-        mode = element(By.id('legendMode'));
-        mode.all(by.tagName('option')).then((options: any) => {
-            options[1].click;
-        });
+		browser.findElement(By.id('legendMode')).sendKeys("Interactive");
         browser.actions().click(element(By.id('container_Legend_Index_0'))).perform();
         browser.compareScreen(element(By.id('container')), 'ProgramSelection_Interactive_Bottom_Legend1');
         browser.actions().click(element(By.id('container_Legend_Index_1'))).perform();
@@ -2439,10 +2436,7 @@ describe('Checking with default Selection', function () {
     it('Checking with Selection in Interactive Legend in Top', (done: Function) => {
         browser.load('/demos/default-selection.html');
         browser.sleep(2000);
-        mode = element(By.id('legendMode'));
-        mode.all(by.tagName('option')).then((options: any) => {
-            options[1].click;
-        });
+		browser.findElement(By.id('legendMode')).sendKeys("Interactive");
         legend = element(by.id("legendPosition"));
         legend.all(by.tagName('option')).then((options: any) => {
             options[0].click();
@@ -2460,10 +2454,7 @@ describe('Checking with default Selection', function () {
     it('Checking with Selection in Interactive Legend in Left', (done: Function) => {
         browser.load('/demos/default-selection.html');
         browser.sleep(2000);
-        mode = element(By.id('legendMode'));
-        mode.all(by.tagName('option')).then((options: any) => {
-            options[1].click;
-        });
+		browser.findElement(By.id('legendMode')).sendKeys("Interactive");
         legend = element(by.id("legendPosition"));
         legend.all(by.tagName('option')).then((options: any) => {
             options[2].click();
@@ -2481,10 +2472,7 @@ describe('Checking with default Selection', function () {
     it('Checking with Selection in Interactive Legend in Right', (done: Function) => {
         browser.load('/demos/default-selection.html');
         browser.sleep(2000);
-        mode = element(By.id('legendMode'));
-        mode.all(by.tagName('option')).then((options: any) => {
-            options[1].click;
-        });
+        browser.findElement(By.id('legendMode')).sendKeys("Interactive");
         legend = element(by.id("legendPosition"));
         legend.all(by.tagName('option')).then((options: any) => {
             options[3].click();

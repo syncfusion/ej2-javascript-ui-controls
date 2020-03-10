@@ -6,6 +6,7 @@ import { GaugeTooltip } from '../../src/linear-gauge/user-interaction/tooltip';
 import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs } from '../../src/linear-gauge/model/interface';
 import { LinearGauge } from '../../src/linear-gauge/linear-gauge';
 import { MouseEvents } from '../base/events.spec';
+import { GaugeLocation } from '../../src/linear-gauge/utils/helper';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 LinearGauge.Inject(GaugeTooltip);
 
@@ -208,6 +209,464 @@ describe('Linear gauge control', () => {
 
         it('Checking Tooltip destroy method ', () => {
             gauge.tooltipModule.destroy(gauge);
+        });
+    });
+    describe('Tooltip range value', () => {
+        let gauge: LinearGauge;
+        let ele: HTMLElement;
+        let direction: string;
+        let boundingRect: ClientRect;
+        let boundingRect1: ClientRect;
+        let value: string[] | string | number;
+        let location: GaugeLocation;
+        let trigger: MouseEvents = new MouseEvents();
+        let targetElement: HTMLElement;
+        let eventObj: object;
+        let svg: HTMLElement;
+        let value1: string[] | string | number;
+        afterEach((): void => {
+            trigger.mouseLeaveEvent(ele);
+        });
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'gauge' });
+            document.body.appendChild(ele);
+            gauge = new LinearGauge({
+                orientation : "Horizontal",
+                tooltip: {
+                    type:['Pointer', 'Range'],
+                    enable: true,                    
+                    rangeSettings: {
+                        position: "Center",
+                    }
+                },
+                axes: [{    
+                 pointers: [
+                     {
+                         value: 50,
+                         markerType: 'Triangle',
+                         position: 'Inside',
+                         type: 'Marker'
+                     },
+                 ],
+                 ranges: [{
+                    start: 0,
+                    end: 30,
+                    color: '#30B32D',
+                    startWidth: 50,
+                    endWidth: 50
+                },
+                {
+                    start: 30,
+                    end: 60,
+                    startWidth: 50,
+                    endWidth: 50,
+                    color: '#FFDF00'
+                },
+                {
+                    start: 60,
+                    end: 90,
+                    startWidth: 50,
+                    endWidth: 50,
+                    color: '#F03E3E'
+                }]
+                }]
+            },
+                '#gauge'
+            );
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking normal Range tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'mousemove',
+                        pageX: ele.getBoundingClientRect().left,
+                        pageY: ele.getBoundingClientRect().top
+                    }
+                    gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.enable = true;
+            gauge.tooltip.type = ['Range'];
+            gauge.theme = 'HighContrast';
+            gauge.tooltip.rangeSettings.showAtMousePosition = true;
+            gauge.refresh();
+        });
+        it('Checking Range Tooltip with roundedplace', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.refresh();
+        });
+
+        it('Checking Range Tooltip with Format', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.format = '{start}'
+            gauge.refresh();
+        });
+
+        it('Checking Range Tooltip template', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = '<div id="tooltip1" style="border:2px solid red;"><div class="des"><span>${start} MPH</span></div></div>';
+            gauge.refresh();
+        });
+
+        it('Checking Range Tooltip template with empty Content', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.refresh();
+        });
+        it('Checking Range Tooltip template with empty Content', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.refresh();
+        });        
+        it('Checking normal tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {                
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('gauge_AxisIndex_0_MarkerPointer_0');
+                    eventObj = {
+                        target: ele,
+                        type: 'mousemove',
+                        pageX: ele.getBoundingClientRect().left,
+                        pageY: ele.getBoundingClientRect().top
+                    }
+                    gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 10;
+            gauge.theme = 'HighContrast';
+            gauge.tooltip.showAtMousePosition = true;
+            gauge.refresh();
+        });
+
+        it('Checking Tooltip with showAtMousePosition false', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('gauge_AxisIndex_0_MarkerPointer_0');
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.tooltip.showAtMousePosition = false;
+            gauge.refresh();
+        });
+
+        it('Checking Tooltip format', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('gauge_AxisIndex_0_MarkerPointer_0');
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.tooltip.format = '{value}%';
+            gauge.tooltip.showAtMousePosition = false;
+            gauge.refresh();
+        });
+
+        it('Checking Tooltip template', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('gauge_AxisIndex_0_MarkerPointer_0');
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.tooltip.showAtMousePosition = false;
+            gauge.tooltip.template = '<div id="tooltip1" style="border:2px solid red;"><div class="des"><span>${value} MPH</span></div></div>';
+            gauge.refresh();
+        });
+
+        it('Checking Tooltip template with none content', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('gauge_AxisIndex_0_MarkerPointer_0');
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.template = ' ';
+            gauge.refresh();
+        });
+        it('Checking Tooltip position Center', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('gauge_AxisIndex_0_MarkerPointer_0');
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.position = 'Center';
+            gauge.refresh();
+        });
+        it('Checking Tooltip position start', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('gauge_AxisIndex_0_MarkerPointer_0');
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.position = 'Start';
+            gauge.refresh();
+        });
+        
+        it('Checking Range Tooltip rangeTooltipPosition Start', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.tooltip.rangeSettings.position= "Start",
+            gauge.refresh();
+        });
+        
+        it('Checking Range Tooltip rangeTooltipPosition End', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.tooltip.rangeSettings.position= "End",
+            gauge.refresh();
+        });
+        it('Checking Range Tooltip rangeTooltipPosition Center', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.tooltip.rangeSettings.position= "Center",
+            gauge.refresh();
+        });
+        it('Checking Vertical Orientation Range Tooltip rangeTooltipPosition Start', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.tooltip.rangeSettings.position= "Start",
+            gauge.orientation= 'Vertical';
+            gauge.refresh();
+        });
+        it('Checking Vertical Orientation Range Tooltip rangeTooltipPosition End', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.tooltip.rangeSettings.position= "End",
+            gauge.orientation= 'Vertical';
+            gauge.refresh();
+        });
+        it('Checking Vertical Orientation Range Tooltip rangeTooltipPosition Center', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.tooltip.rangeSettings.position= "Center",
+            gauge.orientation= 'Vertical';
+            gauge.refresh();
+        });
+        it('Checking isInversed Tooltip position start', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = gauge.axes[0].minimum; i < gauge.axes[0].maximum; i++) {
+                    gauge.setPointerValue(0, 0, i);
+                    ele = document.getElementById('gauge_AxisIndex_0_MarkerPointer_0');
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.position = 'Start';
+            gauge.axes[0].isInversed = false;
+            gauge.refresh();
+        });
+        
+        it('Checking isInversed Range Tooltip rangeTooltipPosition Start', () => {
+            gauge.loaded = (args: ILoadedEventArgs) => {
+                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+                    ele = document.getElementById('gauge_AxisIndex_0_Range_' + i);
+                    eventObj = {
+                        target: ele,
+                        type: 'touchend',
+                        changedTouches: [{ pageX: ele.getBoundingClientRect().left, pageY: ele.getBoundingClientRect().top }]
+                    }
+                    gauge.tooltipModule.mouseUpHandler(<PointerEvent>eventObj);
+                }
+                gauge.mouseLeave(<PointerEvent>eventObj);
+            };
+            gauge.tooltip.rangeSettings.showAtMousePosition = false;
+            gauge.tooltip.rangeSettings.template = ' ';
+            gauge.tooltip.rangeSettings.position= "Start",
+            gauge.axes[0].isInversed = false;
+            gauge.refresh();
         });
     });
     it('memory leak', () => {     

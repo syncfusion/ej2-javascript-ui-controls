@@ -12,8 +12,6 @@ import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
-import { Common } from '../actions/common';
-PivotView.Inject(Common);
 
 /**
  * `Grouping` module to create grouping option for date, number and custom in popup.

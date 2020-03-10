@@ -192,10 +192,7 @@ describe('Checking with legend Sample', function () {
     });
      it('Checking with Legend Mode Interactive and Position in Top', (done: Function) => {
         browser.load('/demos/SamplesInBrowser/Legend.html');
-        mode = element(By.id('legendMode'));
-        mode.all(by.tagName('option')).then((options: any) => {
-            options[1].click;
-        });
+		 browser.findElement(By.id('legendMode')).sendKeys("Interactive");   
         browser.compareScreen(element(By.id('container')), 'LegendPos_Interactive_Top');
         browser.actions().click(element(By.id('toggleLegend'))).perform();
         browser.actions().click(element(By.id('container_Legend_Index_0'))).perform();
@@ -213,12 +210,10 @@ describe('Checking with legend Sample', function () {
     it('Checking with Legend Mode Interactive and Position in Bottom', (done: Function) => {
         browser.load('/demos/SamplesInBrowser/Legend.html');
         legendPos = element(By.id('legendPosition'));
-        mode.all(by.tagName('option')).then((options: any) => {
+              legendPos.all(by.tagName('option')).then((options: any) => {
             options[1].click;
         });
-        legendPos.all(by.tagName('option')).then((options: any) => {
-            options[1].click;
-        });
+		 browser.findElement(By.id('legendMode')).sendKeys("Interactive");
         browser.compareScreen(element(By.id('container')), 'LegendPos_Interactive_Bottom');
         browser.actions().click(element(By.id('toggleLegend'))).perform();
         browser.actions().click(element(By.id('container_Legend_Index_0'))).perform();
@@ -236,9 +231,7 @@ describe('Checking with legend Sample', function () {
     it('Checking with Legend Mode Interactive and Position in Left', (done: Function) => {
         browser.load('/demos/SamplesInBrowser/Legend.html');
         legendPos = element(By.id('legendPosition'));
-        mode.all(by.tagName('option')).then((options: any) => {
-            options[1].click;
-        });
+       browser.findElement(By.id('legendMode')).sendKeys("Interactive");
         legendPos.all(by.tagName('option')).then((options: any) => {
             options[2].click;
         });
@@ -258,13 +251,11 @@ describe('Checking with legend Sample', function () {
     });
     it('Checking with Legend Mode Interactive and Position in Right', (done: Function) => {
         browser.load('/demos/SamplesInBrowser/Legend.html');
-        legendPos = element(By.id('legendPosition'));
-        mode.all(by.tagName('option')).then((options: any) => {
-            options[1].click;
-        });
+        legendPos = element(By.id('legendPosition'));      
         legendPos.all(by.tagName('option')).then((options: any) => {
             options[3].click;
         });
+		 browser.findElement(By.id('legendMode')).sendKeys("Interactive");
         browser.compareScreen(element(By.id('container')), 'LegendPos_Interactive_Right');
         browser.actions().click(element(By.id('toggleLegend'))).perform();
         browser.actions().click(element(By.id('container_Legend_Index_0'))).perform();

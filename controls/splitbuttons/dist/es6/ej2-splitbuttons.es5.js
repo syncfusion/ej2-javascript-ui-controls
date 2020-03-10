@@ -255,17 +255,18 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
                 attrs: { 'role': 'menuItem', 'tabindex': '-1' },
                 id: item.id ? item.id : getUniqueID('e-' + this.getModuleName() + '-item')
             });
+            if (item.url) {
+                li.appendChild(this.createAnchor(item));
+                li.classList.add('e-url');
+            }
             if (item.iconCss) {
                 span = this.createElement('span', { className: classNames.ICON + ' ' + item.iconCss });
-                li.insertBefore(span, li.childNodes[0]);
+                (item.url) ? li.childNodes[0].appendChild(span) : li.insertBefore(span, li.childNodes[0]);
             }
             else {
                 if (showIcon && !item.separator) {
                     li.classList.add('e-blank-icon');
                 }
-            }
-            if (item.url) {
-                li.appendChild(this.createAnchor(item));
             }
             eventArgs = { item: item, element: li };
             this.trigger('beforeItemRender', eventArgs);
@@ -982,8 +983,9 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
         this.primaryBtnObj.setProperties(getModel(newProp, model));
         model = ['beforeOpen', 'beforeItemRender', 'select', 'open',
             'close', 'cssClass', 'disabled', 'enableRtl'];
-        if (Object.keys(newProp)[0] === 'items') {
-            this.secondaryBtnObj.onPropertyChanged(newProp, oldProp);
+        if (Object.keys(newProp).indexOf('items') > -1) {
+            this.secondaryBtnObj.items = newProp.items;
+            this.secondaryBtnObj.dataBind();
         }
         this.secondaryBtnObj.setProperties(getModel(newProp, model));
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {

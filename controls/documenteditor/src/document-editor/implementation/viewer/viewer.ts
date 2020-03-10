@@ -45,6 +45,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public isHeaderFooter: boolean = false;
+    /**
+     * @private
+     */
     public owner: DocumentEditor;
     public viewer: LayoutViewer;
     /**
@@ -661,6 +665,7 @@ export class DocumentHelper {
         if (this.owner.commentReviewPane) {
             this.owner.commentReviewPane.clear();
         }
+        this.isHeaderFooter = false;
         this.defaultTabWidth = 36;
         this.isDocumentProtected = false;
         this.protectionType = 'NoProtection';
@@ -1546,9 +1551,10 @@ export class DocumentHelper {
                     this.currentSelectedComment = undefined;
                 }
             }
+            let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
             if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)
                 && (this.owner.selection.isEmpty || this.owner.selection.isImageSelected) &&
-                (((event.ctrlKey && this.owner.useCtrlClickToFollowHyperlink ||
+                (((isCtrlkeyPressed && this.owner.useCtrlClickToFollowHyperlink ||
                     !this.owner.useCtrlClickToFollowHyperlink) && this.isLeftButtonPressed(event) === true))) {
                 this.selection.navigateHyperLinkOnEvent(touchPoint, false);
             }
@@ -2560,7 +2566,8 @@ export class DocumentHelper {
             top = this.selection.getTop(widget);
             this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x);
         }
-        if (!isNullOrUndefined(hyperlinkField) && (event.ctrlKey &&
+        let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
+        if (!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
             this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) {
             div.style.cursor = 'pointer';
             return;
@@ -3544,7 +3551,6 @@ export class WebLayoutViewer extends LayoutViewer {
     get documentHelper(): DocumentHelper {
         return this.owner.documentHelper;
     }
-    public pages: Page[];
     /**
      * @private
      */

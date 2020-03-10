@@ -3,7 +3,7 @@ import { WCharacterFormat } from '../index';
 import { TextElementBox, ListTextElementBox, ParagraphWidget } from './page';
 import { DocumentHelper } from './viewer';
 import { HelperMethods, RtlInfo } from '../editor/editor-helper';
-import { BaselineAlignment, BiDirectionalOverride} from '../../index';
+import { BaselineAlignment, BiDirectionalOverride } from '../../index';
 /** 
  * @private
  */
@@ -255,7 +255,8 @@ export class TextHelper {
      * @param text 
      */
     public containsSpecialCharAlone(text: string): boolean {
-        let specialChars: string = '*|.\:[]{}`\;()@&$#%!~';
+        // tslint:disable
+        let specialChars: string = '*|.\:[]{}-`\;()@&$#%!~?' + ' ' + "'";
         for (let i: number = 0; i < text.length; i++) {
             if (specialChars.indexOf(text.charAt(i)) === -1) {
                 return false;
@@ -263,12 +264,64 @@ export class TextHelper {
         }
         return true;
     }
+
+    /**
+     * @private
+     * @param ch 
+     */
+    public inverseCharacter(ch: string): string {
+        switch (ch) {
+            //Specify the '('
+            case '(':
+                //Specify the ')'
+                return ')';
+
+            //Specify the ')'
+            case ')':
+                //Specify the '('
+                return '(';
+
+            //Specify the '<'
+            case '<':
+                //Specify the '>'
+                return '>';
+
+            //Specify the '>'
+            case '>':
+                //Specify the '<'
+                return '<';
+
+            //Specify the '{'
+            case '{':
+                //Specify the '}'
+                return '}';
+
+            //Specify the '}'
+            case '}':
+                //Specify the '{'
+                return '{';
+
+            //Specify the '['
+            case '[':
+                //Specify the ']'
+                return ']';
+
+            //Specify the ']'
+            case ']':
+                //Specify the '['
+                return '[';
+
+            default:
+                return ch;
+        }
+    }
+
     /**
      * @private
      * @param text 
      */
     public containsSpecialChar(text: string): boolean {
-        let specialChars: string = '*|.\:[]{}`\;()@&$#%!~';
+        let specialChars: string = '*|.\:[]{}-`\;()@&$#%!~?' + ' ';
         for (let i: number = 0; i < text.length; i++) {
             if (specialChars.indexOf(text.charAt(i)) !== -1) {
                 return true;

@@ -42,6 +42,7 @@ import { AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { Page } from '../actions/page';
 import { Scroll } from '../actions/scroll';
 import { Aggregate } from '../actions/aggregate';
+import { InfiniteScroll } from '../actions/infinite-scroll';
 
 /**
  * Specifies grid interfaces.
@@ -436,6 +437,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     scrollModule?: Scroll;
 
+    infiniteScrollModule?: InfiniteScroll;
+
     resizeModule: Resize;
 
     focusModule?: FocusStrategy;
@@ -456,8 +459,6 @@ export interface IGrid extends Component<HTMLElement> {
 
     headerModule?: IRenderer;
 
-    contentModule?: IRenderer;
-
     isPreventScrollEvent?: boolean;
 
     hierarchyPrintMode?: HierarchyGridPrintMode;
@@ -471,7 +472,6 @@ export interface IGrid extends Component<HTMLElement> {
     expandedRows?: { [index: number]: IExpandedRow };
     registeredTemplate?: Object;
     lockcolPositionCount?: number;
-    isWheelScrolled?: boolean;
     isPrinting?: boolean;
     id?: string;
     isSelectedRowIndexUpdating?: boolean;
@@ -805,7 +805,7 @@ export interface NotifyArgs {
 }
 
 export interface InfiniteScrollArgs {
-    requestType?: string;
+    requestType?: Action;
     currentPage?: number;
     prevPage?: number;
     startIndex?: number;
@@ -1488,8 +1488,6 @@ export interface VirtualInfo {
     nextInfo?: { page?: number };
     sentinelInfo?: SentinelType;
     offsets?: Offsets;
-    startIndex?: number;
-    endIndex?: number;
 }
 /**
  * @hidden

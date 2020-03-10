@@ -1296,7 +1296,7 @@ describe('Text insert behaviour validation with history preservation-2', () => {
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
         expect(documentHelper.pages.length).not.toBe(0);
     });
-    it('insert Text at field seperator  validation', () => {
+    it('insert Text at field separator  validation', () => {
         editor.openBlank();
         let event: any;
         editor.editorModule.insertText('www.syncfusion.com');

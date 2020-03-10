@@ -18,3 +18,4 @@ export * from './selection';
 export * from './detail-row';
 export * from './virtual-scroll';
 export * from './freeze-column';
+export * from './rowdragdrop';

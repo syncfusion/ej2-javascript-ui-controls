@@ -8,13 +8,13 @@ import { WLevelOverride } from '../list/level-override';
 import { WList } from '../list/list';
 import { WListLevel } from '../list/list-level';
 import {
-    BlockContainer, BlockWidget, BodyWidget, BookmarkElementBox, EditRangeEndElementBox, EditRangeStartElementBox,
-    ElementBox, ErrorTextElementBox, FieldElementBox, FieldTextElementBox, HeaderFooterWidget, ImageElementBox, IWidget,
-    LineWidget, ListTextElementBox, Margin, Page, ParagraphWidget, Rect, TabElementBox, TableCellWidget,
-    TableRowWidget, TableWidget, TextElementBox, Widget, CommentElementBox
+    BlockContainer, BlockWidget, BodyWidget, BookmarkElementBox, CommentElementBox, EditRangeEndElementBox, EditRangeStartElementBox,
+    ElementBox, ErrorTextElementBox, FieldElementBox, FieldTextElementBox, HeaderFooterWidget, ImageElementBox, IWidget, LineWidget,
+    ListTextElementBox, Margin, Page, ParagraphWidget, Rect, TabElementBox, TableCellWidget, TableRowWidget,
+    TableWidget, TextElementBox, Widget
 } from './page';
 import { TextSizeInfo } from './text-helper';
-import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
+import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
 
 /** 
  * @private
@@ -37,12 +37,14 @@ export class Layout {
     private maxBaseline: number = 0;
     private maxTextBaseline: number = 0;
     private isFieldCode: boolean = false;
+    private isRtlFieldCode: boolean = false;
     private isRTLLayout: boolean = false;
 
     /**
      * @private
      */
     public isBidiReLayout: boolean = false;
+
     /**
      * @private
      */
@@ -580,7 +582,10 @@ export class Layout {
             }
         } else if (element instanceof TextElementBox) {
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
-            this.splitBySpecialCharacters(element);
+            if (element.text.length > 1 && element.line.paragraph.bidi) {
+                let splittedText: string[] = this.splitTextByConsecutiveLtrAndRtl(element);
+                this.updateSplittedText(element, splittedText);
+            }
             text = element.text;
         }
         // Here field code width and height update need to skipped based on the hidden property.
@@ -723,44 +728,200 @@ export class Layout {
             }
         }
     }
-    private splitBySpecialCharacters(span: TextElementBox): void {
-        if (this.documentHelper.textHelper.isRTLText(span.text) && this.documentHelper.textHelper.containsSpecialChar(span.text)) {
-            let inlineIndex: number = span.line.children.indexOf(span);
-            let text: string = span.text;
-            let specialChars: string = '*|.\:[]{}`\;()@&$#%!~';
-            let textToReplace: string = '';
-            let spanTextUpdated: boolean = false;
-            for (let i: number = 0; i < text.length; i++) {
-                if (specialChars.indexOf(text.charAt(i)) !== -1) {
-                    if (spanTextUpdated && textToReplace !== '') {
-                        let newSpan1: TextElementBox = new TextElementBox();
-                        newSpan1.line = span.line;
-                        newSpan1.characterFormat.copyFormat(span.characterFormat);
-                        span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan1);
-                        newSpan1.text = textToReplace;
-                    }
-                    let newSpan: TextElementBox = new TextElementBox();
-                    newSpan.line = span.line;
-                    newSpan.characterFormat.copyFormat(span.characterFormat);
-                    span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan);
-                    newSpan.text = text.charAt(i);
-                    if (!spanTextUpdated) {
-                        span.text = textToReplace;
-                        spanTextUpdated = true;
-                    }
-                    textToReplace = '';
+    private splitTextByConsecutiveLtrAndRtl(element: TextElementBox): string[] {
+        let text: string = element.text;
+        let charTypeIndex: number = 0;
+        let splittedText: string[] = [];
+        let hasRTLCharacter: boolean = false;
+        let characterRangeTypes: string[] = [];
+        let lastLtrIndex: number = -1;
+        let ltrText: string = '';
+        let rtlText: string = '';
+        let wordSplitChars: string = '';
+        let numberText: string = '';
+        let isTextBidi: boolean = element.characterFormat.bidi;
+        for (let i: number = 0; i < text.length; i++) {
+            let currentCharacterType: number = 0;
+            let separateEachWordSplitChars: boolean = false;
+            // if ((isPrevLTRText.HasValue ? !isPrevLTRText.Value : isTextBidi) && char.IsNumber(text[i]))
+            if (isTextBidi && /^[0-9]+$/.test(text[i])) {
+                numberText += text[i];
+                currentCharacterType = 4;
+            } else if (this.documentHelper.textHelper.containsSpecialCharAlone(text.charAt(i))) {
+                currentCharacterType = 2;
+                if (separateEachWordSplitChars = (isTextBidi || (text.charAt(i) === ' ' && wordSplitChars === ''))) {
+                    wordSplitChars += text[i];
                 } else {
-                    textToReplace += text.charAt(i);
+                    wordSplitChars += text[i];
                 }
+            } else if (this.documentHelper.textHelper.isRTLText(text.charAt(i))) {
+                hasRTLCharacter = true;
+                rtlText += text[i];
+                currentCharacterType = 1;
+            } else {
+                ltrText += text[i];
             }
-            if (spanTextUpdated && textToReplace !== '') {
-                let newSpan2: TextElementBox = new TextElementBox();
-                newSpan2.line = span.line;
-                newSpan2.characterFormat.copyFormat(span.characterFormat);
-                span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan2);
-                newSpan2.text = textToReplace;
+            if (numberText !== '' && currentCharacterType !== 4) {
+                splittedText.push(numberText);
+                characterRangeTypes.push('Number');
+                numberText = '';
+            }
+            if (rtlText !== '' && currentCharacterType !== 1) {
+                splittedText.push(rtlText);
+                characterRangeTypes.push('RTL');
+                rtlText = '';
+            }
+            if (ltrText !== '' && currentCharacterType !== 0) {
+                splittedText.push(ltrText);
+                lastLtrIndex = splittedText.length - 1;
+                characterRangeTypes.push('LTR');
+                ltrText = '';
+            }
+            if (wordSplitChars !== '' && (currentCharacterType !== 2 || separateEachWordSplitChars)) {
+                splittedText.push(wordSplitChars);
+                characterRangeTypes.push('WordSplit');
+                wordSplitChars = '';
             }
         }
+        if (numberText !== '') {
+            splittedText.push(numberText);
+            characterRangeTypes.push('Number');
+        } else if (rtlText !== '') {
+            splittedText.push(rtlText);
+            characterRangeTypes.push('RTL');
+        } else if (ltrText !== '') {
+            splittedText.push(ltrText);
+            lastLtrIndex = splittedText.length - 1;
+            characterRangeTypes.push('LTR');
+        } else if (wordSplitChars !== '') {
+            splittedText.push(wordSplitChars);
+            characterRangeTypes.push('WordSplit');
+        }
+        if (hasRTLCharacter) {
+            for (let i: number = 1; i < splittedText.length; i++) {
+                //Combines the consecutive LTR,RTL,and Number(Number get combined only if it's splitted by non reversing characters (.,:)) 
+                //along with single in-between word split character.
+                let charType: string = characterRangeTypes[i + charTypeIndex];
+                if (charType === 'WordSplit' && splittedText[i].length === 1
+                    && i + charTypeIndex + 1 < characterRangeTypes.length
+                    && characterRangeTypes[i + charTypeIndex - 1] !== 'WordSplit'
+                    && (characterRangeTypes[i + charTypeIndex - 1] !== 'Number'
+                        //Else handled to combine consecutive number 
+                        //when text bidi is false and middle word split character is not white space.
+                        || this.isNumberNonReversingCharacter(splittedText[i], isTextBidi))
+                    && characterRangeTypes[i + charTypeIndex - 1] === characterRangeTypes[i + charTypeIndex + 1]) {
+                    /* tslint:disable */
+                    splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + splittedText[i + 1];
+                    splittedText.splice(i, 1);
+                    splittedText.splice(i, 1);
+                    characterRangeTypes.splice(i + charTypeIndex, 1);
+                    characterRangeTypes.splice(i + charTypeIndex, 1);
+                    i--;
+                    /* tslint:enable */
+                }
+            }
+        } else if (lastLtrIndex !== -1) {
+            if (isTextBidi) {
+                for (let i: number = 1; i < lastLtrIndex; i++) {
+                    //Combines the first and last LTR along with all in-between splited text's.
+                    let charType: string = characterRangeTypes[i + charTypeIndex];
+                    if (charType === 'WordSplit' && i < lastLtrIndex
+                        && characterRangeTypes[i + charTypeIndex - 1] === 'LTR') {
+                        ltrText = '';
+                        for (let j: number = i + 1; j <= lastLtrIndex; j++) {
+                            ltrText += splittedText[j];
+                            splittedText.splice(j, 1);
+                            characterRangeTypes.splice(j + charTypeIndex);
+                            j--;
+                            lastLtrIndex--;
+                        }
+                        splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + ltrText;
+                        splittedText.splice(i, 1);
+                        characterRangeTypes.splice(i + charTypeIndex);
+                        i--;
+                        lastLtrIndex--;
+                    }
+                }
+            } else {
+                //Return the input text if text bidi is false.
+                splittedText = [];
+                splittedText.push(text);
+            }
+        } else if (!isTextBidi) {
+            //Return the input text if text bidi is false.
+            splittedText = [];
+            splittedText.push(text);
+        }
+
+        if (isTextBidi) {
+            for (let i: number = 1; i < splittedText.length; i++) {
+                //Combines the consecutive LTR, RTL, and Number(Number get combined only if it's splitted by non reversing characters (.,:)
+                //or if it's lang attribute is represent a RTL language)
+                //along with single in-between number non reversing word split character.
+                let charType: string = characterRangeTypes[i + charTypeIndex];
+                if (charType === 'WordSplit' && splittedText[i].length === 1
+                    && i + charTypeIndex + 1 < characterRangeTypes.length
+                    && characterRangeTypes[i + charTypeIndex - 1] !== 'WordSplit'
+                    && (characterRangeTypes[i + charTypeIndex - 1] !== 'Number'
+                        || this.isNumberNonReversingCharacter(splittedText[i], isTextBidi))
+                    && characterRangeTypes[i + charTypeIndex - 1] === characterRangeTypes[i + charTypeIndex + 1]) {
+                    splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + splittedText[i + 1];
+                    splittedText.splice(i, 1);
+                    splittedText.splice(i, 1);
+                    characterRangeTypes.splice(i + charTypeIndex, 1);
+                    characterRangeTypes.splice(i + charTypeIndex);
+                    i--;
+                    // //Combines the Number along with single non-word split characters (% $ #).
+                    // else if (charType=='WordSplit'
+                    //     && characterRangeTypes[i + charTypeIndex - 1]=='Number') {
+                    //     splittedText[i - 1] = splittedText[i - 1] + splittedText[i];
+                    //     splittedText.splice(i, 1);
+                    //     characterRangeTypes.splice(i + charTypeIndex, 1);
+                    //     i--;
+                    // }
+                    //Combines the consecutive LTR and Number
+                } else if (charType === 'LTR'
+                    && (characterRangeTypes[i + charTypeIndex - 1] === 'Number'
+                        || characterRangeTypes[i + charTypeIndex - 1] === 'LTR')) {
+                    splittedText[i - 1] = splittedText[i - 1] + splittedText[i];
+                    characterRangeTypes[i + charTypeIndex - 1] = 'LTR';
+                    splittedText.splice(i, 1);
+                    characterRangeTypes.splice(i + charTypeIndex, 1);
+                    i--;
+                }
+            }
+        }
+        return splittedText;
+    }
+    private isNumberNonReversingCharacter(character: string, isTextBidi: boolean): boolean {
+        let numberNonReversingCharacters: string = ',.:';
+        //(.,:) are the number non-reversing characters.
+        if (numberNonReversingCharacters.indexOf(character[0]) !== -1) {
+            if (character[0] === '.' ? !isTextBidi : true) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private updateSplittedText(span: TextElementBox, splittedText: string[]): void {
+        let text: string = '';
+        let inlineIndex: number = span.line.children.indexOf(span);
+        if (splittedText.length > 1) {
+            for (let j: number = 0; j < splittedText.length; j++) {
+                text = splittedText[j];
+                if (j > 0) {
+                    let newSpan2: TextElementBox = new TextElementBox();
+                    newSpan2.line = span.line;
+                    newSpan2.characterFormat.copyFormat(span.characterFormat);
+                    span.line.children.splice(inlineIndex + j, 0, newSpan2);
+                    newSpan2.text = text;
+                } else {
+                    //Replace the source text range with splitted text.
+                    span.text = text;
+                }
+            }
+        }
+
     }
 
     /**
@@ -1524,7 +1685,7 @@ export class Layout {
      */
     // tslint:disable-next-line:max-line-length
     private alignLineElements(element: ElementBox, topMargin: number, bottomMargin: number, maxDescent: number, addSubWidth: boolean, subWidth: number, textAlignment: TextAlignment, whiteSpaceCount: number, isLastElement: boolean): LineElementInfo {
-        if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
+        if (element.width > 0 && (element instanceof TextElementBox || element instanceof ListTextElementBox)) {
             let textElement: TextElementBox = element instanceof TextElementBox ? element as TextElementBox : undefined;
             //Updates the text to base line offset.
             // tslint:disable-next-line:max-line-length
@@ -2188,7 +2349,7 @@ export class Layout {
         let lineText: string = '';
         for (let i: number = lineWidget.children.length - 1; i >= 0; i--) {
             let element: ElementBox = lineWidget.children[i];
-            if (element instanceof TextElementBox) {
+            if (element.width > 0 && element instanceof TextElementBox) {
                 let elementText: string = (element as TextElementBox).text;
                 lineText = elementText + lineText;
                 if (trimSpace && (elementText.trim() !== '' || elementText === '\t')) {
@@ -3975,7 +4136,8 @@ export class Layout {
     /**
      * @private
      */
-    public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean): void {
+    // tslint:disable-next-line:max-line-length
+    public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
         isBidi = isNullOrUndefined(isBidi) ? false : isBidi;
         if (this.documentHelper.blockToShift === paragraphWidget) {
             this.layoutBodyWidgetCollection(paragraphWidget.index, paragraphWidget.containerWidget, paragraphWidget, false);
@@ -3993,7 +4155,7 @@ export class Layout {
             this.isBidiReLayout = false;
         } else {
             // this.isRelayout = true;
-            this.reLayoutLine(paragraphWidget, lineIndex, isBidi);
+            this.reLayoutLine(paragraphWidget, lineIndex, isBidi, isSkip);
         }
         if (paragraphWidget.bodyWidget instanceof HeaderFooterWidget &&
             paragraphWidget.bodyWidget.headerFooterType.indexOf('Footer') !== -1) {
@@ -4478,7 +4640,7 @@ export class Layout {
             paragraphWidget.characterFormat = new WCharacterFormat();
             paragraphWidget.paragraphFormat = new WParagraphFormat();
             paragraphWidget.index = 0;
-            let lineWidget: LineWidget = new LineWidget(undefined);
+            let lineWidget: LineWidget = new LineWidget(paragraphWidget);
             paragraphWidget.childWidgets.push(lineWidget);
             cell.childWidgets.push(paragraphWidget);
         }
@@ -5040,7 +5202,7 @@ export class Layout {
      * @param lineIndex start line index to reLayout
      * @private
      */
-    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean): void {
+    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean): void {
         if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
             this.viewer.owner.editorModule.updateWholeListItems(paragraph);
         }
@@ -5053,7 +5215,7 @@ export class Layout {
         if (!this.isBidiReLayout && (paragraph.paragraphFormat.bidi || this.isContainsRtl(lineWidget))) {
             let newLineIndex: number = lineIndex <= 0 ? 0 : lineIndex - 1;
             for (let i: number = newLineIndex; i < paragraph.childWidgets.length; i++) {
-                if (isBidi || !(paragraph.paragraphFormat.bidi && this.isContainsRtl(lineWidget))) {
+                if (isBidi || !(paragraph.paragraphFormat.bidi && this.isContainsRtl(lineWidget)) && !isSkip) {
                     if (i === lineIndex) {
                         continue;
                     }
@@ -5117,10 +5279,11 @@ export class Layout {
         if (line.children.length === 0) {
             return;
         }
-        let isFieldCode: boolean = false;
+
         let lastAddedElementIsRtl: boolean = false;
         let lastAddedRtlElementIndex: number = -1;
         let tempElements: ElementBox[] = [];
+
         for (let i: number = 0; i < line.children.length; i++) {
             let element: ElementBox = line.children[i];
             let elementCharacterFormat: WCharacterFormat = undefined;
@@ -5150,31 +5313,40 @@ export class Layout {
 
             if (element instanceof TextElementBox) {
                 text = (element as TextElementBox).text;
-                containsSpecchrs = this.documentHelper.textHelper.containsSpecialCharAlone(text);
+                containsSpecchrs = this.documentHelper.textHelper.containsSpecialCharAlone(text.trim());
                 if (containsSpecchrs) {
-                    if (text.length > 1 && elementCharacterFormat.bidi) {
+                    if (elementCharacterFormat.bidi && isParaBidi) {
                         text = HelperMethods.ReverseString(text);
+                        for (let k: number = 0; k < text.length; k++) {
+                            let ch: string = this.documentHelper.textHelper.inverseCharacter(text.charAt(k));
+                            text = text.replace(text.charAt(k), ch);
+                        }
                         element.text = text;
                     }
                 }
 
             }
+            let isRTLText: boolean = false;
+            // let isNumber: boolean = false;
             // The list element box shold be added in the last position in line widget for the RTL paragraph 
             // and first in the line widget for LTR paragrph.
             if (element instanceof ListTextElementBox) {
                 isRtl = isParaBidi;
             } else { // For Text element box we need to check the character format and unicode of text to detect the RTL text. 
-                isRtl = this.documentHelper.textHelper.isRTLText(text) || elementCharacterFormat.bidi
+                isRTLText = this.documentHelper.textHelper.isRTLText(text);
+                isRtl = isRTLText || elementCharacterFormat.bidi
                     || elementCharacterFormat.bdo === 'RTL';
+
             }
-            if (element instanceof FieldElementBox || isFieldCode) {
+            if (element instanceof FieldElementBox || this.isRtlFieldCode) {
                 if ((element as FieldElementBox).fieldType === 0) {
-                    isFieldCode = true;
+                    this.isRtlFieldCode = true;
                 } else if ((element as FieldElementBox).fieldType === 1) {
-                    isFieldCode = false;
+                    this.isRtlFieldCode = false;
                 }
                 isRtl = false;
             }
+
             // If the text element box contains only whitespaces, then need to check the previous and next elements.
             if (!isRtl && !isNullOrUndefined(text) && text !== '' && ((text !== '' && text.trim() === '') || containsSpecchrs)) {
                 let elements: ElementBox[] = line.children;
@@ -5234,5 +5406,6 @@ export class Layout {
         line.children = [];
         line.children = tempElements;
     }
+
     //RTL feature layout end
 }

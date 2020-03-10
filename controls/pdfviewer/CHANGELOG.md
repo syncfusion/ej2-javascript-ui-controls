@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.4.55 (2020-03-10)
+
+### PDF Viewer
+
+#### New Features
+
+- `#235592` - Provided the support to select the text content from the PDF pages programmatically using bounds value
+
+#### Bug Fixes
+
+- `#266241` – Now, the Hand-written signature is preserved properly in PDF Viewer.
+- `#266547` - Now, the isDocumentEdited property is working properly in PDF Viewer.
+- `#264762` - The EnableAnnotationToolbar property is now working properly in blazor framework.
+
 ## 17.4.50 (2020-02-18)
 
 ### PDF Viewer

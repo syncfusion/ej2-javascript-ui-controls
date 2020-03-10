@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Placement, ContainerType } from '../utils/enum';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Placement, ContainerType, TooltipPosition } from '../utils/enum';
 
 /**
  * Interface for a class Font
@@ -194,6 +194,63 @@ export interface ContainerModel {
 }
 
 /**
+ * Interface for a class RangeTooltip
+ */
+export interface RangeTooltipModel {
+
+    /**
+     * The fill color of the range tooltip, which accepts value in hex, rgba as a valid CSS color string.
+     * @default null
+     */
+
+    fill?: string;
+
+    /**
+     * Options to customize the tooltip text of range.
+     */
+
+    textStyle?: FontModel;
+
+    /**
+     * Format of the range tooltip content.
+     * @default null
+     */
+
+    format?: string;
+
+    /**
+     * Custom template to format the  tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
+     * @default null
+     */
+
+    template?: string;
+
+    /**
+     * If set true, range tooltip will animate, while moving from one point to another.
+     * @default true
+     */
+    enableAnimation?: boolean;
+
+    /**
+     * Options to customize the border for range tooltip.
+     */
+    border?: BorderModel;
+
+    /**
+     * Options to customize the border for range tooltip.
+     * @default End
+     */
+    position?: TooltipPosition;
+
+    /**
+     * Options to show the tooltip position on Range
+     * @default false
+     */
+    showAtMousePosition?: boolean;
+
+}
+
+/**
  * Interface for a class TooltipSettings
  */
 export interface TooltipSettingsModel {
@@ -225,6 +282,24 @@ export interface TooltipSettingsModel {
     format?: string;
 
     /**
+     * Options to show the tooltip position on pointer
+     * @default false
+     */
+    showAtMousePosition?: boolean;
+
+    /**
+     * Options to customize the range tooltip property.
+     */
+
+    rangeSettings?: RangeTooltipModel;
+
+    /**
+     * Options to customize the border for range tooltip.
+     * @default End
+     */
+    position?: TooltipPosition;
+
+    /**
      * Custom template to format the tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
      * @default null
      */
@@ -241,5 +316,11 @@ export interface TooltipSettingsModel {
      * Options to customize the border for tooltip.
      */
     border?: BorderModel;
+
+    /**
+     * Option to select the tooltip from Range, Annotation, Pointer
+     * @default Pointer
+     */
+    type?: string[];
 
 }

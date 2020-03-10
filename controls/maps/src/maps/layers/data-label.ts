@@ -188,8 +188,8 @@ export class DataLabel {
                 let border: Object = { color: 'yellow' };
                 let position: MapLocation[] = [];
                 let width: number = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
-                    ? this.maps.zoomShapeCollection[index]['width'] :
-                    location['rightMax']['x'] - location['leftMax']['x'];
+                    && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index]['width'] :
+                    (location['rightMax']['x'] - location['leftMax']['x']) * scale;
                 if(!isNullOrUndefined(this.maps.dataLabelShape)){
                     shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
                     this.maps.dataLabelShape.push(shapeWidth);
@@ -202,8 +202,8 @@ export class DataLabel {
                 let elementSize: Size = textSize;
                 let startY: number = location['y'] - textSize['height'] / 4;
                 let endY: number = location['y'] + textSize['height'] / 4;
-                let start: number = location['y'] - textSize['height'] / 4;
-                let end: number = location['y'] + textSize['height'] / 4;
+                let start: number = ((location['y'] + transPoint['y']) * scale) - textSize['height'] / 4;
+                let end: number = ((location['y'] + transPoint['y']) * scale) + textSize['height'] / 4;
                 position = filter(shapePoint[midIndex], startY, endY);
                 if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
@@ -214,12 +214,12 @@ export class DataLabel {
                     }
                     locationX = location1['x'];
                     location['x'] = location1['x'];
-                    width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied ?
-                    this.maps.zoomShapeCollection[index]['width'] :
-                    location1['rightMax']['x'] - location1['leftMax']['x'];
+                    width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
+                        && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index]['width'] :
+                    (location1['rightMax']['x'] - location1['leftMax']['x']) * scale;
                 }
-                let xpositionEnds: number = location['x'] + textSize['width'] / 2;
-                let xpositionStart: number = location['x'] - textSize['width'] / 2;
+                let xpositionEnds: number = ((location['x'] + transPoint['x']) * scale) + textSize['width'] / 2;
+                let xpositionStart: number = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
                 this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
                 let labelElement: HTMLElement;
                 if (eventargs.template !== '') {

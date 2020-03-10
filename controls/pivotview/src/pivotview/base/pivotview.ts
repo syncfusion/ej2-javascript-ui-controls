@@ -1085,30 +1085,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
-        let isCommonRequire: boolean;
-        isCommonRequire = true;
         modules.push({ args: [this], member: 'groupingbar' });
         if (this.allowConditionalFormatting) {
             modules.push({ args: [this], member: 'conditionalformatting' });
         }
         if (this.allowNumberFormatting) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'numberformatting' });
         }
         if (this.allowCalculatedField) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'calculatedfield' });
         }
-        // if (this.showGroupingBar || !this.showGroupingBar) {
-        //     isCommonRequire = true;
-        //     modules.push({ args: [this], member: 'grouping' });
-        // }
         if (this.showToolbar && this.toolbar.length > 0) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'toolbar' });
         }
         if (this.showFieldList) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'fieldlist' });
         }
         if (this.allowExcelExport) {
@@ -1121,16 +1111,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             modules.push({ args: [this], member: 'virtualscroll' });
         }
         if (this.allowGrouping) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'grouping' });
-        }
-        if (this.gridSettings) {
-            if (this.gridSettings.contextMenuItems) {
-                isCommonRequire = true;
-            }
-        }
-        if (isCommonRequire) {
-            modules.push({ args: [this], member: 'common' });
         }
         return modules;
     }
@@ -1153,6 +1134,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.keyboardModule = new KeyboardInteraction(this);
         this.contextMenuModule = new PivotContextMenu(this);
         this.globalize = new Internationalization(this.locale);
+        if (this.showGroupingBar || this.showFieldList || this.allowNumberFormatting || this.showToolbar ||
+            this.allowCalculatedField || this.allowGrouping || this.gridSettings.contextMenuItems) {
+            this.commonModule = new Common(this);
+        }
         this.defaultLocale = {
             grandTotal: 'Grand Total',
             total: 'Total',
@@ -1973,7 +1958,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 addClass([this.chart.element], cls.PIVOTCHART_LTR);
             }
         }
-        if (this.showFieldList || this.showGroupingBar) {
+        if (this.showFieldList || this.showGroupingBar || this.allowNumberFormatting || this.allowCalculatedField ||
+            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
             this.notify(events.uiUpdate, this);
             if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
                 this.pivotFieldListModule.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
@@ -2042,7 +2028,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public showWaitingPopup(): void {
-        if (this.grid && this.grid.element) {
+        if (this.grid && this.grid.element && !this.spinnerTemplate) {
             showSpinner(this.grid.element);
         } else {
             showSpinner(this.element);
@@ -2053,7 +2039,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public hideWaitingPopup(): void {
-        if (this.grid && this.grid.element) {
+        if (this.grid && this.grid.element && !this.spinnerTemplate) {
             hideSpinner(this.grid.element);
         } else {
             hideSpinner(this.element);

@@ -91,13 +91,13 @@ export class CommentReviewPane {
             innerHTML: localValue.getConstant('Comments'), className: 'e-de-cp-header'
         });
         this.closeButton = createElement('button', {
-            className: 'e-de-cp-close e-btn e-flat e-icon-btn', id: 'close',
+            className: 'e-de-cp-close e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.closeButton.title = localValue.getConstant('Close');
         headerWholeDiv.appendChild(this.closeButton);
         headerWholeDiv.appendChild(headerDiv1);
-        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
+        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.headerContainer.appendChild(headerWholeDiv);
         this.headerContainer.appendChild(this.initToolbar(localValue));
@@ -476,9 +476,14 @@ export class CommentPane {
     }
 
     public getCommentStart(comment: CommentElementBox): CommentCharacterElementBox {
+        let localValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        localValue.setLocale(this.owner.locale);
         let commentStart: CommentCharacterElementBox = undefined;
         if (comment && comment.commentStart) {
             commentStart = comment.commentStart;
+        }
+        if (commentStart.commentMark !== undefined) {
+            commentStart.commentMark.title =  localValue.getConstant('Click to see this comment');
         }
         return this.getFirstCommentInLine(commentStart);
 
@@ -647,6 +652,7 @@ export class CommentView {
             cssClass: 'e-caret-hide',
             enableRtl: this.owner.enableRtl
         });
+        this.menuBar.title = localObj.getConstant('More Options') + '...';
         menuItem.appendTo(this.menuBar);
         commentUserInfo.appendChild(this.menuBar);
         this.dropDownButton = menuItem;
@@ -695,12 +701,14 @@ export class CommentView {
         let editRegionFooter: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
         let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' }) as HTMLButtonElement;
         //tslint:disable-next-line:max-line-length
-        this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
+        this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary e-de-overlay', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postComment.bind(this));
+        postButton.title = localObj.getConstant('Post');
         let cancelButton: HTMLButtonElement = createElement('button', {
             className: 'e-de-cmt-cancel-btn e-btn e-flat'
         }) as HTMLButtonElement;
         this.cancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
+        cancelButton.title = localObj.getConstant('Cancel');
         cancelButton.addEventListener('click', this.cancelEditing.bind(this));
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
@@ -746,19 +754,19 @@ export class CommentView {
         this.replyViewTextBox.addEventListener('keyup', this.enableDisableReplyPostButton.bind(this));
 
         let editRegionFooter: HTMLElement = createElement('div', { styles: 'display:none', className: 'e-de-cmt-action-button' });
-        let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' }) as HTMLButtonElement;
         //tslint:disable-next-line:max-line-length
+        let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat' }) as HTMLButtonElement;
         this.replyPostButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
 
         postButton.addEventListener('click', this.postReply.bind(this));
-
+        postButton.title = localObj.getConstant('Post');
         let cancelButton: HTMLButtonElement = createElement('button', {
             className: 'e-de-cmt-cancel-btn e-btn e-flat'
         }) as HTMLButtonElement;
         this.replyCancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
 
         cancelButton.addEventListener('click', this.cancelReply.bind(this));
-
+        cancelButton.title = localObj.getConstant('Cancel');
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
         this.replyFooter = editRegionFooter;
@@ -802,6 +810,11 @@ export class CommentView {
     }
     private enableDisableReplyPostButton(): void {
         this.replyPostButton.disabled = this.replyViewTextBox.value === '';
+        if (this.replyPostButton.disabled) {
+            classList(this.replyPostButton.element, ['e-de-overlay'], []);
+        } else if (this.replyPostButton.element.classList.contains('e-de-overlay')) {
+            classList(this.replyPostButton.element, [], ['e-de-overlay']);
+        }
     }
 
     private enableReplyView(): void {
@@ -879,6 +892,11 @@ export class CommentView {
 
     public enableDisablePostButton(): void {
         this.postButton.disabled = this.textArea.value === '';
+        if (this.postButton.disabled) {
+            classList(this.postButton.element, ['e-de-overlay'], []);
+        } else if (this.postButton.element.classList.contains('e-de-overlay')) {
+            classList(this.postButton.element, [], ['e-de-overlay']);
+        }
     }
 
     public editComment(): void {

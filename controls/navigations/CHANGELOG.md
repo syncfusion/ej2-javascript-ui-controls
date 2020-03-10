@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.4.55 (2020-03-10)
+
+### Tab
+
+#### Bug Fixes
+
+- `#266275` - An issue with tab navigation is not working after removed the first tab has been fixed.
+
+### Accordion
+
+#### Bug Fixes
+
+- `#263853` - An issue with height is not properly set to the accordion item when perform expand/collapse has been fixed.
+
 ## 17.4.50 (2020-02-18)
 
 ### TreeView

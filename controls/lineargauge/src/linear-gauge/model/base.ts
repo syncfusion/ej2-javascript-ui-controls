@@ -1,6 +1,6 @@
 import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
-import { BorderModel, FontModel } from '../model/base-model';
-import { Placement, ContainerType } from '../utils/enum';
+import { BorderModel, FontModel, RangeTooltipModel } from '../model/base-model';
+import { Placement, ContainerType, TooltipPosition } from '../utils/enum';
 
 /**
  * Options for customizing the fonts.
@@ -224,6 +224,67 @@ export class Container extends ChildProperty<Container> {
 }
 
 /**
+ * To set tooltip properties for range tooltip.
+ */
+export class RangeTooltip extends ChildProperty<RangeTooltip> {
+    /**
+     * The fill color of the range tooltip, which accepts value in hex, rgba as a valid CSS color string.
+     * @default null
+     */
+
+    @Property(null)
+    public fill: string;
+
+    /**
+     * Options to customize the tooltip text of range.
+     */
+
+    @Complex<FontModel>({ size: '13px' }, Font)
+    public textStyle: FontModel;
+
+    /**
+     * Format of the range tooltip content.
+     * @default null
+     */
+
+    @Property(null)
+    public format: string;
+
+    /**
+     * Custom template to format the  tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
+     * @default null
+     */
+
+    @Property(null)
+    public template: string;
+
+    /**
+     * If set true, range tooltip will animate, while moving from one point to another.
+     * @default true
+     */
+    @Property(true)
+    public enableAnimation: boolean;
+
+    /**
+     * Options to customize the border for range tooltip.
+     */
+    @Complex<BorderModel>({}, Border)
+    public border: BorderModel;
+
+    /**
+     * Options to customize the border for range tooltip.
+     * @default End
+     */
+    @Property('End')
+    public position: TooltipPosition;
+    /**
+     * Options to show the tooltip position on Range
+     * @default false
+     */
+    @Property(false)
+    public showAtMousePosition: boolean;
+}
+/**
  * Options for customizing the tooltip in linear gauge.
  */
 
@@ -259,6 +320,25 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public format: string;
 
     /**
+     * Options to show the tooltip position on pointer
+     * @default false
+     */
+    @Property(false)
+    public showAtMousePosition: boolean;
+    /**
+     * Options to customize the range tooltip property.
+     */
+
+    @Complex<RangeTooltipModel>({}, RangeTooltip)
+    public rangeSettings: RangeTooltipModel;
+
+    /**
+     * Options to customize the border for range tooltip.
+     * @default End
+     */
+    @Property('End')
+    public position: TooltipPosition;
+    /**
      * Custom template to format the tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
      * @default null
      */
@@ -278,6 +358,13 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
+
+    /**
+     * Option to select the tooltip from Range, Annotation, Pointer
+     * @default Pointer
+     */
+    @Property('Pointer')
+    public type: string[];
 }
 
 

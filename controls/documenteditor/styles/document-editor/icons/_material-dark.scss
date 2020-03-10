@@ -24,14 +24,6 @@
       font-size: $de-op-icon-font-size;
     }
 
-    .e-de-op .e-de-op-close-icon {
-      font-size: $de-op-close-icon-size;
-      height: $de-op-close-icon-width;
-      margin-left: $de-op-close-icon-margin-left;
-      margin-top: $de-op-close-icon-margin-top;
-      width: auto;
-    }
-
     .e-de-op-close-icon::before {
       content: '\e7fc';
     }

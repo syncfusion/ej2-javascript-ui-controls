@@ -2085,7 +2085,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private focusHandler(e: FocusEvent): void {
-        if ((!this.isRTE || this.isFocusOut) && !this.readonly) {
+        if ((!this.isRTE || this.isFocusOut)) {
             this.isRTE = this.isFocusOut ? false : true;
             this.isFocusOut = false;
             addClass([this.element], [classes.CLS_FOCUS]);
@@ -2175,7 +2175,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 trg = null;
             }
         }
-        if (this.isBlur && isNOU(trg) && !this.readonly) {
+        if (this.isBlur && isNOU(trg)) {
             removeClass([this.element], [classes.CLS_FOCUS]);
             this.notify(events.focusChange, {});
             let value: string = this.getUpdatedValue();

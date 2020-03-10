@@ -412,6 +412,11 @@ export class ViewBase {
             addClass([element], cls.AUTO_HEIGHT);
         }
     }
+    public addIgnoreWhitespaceClass(element: Element): void {
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            addClass([element], cls.IGNORE_WHITESPACE);
+        }
+    }
 
     private getColElements(): HTMLElement[] {
         return [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS

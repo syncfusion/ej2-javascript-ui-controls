@@ -264,8 +264,11 @@ document.getElementById('portConstraints').onchange = () => {
 }
 
 document.getElementById('unSelect').onclick = () => {
-    mouseevents.mouseLeaveEvent(diagramCanvas);
-    diagram.clearSelection();
+    let port = diagram.nodes[0].ports[0];
+    port.shape = "Square";
+    diagram.dataBind() 
+    //mouseevents.mouseLeaveEvent(diagramCanvas);
+    //diagram.clearSelection();
 }
 
 document.getElementById('MouseMove').onclick = () => {

@@ -176,3 +176,34 @@ export interface ContainerDocumentChangeEventArgs {
      */
     source: DocumentEditorContainer;
 }
+/** 
+ * Defines customized toolbar items.
+ */
+export interface CustomToolbarItemModel {
+    /**
+     * Defines single/multiple classes separated by space used to specify an icon for the button.
+     * The icon will be positioned before the text content if text is available, otherwise the icon alone will be rendered.
+     * @default ""
+     */
+    prefixIcon?: string;
+    /**
+     * Specifies the text to be displayed on the Toolbar button.
+     * @default ""
+     */
+    tooltipText?: string;
+    /**
+     * Specifies the unique ID to be used with button or input element of Toolbar items.
+     * @default ""
+     */
+    id?: string;
+    /**
+     * Specifies the text to be displayed on the Toolbar button.
+     * @default ""
+     */
+    text?: string;
+    /**
+     * Defines single/multiple classes (separated by space) to be used for customization of commands.
+     * @default ""
+     */
+    cssClass?: string;
+}

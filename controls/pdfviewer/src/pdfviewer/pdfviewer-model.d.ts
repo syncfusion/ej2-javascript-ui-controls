@@ -1833,7 +1833,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     * @default false
+     * @default true
      */
     enableAnnotationToolbar?: boolean;
 

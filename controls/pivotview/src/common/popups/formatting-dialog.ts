@@ -7,8 +7,6 @@ import * as events from '../../common/base/constant';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { FormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
 import { IFieldListOptions } from '../../base';
-import { Common } from '../actions/common';
-PivotView.Inject(Common);
 
 /**
  * Module to render NumberFormatting Dialog

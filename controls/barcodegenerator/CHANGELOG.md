@@ -8,6 +8,14 @@
 
 #### Bug Fixes
 
+- `#264414` - The issue "QR code is not rendered based on center bounds" has been fixed.
+
+## 17.4.49 (2020-02-11)
+
+### Barcode
+
+#### Bug Fixes
+
 - `#262067` - The issue "Unable to decode qrcode for some values" has been fixed.
 - `#262067` - The issue "DOM ID for the SVG and div element are same" has been fixed.
 

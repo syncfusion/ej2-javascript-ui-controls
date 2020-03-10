@@ -59,6 +59,7 @@ export class Editor {
     private pasteRequestHandler: XmlHttpRequestHandler;
     private endParagraph: ParagraphWidget = undefined;
     private removeEditRange: boolean = false;
+    private currentProtectionType: ProtectionType;
     /**
      * @private
      */
@@ -118,7 +119,10 @@ export class Editor {
     public isPaste: boolean = false;
     public isPasteListUpdated: boolean = false;
     public base64: Base64;
-    private isInsertField: boolean = false;
+    /**
+     * @private
+     */
+    public isInsertField: boolean = false;
 
     /**
      * Initialize the editor module
@@ -259,7 +263,7 @@ export class Editor {
         this.documentHelper.restrictFormatting = limitToFormatting;
         this.documentHelper.protectionType = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
         this.selection.isHighlightEditRegion = true;
-        this.addProtection(credential);
+        this.addProtection(credential, this.documentHelper.protectionType);
     }
     private getCommentHierarchicalIndex(comment: CommentElementBox): string {
         let index: string = '';
@@ -612,24 +616,29 @@ export class Editor {
     /**
      * @private
      */
-    public addProtection(password: string): void {
-        let enforceProtectionHandler: XmlHttpRequestHandler = new XmlHttpRequestHandler();
-        let passwordBase64: string = this.base64.encodeString(password);
-        /* tslint:disable:no-any */
-        let formObject: any = {
-            passwordBase64: passwordBase64,
-            saltBase64: '',
-            spinCount: 100000
-        };
-        /* tslint:enable:no-any */
-        let url: string = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
-        enforceProtectionHandler.url = url;
-        enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
-        enforceProtectionHandler.onSuccess = this.enforceProtectionInternal.bind(this);
-        enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
-        enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
-        enforceProtectionHandler.customHeaders = this.owner.headers;
-        enforceProtectionHandler.send(formObject);
+    public addProtection(password: string, protectionType: ProtectionType): void {
+        if (password === '') {
+            this.protectDocument(protectionType);
+        } else {
+            this.currentProtectionType = protectionType;
+            let enforceProtectionHandler: XmlHttpRequestHandler = new XmlHttpRequestHandler();
+            let passwordBase64: string = this.base64.encodeString(password);
+            /* tslint:disable:no-any */
+            let formObject: any = {
+                passwordBase64: passwordBase64,
+                saltBase64: '',
+                spinCount: 100000
+            };
+            /* tslint:enable:no-any */
+            let url: string = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
+            enforceProtectionHandler.url = url;
+            enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
+            enforceProtectionHandler.onSuccess = this.enforceProtectionInternal.bind(this);
+            enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
+            enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
+            enforceProtectionHandler.customHeaders = this.owner.headers;
+            enforceProtectionHandler.send(formObject);
+        }
     }
     /* tslint:disable:no-any */
     private protectionFailureHandler(result: any): void {
@@ -641,15 +650,15 @@ export class Editor {
             console.error(result.statusText);
         }
     }
-    private enforceProtectionInternal(result: any): void {
+    private enforceProtectionInternal(result: any, protectionType: ProtectionType): void {
         let data: string[] = JSON.parse(result.data);
         this.documentHelper.saltValue = data[0];
         this.documentHelper.hashValue = data[1];
-        this.protectDocument();
+        this.protectDocument(this.currentProtectionType);
     }
     /* tslint:enable:no-any */
-    private protectDocument(): void {
-        this.protect(this.documentHelper.protectionType);
+    private protectDocument(protectionType: ProtectionType): void {
+        this.protect(protectionType);
         let restrictPane: HTMLElement = this.documentHelper.restrictEditingPane.restrictPane;
         if (restrictPane && restrictPane.style.display === 'block') {
             this.documentHelper.restrictEditingPane.showStopProtectionPane(true);
@@ -702,17 +711,23 @@ export class Editor {
             stopProtection = false;
         }
         if (stopProtection) {
-            this.documentHelper.isDocumentProtected = false;
-            this.documentHelper.restrictFormatting = false;
-            this.documentHelper.selection.highlightEditRegion();
-            let restrictPane: HTMLElement = this.documentHelper.restrictEditingPane.restrictPane;
-            if (restrictPane && restrictPane.style.display === 'block') {
-                this.documentHelper.restrictEditingPane.showStopProtectionPane(false);
-            }
-            this.documentHelper.dialog.hide();
+            this.unProtectDocument();
         } else {
             DialogUtility.alert(localeValue.getConstant('The password is incorrect'));
         }
+    }
+    /**
+     * @private
+     */
+    public unProtectDocument(): void {
+        this.documentHelper.isDocumentProtected = false;
+        this.documentHelper.restrictFormatting = false;
+        this.documentHelper.selection.highlightEditRegion();
+        let restrictPane: HTMLElement = this.documentHelper.restrictEditingPane.restrictPane;
+        if (restrictPane && restrictPane.style.display === 'block') {
+            this.documentHelper.restrictEditingPane.showStopProtectionPane(false);
+        }
+        this.documentHelper.dialog.hide();
     }
     /**
      * Notify content change event
@@ -1362,9 +1377,6 @@ export class Editor {
         let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
         selection.editPosition = selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         let bidi: boolean = selection.start.paragraph.paragraphFormat.bidi;
-        if (!bidi && this.documentHelper.layout.isContainsRtl(selection.start.currentWidget)) {
-            this.documentHelper.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
-        }
         if ((!selection.isEmpty && !selection.isImageSelected) ||
             this.documentHelper.isListTextSelected && selection.contextType === 'List') {
             selection.isSkipLayouting = true;
@@ -1376,6 +1388,7 @@ export class Editor {
             this.documentHelper.isTextInput = true;
         }
         paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        let isSpecialChars: boolean = this.documentHelper.textHelper.containsSpecialCharAlone(text);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
             this.updateInsertPosition();
@@ -1387,6 +1400,7 @@ export class Editor {
                 span.text = text;
                 let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl;
                 span.characterFormat.bidi = isBidi;
+                span.isRightToLeft = isBidi;
                 span.line = (insertPosition.paragraph as ParagraphWidget).childWidgets[0] as LineWidget;
                 span.margin = new Margin(0, 0, 0, 0);
                 span.line.children.push(span);
@@ -1418,21 +1432,25 @@ export class Editor {
                 let insertLangId: number = this.documentHelper.textHelper.getRtlLanguage(text).id;
                 let inlineLangId: number = 0;
                 let isRtl: boolean = false;
+                let isInlineContainsSpecChar: boolean = false;
                 if (inline instanceof TextElementBox) {
                     inlineLangId = this.documentHelper.textHelper.getRtlLanguage(inline.text).id;
                     isRtl = this.documentHelper.textHelper.getRtlLanguage(inline.text).isRtl;
+                    isInlineContainsSpecChar = this.documentHelper.textHelper.containsSpecialCharAlone(inline.text);
                 }
                 if (isBidi || !this.documentHelper.owner.isSpellCheck) {
                     insertFormat.bidi = isBidi;
                 }
                 // tslint:disable-next-line:max-line-length
-                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat)
-                    && (insertLangId === inlineLangId) || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
+                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && (insertLangId === inlineLangId)
+                    || (text.trim() === '' && !isBidi && inline.characterFormat.bidi) || isRtl && insertFormat.isSameFormat(inline.characterFormat) && isSpecialChars) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                 } else {
+                    let isContainsRtl: boolean = this.documentHelper.layout.isContainsRtl(selection.start.currentWidget);
                     let tempSpan: TextElementBox = new TextElementBox();
                     tempSpan.text = text;
                     tempSpan.line = inline.line;
+                    tempSpan.isRightToLeft = isRtl;
                     tempSpan.characterFormat.copyFormat(insertFormat);
 
                     let insertIndex: number = inline.indexInOwner;
@@ -1442,7 +1460,13 @@ export class Editor {
                             inline = inline.fieldBegin;
                             insertIndex = inline.indexInOwner;
                         }
-                        let index: number = isParaBidi || inline instanceof EditRangeEndElementBox ? insertIndex : insertIndex + 1;
+                        let index: number = -1;
+                        if (isParaBidi || inline instanceof EditRangeEndElementBox || isContainsRtl && isInlineContainsSpecChar
+                            || isRtl && isBidi) {
+                            index = insertIndex;
+                        } else {
+                            index = insertIndex + 1;
+                        }
                         inline.line.children.splice(index, 0, tempSpan);
                     } else if (indexInInline === 0) {
                         if (isRtl && !isBidi) {
@@ -1468,6 +1492,9 @@ export class Editor {
                             inline.line.children.splice(insertIndex + 1, 0, splittedSpan);
                         }
                         inline.line.children.splice(insertIndex + 1, 0, tempSpan);
+                    }
+                    if (!bidi && this.documentHelper.layout.isContainsRtl(selection.start.currentWidget)) {
+                        this.documentHelper.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
                     }
                     this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
 
@@ -1927,7 +1954,7 @@ export class Editor {
             let paragraph: ParagraphWidget = (element.line as LineWidget).paragraph;
             let lineIndex: number = paragraph.childWidgets.indexOf(element.line);
             let elementIndex: number = element.line.children.indexOf(element);
-            if (element.line.paragraph.bidi) {
+            if (element.line.paragraph.bidi || this.documentHelper.layout.isContainsRtl(element.line)) {
                 this.documentHelper.layout.reArrangeElementsForRtl(element.line, element.line.paragraph.bidi);
             }
             this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex, element.line.paragraph.bidi);
@@ -2563,7 +2590,7 @@ export class Editor {
         // tslint:disable-next-line:max-line-length
         fieldSeparatorPosition.setPositionParagraph(fieldSeparator.line, (fieldSeparator.line).getOffset(fieldSeparator, fieldSeparator.length));
         blockInfo = this.selection.getParagraphInfo(fieldSeparatorPosition);
-        let fieldSeperatorString: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        let fieldSeparatorString: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         this.initComplexHistory('RemoveHyperlink');
         selection.start.setPositionParagraph(fieldEnd.line, (fieldEnd.line).getOffset(fieldEnd, 0));
         blockInfo = this.selection.getParagraphInfo(selection.start);
@@ -2571,7 +2598,7 @@ export class Editor {
         selection.end.setPositionInternal(selection.start);
         this.delete();
 
-        selection.start.setPositionInternal(this.selection.getTextPosBasedOnLogicalIndex(fieldSeperatorString));
+        selection.start.setPositionInternal(this.selection.getTextPosBasedOnLogicalIndex(fieldSeparatorString));
         this.initHistory('Underline');
         this.updateCharacterFormatWithUpdate(selection, 'underline', 'None', false);
         if (this.editorHistory) {
@@ -2701,7 +2728,9 @@ export class Editor {
             this.isPasteListUpdated = false;
         }
         this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : result.data);
-        this.applyPasteOptions(this.currentPasteOptions);
+        if (this.currentPasteOptions !== 'KeepSourceFormatting') {
+            this.applyPasteOptions(this.currentPasteOptions);
+        }
         hideSpinner(this.owner.element);
     }
     private onPasteFailure(result: any): void {
@@ -3326,10 +3355,8 @@ export class Editor {
         if (paragraphFormat) {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
-        if (paragraph.paragraphFormat.bidi && this.isInsertField) {
-            this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, paragraph.paragraphFormat.bidi);
-        }
-        this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, paragraph.paragraphFormat.bidi);
+        // tslint:disable-next-line:max-line-length
+        this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, this.isInsertField ? undefined : paragraph.paragraphFormat.bidi);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     }
     private insertElementInternal(element: ElementBox, newElement: ElementBox, index: number, relayout?: boolean): void {
@@ -3338,32 +3365,43 @@ export class Editor {
         let lineIndex: number = line.indexInOwner;
         let insertIndex: number = element.indexInOwner;
         let isBidi: boolean = paragraph.paragraphFormat.bidi && element.isRightToLeft;
-        if (index === element.length) {
-            // Add new Element in current 
-            if (!isBidi) {
-                insertIndex++;
-            }
-            line.children.splice(insertIndex, 0, newElement);
-        } else if (index === 0) {
-            if (isNullOrUndefined(element.previousNode)) {
-                element.line.children.splice(0, 0, newElement);
-                insertIndex = 0;
+        let isEqualFormat: boolean = false;
+        if (this.owner.editorHistory && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing)
+            && newElement instanceof TextElementBox) {
+            isEqualFormat = element.characterFormat.isEqualFormat(newElement.characterFormat)
+                && this.documentHelper.textHelper.isRTLText(newElement.text);
+        }
+        if (!isEqualFormat) {
+            if (index === element.length) {
+                // Add new Element in current 
+                if (!isBidi) {
+                    insertIndex++;
+                }
+                line.children.splice(insertIndex, 0, newElement);
+            } else if (index === 0) {
+                if (isNullOrUndefined(element.previousNode)) {
+                    element.line.children.splice(0, 0, newElement);
+                    insertIndex = 0;
+                } else {
+                    element.line.children.splice(insertIndex, 0, newElement);
+                }
             } else {
-                element.line.children.splice(insertIndex, 0, newElement);
+                if (!isBidi) {
+                    insertIndex++;
+                }
+                let textElement: TextElementBox = new TextElementBox();
+                textElement.characterFormat.copyFormat(element.characterFormat);
+                textElement.text = (element as TextElementBox).text.substring(index);
+                (element as TextElementBox).text = (element as TextElementBox).text.substr(0, index);
+                line.children.splice(insertIndex, 0, textElement);
+                textElement.line = element.line;
+                //Inserts the new inline.
+                line.children.splice(isBidi ? insertIndex + 1 : insertIndex, 0, newElement);
+                insertIndex -= 1;
             }
         } else {
-            if (!isBidi) {
-                insertIndex++;
-            }
-            let textElement: TextElementBox = new TextElementBox();
-            textElement.characterFormat.copyFormat(element.characterFormat);
-            textElement.text = (element as TextElementBox).text.substring(index);
-            (element as TextElementBox).text = (element as TextElementBox).text.substr(0, index);
-            line.children.splice(insertIndex, 0, textElement);
-            textElement.line = element.line;
-            //Inserts the new inline.
-            line.children.splice(isBidi ? insertIndex + 1 : insertIndex, 0, newElement);
-            insertIndex -= 1;
+            // tslint:disable-next-line:max-line-length
+            (element as TextElementBox).text = (element as TextElementBox).text.substring(0, index) + (newElement as TextElementBox).text + (element as TextElementBox).text.substring(index);
         }
         newElement.line = element.line;
         newElement.linkFieldCharacter(this.documentHelper);
@@ -5307,10 +5345,39 @@ export class Editor {
                 endOffset = selection.getLineLength(line);
             }
             let count: number = 0;
-            for (let j: number = 0; j < line.children.length; j++) {
+            let isBidi: boolean = line.paragraph.paragraphFormat.bidi;
+            let isContainsRtl: boolean = this.documentHelper.layout.isContainsRtl(line);
+            let childLength: number = line.children.length;
+            let isStarted: boolean = true;
+            let endElement: ElementBox = undefined;
+            let indexOf: number = -1;
+            let isIncrease: boolean = true;
+            for (let j: number = !isBidi ? 0 : childLength - 1; !isBidi ? j < childLength : j >= 0; isBidi ? j-- : isIncrease ? j++ : j--) {
                 let inlineObj: ElementBox = line.children[j] as ElementBox;
+                if (!isBidi && isContainsRtl) {
+                    while ((isStarted || isNullOrUndefined(endElement)) && inlineObj instanceof TextElementBox
+                        && (this.documentHelper.textHelper.isRTLText(inlineObj.text)
+                            || this.documentHelper.textHelper.containsSpecialCharAlone(inlineObj.text)) && inlineObj.nextElement) {
+                        if (!endElement) {
+                            endElement = inlineObj;
+                        }
+                        if (indexOf === -1) {
+                            indexOf = line.children.indexOf(inlineObj);
+                        }
+                        j = inlineObj.line.children.indexOf(inlineObj);
+                        inlineObj = inlineObj.nextElement;
+                        isIncrease = false;
+                    }
+                }
+                isStarted = false;
                 if (inlineObj instanceof ListTextElementBox) {
                     continue;
+                }
+                if (endElement === inlineObj) {
+                    endElement = undefined;
+                    j = indexOf;
+                    indexOf = -1;
+                    isIncrease = true;
                 }
                 if (startOffset >= count + inlineObj.length) {
                     count += inlineObj.length;
@@ -5325,7 +5392,13 @@ export class Editor {
                 if (endIndex > inlineLength) {
                     endIndex = inlineLength;
                 }
-                j += this.applyCharFormatInline(inlineObj, selection, startIndex, endIndex, property, value, update);
+                let index: number = this.applyCharFormatInline(inlineObj, selection, startIndex, endIndex, property, value, update);
+                if (isBidi || isContainsRtl && !isIncrease) {
+                    j -= index;
+                } else {
+                    j += index;
+                }
+
                 if (endOffset <= count + inlineLength) {
                     break;
                 }
@@ -5333,7 +5406,11 @@ export class Editor {
             }
         }
         let endParagraph: ParagraphWidget = end.paragraph;
-        this.documentHelper.layout.reLayoutParagraph(paragraph, startLineWidget, 0);
+        if (!paragraph.bidi && this.documentHelper.layout.isContainsRtl(paragraph.childWidgets[startLineWidget] as LineWidget)) {
+            this.documentHelper.layout.reLayoutParagraph(paragraph, startLineWidget, 0, false, true);
+        } else {
+            this.documentHelper.layout.reLayoutParagraph(paragraph, startLineWidget, 0);
+        }
         if (paragraph.equals(endParagraph)) {
             return;
         }
@@ -5474,8 +5551,11 @@ export class Editor {
             textElement.characterFormat.copyFormat(inline.characterFormat);
             textElement.line = inline.line;
             textElement.text = (inline as TextElementBox).text.substr(startIndex, endIndex - startIndex);
+            textElement.isRightToLeft = inline.isRightToLeft;
             this.applyCharFormatValue(textElement.characterFormat, property, value, update);
-            index++;
+            if (!paragraph.paragraphFormat.bidi && !this.documentHelper.layout.isContainsRtl(inline.line)) {
+                index++;
+            }
             node.line.children.splice(index, 0, textElement);
             x++;
             // this.addToLinkedFields(span);                      
@@ -5485,7 +5565,10 @@ export class Editor {
             textElement.characterFormat.copyFormat(inline.characterFormat);
             textElement.text = (node as TextElementBox).text.substring(endIndex);
             textElement.line = inline.line;
-            index++;
+            textElement.isRightToLeft = inline.isRightToLeft;
+            if (!paragraph.paragraphFormat.bidi && !this.documentHelper.layout.isContainsRtl(inline.line)) {
+                index++;
+            }
             node.line.children.splice(index, 0, textElement);
             x++;
             // this.addToLinkedFields(span);                       
@@ -7977,8 +8060,8 @@ export class Editor {
     public removeContent(lineWidget: LineWidget, startOffset: number, endOffset: number): void {
         let count: number = this.selection.getLineLength(lineWidget);
         let isBidi: boolean = lineWidget.paragraph.paragraphFormat.bidi;
-        let childLength: number = lineWidget.children.length;
-        for (let i: number = isBidi ? 0 : childLength - 1; isBidi ? i < childLength : i >= 0; isBidi ? i++ : i--) {
+        // tslint:disable-next-line:max-line-length
+        for (let i: number = isBidi ? 0 : lineWidget.children.length - 1; isBidi ? i < lineWidget.children.length : i >= 0; isBidi ? i++ : i--) {
             let inline: ElementBox = lineWidget.children[i];
             if (endOffset <= count - inline.length) {
                 count -= inline.length;
@@ -8011,6 +8094,9 @@ export class Editor {
                 this.unLinkFieldCharacter(inline);
                 this.addRemovedNodes(lineWidget.children[i]);
                 lineWidget.children.splice(i, 1);
+                if (isBidi) {
+                    i++;
+                }
                 // }
             } else if (inline instanceof TextElementBox) {
                 // if (editAction < 4) {
@@ -8026,6 +8112,7 @@ export class Editor {
             count -= (endIndex - startIndex);
         }
     }
+
     /**
      * @private
      */
@@ -8762,7 +8849,7 @@ export class Editor {
                 this.onApplyParagraphFormat('leftIndent', 0, false, false);
                 return;
             }
-            if (paragraph.paragraphFormat.textAlignment !== 'Left') {
+            if (!paragraph.paragraphFormat.bidi && paragraph.paragraphFormat.textAlignment !== 'Left') {
                 this.onApplyParagraphFormat('textAlignment', 'Left', false, true);
                 return;
             }
@@ -8835,40 +8922,91 @@ export class Editor {
             }
         }
     }
+
     private removeAtOffset(lineWidget: LineWidget, selection: Selection, offset: number): void {
         let count: number = 0;
         let lineIndex: number = lineWidget.paragraph.childWidgets.indexOf(lineWidget);
-        for (let i: number = 0; i < lineWidget.children.length; i++) {
-            let inline: ElementBox = lineWidget.children[i] as ElementBox;
-            if (inline instanceof ListTextElementBox) {
-                continue;
-            }
-            if (offset < count + inline.length) {
-                let indexInInline: number = offset - count;
-                inline.ischangeDetected = true;
-                if (this.owner.isSpellCheck) {
-                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+        let isBidi: boolean = lineWidget.paragraph.paragraphFormat.bidi;
+        let childLength: number = lineWidget.children.length;
+        if (!isBidi && this.viewer.documentHelper.layout.isContainsRtl(lineWidget)) {
+            let inline: ElementBox = lineWidget.children[0] as ElementBox;
+            let endElement: ElementBox = undefined;
+            let indexOf: number = -1;
+            let isStarted: boolean = true;
+            while (inline) {
+                while ((isStarted || isNullOrUndefined(endElement)) && inline instanceof TextElementBox
+                    && (this.documentHelper.textHelper.isRTLText(inline.text)
+                        || this.documentHelper.textHelper.containsSpecialCharAlone(inline.text))
+                    && inline.nextElement) {
+                    if (!endElement) {
+                        endElement = inline;
+                    }
+                    if (indexOf === -1) {
+                        indexOf = lineWidget.children.indexOf(inline);
+                    }
+                    inline = inline.nextElement;
                 }
-                if (!inline.canTrigger) {
-                    this.documentHelper.triggerSpellCheck = false;
+                isStarted = false;
+                let currentIndex: number = lineWidget.children.indexOf(inline);
+                let isBreak: boolean = this.removeCharacter(inline, offset, count, lineWidget, lineIndex, currentIndex, true);
+                if (isBreak) {
+                    break;
                 }
-                if (offset === count && inline.length === 1) {
-                    this.unLinkFieldCharacter(inline);
-                    lineWidget.children.splice(i, 1);
-                    this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i);
-                    this.addRemovedNodes(inline);
+                count += inline.length;
+                if (endElement === inline) {
+                    if (indexOf !== -1) {
+                        inline = lineWidget.children[indexOf + 1];
+                    }
+                    endElement = undefined;
+                    indexOf = -1;
+                } else if (endElement) {
+                    inline = inline.previousElement;
                 } else {
-                    let span: TextElementBox = new TextElementBox();
-                    span.characterFormat.copyFormat(inline.characterFormat);
-                    span.text = (inline as TextElementBox).text.substr(indexInInline, 1);
-                    (inline as TextElementBox).text = HelperMethods.remove((inline as TextElementBox).text, indexInInline, 1);
-                    this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i);
-                    this.addRemovedNodes(span);
+                    inline = inline.nextElement;
                 }
-                break;
             }
-            count += inline.length;
+        } else {
+            for (let i: number = !isBidi ? 0 : childLength - 1; !isBidi ? i < childLength : i >= 0; isBidi ? i-- : i++) {
+                let inline: ElementBox = lineWidget.children[i] as ElementBox;
+                if (inline instanceof ListTextElementBox) {
+                    continue;
+                }
+                let isBreak: boolean = this.removeCharacter(inline, offset, count, lineWidget, lineIndex, i);
+                if (isBreak) {
+                    break;
+                }
+                count += inline.length;
+            }
         }
+    }
+    // tslint:disable-next-line:max-line-length
+    private removeCharacter(inline: ElementBox, offset: number, count: number, lineWidget: LineWidget, lineIndex: number, i: number, isRearrange?: boolean): boolean {
+        let isBreak: boolean = false;
+        if (offset < count + inline.length) {
+            let indexInInline: number = offset - count;
+            inline.ischangeDetected = true;
+            if (this.owner.isSpellCheck) {
+                this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+            }
+            if (!inline.canTrigger) {
+                this.documentHelper.triggerSpellCheck = false;
+            }
+            if (offset === count && inline.length === 1) {
+                this.unLinkFieldCharacter(inline);
+                lineWidget.children.splice(i, 1);
+                this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i, undefined, isRearrange);
+                this.addRemovedNodes(inline);
+            } else {
+                let span: TextElementBox = new TextElementBox();
+                span.characterFormat.copyFormat(inline.characterFormat);
+                span.text = (inline as TextElementBox).text.substr(indexInInline, 1);
+                (inline as TextElementBox).text = HelperMethods.remove((inline as TextElementBox).text, indexInInline, 1);
+                this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i, undefined, isRearrange);
+                this.addRemovedNodes(span);
+            }
+            isBreak = true;
+        }
+        return isBreak;
     }
     /**
      * Remove the current selected content or one character right of cursor.

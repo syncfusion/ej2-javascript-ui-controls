@@ -1798,12 +1798,14 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets the horizontalAlignment of the node
      * @default 'Stretch'
+     * @blazorDefaultValue 'Left'
      */
     horizontalAlignment?: HorizontalAlignment;
 
     /**
      * Sets the verticalAlignment of the node
      * @default 'Stretch'
+     * @blazorDefaultValue 'Top'
      */
     verticalAlignment?: VerticalAlignment;
 

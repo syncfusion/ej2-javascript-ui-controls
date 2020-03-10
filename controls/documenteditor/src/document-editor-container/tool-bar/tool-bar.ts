@@ -2,10 +2,12 @@ import { createElement, L10n, isNullOrUndefined, EventHandler, classList } from 
 import { Toolbar as EJ2Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DocumentEditorContainer } from '../document-editor-container';
-import { DropDownButton, DropDownButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { DropDownButton, DropDownButtonModel, MenuEventArgs, ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
 import { XmlHttpRequestHandler } from '../../document-editor/base/ajax-helper';
+import { ToolbarItem } from '../../document-editor/base';
+import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
 
 const TOOLBAR_ID: string = '_toolbar';
 const NEW_ID: string = '_new';
@@ -68,7 +70,8 @@ export class Toolbar {
     private restrictDropDwn: DropDownButton;
     private imgDropDwn: DropDownButton;
     private breakDropDwn: DropDownButton;
-
+    private toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
+    private toolbarTimer: number;
     /**
      * @private
      */
@@ -86,9 +89,20 @@ export class Toolbar {
         return 'toolbar';
     }
     /**
+     * Enables or disables the specified Toolbar item.
+     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {boolean} isEnable  - Boolean value that determines whether the toolbar item should be enabled or disabled.
+     * By default, `isEnable` is set to true.
+     * @returns void.
+     */
+    public enableItems(items: number | HTMLElement | NodeList, isEnable: boolean): void {
+        this.toolbar.enableItems(items, isEnable);
+    }
+    /**
      * @private
      */
-    public initToolBar(): void {
+    public initToolBar(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
+        this.toolbarItems = items;
         this.renderToolBar();
         this.wireEvent();
     }
@@ -122,32 +136,40 @@ export class Toolbar {
         EventHandler.add(buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);
         this.toolbar.appendTo(toolbarTarget);
+        this.initToolbarDropdown(toolbarTarget);
+    }
+    private initToolbarDropdown(toolbarTarget: HTMLElement): void {
         let locale: L10n = this.container.localObj;
         let id: string = this.container.element.id + TOOLBAR_ID;
-        let imageButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-image-splitbutton')[0].firstChild as HTMLElement;
-        let items: DropDownButtonModel = {
-            items: [
-                {
-                    text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
-                    id: id + INSERT_IMAGE_LOCAL_ID
-                }],
-            //,{ text: locale.getConstant('By URL'), iconCss: 'e-icons e-de-ctnr-link', id: id + INSERT_IMAGE_ONLINE_ID }],
-            cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-            iconCss: 'e-icons e-de-ctnr-image',
-            select: this.onDropDownButtonSelect.bind(this),
-        };
-        this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
+        if (this.toolbarItems.indexOf('Image') >= 0) {
+            let imageButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-image-splitbutton')[0].firstChild as HTMLElement;
+            let items: DropDownButtonModel = {
+                items: [
+                    {
+                        text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
+                        id: id + INSERT_IMAGE_LOCAL_ID
+                    }],
+                //,{ text: locale.getConstant('By URL'), iconCss: 'e-icons e-de-ctnr-link', id: id + INSERT_IMAGE_ONLINE_ID }],
+                cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                iconCss: 'e-icons e-de-ctnr-image',
+                select: this.onDropDownButtonSelect.bind(this),
+            };
+            this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
+        }
 
-        let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild as HTMLElement;
-        items = {
-            items: [
-                { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
-                { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }],
-            cssClass: 'e-caret-hide',
-            iconCss: 'e-icons e-de-ctnr-break',
-            select: this.onDropDownButtonSelect.bind(this),
-        };
-        this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
+        if (this.toolbarItems.indexOf('Break') >= 0) {
+            let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild as HTMLElement;
+            let items: DropDownButtonModel = {
+                items: [
+                    { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
+                    { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }],
+                cssClass: 'e-caret-hide',
+                iconCss: 'e-icons e-de-ctnr-break',
+                select: this.onDropDownButtonSelect.bind(this),
+            };
+            this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
+        }
+
 
         this.filePicker = createElement('input', {
             attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
@@ -156,17 +178,24 @@ export class Toolbar {
         this.imagePicker = createElement('input', {
             attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp' }, className: 'e-de-ctnr-file-picker'
         }) as HTMLInputElement;
-        this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
-        this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
-        let restrictEditing: HTMLElement = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild as HTMLElement;
-        let lockItems: DropDownButtonModel = {
-            items: [
-                { text: locale.getConstant('Read only'), id: id + READ_ONLY },
-                { text: locale.getConstant('Protections'), id: id + PROTECTIONS }],
-            cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-            select: this.onDropDownButtonSelect.bind(this)
-        };
-        this.restrictDropDwn = new DropDownButton(lockItems, restrictEditing as HTMLButtonElement);
+        if (this.toolbarItems.indexOf('LocalClipboard') >= 0) {
+            this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
+        }
+
+        if (this.toolbarItems.indexOf('RestrictEditing') >= 0) {
+            this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
+            // tslint:disable-next-line:max-line-length
+            let restrictEditing: HTMLElement = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild as HTMLElement;
+            let items: DropDownButtonModel = {
+                items: [
+                    { text: locale.getConstant('Read only'), id: id + READ_ONLY },
+                    { text: locale.getConstant('Protections'), id: id + PROTECTIONS }],
+                cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                select: this.onDropDownButtonSelect.bind(this)
+            };
+            this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
+        }
+
     }
     private showHidePropertiesPane(): void {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
@@ -195,113 +224,188 @@ export class Toolbar {
         EventHandler.add(this.filePicker, 'change', this.onFileChange, this);
         EventHandler.add(this.imagePicker, 'change', this.onImageChange, this);
     }
-    // tslint:disable-next-line:max-func-body-length
     private initToolbarItems(): void {
-        let id: string = this.container.element.id + TOOLBAR_ID;
-        let locale: L10n = this.container.localObj;
         this.toolbar = new EJ2Toolbar({
             enableRtl: this.container.enableRtl,
             clicked: this.clickHandler.bind(this),
-            items: [
-                {
-                    prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document'),
-                    id: id + NEW_ID, text: locale.getConstant('New'), cssClass: 'e-de-toolbar-btn-start'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document'), id: id + OPEN_ID,
-                    text: locale.getConstant('Open'), cssClass: 'e-de-toolbar-btn-last'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo Tooltip'),
-                    id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: 'e-de-toolbar-btn-first'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo Tooltip'),
-                    id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: 'e-de-toolbar-btn-last'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    tooltipText: locale.getConstant('Insert inline picture from a file'), id: id + INSERT_IMAGE_ID,
-                    text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton e-de-image-focus'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
-                    id: id + INSERT_TABLE_ID, text: locale.getConstant('Table'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-link',
-                    tooltipText: locale.getConstant('Create Hyperlink'),
-                    id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-bookmark',
-                    tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document'),
-                    id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-cnt-cmt-add',
-                    tooltipText: locale.getConstant('New comment'),
-                    id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-tableofcontent',
-                    tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents'),
-                    id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
-                    cssClass: 'e-de-toolbar-btn-last'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header'),
-                    id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: 'e-de-toolbar-btn-first'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer'),
-                    id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog'),
-                    id: id + PAGE_SET_UP_ID, text: this.onWrapText(locale.getConstant('Page Setup')),
-                    cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-
-                    prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
-                    id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
-                    cssClass: 'e-de-toolbar-btn-middle'
-                },
-                {
-                    tooltipText: locale.getConstant('Break'), text: locale.getConstant('Break'), id: BREAK_ID,
-                    cssClass: 'e-de-toolbar-btn-last e-de-break-splitbutton'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find Text'),
-                    id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: 'e-de-toolbar-btn'
-                },
-                {
-                    type: 'Separator', cssClass: 'e-de-separator'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-paste',
-                    tooltipText: locale.getConstant('Toggle between the internal clipboard and system clipboard'),
-                    id: id + CLIPBOARD_ID, text: this.onWrapText(locale.getConstant('Local Clipboard')),
-                    cssClass: 'e-de-toolbar-btn-first'
-                },
-                {
-                    prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict Editing'), id: id + RESTRICT_EDITING_ID,
-                    text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: 'e-de-toolbar-btn-end e-de-lock-dropdownbutton'
-                }
-            ]
+            items: this.getToolbarItems()
         });
+    }
+    /**
+     * @private
+     */
+    public reInitToolbarItems(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
+        this.toolbarItems = items;
+        let toolbarTarget: HTMLElement = this.container.toolbarContainer;
+        this.toolbar.items = this.getToolbarItems();
+        /* tslint:disable:align */
+        this.toolbarTimer = setTimeout(() => {
+            if (this.toolbarTimer) {
+                clearTimeout(this.toolbarTimer);
+            }
+            this.initToolbarDropdown(toolbarTarget);
+            if (items.indexOf('Open') >= 0) {
+                EventHandler.add(this.filePicker, 'change', this.onFileChange, this);
+            }
+            if (items.indexOf('Image') >= 0) {
+                EventHandler.add(this.imagePicker, 'change', this.onImageChange, this);
+            }
+        }, 200);
+    }
+    /* tslint:disable:no-any */
+    // tslint:disable-next-line:max-func-body-length
+    private getToolbarItems(): ItemModel[] {
+        let locale: L10n = this.container.localObj;
+        let id: string = this.container.element.id + TOOLBAR_ID;
+        let toolbarItems: any = [];
+        let className: string;
+        let tItem: (CustomToolbarItemModel | ToolbarItem)[] = this.toolbarItems;
+        for (let i: number = 0; i < this.toolbarItems.length; i++) {
+            if (i === 0) {
+                className = 'e-de-toolbar-btn-start';
+            } else if ((tItem[i + 1] === 'Separator') && (tItem[i - 1] === 'Separator')) {
+                className = 'e-de-toolbar-btn';
+            } else if (tItem[i + 1] === 'Separator') {
+                className = 'e-de-toolbar-btn-last';
+            } else if (tItem[i - 1] === 'Separator') {
+                className = 'e-de-toolbar-btn-first';
+            } else if (i === (this.toolbarItems.length - 1)) {
+                className = 'e-de-toolbar-btn-end';
+            } else {
+                className = 'e-de-toolbar-btn-middle';
+            }
+            switch (tItem[i]) {
+                case 'Separator':
+                    toolbarItems.push({
+                        type: 'Separator', cssClass: 'e-de-separator'
+                    });
+
+                    break;
+                case 'New':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document.'),
+                        id: id + NEW_ID, text: locale.getConstant('New'), cssClass: className
+                    });
+                    break;
+                case 'Open':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document.'), id: id + OPEN_ID,
+                        text: locale.getConstant('Open'), cssClass: className
+                    });
+                    break;
+                case 'Undo':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo the last operation (Ctrl+Z).'),
+                        id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: className
+                    });
+                    break;
+                case 'Redo':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo the last operation (Ctrl+Y).'),
+                        id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: className
+                    });
+                    break;
+                case 'Comments':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-cnt-cmt-add',
+                        tooltipText: locale.getConstant('Show comments'),
+                        id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: className
+                    });
+                    break;
+                case 'Image':
+                    toolbarItems.push({
+                        tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
+                        text: locale.getConstant('Image'), cssClass: className + ' e-de-image-splitbutton e-de-image-focus'
+                    });
+                    break;
+                case 'Table':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
+                        id: id + INSERT_TABLE_ID, text: locale.getConstant('Table'), cssClass: className
+                    });
+                    break;
+                case 'Hyperlink':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-link',
+                        tooltipText: locale.getConstant('Create a link in your document for quick access to webpages and files (Ctrl+K).'),
+                        id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: className
+                    });
+                    break;
+                case 'Bookmark':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-bookmark',
+                        tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document.'),
+                        id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: className
+                    });
+                    break;
+                case 'TableOfContents':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-tableofcontent',
+                        tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents.'),
+                        id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
+                        cssClass: className
+                    });
+                    break;
+                case 'Header':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header.'),
+                        id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: className
+                    });
+                    break;
+                case 'Footer':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer.'),
+                        id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: className
+                    });
+                    break;
+                case 'PageSetup':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog.'),
+                        id: id + PAGE_SET_UP_ID, text: this.onWrapText(locale.getConstant('Page Setup')),
+                        cssClass: className
+                    });
+                    break;
+                case 'PageNumber':
+                    toolbarItems.push({
+
+                        prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers.'),
+                        id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
+                        cssClass: className
+                    });
+                    break;
+                case 'Break':
+                    toolbarItems.push({
+                        tooltipText: locale.getConstant('Break'), text: locale.getConstant('Break'), id: BREAK_ID,
+                        cssClass: className + ' e-de-break-splitbutton'
+                    });
+                    break;
+                case 'Find':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find text in the document (Ctrl+F).'),
+                        id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: className
+                    });
+                    break;
+                case 'LocalClipboard':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-paste',
+                        tooltipText: locale.getConstant('Toggle between the internal clipboard and system clipboard'),
+                        id: id + CLIPBOARD_ID, text: this.onWrapText(locale.getConstant('Local Clipboard')),
+                        cssClass: className
+                    });
+                    break;
+                case 'RestrictEditing':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing.'), id: id + RESTRICT_EDITING_ID,
+                        text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: className + ' e-de-lock-dropdownbutton'
+                    });
+                    break;
+                default:
+                    //Here we need to process the items
+                    toolbarItems.push(tItem[i]);
+                    break;
+            }
+        }
+        return toolbarItems;
     }
     private clickHandler(args: ClickEventArgs): void {
         let id: string = this.container.element.id + TOOLBAR_ID;
@@ -353,6 +457,9 @@ export class Toolbar {
                 break;
             case id + CLIPBOARD_ID:
                 this.toggleLocalPaste(args.item.id);
+                break;
+            default:
+                this.container.trigger('toolbarClick', args);
                 break;
         }
         if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
@@ -498,9 +605,16 @@ export class Toolbar {
      */
     public enableDisableUndoRedo(): void {
         let id: string = this.container.element.id + TOOLBAR_ID;
-        // tslint:disable-next-line:max-line-length
-        this.toolbar.enableItems(document.getElementById(id + UNDO_ID).parentElement, this.container.documentEditor.editorHistory.canUndo());
-        this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
+        if (this.toolbarItems.indexOf('Undo') >= 0) {
+            // We can optimize this condition check to single bool validation instead of array collection.
+            // tslint:disable-next-line:max-line-length
+            this.toolbar.enableItems(document.getElementById(id + UNDO_ID).parentElement, this.container.documentEditor.editorHistory.canUndo());
+        }
+        if (this.toolbarItems.indexOf('Redo') >= 0) {
+            // We can optimize this condition check to single bool validation instead of array collection.
+            // tslint:disable-next-line:max-line-length
+            this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
+        }
     }
     private onToc(): void {
         if (this.container.previousContext === 'TableOfContents' && this.container.propertiesPaneContainer.style.display === 'none') {

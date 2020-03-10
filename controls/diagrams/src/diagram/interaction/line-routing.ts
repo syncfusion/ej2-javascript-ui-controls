@@ -117,7 +117,7 @@ export class LineRouting {
                 grid.tested = undefined;
                 grid.nodeId = [];
                 for (k = 0; k < diagramNodes.length; k++) {
-                    isContains = this.intersectRect(rectangle, diagramNodes[k].wrapper.outerBounds);
+                    isContains = this.intersectRect(rectangle, diagramNodes[k].wrapper.bounds);
                     if (isContains) {
                         grid.nodeId.push(diagramNodes[k].id);
                         grid.walkable = false;
@@ -135,7 +135,7 @@ export class LineRouting {
             r2.top >= r1.bottom || r2.bottom <= r1.top);
     }
 
-    private findEndPoint(connector: Connector, isSource: boolean): PointModel {
+    private findEndPoint(connector: Connector, isSource: boolean, isPortBounds?: boolean): PointModel {
         let endPoint: PointModel; let portDirection: Direction;
         if ((isSource && connector.sourcePortID !== '') || (!isSource && connector.targetPortID !== '')) {
             endPoint = (isSource) ? { x: connector.sourcePortWrapper.offsetX, y: connector.sourcePortWrapper.offsetY } :
@@ -143,14 +143,18 @@ export class LineRouting {
             portDirection = getPortDirection(
                 endPoint, undefined, (isSource) ? connector.sourceWrapper.bounds : connector.targetWrapper.bounds, false);
             let bounds: Rect = (isSource) ? connector.sourcePortWrapper.bounds : connector.targetPortWrapper.bounds;
-            if (portDirection === 'Top') {
-                endPoint = { x: bounds.topCenter.x, y: bounds.topCenter.y };
-            } else if (portDirection === 'Left') {
-                endPoint = { x: bounds.middleLeft.x, y: bounds.middleLeft.y };
-            } else if (portDirection === 'Right') {
-                endPoint = { x: bounds.middleRight.x, y: bounds.middleRight.y };
+            if (isPortBounds) {
+                if (portDirection === 'Top') {
+                    endPoint = { x: bounds.topCenter.x, y: bounds.topCenter.y };
+                } else if (portDirection === 'Left') {
+                    endPoint = { x: bounds.middleLeft.x, y: bounds.middleLeft.y };
+                } else if (portDirection === 'Right') {
+                    endPoint = { x: bounds.middleRight.x, y: bounds.middleRight.y };
+                } else {
+                    endPoint = { x: bounds.bottomCenter.x, y: bounds.bottomCenter.y };
+                }
             } else {
-                endPoint = { x: bounds.bottomCenter.x, y: bounds.bottomCenter.y };
+                endPoint = { x: bounds.center.x, y: bounds.center.y };
             }
         } else {
             if ((isSource && this.startNode) || (!isSource && this.targetNode)) {
@@ -202,7 +206,7 @@ export class LineRouting {
                             (targetPortDirection === 'Left' || targetPortDirection === 'Top')) ? this.targetGrid : grid;
                     }
                     if (!sourcePortID && this.startNode) {
-                        let bounds: Rect = this.startNode.wrapper.outerBounds;
+                        let bounds: Rect = this.startNode.wrapper.bounds;
                         if (rectangle.containsPoint(bounds.topCenter) && !sourceTop) { sourceTop = grid; }
                         if (rectangle.containsPoint(bounds.middleLeft) && !sourceLeft) { sourceLeft = grid; }
                         if (rectangle.containsPoint(bounds.middleRight) && !sourceRight) { sourceRight = grid; }
@@ -211,7 +215,7 @@ export class LineRouting {
                         }
                     }
                     if (!targetPortID && this.targetNode) {
-                        let bounds: Rect = this.targetNode.wrapper.outerBounds;
+                        let bounds: Rect = this.targetNode.wrapper.bounds;
                         if (rectangle.containsPoint(bounds.topCenter) && !targetTop) { targetTop = grid; }
                         if (rectangle.containsPoint(bounds.middleLeft) && !targetLeft) { targetLeft = grid; }
                         if (rectangle.containsPoint(bounds.middleRight) && !targetRight) { targetRight = grid; }
@@ -236,7 +240,10 @@ export class LineRouting {
                         if (!isBreak) {
                             this.targetGridCollection.splice(this.targetGridCollection.indexOf(target), 1);
                             startGridNode = this.startArray.pop();
-                        } else { break renderPathElement; }
+                        } else {
+                            this.considerWalkable = [];
+                            break renderPathElement;
+                        }
                     }
                 }
                 this.findPath(startGridNode);
@@ -344,7 +351,7 @@ export class LineRouting {
     }
 
     // Connector rendering
-
+    /* tslint:disable */
     private updateConnectorSegments(
         diagram: Diagram, intermediatePoints: PointModel[], gridCollection: VirtualBoundaries[][],
         connector: Connector, isUpdate: boolean): boolean {
@@ -353,10 +360,10 @@ export class LineRouting {
         let pointX: number; let pointY: number; let node: VirtualBoundaries; let points: PointModel[] = [];
         let direction: Direction; let length: number; let currentdirection: Direction; let prevDirection: Direction;
         let targetWrapper: DiagramElement = connector.targetWrapper; let sourceWrapper: DiagramElement = connector.sourceWrapper;
-        let sourcePoint: PointModel = this.findEndPoint(connector, true);
+        let sourcePoint: PointModel = this.findEndPoint(connector, true, true);
 
         if (connector.targetPortID !== '' || !connector.targetWrapper) {
-            targetPoint = this.findEndPoint(connector, false);
+            targetPoint = this.findEndPoint(connector, false, true);
         }
         for (let i: number = 0; i < intermediatePoints.length; i++) {
             node = gridCollection[intermediatePoints[i].x][intermediatePoints[i].y];
@@ -385,6 +392,14 @@ export class LineRouting {
                     points[j].y = points[j + 1].y = sourcePoint.y;
                 }
                 if (j === points.length - 2 && targetPoint) {
+                    if (((targetPoint.x - points[j + 1].x) < 0) &&
+                        (Math.abs(targetPoint.x - points[j].x) < connector.targetDecorator.width + 1)) {
+                        points[j].x = points[j - 1].x -= this.size / 2;
+                    }
+                    if (((targetPoint.x - points[j + 1].x) > 0) &&
+                            (Math.abs(targetPoint.x - points[j].x) < connector.targetDecorator.width + 1)) {
+                        points[j].x = points[j - 1].x += this.size / 2;
+                    }
                     points[j + 1].x = targetPoint.x;
                     points[j].y = points[j + 1].y = targetPoint.y;
                 }
@@ -400,6 +415,14 @@ export class LineRouting {
                     points[j].x = points[j + 1].x = sourcePoint.x;
                 }
                 if (j === points.length - 2 && targetPoint) {
+                    if (((targetPoint.y - points[j + 1].y) < 0) &&
+                        (Math.abs(targetPoint.y - points[j].y) < connector.targetDecorator.height + 1)) {
+                        points[j].y = points[j - 1].y -= this.size / 2;
+                    }
+                    if (((targetPoint.y - points[j + 1].y) > 0) &&
+                            (Math.abs(targetPoint.y - points[j].y) < connector.targetDecorator.width + 1)) {
+                        points[j].y = points[j - 1].y += this.size / 2;
+                    }
                     points[j + 1].y = targetPoint.y;
                     points[j].x = points[j + 1].x = targetPoint.x;
                 }
@@ -438,6 +461,7 @@ export class LineRouting {
         }
         return false;
     }
+    /* tslint:enable */
 
     // Shortest path
     private findPath(startGrid: VirtualBoundaries): void {
@@ -583,7 +607,11 @@ export class LineRouting {
                 }
             }
             if (x > 0 && y > 0) {
-                i++;
+                if (direction === 'top' || direction === 'left') {
+                    i--;
+                } else {
+                    i++;
+                }
             } else {
                 break;
             }

@@ -437,6 +437,23 @@ export function getRangeColor(value: number, ranges: Range[]): string {
     return rangeColor;
 }
 
+/**
+ * Function to get the mouse position
+ * @param pageX
+ * @param pageY
+ * @param element
+ */
+export function getMousePosition(pageX: number, pageY: number, element: Element): GaugeLocation {
+    let elementRect: ClientRect = element.getBoundingClientRect();
+    let pageXOffset: number = element.ownerDocument.defaultView.pageXOffset;
+    let pageYOffset: number = element.ownerDocument.defaultView.pageYOffset;
+    let clientTop: number = element.ownerDocument.documentElement.clientTop;
+    let clientLeft: number = element.ownerDocument.documentElement.clientLeft;
+    let positionX: number = elementRect.left + pageXOffset - clientLeft;
+    let positionY: number = elementRect.top + pageYOffset - clientTop;
+    return new GaugeLocation((pageX - positionX), (pageY - positionY));
+}
+
 /** @private */
 export function getRangePalette(): string[] {
     let palette: string[] = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];

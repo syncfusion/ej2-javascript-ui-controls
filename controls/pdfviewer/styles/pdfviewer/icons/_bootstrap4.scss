@@ -41,10 +41,12 @@
 
     .e-pv-zoom-out-icon::before {
       content: '\e74a';
+      line-height: $pv-toolbaritem-btn-line-height;
     }
 
     .e-pv-zoom-in-icon::before {
       content: '\e70a';
+      line-height: $pv-toolbaritem-btn-line-height;
     }
 
     .e-pv-thumbnail-view-icon::before {
@@ -145,6 +147,7 @@
     }
 
     .e-pv-more-icon::before {
+      color: $pv-comment-font-color;
       content: '\e71b';
     }
 
@@ -201,7 +204,6 @@
   }
 
   .e-pv-stamp-icon::before {
-    color: $pv-stamp-icon-color;
     content: '\e74c';
   }
 
@@ -295,7 +297,7 @@
 
   .e-pv-completed-icon::before {
     color: $pv-status-icon-color;
-    content: '\e614';
+    content: '\e718';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
     padding: $pv-status-icon-padding;
@@ -304,7 +306,7 @@
 
   .e-pv-cancelled-icon::before {
     color: $pv-status-icon-color;
-    content: '\e60a';
+    content: '\e745';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
     padding: $pv-status-icon-padding;
@@ -342,7 +344,6 @@
   }
 
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret::before {
-    color: $pv-stamp-icon-color;
     font-size: 8px;
   }
 

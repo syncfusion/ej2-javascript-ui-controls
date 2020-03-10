@@ -1256,7 +1256,11 @@ export function checkShapeDataFields(dataSource: object[], properties: object, d
     if (!(isNullOrUndefined(properties))) {
         for (let i: number = 0; i < dataSource.length; i++) {
             let shapePath: string = checkPropertyPath(dataSource[i][dataPath], propertyPath, properties);
-            if (dataSource[i][dataPath] === properties[shapePath]) {
+            let shapePathValue : string = !isNullOrUndefined(properties[shapePath]) ? properties[shapePath].toLowerCase()
+                : properties[shapePath];
+            let dataSourceValue : string = !isNullOrUndefined(dataSource[i][dataPath]) ?
+            dataSource[i][dataPath].toLowerCase() : dataSource[i][dataPath];
+            if (dataSourceValue === shapePathValue) {
                 return i;
             }
         }
@@ -1270,7 +1274,10 @@ export function checkPropertyPath(shapeData: string, shapePropertyPath: string |
             let properties: string[] = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
                 shapePropertyPath : [shapePropertyPath]) as string[];
             for (let i: number = 0; i < properties.length; i++) {
-                if (shapeData === shape[properties[i]]) {
+                let shapeProperties: string = !isNullOrUndefined(shape[properties[i]]) ? shape[properties[i]].toLowerCase() :
+                    shape[properties[i]];
+                let shapeDataValue : string =  !isNullOrUndefined(shapeData) ? shapeData.toLowerCase() : shapeData;
+                if (shapeDataValue === shapeProperties) {
                     return properties[i];
                 }
             }

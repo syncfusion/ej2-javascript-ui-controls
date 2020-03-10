@@ -1,7 +1,7 @@
 /**
  * Lists plugin spec
  */
-import { createElement, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, detach, isNullOrUndefined, selectAll } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
 
 function setCursorPoint(element: Element, point: number) {
@@ -103,6 +103,8 @@ let revertListHTML: string = `<div style="color:red;" id="content-edit" contente
     
     </ol></div>
     `;
+
+let tableHTML: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 25%;">helo</td><td style="width: 25%;">this</td><td style="width: 25%;">is</td><td style="width: 25%;">a</td></tr><tr><td style="width: 25%;">test</td><td style="width: 25%;">table</td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table></div>`;
 
 describe ('left indent testing', () => {
     let editorObj: EditorManager;
@@ -582,6 +584,7 @@ describe ('left indent testing', () => {
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
 
         describe(' basic OL format apply and revert with content with space', () => {
+            
             let elem: HTMLElement = createElement('div', {
                 id: 'dom-node', innerHTML: revertListHTML.trim()
             });
@@ -605,6 +608,29 @@ describe ('left indent testing', () => {
                 expect(startNode.parentElement.tagName !== 'OL').toBe(true);
                 expect(endNode.parentElement.tagName !== 'OL').toBe(true);
                 editorObj.nodeSelection.Clear(document);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+    
+        describe('Table OL testing', () => {            
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: tableHTML.trim()
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            it(' apply the OL format to table with empty content at the end of the table', () => {
+                startNode = editNode.querySelector('#content-edit');
+                endNode = editNode.querySelector('.revertPara-3');
+                startNode = editNode as HTMLElement;
+                editorObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+                editorObj.execCommand("Lists", 'OL', null);
+                expect(editNode.querySelectorAll('li').length === 8).toBe(true);
+                expect(editNode.querySelectorAll('li')[7].children[0].nodeName === 'BR').toBe(true);
             });
             afterAll(() => {
                 detach(elem);

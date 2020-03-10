@@ -1946,7 +1946,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Get the Loaded document annotation Collections in the PdfViewer control.
      */
     // tslint:disable-next-line
-    public annotationCollection: any = [];
+    public annotationCollection: any[];
 
     /**
      * Gets or sets the document name loaded in the PdfViewer control.
@@ -2212,7 +2212,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     * @default false
+     * @default true
      */
     @Property(true)
     public enableAnnotationToolbar: boolean;
@@ -2593,6 +2593,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public get annotation(): Annotation {
         return this.annotationModule;
+    }
+
+    /**
+     * Gets the TextSelection object of the pdf viewer.
+     * @asptype TextSelection
+     * @blazorType TextSelection
+     * @returns { TextSelection }
+     */
+    public get textSelection(): TextSelection {
+        return this.textSelectionModule;
     }
 
     /**
@@ -3904,11 +3914,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                     delete this.zIndexTable[i];
                 }
-                this.annotations = [];
-                this.selectedItems.annotations = [];
+                if (this.annotations[i]) {
+                    delete this.annotations[i];
+                }
+                if (this.selectedItems.annotations && this.selectedItems.annotations[i]) {
+                    delete this.selectedItems.annotations[i];
+                }
                 this.zIndexTable = [];
                 this.renderDrawing();
-
+            }
+            if (this.annotations && this.annotations.length !== 0) {
+                this.annotations.length = 0;
+                this.selectedItems.annotations.length = 0;
             }
         }
     }

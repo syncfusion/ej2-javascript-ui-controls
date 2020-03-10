@@ -398,7 +398,7 @@ export class TableOfContentsDialog {
         let modifyButtonDiv: HTMLElement = createElement('div', { className: 'e-de-toc-modify-button' });
         rightBottomGeneralDiv.appendChild(modifyButtonDiv);
         let modifyElement: HTMLElement = createElement('button', {
-            innerHTML: locale.getConstant('Modify'), id: 'modify',
+            innerHTML: locale.getConstant('Modify') + '...', id: 'modify',
             attrs: { type: 'button' }
         });
         modifyButtonDiv.appendChild(modifyElement);
@@ -429,13 +429,14 @@ export class TableOfContentsDialog {
         if (!this.target) {
             this.initTableOfContentDialog(localValue, this.documentHelper.owner.enableRtl);
         }
-        this.documentHelper.dialog.header = localValue.getConstant('Table of Contents');
-        this.documentHelper.dialog.width = 'auto';
-        this.documentHelper.dialog.height = 'auto';
-        this.documentHelper.dialog.content = this.target;
-        this.documentHelper.dialog.beforeOpen = this.loadTableofContentDialog;
-        this.documentHelper.dialog.close = this.closeTableOfContentDialog;
-        this.documentHelper.dialog.buttons = [{
+        this.documentHelper.dialog2.header = localValue.getConstant('Table of Contents');
+        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog2.width = 'auto';
+        this.documentHelper.dialog2.height = 'auto';
+        this.documentHelper.dialog2.content = this.target;
+        this.documentHelper.dialog2.beforeOpen = this.loadTableofContentDialog;
+        this.documentHelper.dialog2.close = this.closeTableOfContentDialog;
+        this.documentHelper.dialog2.buttons = [{
             click: this.applyTableOfContentProperties,
             buttonModel: { content: localValue.getConstant('Ok'), cssClass: 'e-flat e-toc-okay', isPrimary: true }
         },
@@ -443,8 +444,8 @@ export class TableOfContentsDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: localValue.getConstant('Cancel'), cssClass: 'e-flat e-toc-cancel' }
         }];
-        this.documentHelper.dialog.dataBind();
-        this.documentHelper.dialog.show();
+        this.documentHelper.dialog2.dataBind();
+        this.documentHelper.dialog2.show();
     }
     /**
      * @private
@@ -472,7 +473,7 @@ export class TableOfContentsDialog {
      * @private
      */
     public onCancelButtonClick = (): void => {
-        this.documentHelper.dialog.hide();
+        this.documentHelper.dialog2.hide();
         this.unWireEventsAndBindings();
     }
     /* tslint:disable:no-any */
@@ -746,7 +747,7 @@ export class TableOfContentsDialog {
         };
         this.applyLevelSetting(tocSettings);
         this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
-        this.documentHelper.dialog.hide();
+        this.documentHelper.dialog2.hide();
     }
     /**
      * @private

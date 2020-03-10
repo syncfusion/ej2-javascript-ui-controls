@@ -683,4 +683,31 @@ describe('Sorting module => ', () => {
         });
     });
 
+    describe('initial sorting with initial grouping => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    sortSettings: { columns: [{ field: 'OrderID', direction: 'Descending' }] },
+                    allowGrouping:true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    allowPaging: true,
+                    pageSettings: { pageSize: 5 },
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                }, done);
+        });
+        it('Initial sort settings testing', () => {
+            gridObj.groupModule.ungroupColumn('CustomerID');
+            (gridObj.element.querySelector('.e-columnheader .e-headercell') as any).click();
+            expect(gridObj.sortSettings.columns.length).toBe(0);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+
 });

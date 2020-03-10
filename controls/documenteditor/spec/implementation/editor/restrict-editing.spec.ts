@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement, select } from '@syncfusion/ej2-base';
-import { Editor, TableWidget } from '../../../src/index';
+import { Editor, TableWidget, TextElementBox } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -312,6 +312,56 @@ describe('Restrict editing add and remove with history preservation', () => {
     it('undo after remove restrictions', () => {
         editor.editorHistory.undo();
         expect(editor.selection.editRangeCollection.length).toBe(1);
+    });
+
+});
+
+
+
+describe('Restrict Editing validation with password is empty validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.selection.isHighlightEditRegion = true;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('protect document with empty password', () => {
+        editor.editor.insertText('sample');
+       editor.editor.addProtection('','ReadOnly');
+       expect(editor.documentHelper.protectionType).toBe('ReadOnly');
+       expect(editor.documentHelper.isDocumentProtected).toBe(true);
+    });
+    it('Insert text in protected document', () => {
+        editor.editor.handleTextInput('s');
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('sample');
+    editor.editor.unProtectDocument();
+   
+    });
+    it('Insert text after unprotect document', () => {
+        editor.editor.insertText('s');
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('samples');
+        editor.selection.selectAll();
+        editor.editor.insertEditRangeElement('everyone');
+        editor.editor.addProtection('','ReadOnly');
+        editor.editor.handleTextInput('s');
+        expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('samples');
     });
 
 });

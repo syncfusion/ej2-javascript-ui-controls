@@ -1658,7 +1658,12 @@
 
   .e-pv-properties-line-start.e-btn .e-caret,
   .e-pv-properties-line-end.e-btn .e-caret {
-    display: inline;
+    @if $skin-name == 'bootstrap4' {
+      display: block;
+    }
+    @else {
+      display: inline;
+    }
     line-height: 16px;
     margin-left: $pv-properties-drop-down-margin-left;
   }
@@ -1727,6 +1732,11 @@
       padding-left: $pv-toolbar-items-padding-left-big;
       padding-right: $pv-toolbar-items-padding-right-big;
     }
+  }
+
+  .e-pv-toolbar.e-toolbar .e-tbar-btn > :first-child {
+    line-height: $pv-toolbaritem-btn-line-height;
+    min-height: $pv-toolbaritem-btn-min-height;
   }
 
   .e-bigger .e-pv-current-page-box.e-input-group.e-control-wrapper input.e-input:focus {
@@ -1905,12 +1915,6 @@
   .e-pdfviewer .e-treeview.e-fullrow-wrap .e-list-url {
     margin-top: 3px;
     position: absolute;
-  }
-
-  .e-pdfviewer .e-treeview .e-list-item:not(.e-active) .e-list-text {
-    @if $skin-name == 'bootstrap4' {
-      color: $pv-icon-color;
-    }
   }
 
   .e-pdfviewer .e-treeview .e-list-item.e-hover:not(.e-active) > .e-fullrow {

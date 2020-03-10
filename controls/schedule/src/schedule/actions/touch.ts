@@ -91,7 +91,10 @@ export class ScheduleTouch {
     private swipeHandler(e: SwipeEventArgs): void {
         if (!this.isScrollTriggered || this.parent.uiStateValues.action) { return; }
         this.isScrollTriggered = false;
-        if (e.swipeDirection === 'Left' || e.swipeDirection === 'Right') {
+        let swipeDate: Date = e.swipeDirection === 'Left' ?
+            this.parent.activeView.renderDates[0] : this.parent.activeView.renderDates.slice(-1)[0];
+        if ((e.swipeDirection === 'Left' && swipeDate < this.parent.maxDate) ||
+            (e.swipeDirection === 'Right' && swipeDate >= this.parent.minDate)) {
             let time: number = Date.now() - this.timeStampStart;
             let offsetDist: number = (e.distanceX * (Browser.isDevice ? 6 : 1.66));
             if (offsetDist > time || (e.distanceX > (this.parent.element.offsetWidth / 2))) {

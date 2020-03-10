@@ -566,7 +566,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                expect(value[1] == '384.5' || value[1] == '379' || value[1] == '381.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('204');
                 done();
@@ -577,7 +577,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                expect(value[1] == '384.5' || value[1] == '379' || value[1] == '381.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('226');
                 done();
@@ -589,7 +589,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                expect(value[1] == '384.5' || value[1] == '379' || value[1] == '381.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('226');
                 done();
@@ -603,7 +603,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                expect(value[1] == '384.5' || value[1] == '379' || value[1] == '381.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('204');
                 done();
@@ -615,7 +615,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                expect(value[1] == '384.5' || value[1] == '379' || value[1] == '381.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('215');
                 done();
@@ -629,7 +629,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '383.5' || value[1] == '378').toBe(true);
+                expect(value[1] == '383.5' || value[1] == '378' || value[1] == '380.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('289.5');
                 done();
@@ -643,7 +643,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '385.5' || value[1] == '380').toBe(true);
+                expect(value[1] == '385.5' || value[1] == '380' || value[1] == '382.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('289.5');
                 done();
@@ -656,7 +656,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '385.5' || value[1] == '380').toBe(true);
+                expect(value[1] == '385.5' || value[1] == '380' || value[1] == '382.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('289.5');
                 done();
@@ -670,7 +670,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '383.5' || value[1] == '378').toBe(true);
+                expect(value[1] == '383.5' || value[1] == '378' || value[1] == '380.5').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('289.5');
                 done();
@@ -682,7 +682,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
                 value = svgNode[0].getAttribute('d').split(' ');
-                expect(value[1] == '336.05' || value[1] == '331.1').toBe(true);
+                expect(value[1] == '336.05' || value[1] == '331.1' || value[1] == '333.35').toBe(true);
                 let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
                 expect(svgNode1[0].getAttribute('y')).toBe('289.5');
                 done();

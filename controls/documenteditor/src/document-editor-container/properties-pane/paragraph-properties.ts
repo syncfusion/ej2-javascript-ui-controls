@@ -128,9 +128,9 @@ export class Paragraph {
         this.createBulletListDropButton(bulletIconCss, bulletButton);
         this.createNumberListDropButton(numberIconCss, numberingList);
     }
-    private createSeperator(parentDiv: HTMLElement): void {
-        let seperator: HTMLElement = createElement('div', { className: 'e-de-prop-vline' });
-        parentDiv.appendChild(seperator);
+    private createSeparator(parentDiv: HTMLElement): void {
+        let separator: HTMLElement = createElement('div', { className: 'e-de-prop-vline' });
+        parentDiv.appendChild(separator);
     }
     private createDivElement(id: string, parentDiv: HTMLElement, style?: string): HTMLElement {
         let element: HTMLElement;
@@ -413,7 +413,8 @@ export class Paragraph {
         if (!this.container.enableCsp) {
             this.style.open = this.updateOptions;
             this.style.itemTemplate = '<span style="${Style}">${StyleName}</span>';
-            this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>';
+            this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">'
+            + this.localObj.getConstant('Manage Styles') + '...' + '</span>';
             this.style.isStringTemplate = true;
         }
         this.style.appendTo(selectElement);

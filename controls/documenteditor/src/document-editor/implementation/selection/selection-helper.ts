@@ -876,7 +876,7 @@ export class TextPosition {
             this.getNextWordOffsetFieldBegin(inline as FieldElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
         } else if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 2 || inline instanceof BookmarkElementBox) {
             // tslint:disable-next-line:max-line-length
-            this.getNextWordOffsetFieldSeperator(inline as FieldElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
+            this.getNextWordOffsetFieldSeparator(inline as FieldElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
         } else if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1) {
             // tslint:disable-next-line:max-line-length
             this.getNextWordOffsetFieldEnd(inline as FieldElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
@@ -894,7 +894,7 @@ export class TextPosition {
             this.getNextWordOffsetFieldEnd(fieldBegin.fieldEnd, 0, type, isInField, endSelection, endPosition, excludeSpace);
         } else if (type === 0) {
             // tslint:disable-next-line:max-line-length
-            this.getNextWordOffsetFieldSeperator(fieldBegin.fieldSeparator, 0, type, isInField, endSelection, endPosition, excludeSpace);
+            this.getNextWordOffsetFieldSeparator(fieldBegin.fieldSeparator, 0, type, isInField, endSelection, endPosition, excludeSpace);
         } else if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
             let inline: FieldElementBox = fieldBegin.fieldSeparator;
             // tslint:disable-next-line:max-line-length
@@ -1019,7 +1019,7 @@ export class TextPosition {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    private getNextWordOffsetFieldSeperator(fieldSeparator: FieldElementBox | BookmarkElementBox, indexInInline: number, type: number, isInField: boolean, endSelection: boolean, endPosition: TextPosition, excludeSpace: boolean): void {
+    private getNextWordOffsetFieldSeparator(fieldSeparator: FieldElementBox | BookmarkElementBox, indexInInline: number, type: number, isInField: boolean, endSelection: boolean, endPosition: TextPosition, excludeSpace: boolean): void {
         if (!isNullOrUndefined(fieldSeparator.nextNode)) {
             this.getNextWordOffset(fieldSeparator.nextNode, 0, type, isInField, endSelection, endPosition, excludeSpace);
         }

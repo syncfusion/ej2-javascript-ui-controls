@@ -88,7 +88,7 @@ export class EnforceProtectionDialog {
             /* tslint:enable */
         } else {
             this.password = this.passwordTextBox.value;
-            this.viewer.owner.editor.addProtection(this.password);
+            this.viewer.owner.editor.addProtection(this.password, this.owner.protectionType);
         }
     }
 

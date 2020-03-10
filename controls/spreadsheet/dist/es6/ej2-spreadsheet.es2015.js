@@ -7407,7 +7407,7 @@ class WorkbookFormula {
             case 'deleteSheetTab':
                 let length = this.sheetInfo.length;
                 for (let i = 0; i < length; i++) {
-                    if (this.sheetInfo[i].index === args.index) {
+                    if (this.sheetInfo[i].index === args.index + 1) {
                         args.sheetName = this.sheetInfo[i].sheet;
                         this.sheetInfo.splice(i, 1);
                         break;

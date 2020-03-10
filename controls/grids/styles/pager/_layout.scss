@@ -155,7 +155,7 @@
       margin-left: $pager-dropdown-margin-left;
       margin-right: $pager-dropdown-margin-right;
       margin-top: $pager-dropdown-margin-top;
-      overflow: hidden;
+      overflow: $pager-dropdown-overflow;
       vertical-align: middle;
       width: 90px;
     }

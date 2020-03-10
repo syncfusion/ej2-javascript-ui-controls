@@ -6,11 +6,9 @@ import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, Rena
 import { BeforeExportEventArgs } from '../base/interface';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import * as cls from '../../common/base/css-constant';
-import { Common } from '../actions/common';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { ToolbarItems, ChartSeriesType } from '../base/enum';
 import { Deferred } from '@syncfusion/ej2-data';
-PivotView.Inject(Common);
 
 /**
  * Module for Toolbar

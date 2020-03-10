@@ -3630,6 +3630,19 @@ describe("Accordion Testing", () => {
             expect(headerEle.nextElementSibling === ele.querySelector("." + CLS_CONTENT)).toBe(true);
             expect(headerEle.nextElementSibling.firstChild.textContent === "Bentonville").toBe(true);
         });
+        it("Accordion dataSource propertychange testing", () => {
+            expect(ele.children.length === accordion.dataSource.length).toBe(true);
+            accordion.dataSource = [accordionItems[0]];
+            accordion.dataBind();
+            expect(ele.querySelectorAll("." + CLS_ITEM).length === 1).toBe(true);
+        });
+        it("Accordion headerTemplate propertychange testing", () => {
+            accordion.headerTemplate = "${State}";
+            accordion.dataBind();
+            let headerEle: HTMLElement = <HTMLElement>ele.children[0].children[0];
+            expect(headerEle.firstChild.textContent === "Arkansas").toBe(true);
+        });
+
         afterAll((): void => {
             ele.remove();
         });

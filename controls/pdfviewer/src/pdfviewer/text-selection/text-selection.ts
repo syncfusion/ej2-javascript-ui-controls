@@ -31,7 +31,6 @@ export interface ISelection {
 }
 /**
  * The `TextSelection` module is used to handle the text selection of PDF viewer.
- * @hidden
  */
 export class TextSelection {
 
@@ -246,6 +245,82 @@ export class TextSelection {
         return null;
     }
 
+    public selectTextRegion(pageNumbers: number, bounds: IRectangle[]): void {
+        // tslint:disable-next-line
+        let element: any = null;
+        let pageNumber: number = (pageNumbers - 1);
+        for (let k: number = 0; k < bounds.length; k++) {
+            // tslint:disable-next-line
+            let bound: any = bounds[k];
+            let x: number = (bound.left ? bound.left : bound.Left) * this.pdfViewerBase.getZoomFactor();
+            let y: number = (bound.top ? bound.top : bound.Top) * this.pdfViewerBase.getZoomFactor();
+            let width: number = (bound.width ? bound.width : bound.Width) * this.pdfViewerBase.getZoomFactor();
+            let height: number = bound.height ? bound.height : bound.Height;
+            // tslint:disable-next-line
+            let textLayer: any = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
+            if (textLayer) {
+                // tslint:disable-next-line
+                let textDivs: any = textLayer.childNodes;
+                for (let n: number = 0; n < textDivs.length; n++) {
+                    if (textDivs[n]) {
+                        // tslint:disable-next-line
+                        let rangebounds: any = textDivs[n].getBoundingClientRect();
+                        let top: number = this.getClientValueTop(rangebounds.top, pageNumber);
+                        // tslint:disable-next-line:max-line-length
+                        let currentLeft: number = rangebounds.left - this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).getBoundingClientRect().left;
+                        let totalLeft: number = currentLeft + rangebounds.width;
+                        // tslint:disable-next-line
+                        let textDiVLeft: number = parseInt(textDivs[n].style.left);
+                        // tslint:disable-next-line
+                        let currentTop: number = parseInt(textDivs[n].style.top);
+                        let isLeftBounds: boolean = this.checkLeftBounds(currentLeft, textDiVLeft, totalLeft, x);
+                        let isTopBounds: boolean = this.checkTopBounds(top, currentTop, y);
+                        if (isLeftBounds && isTopBounds) {
+                            element = textDivs[n];
+                            break;
+                        }
+                    }
+                }
+                if (element != null) {
+                    // tslint:disable-next-line
+                    let boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + pageNumber).getBoundingClientRect();
+                    this.textSelectionOnMouseMove(element, x + boundingRect.left, y + boundingRect.top, false);
+                    if ((bounds.length - 1) === k) {
+                        // tslint:disable-next-line:max-line-length
+                        this.textSelectionOnMouseMove(element, x + boundingRect.left + width, y + boundingRect.top, false);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public checkLeftBounds(left: number, textDiVLeft: number, totalLeft: number, x: number): boolean {
+        let isExists: boolean = false;
+        // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line
+        if (left === parseInt(x.toString()) || parseInt(left.toString()) === parseInt(x.toString()) || (left + 1) === parseInt(x.toString()) || (left - 1) === parseInt(x.toString())
+            // tslint:disable-next-line
+            || textDiVLeft === parseInt(x.toString()) || textDiVLeft === x || (totalLeft >= x && left <= x)) {
+            isExists = true;
+        }
+        return isExists;
+    }
+    /**
+     * @private
+     */
+    public checkTopBounds(top: number, currentTop: number, y: number): boolean {
+        let isExists: boolean = false;
+        // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line
+        if ((top === parseInt(y.toString()) || parseInt(top.toString()) === parseInt(y.toString()) || parseInt((top + 1).toString()) === parseInt(y.toString()) || parseInt((top - 1).toString()) === parseInt(y.toString())
+            // tslint:disable-next-line
+            || currentTop === parseInt(y.toString()) || currentTop === y)) {
+            isExists = true;
+        }
+        return isExists;
+    }
 
     /**
      * @private
@@ -440,9 +515,6 @@ export class TextSelection {
         this.pdfViewerBase.viewerContainer.addEventListener('selectstart', () => { return true; });
     }
 
-    /**
-     * @private
-     */
     public clearTextSelection(): void {
         if (this.isTextSelection) {
             this.pdfViewerBase.textLayer.clearDivSelection();
@@ -1445,10 +1517,12 @@ export class TextSelection {
                 anchorOffset = selection.anchorOffset;
                 focusOffset = !isFocusChanged ? selection.focusOffset : focusElement.textContent.length;
             }
-            selection.removeAllRanges();
-            this.pdfViewerBase.textLayer.clearDivSelection();
-            // tslint:disable-next-line:max-line-length
-            this.pdfViewerBase.textLayer.applySpanForSelection(anchorPageId, focusPageId, anchorOffsetDiv, focusOffsetDiv, anchorOffset, focusOffset);
+            if (this.pdfViewerBase.checkIsNormalText()) {
+                selection.removeAllRanges();
+                this.pdfViewerBase.textLayer.clearDivSelection();
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewerBase.textLayer.applySpanForSelection(anchorPageId, focusPageId, anchorOffsetDiv, focusOffsetDiv, anchorOffset, focusOffset);
+            }
             if (this.pdfViewer.textSearchModule) {
                 this.pdfViewer.textSearchModule.searchAfterSelection();
             }

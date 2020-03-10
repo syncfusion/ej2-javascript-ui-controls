@@ -959,7 +959,7 @@ export class CheckBoxFilterBase {
             } else {
                 if (cols[p].type === 'date' || cols[p].type === 'datetime') {
                     predicate = (predicate[((cols[p] as Predicate).predicate) as string] as Function)(
-                        getDatePredicate(cols[p]), cols[p].type, cols[p].ignoreAccent);
+                        getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
                 } else {
                     /* tslint:disable-next-line:max-line-length */
                     predicate = cols[p].ejpredicate ?
@@ -974,7 +974,7 @@ export class CheckBoxFilterBase {
     }
     private static getCaseValue(filter: PredicateModel): boolean {
         if (isNullOrUndefined(filter.matchCase)) {
-            return true;
+            return false;
         } else {
             return filter.matchCase;
         }

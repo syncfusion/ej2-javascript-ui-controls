@@ -12,7 +12,7 @@ export class StatusBar {
     private statusBarDiv: HTMLElement;
     private pageCount: HTMLElement;
     private zoom: DropDownButton;
-    private pageNumberLabel: HTMLElement;
+    private pageNumberInput: HTMLInputElement;
     private editablePageNumber: HTMLElement;
     public startPage: number = 1;
     public localObj: L10n;
@@ -40,8 +40,7 @@ export class StatusBar {
         // tslint:disable-next-line:max-line-length
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         // tslint:disable-next-line:max-line-length
-        let styles: string = 'padding-top:8px;';
-        styles += isRtl ? 'padding-right:16px' : 'padding-left:16px';
+        let styles: string = isRtl ? 'padding-right:16px' : 'padding-left:16px';
         // tslint:disable-next-line:max-line-length
         let div: HTMLElement = createElement('div', { className: (this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout', styles: styles });
         this.statusBarDiv.appendChild(div);
@@ -49,9 +48,9 @@ export class StatusBar {
         label.textContent = this.localObj.getConstant('Page') + ' ';
         div.appendChild(label);
         // tslint:disable-next-line:max-line-length
-        this.pageNumberLabel = createElement('label', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text;height:17px;max-width:150px' });
-        this.editablePageNumber = createElement('div', { styles: 'display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-input e-de-pagenumber-text' });
-        this.editablePageNumber.appendChild(this.pageNumberLabel);
+        this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text' }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
+        this.editablePageNumber = createElement('div', { styles: 'display: inline-flex', className: 'e-input e-de-pagenumber-text' });
+        this.editablePageNumber.appendChild(this.pageNumberInput);
         if (isRtl) {
             label.style.marginLeft = '6px';
             this.editablePageNumber.style.marginLeft = '6px';
@@ -70,15 +69,15 @@ export class StatusBar {
         div.appendChild(this.pageCount);
         this.updatePageCount();
         if (this.documentEditor.enableSpellCheck) {
-            let verticalLine: HTMLElement = createElement('div', { className: 'e-de-statusbar-seperator' });
+            let verticalLine: HTMLElement = createElement('div', { className: 'e-de-statusbar-separator' });
             this.statusBarDiv.appendChild(verticalLine);
             let spellCheckBtn: HTMLButtonElement = this.addSpellCheckElement();
             this.spellCheckButton.appendTo(spellCheckBtn);
         }
         // tslint:disable-next-line:max-line-length   
-        this.pageButton = this.createButtonTemplate((this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e icons', this.localObj.getConstant('Print layout'), this.statusBarDiv, this.pageButton, (this.documentEditor.layoutType === 'Pages') ? true : false);
+        this.pageButton = this.createButtonTemplate((this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e-icons', this.localObj.getConstant('Print layout'), this.statusBarDiv, this.pageButton, (this.documentEditor.layoutType === 'Pages') ? true : false);
         // tslint:disable-next-line:max-line-length   
-        this.webButton = this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e icons', this.localObj.getConstant('Web layout'), this.statusBarDiv, this.webButton, (this.documentEditor.layoutType === 'Continuous') ? true : false);
+        this.webButton = this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e-icons', this.localObj.getConstant('Web layout'), this.statusBarDiv, this.webButton, (this.documentEditor.layoutType === 'Continuous') ? true : false);
         this.pageButton.addEventListener('click', (): void => {
             this.documentEditor.layoutType = 'Pages';
             this.addRemoveClass(this.pageButton, this.webButton);
@@ -231,7 +230,8 @@ export class StatusBar {
      * Updates page number.
      */
     public updatePageNumber = (): void => {
-        this.pageNumberLabel.textContent = this.startPage.toString();
+        this.pageNumberInput.value = this.startPage.toString();
+        this.updatePageNumberWidth();
     }
     public updatePageNumberOnViewChange = (args: ViewChangeEventArgs): void => {
         if (this.documentEditor.selection
@@ -243,21 +243,21 @@ export class StatusBar {
         this.updatePageNumber();
     }
     private wireEvents = (): void => {
-        this.editablePageNumber.addEventListener('keydown', (e: KeyboardEventArgs) => {
+        this.pageNumberInput.addEventListener('keydown', (e: KeyboardEventArgs) => {
             if (e.which === 13) {
                 e.preventDefault();
-                let pageNumber: number = parseInt(this.editablePageNumber.textContent, 0);
+                let pageNumber: number = parseInt(this.pageNumberInput.value, 0);
                 if (pageNumber > this.editorPageCount) {
                     this.updatePageNumber();
                 } else {
                     if (this.documentEditor.selection) {
-                        this.documentEditor.selection.goToPage(parseInt(this.editablePageNumber.textContent, 0));
+                        this.documentEditor.selection.goToPage(parseInt(this.pageNumberInput.value, 0));
                     } else {
-                        this.documentEditor.scrollToPage(parseInt(this.editablePageNumber.textContent, 0));
+                        this.documentEditor.scrollToPage(parseInt(this.pageNumberInput.value, 0));
                     }
                 }
-                this.editablePageNumber.contentEditable = 'false';
-                if (this.editablePageNumber.textContent === '') {
+                this.pageNumberInput.contentEditable = 'false';
+                if (this.pageNumberInput.value === '') {
                     this.updatePageNumber();
                 }
             }
@@ -265,24 +265,23 @@ export class StatusBar {
                 e.preventDefault();
             }
         });
-        this.editablePageNumber.addEventListener('blur', (): void => {
-            if (this.editablePageNumber.textContent === '' || parseInt(this.editablePageNumber.textContent, 0) > this.editorPageCount) {
+        this.pageNumberInput.addEventListener('keyup', () => {
+            this.updatePageNumberWidth();
+        });
+        this.pageNumberInput.addEventListener('blur', (): void => {
+            if (this.pageNumberInput.value === '' || parseInt(this.pageNumberInput.value, 0) > this.editorPageCount) {
                 this.updatePageNumber();
             }
-            this.editablePageNumber.contentEditable = 'false';
-            this.editablePageNumber.style.border = 'none';
+            this.pageNumberInput.contentEditable = 'false';
         });
-        this.editablePageNumber.addEventListener('focus', (): void => {
-            this.editablePageNumber.style.border = '1px solid #F1F1F1';
-        });
-        this.editablePageNumber.addEventListener('click', (): void => {
-            this.updateDocumentEditorPageNumber();
+        this.pageNumberInput.addEventListener('focus', (): void => {
+            this.pageNumberInput.select();
         });
     }
-    private updateDocumentEditorPageNumber = (): void => {
-        this.editablePageNumber.contentEditable = 'true';
-        this.editablePageNumber.focus();
-        window.getSelection().selectAllChildren(this.editablePageNumber);
+    private updatePageNumberWidth(): void {
+        if (this.pageNumberInput) {
+            this.pageNumberInput.style.width = this.pageNumberInput.value.length >= 3 ? '30px' : '22px';
+        }
     }
     /**
      * @private
@@ -291,9 +290,9 @@ export class StatusBar {
         this.addRemoveClass(this.pageButton, this.webButton);
     }
     private addRemoveClass = (addToElement: HTMLElement, removeFromElement: HTMLElement): void => {
-        addToElement.classList.add('e-btn-pageweb-toggle');
-        if (removeFromElement.classList.contains('e-btn-pageweb-toggle')) {
-            removeFromElement.classList.remove('e-btn-pageweb-toggle');
+        addToElement.classList.add('e-btn-toggle');
+        if (removeFromElement.classList.contains('e-btn-toggle')) {
+            removeFromElement.classList.remove('e-btn-toggle');
         }
     }
     // tslint:disable-next-line:max-line-length
@@ -304,7 +303,7 @@ export class StatusBar {
             cssClass: className, iconCss: iconcss, enableRtl: this.container.enableRtl
         });
         if (toggle === true) {
-            appendDiv.classList.add('e-btn-pageweb-toggle');
+            appendDiv.classList.add('e-btn-toggle');
         }
         btn.appendTo(appendDiv);
         appendDiv.setAttribute('title', toolTipText);

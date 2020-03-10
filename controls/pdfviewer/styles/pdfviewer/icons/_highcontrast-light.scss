@@ -41,10 +41,12 @@
 
     .e-pv-zoom-out-icon::before {
       content: '\ebe2';
+      line-height: $pv-toolbaritem-btn-line-height;
     }
 
     .e-pv-zoom-in-icon::before {
       content: '\ebe3';
+      line-height: $pv-toolbaritem-btn-line-height;
     }
 
     .e-pv-thumbnail-view-icon::before {

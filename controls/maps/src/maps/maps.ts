@@ -21,7 +21,7 @@ import { Highlight } from './user-interaction/highlight';
 import { Selection } from './user-interaction/selection';
 import { MapsTooltip } from './user-interaction/tooltip';
 import { Zoom } from './user-interaction/zoom';
-import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, shapeHighlight, itemSelection } from './model/constants';
+import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, itemSelection, zoomIn } from './model/constants';
 import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';
 import { MapsModel } from './maps-model';
 import { getThemeStyle } from './model/theme';
@@ -617,21 +617,37 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public mouseClickEvent: Object = { x: null, y: null };
     /** @private */
     public isBlazor: boolean;
+    /** @private */
     public shapeSelectionClass: Element;
+    /** @private */
     public selectedElementId: string[] = [];
+    /** @private */
     public markerSelectionClass: Element;
+    /** @private */
     public selectedMarkerElementId: string[] = [];
+    /** @private */
     public bubbleSelectionClass: Element;
+    /** @private */
     public selectedBubbleElementId: string[] = [];
+    /** @private */
     public navigationSelectionClass: Element;
+    /** @private */
     public selectedNavigationElementId: string[] = [];
+    /** @private */
     public legendSelectionClass: SelectionSettingsModel;
+    /** @private */
     public selectedLegendElementId: number[] = [];
+    /** @private */
     public legendSelectionCollection: object[] = [];
+    /** @private */
     public shapeSelections: boolean = true;
+    /** @private */
     public legendSelection: boolean = true;
+    /** @private */
     public toggledLegendId: number[] = [];
+    /** @private */
     public toggledShapeElementId: string[] = [];
+    /** @private */
     public checkInitialRender: boolean = true;
 
     /**
@@ -966,7 +982,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             }
-            if (this.zoomModule && (this.previousScale !== this.scale)) {
+            if (this.zoomModule && ((this.previousScale !== this.scale))) {
                 this.zoomModule.applyTransform(true);
             }
         }
@@ -1628,6 +1644,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.zoomNotApplied = true;
         this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
                                                        this.mapAreaRect.width, this.mapAreaRect.height, this);
+        let zoomArgs: IMapZoomEventArgs;
+        zoomArgs = {
+            cancel: false, name: 'zoom', type: zoomIn, maps: !this.isBlazor ? this : null,
+            tileTranslatePoint: {}, translatePoint: {},
+            tileZoomLevel: this.isTileMap ? { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation } : {},
+            scale: !this.isTileMap ? { previous: this.scale, current: this.scaleOfGivenLocation } :
+            { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation}
+        };
+        this.trigger('zoom', zoomArgs);
         this.refresh();
     }
 

@@ -7088,9 +7088,17 @@ var QRCodeGenerator = /** @__PURE__ @class */ (function (_super) {
         barCode.mIsUserMentionedVersion = (this.version !== undefined) ? true : false;
         var mode = (this.mode === 'SVG') ? true : false;
         var validInput = barCode.draw(this.value, this.barcodeCanvas, this.element.offsetHeight, this.element.offsetWidth, this.margin, this.displayText, mode, this.foreColor);
+        if (this.mode === 'Canvas') {
+            this.barcodeCanvas.getContext('2d').setTransform(1, 0, 0, 1, 0, 0);
+            this.barcodeCanvas.getContext('2d').scale(1.5, 1.5);
+        }
         if (!validInput) {
             var encoding = 'Invalid Input';
             this.triggerEvent(BarcodeEvent.invalid, encoding);
+        }
+        if (this.mode === 'Canvas') {
+            this.barcodeCanvas.style.transform = 'scale(' + (2 / 3) + ')';
+            this.barcodeCanvas.style.transformOrigin = '0 0';
         }
     };
     QRCodeGenerator.prototype.setCulture = function () {

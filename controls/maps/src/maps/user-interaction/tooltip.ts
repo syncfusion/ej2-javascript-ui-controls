@@ -71,9 +71,12 @@ export class MapsTooltip {
                     for (let k: number = 0; k < properties.length; k++) {
                         for (let i: number = 0; i < layer['dataSource']['length']; i++) {
                             let data: Object[] = layer.dataSource[i];
-                            if ((data[layer.shapeDataPath]) === value[properties[k]]) {
-                                isShape = true; index = i;
-                                k = properties.length;
+                            let dataShapeLayerValue: string = !isNullOrUndefined(data[layer.shapeDataPath]) ?
+                            data[layer.shapeDataPath].toLowerCase() : data[layer.shapeDataPath];
+                            let propertiesValue: string = !isNullOrUndefined(value[properties[k]]) ? value[properties[k]].toLowerCase()
+                                : value[properties[k]];
+                            if ((dataShapeLayerValue) === propertiesValue) {
+                                isShape = true; index = i; k = properties.length;
                                 break;
                             }
                         }

@@ -356,8 +356,8 @@ export class TextMarkupAnnotation {
                         let textDiVLeft: number = parseInt(textDivs[n].style.left);
                         // tslint:disable-next-line
                         let currentTop: number = parseInt(textDivs[n].style.top);
-                        let isLeftBounds: boolean = this.checkLeftBounds(currentLeft, textDiVLeft, totalLeft, x);
-                        let isTopBounds: boolean = this.checkTopBounds(top, currentTop, y);
+                        let isLeftBounds: boolean = this.pdfViewer.textSelectionModule.checkLeftBounds(currentLeft, textDiVLeft, totalLeft, x);
+                        let isTopBounds: boolean = this.pdfViewer.textSelectionModule.checkTopBounds(top, currentTop, y);
                         if (isLeftBounds && isTopBounds) {
                             element = textDivs[n];
                             break;
@@ -375,28 +375,6 @@ export class TextMarkupAnnotation {
                 }
             }
         }
-    }
-    private checkLeftBounds(left: number, textDiVLeft: number, totalLeft: number, x: number): boolean {
-        let isExists: boolean = false;
-        // tslint:disable-next-line:max-line-length
-        // tslint:disable-next-line
-        if (left === parseInt(x.toString()) || parseInt(left.toString()) === parseInt(x.toString()) || (left + 1) === parseInt(x.toString()) || (left - 1) === parseInt(x.toString())
-            // tslint:disable-next-line
-            || textDiVLeft === parseInt(x.toString()) || textDiVLeft === x || (totalLeft >= x && left <= x)) {
-            isExists = true;
-        }
-        return isExists;
-    }
-    private checkTopBounds(top: number, currentTop: number, y: number): boolean {
-        let isExists: boolean = false;
-        // tslint:disable-next-line:max-line-length
-        // tslint:disable-next-line
-        if ((top === parseInt(y.toString()) || parseInt(top.toString()) === parseInt(y.toString()) || parseInt((top + 1).toString()) === parseInt(y.toString()) || parseInt((top - 1).toString()) === parseInt(y.toString())
-            // tslint:disable-next-line
-            || currentTop === parseInt(y.toString()) || currentTop === y)) {
-            isExists = true;
-        }
-        return isExists;
     }
     /**
      * @private

@@ -429,7 +429,11 @@ export class Column {
 
     constructor(options: ColumnModel) {
         merge(this, options);
-        this.type = this.type === 'none' ? null : (this.type ? this.type.toLowerCase() : this.type);
+        if (this.type === 'none') {
+            this.type = (isBlazor() && !isNullOrUndefined(this.template) && isNullOrUndefined(this.field)) ? 'none' : null;
+        } else if (this.type) {
+            this.type = this.type ? this.type.toLowerCase() : this.type;
+        }
         if (this.editType) {
             this.editType = this.editType.toLowerCase();
         }

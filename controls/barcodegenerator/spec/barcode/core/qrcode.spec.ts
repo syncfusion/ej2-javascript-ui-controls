@@ -14642,4 +14642,35 @@ describe('Barcode Control', () => {
         });
     });
 
+     describe('Customer Issue - 264414', () => {
+
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'QrCode_Customer_issue1' });
+            document.body.appendChild(ele);
+            let barcode: QRCodeGenerator = new QRCodeGenerator({
+                width: '300px',
+                height: '200px',
+                displayText: { visibility: true, size: 9,  text: "service--01|fragment--0001|Login|11/12/2020|test"},
+                mode: 'Canvas',
+                value: "service--01|fragment--0001|Login|11/01/2020",
+            });
+            barcode.appendTo('#QrCode_Customer_issue1');
+        });
+
+        afterAll((): void => {
+            barcode.destroy();
+            ele.remove();
+        });
+
+        it('QR code is not render the center', (done: Function) => {
+            element = document.getElementById("QrCode_Customer_issue1").children[0];
+            var height = element.getAttribute("height");
+            var width = element.getAttribute("width");
+            var style = element.getAttribute("style");
+            expect(height == "300" && width == "450" && style == "transform: scale(0.666667); transform-origin: 0px 0px;").toBe(true);
+            done();
+        });
+    });
+
 });

@@ -1,7 +1,7 @@
 /**
  * Show hide module specs
  */
-import { EmitType, select } from '@syncfusion/ej2-base';
+import { EmitType, select, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
@@ -15,8 +15,9 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Resize } from '../../../src/grid/actions/resize';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
+import { Edit } from '../../../src/grid/actions/edit';
 
-Grid.Inject(Filter, Freeze, Resize, RowDD);
+Grid.Inject(Filter, Freeze, Resize, RowDD, Edit);
 
 describe('ShowHide module testing', () => {
 
@@ -702,5 +703,48 @@ describe('ShowHide module testing', () => {
             rows = null;
         });
     });
+    describe('EJ2-37190 => Form not closed for the Column choooser action', () => {
+        let gridObj: Grid;
 
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [{ field: 'OrderID', isPrimaryKey: true }, { field: 'CustomerID' },
+                    { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                    allowPaging: true,
+                    selectedRowIndex: 2,
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                    pageSettings: { pageSize: 5 },
+                }, done);
+        });
+        
+        it('Check form is ceated', (done: Function) => {
+            gridObj.actionComplete = (e)=>{
+                if (e.requestType === 'beginedit') {
+                    expect(isNullOrUndefined(document.querySelector(".e-gridform"))).toBe(false);
+                }
+                done();
+            }
+            gridObj.startEdit();
+        });
+        it('Check form is closed after hiding column', (done: Function) => {
+            gridObj.hideColumns('EmployeeID', 'field')
+            expect(gridObj.getVisibleColumns().length).toBe(4);
+            expect(isNullOrUndefined(document.querySelector(".e-gridform"))).toBe(true);
+            done();
+        });
+        it('Check form is closed after column choooser action', (done: Function) => {
+            gridObj.showColumns('EmployeeID', 'field')
+            expect(gridObj.getVisibleColumns().length).toBe(5);
+            expect(isNullOrUndefined(document.querySelector(".e-gridform"))).toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
 });

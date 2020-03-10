@@ -59,6 +59,7 @@ import { Reorder } from '../actions/reorder';
 import { RowDD } from '../actions/row-reorder';
 import { ShowHide } from '../actions/show-hide';
 import { Scroll } from '../actions/scroll';
+import { InfiniteScroll } from '../actions/infinite-scroll';
 import { Group } from '../actions/group';
 import { Print } from '../actions/print';
 import { DetailRow } from '../actions/detail-row';
@@ -835,8 +836,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public isAutoGen: boolean = false;
     private mediaBindInstance: Object = {};
-    /** @hidden */
-    public isWheelScrolled: boolean;
 
     //Module Declarations
     /**
@@ -904,6 +903,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * The `scrollModule` is used to manipulate scrolling in the Grid.
      */
     public scrollModule: Scroll;
+    /**
+     * The `infiniteScrollModule` is used to manipulate infinite scrolling in the Grid.
+     */
+    public infiniteScrollModule: InfiniteScroll;
     /**
      * The `reorderModule` is used to manipulate reordering in the Grid.
      */
@@ -2214,6 +2217,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     public extendRequiredModules(modules: ModuleDeclaration[]): void {
+        if (this.infiniteScrollSettings.enableScroll) {
+            modules.push({
+                member: 'infiniteScroll',
+                args: [this, this.serviceLocator]
+            });
+        }
 
         if (this.contextMenuItems) {
             modules.push({
@@ -2265,6 +2274,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.isInitialLoad = false;
         this.allowServerDataBinding = false;
         this.ignoreCollectionWatch = true;
+        if (this.enableVirtualization || this.enableColumnVirtualization) {            
+            this.isServerRendered = false; //NEW
+        }
         this.mergeCells = {};
         this.isEdit = false;
         this.checkAllRows = 'None';
@@ -2534,8 +2546,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
     private refreshMediaCol(): void {
         this.isInitialLoad = true;
-        if (this.aggregates.length && this.element.scrollHeight > this.height) {
-            let footerContent: Element = this.element.querySelector('.e-gridfooter');
+        let footerContent: Element = this.element.querySelector('.e-gridfooter');
+        if (this.aggregates.length && this.element.scrollHeight > this.height && footerContent) {
             addClass([footerContent], ['e-footerpadding']);
         }
         let checkboxColumn: Column[] = this.getColumns().filter((col: Column) => col.type === 'checkbox');
@@ -2668,6 +2680,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     break;
                 case 'allowRowDragAndDrop':
                     this.notify(events.uiUpdate, { module: 'rowDragAndDrop', enable: this.allowRowDragAndDrop });
+                    this.renderModule.refresh();
+                    this.headerModule.refreshUI();
                     break;
                 case 'allowSelection':
                     this.notify(events.uiUpdate, { module: 'selection', enable: this.allowSelection });
@@ -4900,14 +4914,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (!isNullOrUndefined(localCol)) {
                 if (localCol.columns && localCol.columns.length) {
                     this.mergeColumns(<Column[]>storedColumns[i].columns, <Column[]>localCol.columns);
-                    storedColumns[i] = <Column>extend(localCol, storedColumns[i], true);
+                    storedColumns[i] = <Column>extend(localCol, storedColumns[i], {}, true);
                 } else {
                     if (isBlazor()) {
                         let guid: string = 'guid';
                         storedColumns[i][guid] = localCol[guid];
                         storedColumns[i].uid = localCol.uid;
                     }
-                    storedColumns[i] = <Column>extend(localCol, storedColumns[i], true);
+                    storedColumns[i] = <Column>extend(localCol, storedColumns[i], {}, true);
                 }
             }
         }
@@ -5566,6 +5580,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public isCollapseStateEnabled(): boolean {
         let isExpanded: string = 'isExpanded';
         return this[isExpanded];
+    }
+
+    /**
+     * @param {number} key - Defines the primary key value.
+     * @param {Object} value - Defines the row data.
+     */
+    public updateRowValue(key: number, rowData: Object): void {
+        let args: SaveEventArgs = {
+            requestType: 'save', data: rowData,
+        };
+        this.showSpinner();
+        this.notify(events.updateData, args);
+        this.refresh();
     }
 
 }

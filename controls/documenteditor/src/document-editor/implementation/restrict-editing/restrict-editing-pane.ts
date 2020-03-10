@@ -1,5 +1,5 @@
 import { LayoutViewer, EditRangeStartElementBox, DocumentHelper } from '../viewer';
-import { createElement, L10n } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { AddUserDialog } from './add-user-dialog';
 import { EnforceProtectionDialog, UnProtectDocumentDialog } from './enforce-protection-dialog';
@@ -41,6 +41,7 @@ export class RestrictEditing {
     public base64: Base64;
     public addedUser: ListView;
     public stopReadOnlyOptions: HTMLElement;
+    public isAddUser: boolean = false;
 
     public usersCollection: string[] = ['Everyone'];
     public highlightCheckBox: CheckBox;
@@ -82,12 +83,12 @@ export class RestrictEditing {
             innerHTML: localValue.getConstant('Restrict Editing'), className: 'e-de-rp-header'
         });
         this.closeButton = createElement('button', {
-            className: 'e-de-rp-close-icon e-btn e-flat e-icon-btn', id: 'close',
+            className: 'e-de-rp-close-icon e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         headerWholeDiv.appendChild(this.closeButton);
         headerWholeDiv.appendChild(headerDiv1);
-        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
+        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.restrictPane.appendChild(headerWholeDiv);
         this.initRestrictEditingPane(localValue);
@@ -161,7 +162,8 @@ export class RestrictEditing {
         this.addUser = createElement('button', {
             id: this.viewer.owner.containerId + '_addUser',
             className: 'e-btn e-primary e-flat',
-            innerHTML: localObj.getConstant('More users')
+            innerHTML: localObj.getConstant('More users') + '...',
+            styles: 'margin-top: 3px'
         }) as HTMLButtonElement;
         userWholeDiv.appendChild(this.addUser);
 
@@ -239,7 +241,7 @@ export class RestrictEditing {
     private wireEvents(): void {
         this.addUser.addEventListener('click', this.addUserDialog.show);
         this.enforceProtection.addEventListener('click', this.protectDocument);
-        this.stopProtection.addEventListener('click', this.unProtectDialog.show);
+        this.stopProtection.addEventListener('click', this.stopProtectionTriggered);
         this.closeButton.addEventListener('click', this.closePane);
         this.allowFormat.addEventListener('change', this.enableFormatting);
         this.readonly.addEventListener('change', this.readOnlyChanges);
@@ -248,6 +250,14 @@ export class RestrictEditing {
     /* tslint:disable:no-any */
     private enableFormatting = (args: any): void => {
         this.restrictFormatting = !args.checked;
+    }
+    private stopProtectionTriggered = (args: any): void => {
+        if ((isNullOrUndefined(this.documentHelper.saltValue) || this.documentHelper.saltValue === '')
+            && (isNullOrUndefined(this.documentHelper.hashValue) || this.documentHelper.hashValue === '')) {
+            this.documentHelper.owner.editor.unProtectDocument();
+            return;
+        }
+        this.unProtectDialog.show();
     }
     private readOnlyChanges = (args: any): void => {
         if (args.checked) {
@@ -277,12 +287,15 @@ export class RestrictEditing {
         let checkBox: CheckBox = new CheckBox({ label: label });
         checkBox.appendTo(element);
         return checkBox;
+
     }
 
     public loadPaneValue(): void {
-        this.protectionType = this.documentHelper.protectionType;
+        if (!this.isAddUser) {
+            this.protectionType = this.documentHelper.protectionType;
+        }
         this.allowFormat.checked = !this.documentHelper.restrictFormatting;
-        this.readonly.checked = this.documentHelper.protectionType === 'ReadOnly';
+        this.readonly.checked = this.documentHelper.protectionType === 'ReadOnly' || this.protectionType !== 'NoProtection';
         this.highlightCheckBox.checked = true;
         this.addedUser.enablePersistence = true;
         this.addedUser.dataSource = this.documentHelper.userCollection;

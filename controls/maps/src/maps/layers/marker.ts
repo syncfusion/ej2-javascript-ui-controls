@@ -38,6 +38,7 @@ export class Marker {
     public markerRender(layerElement: Element, layerIndex: number, factor: number, type: string): void {
         let templateFn: Function;
         let markerCount: number = 0;
+        let nullCount: number = 0;
         let markerTemplateCount: number = 0;
         let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         this.markerSVGObject = this.maps.renderer.createGroup({
@@ -103,28 +104,31 @@ export class Marker {
                             new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true
                         ) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
                         let animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                        let translate: Object = (this.maps.isTileMap) ? new Object() :
+                        let translate: Object = (this.maps.isTileMap) ? (currentLayer.type === "SubLayer" && isNullOrUndefined(this.maps.zoomModule)) ? location = convertTileLatLongToPoint(
+                            new MapLocation(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
+                        ) : new Object() :
                             !isNullOrUndefined(this.maps.zoomModule) && this.maps.zoomSettings.zoomFactor > 1 ?
                                 getZoomTranslate(this.maps, currentLayer, animate) :
                                 getTranslate(this.maps, currentLayer, animate);
                         let scale: number = type === 'AddMarker' ? this.maps.scale : translate['scale'];
                         let transPoint: Point = type === 'AddMarker' ? this.maps.translatePoint : translate['location'] as Point;
-                        if (eventArgs.template) {
+                        if (eventArgs.template &&  (!isNullOrUndefined(location.x) && !isNullOrUndefined(location.y))) {
                             markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
                                 scale, offset, this.maps);
-                        } else {
+                        } else if(!eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerCount++;
                             marker(eventArgs, markerSettings, markerData, dataIndex,
                                 location, transPoint, markerID, offset, scale, this.maps, this.markerSVGObject);
                         }
                     }
+                    nullCount += (!isNullOrUndefined(lat) && !isNullOrUndefined(lng)) ? 0 : 1;
                     markerTemplateCount += (eventArgs.cancel) ? 1 : 0;
                     markerCount += (eventArgs.cancel) ? 1 : 0;
                     this.maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat))
                         ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
                     let markerDataLength: number = markerData.length - this.maps.markerNullCount;
-                    if (this.markerSVGObject.childElementCount === (markerDataLength - markerTemplateCount) && (type !== 'Template')) {
+                    if (this.markerSVGObject.childElementCount === (markerDataLength - markerTemplateCount - nullCount) && (type !== 'Template')) {
                         layerElement.appendChild(this.markerSVGObject);
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(this.markerSVGObject);
@@ -133,7 +137,7 @@ export class Marker {
                                 this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                         }
                     }
-                    if (markerTemplateEle.childElementCount === (markerData.length - markerCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+                    if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             clusterTemplate(currentLayer, markerTemplateEle, this.maps,

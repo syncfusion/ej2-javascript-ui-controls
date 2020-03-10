@@ -22,7 +22,7 @@ export class MonthAgenda extends Month {
     constructor(parent: Schedule) {
         super(parent);
         this.agendaBase = new AgendaBase(parent);
-        this.monthAgendaDate = parent.selectedDate;
+        this.monthAgendaDate = new Date('' + parent.selectedDate);
     }
 
     public renderAppointmentContainer(): void {

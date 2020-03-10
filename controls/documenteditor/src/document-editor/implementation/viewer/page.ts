@@ -3383,7 +3383,8 @@ export class LineWidget implements IWidget {
         let line: LineWidget = inline.line as LineWidget;
         let lineIndex: number = inline.line.paragraph.childWidgets.indexOf(inline.line);
         let bidi: boolean = line.paragraph.bidi;
-        if (!bidi) {
+        let isContainsRtl: boolean = this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
+        if (!bidi && !isContainsRtl) {
             for (let i: number = 0; i < line.children.length; i++) {
                 let inlineElement: ElementBox = line.children[i] as ElementBox;
                 if (inline === inlineElement) {
@@ -3394,8 +3395,11 @@ export class LineWidget implements IWidget {
                 }
                 textIndex += inlineElement.length;
             }
-        } else {
+        } else if (bidi) {
             let elementInfo: ElementInfo = this.getInlineForOffset(textIndex, true, inline);
+            textIndex = elementInfo.index;
+        } else {
+            let elementInfo: ElementInfo = this.getInlineForRtlLine(textIndex, true, inline);
             textIndex = elementInfo.index;
         }
         return textIndex;
@@ -3408,7 +3412,7 @@ export class LineWidget implements IWidget {
         let count: number = 0;
         // let line: LineWidget = this.line as LineWidget;
         // let lineIndex: number = thtis.line.paragraph.childWidgets.indexOf(inline.line);
-        let bidi: boolean = this.paragraph.bidi;
+        let bidi: boolean = this.paragraph.bidi || this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
         if (!bidi) {
             for (let i: number = 0; i < this.children.length; i++) {
                 let inlineElement: ElementBox = this.children[i] as ElementBox;
@@ -3454,9 +3458,14 @@ export class LineWidget implements IWidget {
         while (element) {
             if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
                 (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
+                    // tslint:disable-next-line:max-line-length
+                    && !((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)
                     || !(element instanceof TextElementBox))) {
                 while (element.previousElement && (element.previousElement instanceof TextElementBox
-                    && !textHelper.isRTLText(element.previousElement.text) || element.previousElement instanceof FieldElementBox
+                    // tslint:disable-next-line:max-line-length
+                    && !textHelper.isRTLText(element.previousElement.text) && !((textHelper.containsSpecialCharAlone(element.previousElement.text)
+                        || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi)
+                    || element.previousElement instanceof FieldElementBox
                     || element.previousElement instanceof BookmarkElementBox
                     && !isNullOrUndefined(element.previousElement.previousElement) &&
                     !(element.previousElement.previousElement instanceof BookmarkElementBox)
@@ -3474,7 +3483,9 @@ export class LineWidget implements IWidget {
                     continue;
                 }
                 if (element.previousElement && (isApplied
-                    || (element.previousElement instanceof TextElementBox && textHelper.isRTLText(element.previousElement.text)))) {
+                    || (element.previousElement instanceof TextElementBox && (textHelper.isRTLText(element.previousElement.text) ||
+                        // tslint:disable-next-line:max-line-length
+                        ((textHelper.containsSpecialCharAlone(element.previousElement.text) || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi))))) {
                     endElement = element.previousElement;
                 } else if (!element.previousElement) {
                     if (element instanceof ListTextElementBox) {
@@ -3496,6 +3507,8 @@ export class LineWidget implements IWidget {
                 offset += element.length;
                 if (offset === lineLength) {
                     return { 'element': element, 'index': offset };
+                } else if (offset > lineLength) {
+                    return { 'element': element, 'index': lineLength };
                 }
             } else if (isNxtOffset) {
                 if (offset < count + element.length) {
@@ -3518,7 +3531,8 @@ export class LineWidget implements IWidget {
                 }
                 count += element.length;
             }
-            if (element.previousElement && (element instanceof TextElementBox && textHelper.isRTLText(element.text) ||
+            if (element.previousElement && (element instanceof TextElementBox && (textHelper.isRTLText(element.text) ||
+                ((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)) ||
                 (element instanceof TabElementBox && element.text === '\t' || (element instanceof BookmarkElementBox
                     && (element instanceof BookmarkElementBox && element.previousElement instanceof BookmarkElementBox
                         && !element.previousElement.previousElement
@@ -3530,7 +3544,10 @@ export class LineWidget implements IWidget {
             }
             else {
                 if (endElement && (!element.nextElement || element === startElement || element.nextElement instanceof TextElementBox
-                    && textHelper.isRTLText(element.nextElement.text) || element.nextElement instanceof ListTextElementBox)) {
+                    && (textHelper.isRTLText(element.nextElement.text) ||
+                        // tslint:disable-next-line:max-line-length
+                        ((textHelper.containsSpecialCharAlone(element.nextElement.text) || /^[0-9]+$/.test(element.nextElement.text)) && element.nextElement.characterFormat.bidi))
+                    || element.nextElement instanceof ListTextElementBox)) {
                     if (offset === count + 1 && count === lineLength) {
                         break;
                     }
@@ -3554,6 +3571,79 @@ export class LineWidget implements IWidget {
             return { 'element': element, 'index': isEndOffset ? offset : 0 };
         }
     }
+    public getInlineForRtlLine(offset: number, isOffset?: boolean, inline?: ElementBox): ElementInfo {
+        let startElement: ElementBox = this.children[0] as ElementBox;
+        let endElement: ElementBox;
+        let element: ElementBox = startElement;
+        let documentHelper: DocumentHelper = this.paragraph.bodyWidget.page.documentHelper;
+        let textHelper: TextHelper = documentHelper.textHelper;
+        let isUpdated: boolean = false;
+        let count: number = 0;
+        let lineLength: number = documentHelper.selection.getLineLength(this);
+        let validOffset: number = 0;
+        let lastRtlIndex: number = -1;
+        let indexInInline: number = -1;
+        let isStarted: boolean = false;
+        while (element) {
+            if (element instanceof ListTextElementBox) {
+                element = element.nextElement;
+                continue;
+            }
+            if (!isStarted && (element instanceof TextElementBox || element instanceof ImageElementBox
+                || element instanceof BookmarkElementBox || element instanceof EditRangeEndElementBox
+                || element instanceof EditRangeStartElementBox
+                || element instanceof FieldElementBox
+                && HelperMethods.isLinkedFieldCharacter(element as FieldElementBox))) {
+                isStarted = true;
+            }
+            if (!endElement) {
+                while (element && element instanceof TextElementBox && (textHelper.isRTLText(element.text) ||
+                    textHelper.containsSpecialCharAlone(element.text))) {
+                    if (!endElement) {
+                        endElement = element;
+                    }
+                    lastRtlIndex = this.children.indexOf(element);
+                    element = element.nextElement;
+                    isUpdated = true;
+                }
+            }
+            if (lastRtlIndex !== -1 && isUpdated) {
+                element = this.children[lastRtlIndex];
+            }
+            if (isOffset && !isNullOrUndefined(inline)) {
+                if (inline === element) {
+                    return { 'element': element, 'index': offset };
+                }
+                offset += element.length;
+            } else {
+                if (isStarted && offset <= count + element.length) {
+
+                    indexInInline = (offset - count);
+                    return { 'element': element, 'index': indexInInline };
+                }
+                count += element.length;
+            }
+            if (endElement === element) {
+                endElement = undefined;
+                if (lastRtlIndex !== -1) {
+                    element = this.children[lastRtlIndex] as ElementBox;
+                }
+                lastRtlIndex = -1;
+            }
+            if (endElement && element.previousElement) {
+                element = element.previousElement;
+            } else if (element.nextElement) {
+                element = element.nextElement;
+            } else {
+                if (offset > count) {
+                    indexInInline = isNullOrUndefined(element) ? offset : element.length;
+                }
+                return { 'element': element, 'index': indexInInline };
+            }
+            isUpdated = false;
+        }
+        return { 'element': element, 'index': indexInInline };
+    }
     /**
      * @private
      */
@@ -3572,7 +3662,8 @@ export class LineWidget implements IWidget {
                 }
             }
         }
-        if (!bidi) {
+        let isContainsRtl: boolean = this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
+        if (!bidi && !isContainsRtl) {
             for (let i: number = 0; i < this.children.length; i++) {
                 inlineElement = this.children[i] as ElementBox;
                 if (inlineElement instanceof ListTextElementBox) {
@@ -3608,13 +3699,19 @@ export class LineWidget implements IWidget {
             if (offset > count) {
                 indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
             }
-        } else {
+        } else if (bidi) {
             let elementInfo: ElementInfo = this.getInlineForOffset(offset);
+            inlineElement = elementInfo.element;
+            indexInInline = elementInfo.index;
+        } else {
+            let elementInfo: ElementInfo = this.getInlineForRtlLine(offset);
             inlineElement = elementInfo.element;
             indexInInline = elementInfo.index;
         }
         return { 'element': inlineElement, 'index': indexInInline };
     }
+
+
     /**
      * Method to retrieve next element
      * @param line 

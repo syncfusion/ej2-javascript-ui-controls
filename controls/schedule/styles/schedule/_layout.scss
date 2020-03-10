@@ -1807,6 +1807,11 @@
         height: auto;
       }
 
+      .e-ignore-whitespace .e-work-cells,
+      .e-ignore-whitespace .e-resource-cells {
+        height: 42px;
+      }
+
       .e-resource-tree-icon {
         color: $schedule-icon-color;
         cursor: pointer;

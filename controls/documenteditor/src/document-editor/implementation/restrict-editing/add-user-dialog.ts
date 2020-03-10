@@ -112,8 +112,10 @@ export class AddUserDialog {
      * @private
      */
     public okButtonClick = (): void => {
+        this.documentHelper.restrictEditingPane.isAddUser = true;
         this.documentHelper.restrictEditingPane.showStopProtectionPane(false);
         this.documentHelper.restrictEditingPane.loadPaneValue();
+        this.documentHelper.restrictEditingPane.isAddUser = false;
         this.documentHelper.dialog.hide();
     }
 

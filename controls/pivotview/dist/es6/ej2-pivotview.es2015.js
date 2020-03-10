@@ -5,11 +5,11 @@ import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, G
 import { Accordion, ContextMenu as ContextMenu$1, Menu, Tab, Toolbar as Toolbar$1, TreeView } from '@syncfusion/ej2-navigations';
 import { ColorPicker, MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
+import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
 import { AreaSeries, BarSeries, BubbleSeries, Category, Chart, ChartLocation, ColumnSeries, Crosshair, Export, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
-import { DateTimePicker } from '@syncfusion/ej2-calendars';
-import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
 /**
@@ -7036,6 +7036,2125 @@ class Render {
         }
         else {
             return;
+        }
+    }
+}
+
+/**
+ * Keyboard interaction
+ */
+/** @hidden */
+class CommonKeyboardInteraction {
+    /**
+     * Constructor
+     */
+    constructor(parent) {
+        this.keyConfigs = {
+            shiftF: 'shift+F',
+            shiftS: 'shift+S',
+            delete: 'delete',
+            enter: 'enter'
+        };
+        this.parent = parent;
+        this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
+        this.keyboardModule = new KeyboardEvents(this.parent.element, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown'
+        });
+    }
+    keyActionHandler(e) {
+        switch (e.action) {
+            case 'shiftF':
+                this.processFilter(e);
+                break;
+            case 'shiftS':
+                this.processSort(e);
+                break;
+            case 'delete':
+                this.processDelete(e);
+                break;
+            case 'enter':
+                this.processOpenContextMenu(e);
+                break;
+        }
+    }
+    processOpenContextMenu(e) {
+        let target = e.target;
+        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) &&
+            closest(target, '.' + VALUE_AXIS_CLASS)) {
+            target.querySelector('.' + AXISFIELD_ICON_CLASS).click();
+            e.preventDefault();
+            return;
+        }
+    }
+    processSort(e) {
+        let target = e.target;
+        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) &&
+            !closest(target, '.' + VALUE_AXIS_CLASS) && !closest(target, '.' + AXIS_FILTER_CLASS)) {
+            target.querySelector('.' + SORT_CLASS).click();
+            e.preventDefault();
+            return;
+        }
+    }
+    processFilter(e) {
+        let target = e.target;
+        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) && !closest(target, '.' + VALUE_AXIS_CLASS)) {
+            target.querySelector('.' + FILTER_COMMON_CLASS).click();
+            e.preventDefault();
+            return;
+        }
+    }
+    processDelete(e) {
+        let target = e.target;
+        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS)) {
+            target.querySelector('.' + REMOVE_CLASS).click();
+            e.preventDefault();
+            return;
+        }
+    }
+    /**
+     * To destroy the keyboard module.
+     * @return {void}
+     * @private
+     */
+    destroy() {
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
+        else {
+            return;
+        }
+    }
+}
+
+/**
+ * `EventBase` for active fields action.
+ */
+/** @hidden */
+class EventBase {
+    /**
+     * Constructor for the dialog action.
+     * @hidden
+     */
+    constructor(parent) {
+        this.parent = parent;
+    }
+    /**
+     * Updates sorting order for the selected field.
+     * @method updateSorting
+     * @param  {Event} args - Contains clicked element information to update dataSource.
+     * @return {void}
+     * @hidden
+     */
+    updateSorting(args) {
+        if (!(args.target.classList.contains(FILTER_COMMON_CLASS)) &&
+            !(args.target.classList.contains(REMOVE_CLASS))) {
+            if (this.parent.filterDialog.dialogPopUp) {
+                this.parent.filterDialog.dialogPopUp.close();
+            }
+            let target = args.target;
+            let fieldName;
+            let checkisDescending;
+            let isDescending;
+            if (target.id) {
+                fieldName = target.id;
+                checkisDescending = [].slice.call(target.querySelectorAll('.' + SORT_DESCEND_CLASS));
+            }
+            else {
+                fieldName = target.parentElement.id;
+                checkisDescending = [].slice.call(target.parentElement.querySelectorAll('.' + SORT_DESCEND_CLASS));
+            }
+            if (checkisDescending.length === 0) {
+                isDescending = false;
+            }
+            else {
+                isDescending = true;
+            }
+            //isDescending = (target.querySelectorAll(cls.SORT_DESCEND_CLASS));
+            let sortObj = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.sortSettings);
+            if (!isNullOrUndefined(sortObj)) {
+                for (let i = 0; i < this.parent.dataSourceSettings.sortSettings.length; i++) {
+                    if (this.parent.dataSourceSettings.sortSettings[i].name === fieldName) {
+                        this.parent.dataSourceSettings.sortSettings.splice(i, 1);
+                        break;
+                    }
+                }
+                let newSortObj = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
+                // let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending' };
+                this.parent.dataSourceSettings.sortSettings.push(newSortObj);
+            }
+            else {
+                let newSortObj = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
+                //let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending'  };
+                this.parent.dataSourceSettings.sortSettings.push(newSortObj);
+            }
+            this.parent.control.lastSortInfo =
+                this.parent.dataSourceSettings.sortSettings[this.parent.dataSourceSettings.sortSettings.length - 1];
+            isDescending ? removeClass([target], SORT_DESCEND_CLASS) : addClass([target], SORT_DESCEND_CLASS);
+            // if (isDescending) {
+            //     removeClass([target], cls.SORT_DESCEND_CLASS);
+            //     addClass([target], cls.SORTING);
+            // } else if (!isDescending && !isNone) {
+            //     addClass([target], cls.SORT_DESCEND_CLASS);
+            // } else if (isNone) {
+            //     removeClass([target], cls.SORTING);
+            // } else if (!isNone) {
+            //     removeClass([target], cls.SORT_DESCEND_CLASS);
+            //     removeClass([target], cls.SORTING);
+            //    //addClass([target], cls.SORT_CLASS);
+            // }
+        }
+    }
+    /**
+     * Updates sorting order for the selected field.
+     * @method updateFiltering
+     * @param  {Event} args - Contains clicked element information to update dataSource.
+     * @return {void}
+     * @hidden
+     */
+    updateFiltering(args) {
+        let target = args.target;
+        let fieldName = target.parentElement.id;
+        let fieldCaption = target.parentElement.textContent;
+        let isInclude = false;
+        let filterItems = [];
+        let treeData = [];
+        if (this.parent.dataSourceSettings.allowMemberFilter) {
+            if (this.parent.dataType === 'olap') {
+                treeData = this.getOlapData(fieldName, isInclude);
+            }
+            else {
+                let members = PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember);
+                /* tslint:disable:typedef */
+                members =
+                    this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
+                        (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
+                            ((b.actualText > a.actualText) ? -1 : 0))) :
+                        this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
+                            (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
+                                ((b.actualText < a.actualText) ? -1 : 0))) :
+                            members;
+                /* tslint:enable:typedef */
+                let filterObj = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
+                if (!isNullOrUndefined(filterObj)) {
+                    isInclude = this.isValidFilterItemsAvail(fieldName, filterObj) && filterObj.type === 'Include' ? true : false;
+                    filterItems = filterObj.items ? filterObj.items : [];
+                }
+                treeData =
+                    this.getTreeData(isInclude, members, filterItems, fieldName);
+            }
+        }
+        if (this.parent.filterDialog.dialogPopUp) {
+            this.parent.filterDialog.dialogPopUp.close();
+        }
+        let popupTarget;
+        popupTarget = this.parent.moduleName !== 'pivotfieldlist' ?
+            popupTarget = this.parent.element : popupTarget = document.getElementById(this.parent.parentID + '_Wrapper');
+        this.parent.filterDialog.createFilterDialog(treeData, fieldName, fieldCaption, popupTarget);
+    }
+    /**
+     * Returns boolean by checing the valid filter members from the selected filter settings.
+     * @method isValidFilterItemsAvail
+     * @param  {string} fieldName - Gets filter members for the given field name.
+     * @return {boolean}
+     * @hidden
+     */
+    isValidFilterItemsAvail(fieldName, filterObj) {
+        let isItemAvail = false;
+        let filterTypes = ['Include', 'Exclude'];
+        if (filterObj && filterTypes.indexOf(filterObj.type) >= 0) {
+            let engineModule = this.parent.engineModule;
+            let field = engineModule.fieldList[fieldName];
+            let members = (engineModule.formatFields[fieldName] &&
+                (['date', 'dateTime', 'time'].indexOf(engineModule.formatFields[fieldName].type) > -1)) ?
+                field.formattedMembers : field.members;
+            for (let item of filterObj.items) {
+                if (members[item]) {
+                    isItemAvail = true;
+                    break;
+                }
+            }
+        }
+        return isItemAvail;
+    }
+    getOlapData(fieldName, isInclude) {
+        let treeData = [];
+        let filterItems = [];
+        this.parent.filterDialog.isSearchEnabled = false;
+        let updatedTreeData = [];
+        let engineModule = this.parent.engineModule;
+        let filterObj = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
+        if (engineModule.fieldList[fieldName].filterMembers.length === 0) {
+            if (!this.parent.control.loadOnDemandInMemberEditor) {
+                engineModule.getMembers(this.parent.dataSourceSettings, fieldName, true);
+            }
+            else if (filterObj && filterObj.levelCount > 1 && engineModule.fieldList[fieldName].levels.length > 1) {
+                engineModule.getFilterMembers(this.parent.dataSourceSettings, fieldName, filterObj.levelCount);
+            }
+            else {
+                engineModule.fieldList[fieldName].levelCount = 1;
+                engineModule.getMembers(this.parent.dataSourceSettings, fieldName);
+            }
+        }
+        else {
+            engineModule.fieldList[fieldName].currrentMembers = {};
+            engineModule.fieldList[fieldName].searchMembers = [];
+        }
+        let isHierarchy = engineModule.fieldList[fieldName].isHierarchy;
+        treeData = engineModule.fieldList[fieldName].filterMembers;
+        if (!isNullOrUndefined(filterObj)) {
+            isInclude = filterObj.type ? filterObj.type === 'Include' ? true : false : true;
+            filterItems = filterObj.items ? filterObj.items : [];
+        }
+        let filterItemObj = {};
+        let dummyfilterItems = {};
+        let memberObject = engineModule.fieldList[fieldName].members;
+        for (let item of filterItems) {
+            filterItemObj[item] = item;
+            dummyfilterItems[item] = item;
+            if (memberObject[item]) {
+                dummyfilterItems = this.getParentNode(fieldName, item, dummyfilterItems);
+            }
+        }
+        treeData = this.getFilteredTreeNodes(fieldName, treeData, dummyfilterItems, updatedTreeData, isHierarchy);
+        treeData = this.getOlapTreeData(isInclude, PivotUtil.getClonedData(treeData), filterItemObj, fieldName, isHierarchy);
+        treeData = this.sortOlapFilterData(treeData, engineModule.fieldList[fieldName].sort);
+        return treeData;
+    }
+    /**
+     * Gets sorted filter members for the selected field.
+     * @method sortFilterData
+     * @param  {{ [key: string]: Object }[]} treeData - Gets filter members for the given field name.
+     * @return {{ [key: string]: Object }[]}
+     * @hidden
+     */
+    sortOlapFilterData(treeData, order) {
+        if (treeData.length > 0) {
+            /* tslint:disable:typedef */
+            treeData = order === 'Ascending' ?
+                (treeData.sort((a, b) => (a.caption > b.caption) ? 1 :
+                    ((b.caption > a.caption) ? -1 : 0))) : order === 'Descending' ?
+                (treeData.sort((a, b) => (a.caption < b.caption) ? 1 :
+                    ((b.caption < a.caption) ? -1 : 0))) : treeData;
+            /* tslint:enable:typedef */
+        }
+        return treeData;
+    }
+    getParentIDs(treeObj, id, parent) {
+        let data = treeObj.fields.dataSource;
+        let pid;
+        for (let li of data) {
+            if (li.id === id) {
+                pid = li.pid;
+                break;
+            }
+        }
+        if (pid) {
+            parent.push(pid);
+            this.getParentIDs(treeObj, pid, parent);
+        }
+        return parent;
+    }
+    getChildIDs(treeObj, id, children) {
+        let data = treeObj.fields.dataSource;
+        let cID;
+        for (let li of data) {
+            if (li.pid === id) {
+                cID = li.id;
+                break;
+            }
+        }
+        if (cID) {
+            children.push(cID);
+            this.getParentIDs(treeObj, cID, children);
+        }
+        return children;
+    }
+    /**
+     * show tree nodes using search text.
+     * @hidden
+     */
+    /* tslint:disable:max-func-body-length */
+    searchTreeNodes(args, treeObj, isFieldCollection, isHierarchy) {
+        if (isFieldCollection) {
+            let searchList = [];
+            let nonSearchList = [];
+            let list = [].slice.call(treeObj.element.querySelectorAll('li'));
+            for (let element of list) {
+                if ((element.querySelector('.e-list-text').textContent.toLowerCase()).indexOf(args.value.toLowerCase()) > -1) {
+                    searchList.push(element);
+                }
+                else {
+                    nonSearchList.push(element);
+                }
+            }
+            treeObj.enableNodes(searchList);
+            removeClass(searchList, ICON_DISABLE);
+            treeObj.disableNodes(nonSearchList);
+            addClass(nonSearchList, ICON_DISABLE);
+            if (searchList.length > 0 && nonSearchList.length > 0) {
+                for (let currentNode of searchList) {
+                    let id = currentNode.getAttribute('data-uid');
+                    let parentIDs = this.getParentIDs(treeObj, id, []);
+                    let childIDs = this.getChildIDs(treeObj, id, []);
+                    let pNodes = [];
+                    if (parentIDs.length > 0) {
+                        for (let li of nonSearchList) {
+                            if (PivotUtil.inArray(li.getAttribute('data-uid'), parentIDs) !== -1) {
+                                pNodes.push(li);
+                            }
+                        }
+                    }
+                    if (childIDs.length > 0) {
+                        for (let li of nonSearchList) {
+                            if (PivotUtil.inArray(li.getAttribute('data-uid'), childIDs) !== -1) {
+                                pNodes.push(li);
+                            }
+                        }
+                    }
+                    treeObj.enableNodes(pNodes);
+                    removeClass(pNodes, ICON_DISABLE);
+                }
+            }
+            if ([].slice.call(treeObj.element.querySelectorAll('li.' + ICON_DISABLE)).length === 0) {
+                treeObj.collapseAll();
+            }
+            else {
+                treeObj.expandAll(undefined, undefined, true);
+            }
+        }
+        else {
+            this.parent.searchTreeItems = [];
+            if (this.parent.dataType === 'olap' && !isHierarchy) {
+                this.updateOlapSearchTree(args, treeObj, isHierarchy);
+            }
+            else {
+                let searchList = [];
+                let memberCount = 0;
+                memberCount = 1;
+                for (let item of this.parent.currentTreeItems) {
+                    if (item.name.toLowerCase().indexOf(args.value.toLowerCase()) > -1) {
+                        this.parent.searchTreeItems.push(item);
+                        if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
+                            searchList.push(item);
+                        }
+                        memberCount++;
+                    }
+                }
+                memberCount--;
+                if (memberCount > this.parent.control.maxNodeLimitInMemberEditor) {
+                    this.parent.editorLabelElement.innerText = (memberCount - this.parent.control.maxNodeLimitInMemberEditor) +
+                        this.parent.control.localeObj.getConstant('editorDataLimitMsg');
+                    this.parent.filterDialog.dialogPopUp.height = (this.parent.filterDialog.allowExcelLikeFilter ? '440px' : '400px');
+                    this.parent.isDataOverflow = true;
+                }
+                else {
+                    this.parent.editorLabelElement.innerText = '';
+                    this.parent.filterDialog.dialogPopUp.height = (this.parent.filterDialog.allowExcelLikeFilter ? '400px' : '350px');
+                    this.parent.isDataOverflow = false;
+                }
+                this.parent.isDataOverflow = (memberCount > this.parent.control.maxNodeLimitInMemberEditor);
+                this.parent.editorLabelElement.parentElement.style.display = this.parent.isDataOverflow ? 'block' : 'none';
+                treeObj.fields = { dataSource: searchList, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' };
+                treeObj.dataBind();
+            }
+        }
+    }
+    updateOlapSearchTree(args, treeObj, isHierarchy) {
+        let treeData = [];
+        let filterDialog = this.parent.filterDialog.dialogPopUp.element;
+        let fieldName = filterDialog.getAttribute('data-fieldname');
+        if (args.value.toLowerCase() === '') {
+            this.parent.filterDialog.isSearchEnabled = false;
+            this.parent.engineModule.fieldList[fieldName].searchMembers = [];
+            // (this.parent.engineModule.fieldList[fieldName] as IOlapField).currrentMembers = {};
+            let updatedTreeData = [];
+            let filterItemObj = {};
+            let dummyfilterItems = {};
+            let memberObject = this.parent.engineModule.fieldList[fieldName].members;
+            let members = Object.keys(memberObject);
+            let filterItems = [];
+            for (let item of members) {
+                if (memberObject[item].isSelected) {
+                    if (!(memberObject[item].parent && memberObject[memberObject[item].parent].isSelected)) {
+                        filterItems.push(item);
+                    }
+                }
+            }
+            for (let item of filterItems) {
+                filterItemObj[item] = item;
+                dummyfilterItems[item] = item;
+                if (memberObject[item]) {
+                    dummyfilterItems = this.getParentNode(fieldName, item, dummyfilterItems);
+                }
+            }
+            let searchData = this.parent.engineModule.fieldList[fieldName].filterMembers;
+            treeData = this.getFilteredTreeNodes(fieldName, searchData, dummyfilterItems, updatedTreeData, isHierarchy);
+            treeData = this.getOlapTreeData(true, PivotUtil.getClonedData(treeData), filterItemObj, fieldName, isHierarchy, true);
+        }
+        else {
+            this.parent.filterDialog.isSearchEnabled = true;
+            let searchData = this.parent.engineModule.fieldList[fieldName].searchMembers;
+            treeData = PivotUtil.getClonedData(searchData);
+            treeData = this.getOlapSearchTreeData(true, treeData, fieldName);
+        }
+        treeObj.fields = { dataSource: treeData, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' };
+        treeObj.dataBind();
+    }
+    getTreeData(isInclude, members, filterItems, fieldName) {
+        this.parent.currentTreeItems = [];
+        this.parent.searchTreeItems = [];
+        this.parent.currentTreeItemsPos = {};
+        this.parent.savedTreeFilterPos = {};
+        let engineModule = this.parent.engineModule;
+        this.parent.isDateField = engineModule.formatFields[fieldName] &&
+            ((['date', 'dateTime', 'time']).indexOf(engineModule.formatFields[fieldName].type) > -1);
+        let list = [];
+        let memberCount = 1;
+        let filterObj = {};
+        for (let item of filterItems) {
+            filterObj[item] = item;
+        }
+        for (let member of members) {
+            let memberName = this.parent.isDateField ? member.formattedText : member.actualText.toString();
+            /* tslint:disable */
+            let obj = {
+                id: member.actualText.toString(),
+                name: memberName,
+                isSelected: isInclude ? false : true
+            };
+            /* tslint:disable */
+            if (filterObj[memberName] !== undefined) {
+                obj.isSelected = isInclude ? true : false;
+            }
+            if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
+                list.push(obj);
+            }
+            if (!obj.isSelected) {
+                this.parent.savedTreeFilterPos[memberCount - 1] = memberName;
+            }
+            this.parent.currentTreeItems.push(obj);
+            this.parent.searchTreeItems.push(obj);
+            this.parent.currentTreeItemsPos[member.actualText] = memberCount - 1;
+            memberCount++;
+        }
+        this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);
+        return list;
+    }
+    /* tslint:disable-next-line:max-line-length */
+    getOlapTreeData(isInclude, members, filterObj, fieldName, isHierarchy, isSearchRender) {
+        let engineModule = this.parent.engineModule;
+        let fieldList = engineModule.fieldList[fieldName];
+        this.parent.currentTreeItems = [];
+        this.parent.searchTreeItems = [];
+        this.parent.currentTreeItemsPos = {};
+        let list = [];
+        let memberCount = 1;
+        for (let member of members) {
+            let obj = member;
+            let memberName = member.id.toString();
+            if (!isSearchRender) {
+                obj.isSelected = isInclude ? false : true;
+            }
+            if (filterObj[memberName] !== undefined) {
+                obj.isSelected = isInclude ? true : false;
+            }
+            if (!isSearchRender && member.hasChildren) {
+                this.updateChildNodeStates(fieldList.filterMembers, fieldName, member.id, obj.isSelected);
+            }
+            fieldList.members[memberName].isSelected = obj.isSelected;
+            if (fieldList.currrentMembers && fieldList.currrentMembers[memberName]) {
+                fieldList.currrentMembers[memberName].isSelected = obj.isSelected;
+            }
+            if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor && isHierarchy) {
+                list.push(obj);
+            }
+            this.parent.currentTreeItems.push(obj);
+            this.parent.searchTreeItems.push(obj);
+            this.parent.currentTreeItemsPos[memberName] = memberCount - 1;
+            memberCount++;
+        }
+        this.parent.isDataOverflow = isHierarchy ? ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor) : false;
+        return isHierarchy ? list : members;
+    }
+    /* tslint:disable-next-line:max-line-length */
+    getOlapSearchTreeData(isInclude, members, fieldName) {
+        let cMembers = this.parent.engineModule.fieldList[fieldName].members;
+        for (let member of members) {
+            let memberName = member.id.toString();
+            if (cMembers[memberName]) {
+                member.isSelected = cMembers[memberName].isSelected;
+            }
+            this.parent.searchTreeItems.push(member);
+        }
+        return members;
+    }
+    updateChildNodeStates(members, fieldName, node, state) {
+        let cMembers = this.parent.engineModule.fieldList[fieldName].members;
+        let sMembers = this.parent.engineModule.fieldList[fieldName].currrentMembers;
+        for (let member of members) {
+            if (member.pid && member.pid.toString() === node) {
+                cMembers[member.id].isSelected = state;
+                if (sMembers && sMembers[member.id]) {
+                    sMembers[member.id].isSelected = state;
+                }
+                if (member.hasChildren) {
+                    this.updateChildNodeStates(members, fieldName, member.id, state);
+                }
+            }
+        }
+    }
+    /**
+     * get the parent node of particular filter members.
+     * @hidden
+     */
+    getParentNode(fieldName, item, filterObj) {
+        let members = this.parent.engineModule.fieldList[fieldName].members;
+        if (members[item].parent && item !== members[item].parent) {
+            let parentItem = members[item].parent;
+            filterObj[parentItem] = parentItem;
+            this.getParentNode(fieldName, parentItem, filterObj);
+        }
+        return filterObj;
+    }
+    /* tslint:disable-next-line:max-line-length */
+    getFilteredTreeNodes(fieldName, members, filterObj, treeData, isHierarchy) {
+        let parentNodes = [];
+        let memberObject = this.parent.engineModule.fieldList[fieldName].members;
+        let selectedNodes = filterObj ? Object.keys(filterObj) : [];
+        for (let node of selectedNodes) {
+            let parent = memberObject[node].parent;
+            if (parent !== undefined && PivotUtil.inArray(parent, parentNodes) === -1) {
+                parentNodes.push(parent);
+            }
+        }
+        for (let member of members) {
+            if (isNullOrUndefined(member.pid) || PivotUtil.inArray(member.pid, parentNodes) !== -1) {
+                treeData.push(member);
+                if (isNullOrUndefined(member.pid) && PivotUtil.inArray(member.id, parentNodes) !== -1) {
+                    memberObject[member.id].isNodeExpand = true;
+                }
+                else if (!isNullOrUndefined(member.pid) && PivotUtil.inArray(member.pid, parentNodes) !== -1) {
+                    memberObject[member.id].isNodeExpand = false;
+                    memberObject[member.pid].isNodeExpand = true;
+                }
+                else {
+                    memberObject[member.id].isNodeExpand = false;
+                }
+            }
+            else {
+                memberObject[member.id].isNodeExpand = false;
+            }
+        }
+        return treeData;
+    }
+}
+
+/**
+ * `DialogAction` module is used to handle field list dialog related behaviour.
+ */
+/** @hidden */
+class NodeStateModified {
+    /**
+     * Constructor for the dialog action.
+     * @hidden
+     */
+    constructor(parent) {
+        this.parent = parent;
+    }
+    /**
+     * Updates the dataSource by drag and drop the selected field from either field list or axis table with dropped target position.
+     * @method onStateModified
+     * @param  {DragEventArgs & DragAndDropEventArgs} args -  Contains both pivot button and field list drag and drop information.
+     * @param  {string} fieldName - Defines dropped field name to update dataSource.
+     * @return {void}
+     * @hidden
+     */
+    onStateModified(args, fieldName) {
+        let droppedClass = '';
+        let nodeDropped = true;
+        let target = closest(args.target, '.' + DROPPABLE_CLASS);
+        let droppedPosition = -1;
+        this.parent.dataSourceUpdate.btnElement = args.element ? args.element.parentElement : undefined;
+        if (target) {
+            droppedClass = target.classList[1] === ROW_AXIS_CLASS ?
+                'rows' : target.classList[1] === COLUMN_AXIS_CLASS ? 'columns' : target.classList[1] === VALUE_AXIS_CLASS ?
+                'values' : target.classList[1] === FILTER_AXIS_CLASS ? 'filters' : '';
+        }
+        if (this.parent.dataType === 'olap') {
+            let actualFieldName = (this.parent.engineModule.fieldList[fieldName] &&
+                this.parent.engineModule.fieldList[fieldName].isCalculatedField ?
+                this.parent.engineModule.fieldList[fieldName].tag : fieldName);
+            if (args.cancel && droppedClass === '') {
+                nodeDropped = false;
+                return nodeDropped;
+            }
+            else if ((this.parent.dataSourceUpdate.btnElement &&
+                (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
+                    (droppedClass === 'filters' || droppedClass === 'values'))) ||
+                (this.parent.dataSourceUpdate.btnElement &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                        actualFieldName.toLowerCase().indexOf('[measures].') > -1 &&
+                        (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns'))) ||
+                (this.parent.dataSourceUpdate.btnElement &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                        actualFieldName.toLowerCase().indexOf('[measures].') === -1 &&
+                        this.parent.engineModule.fieldList[fieldName] &&
+                        this.parent.engineModule.fieldList[fieldName].isNamedSets &&
+                        (droppedClass === 'filters' || droppedClass === 'values'))) ||
+                (this.parent.dataSourceUpdate.btnElement &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                        actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values'))) {
+                let title = this.parent.localeObj.getConstant('warning');
+                let description = this.parent.localeObj.getConstant('fieldDropErrorAction');
+                this.parent.errorDialog.createErrorDialog(title, description);
+                nodeDropped = false;
+                return nodeDropped;
+            }
+        }
+        else {
+            if ((args.cancel && droppedClass === '') ||
+                (this.parent.dataSourceUpdate.btnElement && this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
+                    ((droppedClass === 'filters' || droppedClass === 'values') ||
+                        droppedClass.indexOf(this.parent.dataSourceSettings.valueAxis) > -1))) {
+                nodeDropped = false;
+                return nodeDropped;
+            }
+        }
+        if (droppedClass !== '') {
+            if (this.parent.dataType === 'olap') {
+                let actualFieldName = (this.parent.engineModule.fieldList[fieldName] &&
+                    this.parent.engineModule.fieldList[fieldName].isCalculatedField ?
+                    this.parent.engineModule.fieldList[fieldName].tag : fieldName);
+                if ((actualFieldName.toLowerCase().indexOf('[measures].') > -1 &&
+                    (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns')) ||
+                    (this.parent.engineModule.fieldList[fieldName] &&
+                        this.parent.engineModule.fieldList[fieldName].isNamedSets && droppedClass === 'filters') ||
+                    (actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values')) {
+                    let title = this.parent.localeObj.getConstant('warning');
+                    let description = this.parent.localeObj.getConstant('fieldDropErrorAction');
+                    this.parent.errorDialog.createErrorDialog(title, description);
+                    nodeDropped = false;
+                    return nodeDropped;
+                }
+            }
+            if (this.parent.dataType === 'pivot' && this.parent.engineModule.fieldList[fieldName] &&
+                this.parent.engineModule.fieldList[fieldName].aggregateType === 'CalculatedField' && droppedClass !== 'values') {
+                let title = this.parent.localeObj.getConstant('warning');
+                let description = this.parent.localeObj.getConstant('dropAction');
+                this.parent.errorDialog.createErrorDialog(title, description);
+                nodeDropped = false;
+                return nodeDropped;
+            }
+            droppedPosition = this.getButtonPosition(args.target, droppedClass);
+        }
+        else if (this.parent.engineModule.fieldList[fieldName]) {
+            this.parent.engineModule.fieldList[fieldName].isSelected = false;
+            if (this.parent.dataType === 'olap') {
+                this.parent.engineModule.updateFieldlistData(fieldName);
+            }
+        }
+        this.parent.dataSourceUpdate.updateDataSource(fieldName, droppedClass, droppedPosition);
+        return isBlazor() ? false : nodeDropped;
+    }
+    getButtonPosition(target, droppedClass) {
+        let droppedPosition = -1;
+        let targetBtn = closest(target, '.' + PIVOT_BUTTON_WRAPPER_CLASS);
+        if (!isNullOrUndefined(targetBtn)) {
+            targetBtn = targetBtn.querySelector('.' + PIVOT_BUTTON_CLASS);
+            let axisPanel = this.parent.element.querySelector('.e-' + droppedClass);
+            let pivotButtons = [].slice.call(axisPanel.querySelectorAll('.' + PIVOT_BUTTON_CLASS));
+            for (let i = 0, n = pivotButtons.length; i < n; i++) {
+                if (pivotButtons[i].id === targetBtn.id) {
+                    droppedPosition = i;
+                    break;
+                }
+            }
+        }
+        return droppedPosition;
+    }
+}
+
+/**
+ * `DataSourceUpdate` module is used to update the dataSource.
+ */
+/** @hidden */
+class DataSourceUpdate {
+    /**
+     * Constructor for the dialog action.
+     * @hidden
+     */
+    constructor(parent) {
+        this.parent = parent;
+    }
+    /**
+     * Updates the dataSource by adding the given field along with field dropped position to the dataSource.
+     * @param  {string} fieldName - Defines dropped field name to update dataSource.
+     * @param  {string} droppedClass -  Defines dropped field axis name to update dataSource.
+     * @param  {number} fieldCaption - Defines dropped position to the axis based on field position.
+     * @method updateDataSource
+     * @return {void}
+     * @hidden
+     */
+    updateDataSource(fieldName, droppedClass, droppedPosition) {
+        let dataSourceItem;
+        let draggedClass;
+        let row = this.parent.dataSourceSettings.rows;
+        let column = this.parent.dataSourceSettings.columns;
+        let value = this.parent.dataSourceSettings.values;
+        let filter = this.parent.dataSourceSettings.filters;
+        let field = [row, column, value, filter];
+        for (let len = 0, lnt = field.length; len < lnt; len++) {
+            if (field[len]) {
+                for (let i = 0, n = field[len].length; i < n; i++) {
+                    if (field[len][i].name === fieldName || (this.parent.dataType === 'olap' &&
+                        field[len][i].name.toLowerCase() === '[measures]' && field[len][i].name.toLowerCase() === fieldName)) {
+                        draggedClass = len === 0 ? 'rows' : len === 1 ? 'columns' : len === 2 ? 'values' : 'filters';
+                    }
+                    if (!draggedClass) {
+                        draggedClass = 'fieldList';
+                    }
+                }
+            }
+        }
+        let eventdrop = {
+            'droppedField': this.parent.engineModule.fieldList[fieldName.toString()], 'dataSourceSettings': this.parent.dataSourceSettings,
+            'droppedAxis': droppedClass, 'draggedAxis': draggedClass, 'cancel': false
+        };
+        this.control.trigger(fieldDrop, eventdrop, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                if (this.control && this.btnElement && this.btnElement.getAttribute('isvalue') === 'true') {
+                    switch (droppedClass) {
+                        case '':
+                            this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
+                            break;
+                        case 'rows':
+                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
+                            break;
+                        case 'columns':
+                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'column' } }, true);
+                            break;
+                    }
+                }
+                else {
+                    dataSourceItem = this.removeFieldFromReport(fieldName.toString());
+                    dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
+                    if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
+                        droppedClass = 'values';
+                    }
+                }
+                if (this.parent.dataType === 'olap') {
+                    dataSourceItem = this.removeFieldFromReport(fieldName.toString());
+                    dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
+                    if (this.parent.dataSourceSettings.values.length === 0) {
+                        this.removeFieldFromReport('[measures]');
+                    }
+                    if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
+                        droppedClass = 'values';
+                    }
+                }
+                if (this.control) {
+                    let eventArgs = {
+                        'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
+                    };
+                    /* tslint:disable */
+                    let dataSourceUpdate = this;
+                    this.control.trigger(onFieldDropped, eventArgs, (observedArgs) => {
+                        eventArgs = observedArgs;
+                        if (dataSourceItem) {
+                            dataSourceItem = observedArgs.droppedField;
+                            switch (droppedClass) {
+                                case 'filters':
+                                    droppedPosition !== -1 ?
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem)) :
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.push(dataSourceItem) : this.parent.dataSourceSettings.filters.push(dataSourceItem));
+                                    break;
+                                case 'rows':
+                                    droppedPosition !== -1 ?
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem)) :
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.push(dataSourceItem) : this.parent.dataSourceSettings.rows.push(dataSourceItem));
+                                    break;
+                                case 'columns':
+                                    droppedPosition !== -1 ?
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem)) :
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.push(dataSourceItem) : this.parent.dataSourceSettings.columns.push(dataSourceItem));
+                                    break;
+                                case 'values':
+                                    droppedPosition !== -1 ?
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem)) :
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.push(dataSourceItem) : this.parent.dataSourceSettings.values.push(dataSourceItem));
+                                    if (isBlazor()) {
+                                        if (dataSourceUpdate.parent.dataType === 'olap' && !dataSourceUpdate.parent.engineModule.isMeasureAvail) {
+                                            let measureField = {
+                                                name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                            };
+                                            let fieldAxis = dataSourceUpdate.parent.dataSourceSettings.valueAxis === 'row' ?
+                                                dataSourceUpdate.parent.dataSourceSettings.rows : dataSourceUpdate.parent.dataSourceSettings.columns;
+                                            fieldAxis.push(measureField);
+                                        }
+                                    }
+                                    else {
+                                        if (this.parent.dataType === 'olap' && !this.parent.engineModule.isMeasureAvail) {
+                                            let measureField = {
+                                                name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                            };
+                                            let fieldAxis = this.parent.dataSourceSettings.valueAxis === 'row' ?
+                                                this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
+                                            fieldAxis.push(measureField);
+                                        }
+                                    }
+                                    break;
+                            }
+                            if (isBlazor()) {
+                                dataSourceUpdate.parent.control.pivotButtonModule.updateDataSource();
+                                dataSourceUpdate.parent.control.axisFieldModule.render();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+    /* tslint:enable */
+    /**
+     * Updates the dataSource by removing the given field from the dataSource.
+     * @param  {string} fieldName - Defines dropped field name to remove dataSource.
+     * @method removeFieldFromReport
+     * @return {void}
+     * @hidden
+     */
+    removeFieldFromReport(fieldName) {
+        let dataSourceItem;
+        let isDataSource = false;
+        let rows = this.parent.dataSourceSettings.rows;
+        let columns = this.parent.dataSourceSettings.columns;
+        let values = this.parent.dataSourceSettings.values;
+        let filters = this.parent.dataSourceSettings.filters;
+        let fields = [rows, columns, values, filters];
+        let field = this.parent.engineModule.fieldList[fieldName];
+        for (let len = 0, lnt = fields.length; len < lnt; len++) {
+            if (!isDataSource && fields[len]) {
+                for (let i = 0, n = fields[len].length; i < n; i++) {
+                    if (fields[len][i].name === fieldName || (this.parent.dataType === 'olap' &&
+                        fields[len][i].name.toLowerCase() === '[measures]' && fields[len][i].name.toLowerCase() === fieldName)) {
+                        dataSourceItem = fields[len][i].properties ?
+                            fields[len][i].properties : fields[len][i];
+                        dataSourceItem.type = (field && field.type === 'number') ? dataSourceItem.type :
+                            'Count';
+                        fields[len].splice(i, 1);
+                        if (this.parent.dataType === 'olap') {
+                            let engineModule = this.parent.engineModule;
+                            if (engineModule && engineModule.fieldList[fieldName]) {
+                                engineModule.fieldList[fieldName].currrentMembers = {};
+                                engineModule.fieldList[fieldName].searchMembers = [];
+                            }
+                        }
+                        isDataSource = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return dataSourceItem;
+    }
+    /**
+     * Creates new field object given field name from the field list data.
+     * @param  {string} fieldName - Defines dropped field name to add dataSource.
+     * @method getNewField
+     * @return {void}
+     * @hidden
+     */
+    getNewField(fieldName) {
+        let newField;
+        if (this.parent.dataType === 'olap') {
+            let field = this.parent.engineModule.fieldList[fieldName];
+            newField = {
+                name: fieldName,
+                caption: field.caption,
+                isNamedSet: field.isNamedSets,
+                isCalculatedField: field.isCalculatedField,
+                type: (field.aggregateType === undefined ? field.type === 'number' ? 'Sum' :
+                    'Count' : field.aggregateType),
+            };
+        }
+        else {
+            let field = this.parent.engineModule.fieldList[fieldName];
+            newField = {
+                name: fieldName,
+                caption: field.caption,
+                type: ((field.aggregateType === undefined || field.aggregateType === null) ?
+                    field.type === 'number' ? 'Sum' :
+                        'Count' : field.aggregateType),
+                showNoDataItems: field.showNoDataItems,
+                baseField: field.baseField,
+                baseItem: field.baseItem,
+            };
+        }
+        return newField;
+    }
+}
+
+/**
+ * `ErrorDialog` module to create error dialog.
+ */
+/** @hidden */
+class ErrorDialog {
+    /**
+     * Constructor for the dialog action.
+     * @hidden
+     */
+    constructor(parent) {
+        this.parent = parent;
+    }
+    /**
+     * Creates the error dialog for the unexpected action done.
+     * @method createErrorDialog
+     * @return {void}
+     * @hidden
+     */
+    createErrorDialog(title, description, target) {
+        let errorDialog = createElement('div', {
+            id: this.parent.parentID + '_ErrorDialog',
+            className: ERROR_DIALOG_CLASS
+        });
+        this.parent.element.appendChild(errorDialog);
+        let zIndex = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
+            this.parent.renderMode === 'Popup' && this.parent.control ?
+            this.parent.control.dialogRenderer.fieldListDialog.zIndex + 1 : 1000001);
+        this.errorPopUp = new Dialog({
+            animationSettings: { effect: 'Fade' },
+            allowDragging: false,
+            header: title,
+            content: description,
+            isModal: true,
+            visible: true,
+            showCloseIcon: true,
+            enableRtl: this.parent.enableRtl,
+            width: 'auto',
+            height: 'auto',
+            zIndex: zIndex,
+            position: { X: 'center', Y: 'center' },
+            buttons: [
+                {
+                    click: this.closeErrorDialog.bind(this),
+                    buttonModel: { cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
+                }
+            ],
+            closeOnEscape: true,
+            target: document.body,
+            close: this.removeErrorDialog.bind(this)
+        });
+        this.errorPopUp.isStringTemplate = true;
+        this.errorPopUp.appendTo(errorDialog);
+    }
+    closeErrorDialog() {
+        this.errorPopUp.close();
+    }
+    removeErrorDialog() {
+        if (this.errorPopUp && !this.errorPopUp.isDestroyed) {
+            this.errorPopUp.destroy();
+        }
+        if (document.getElementById(this.parent.parentID + '_ErrorDialog')) {
+            remove(document.getElementById(this.parent.parentID + '_ErrorDialog'));
+        }
+    }
+}
+
+/**
+ * `FilterDialog` module to create filter dialog.
+ */
+/** @hidden */
+class FilterDialog {
+    /**
+     * Constructor for the dialog action.
+     * @hidden
+     */
+    constructor(parent) {
+        this.parent = parent;
+    }
+    /**
+     * Creates the member filter dialog for the selected field.
+     * @method createFilterDialog
+     * @return {void}
+     * @hidden
+     */
+    createFilterDialog(treeData, fieldName, fieldCaption, target) {
+        let editorDialog = createElement('div', {
+            id: this.parent.parentID + '_EditorTreeView',
+            className: MEMBER_EDITOR_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
+            attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
+        });
+        let filterCaption = this.parent.engineModule.fieldList[fieldName].caption;
+        let headerTemplate = this.parent.localeObj.getConstant('filter') + ' ' +
+            '"' + fieldCaption + '"' + ' ' + this.parent.localeObj.getConstant('by');
+        this.filterObject = this.getFilterObject(fieldName);
+        this.isSearchEnabled = false;
+        this.allowExcelLikeFilter = this.isExcelFilter(fieldName);
+        this.parent.element.appendChild(editorDialog);
+        this.dialogPopUp = new Dialog({
+            animationSettings: { effect: (this.allowExcelLikeFilter ? 'None' : 'Fade') },
+            allowDragging: false,
+            header: (this.allowExcelLikeFilter ? headerTemplate : filterCaption),
+            content: (this.allowExcelLikeFilter ? '' : this.createTreeView(treeData, fieldCaption, fieldName)),
+            isModal: this.parent.renderMode === 'Popup' ? true : this.parent.isAdaptive ? true : false,
+            visible: true,
+            showCloseIcon: this.allowExcelLikeFilter ? true : false,
+            enableRtl: this.parent.enableRtl,
+            width: 'auto',
+            height: this.parent.isDataOverflow ? (this.allowExcelLikeFilter ? '440px' : '400px') :
+                (this.allowExcelLikeFilter ? '400px' : '350px'),
+            position: { X: 'center', Y: 'center' },
+            buttons: [
+                {
+                    buttonModel: {
+                        cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                    }
+                },
+                {
+                    buttonModel: {
+                        cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + ICON_DISABLE),
+                        iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
+                        content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.filterObject ? false : true)
+                    }
+                },
+                {
+                    click: this.closeFilterDialog.bind(this),
+                    buttonModel: { cssClass: CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                }
+            ],
+            closeOnEscape: true,
+            target: target,
+            close: this.removeFilterDialog.bind(this)
+        });
+        this.dialogPopUp.isStringTemplate = true;
+        this.dialogPopUp.appendTo(editorDialog);
+        // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = (this.allowExcelLikeFilter ? headerTemplate : filterCaption);
+        if (this.allowExcelLikeFilter) {
+            this.createTabMenu(treeData, fieldCaption, fieldName);
+            addClass([this.dialogPopUp.element], 'e-excel-filter');
+            this.updateCheckedState(fieldCaption);
+        }
+        else {
+            this.updateCheckedState(fieldCaption);
+        }
+        setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
+        if (this.allowExcelLikeFilter) {
+            this.dialogPopUp.element.querySelector('.e-dlg-closeicon-btn').focus();
+        }
+        else {
+            return;
+        }
+    }
+    /* tslint:disable */
+    createTreeView(treeData, fieldCaption, fieldName) {
+        let editorTreeWrapper = createElement('div', {
+            id: this.parent.parentID + 'EditorDiv',
+            className: EDITOR_TREE_WRAPPER_CLASS + (this.allowExcelLikeFilter ? ' e-excelfilter' : '')
+        });
+        let levelWrapper = createElement('button', {
+            id: this.parent.parentID + '_LevelDiv',
+            className: 'e-level-wrapper-class'
+        });
+        let searchWrapper = createElement('div', {
+            id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
+            className: EDITOR_SEARCH_WRAPPER_CLASS
+        });
+        let filterCaption = this.parent.engineModule.fieldList[fieldName].caption;
+        let editorSearch = createElement('input', { attrs: { 'type': 'text' } });
+        let nodeLimitText = this.parent.isDataOverflow ?
+            ((this.parent.currentTreeItems.length - this.parent.control.maxNodeLimitInMemberEditor) +
+                this.parent.control.localeObj.getConstant('editorDataLimitMsg')) : '';
+        let labelWrapper = createElement('div', {
+            id: this.parent.parentID + '_LabelDiv',
+            attrs: { 'tabindex': '-1', 'title': nodeLimitText },
+            className: EDITOR_LABEL_WRAPPER_CLASS
+        });
+        this.parent.editorLabelElement = createElement('label', { className: EDITOR_LABEL_CLASS });
+        this.parent.editorLabelElement.innerText = nodeLimitText;
+        labelWrapper.style.display = this.parent.isDataOverflow ? 'block' : 'none';
+        labelWrapper.appendChild(this.parent.editorLabelElement);
+        searchWrapper.appendChild(editorSearch);
+        searchWrapper.appendChild(levelWrapper);
+        let selectAllWrapper = createElement('div', {
+            id: this.parent.parentID + '_AllDiv', attrs: { 'tabindex': '-1' },
+            className: SELECT_ALL_WRAPPER_CLASS
+        });
+        let selectAllContainer = createElement('div', { className: SELECT_ALL_CLASS });
+        let treeOuterDiv = createElement('div', { className: EDITOR_TREE_CONTAINER_CLASS + '-outer-div' });
+        let treeViewContainer = createElement('div', { className: EDITOR_TREE_CONTAINER_CLASS });
+        let promptDiv = createElement('div', {
+            className: EMPTY_MEMBER_CLASS + ' ' + ICON_DISABLE,
+            innerHTML: this.parent.localeObj.getConstant('noMatches')
+        });
+        if (this.parent.dataType === 'olap' && this.parent.control.loadOnDemandInMemberEditor &&
+            !this.parent.engineModule.fieldList[fieldName].isHierarchy &&
+            !this.parent.engineModule.fieldList[fieldName].isNamedSets) {
+            this.createLevelWrapper(levelWrapper, fieldName);
+        }
+        else {
+            levelWrapper.style.display = 'none';
+        }
+        selectAllWrapper.appendChild(selectAllContainer);
+        editorTreeWrapper.appendChild(searchWrapper);
+        editorTreeWrapper.appendChild(selectAllWrapper);
+        editorTreeWrapper.appendChild(promptDiv);
+        this.editorSearch = new MaskedTextBox({
+            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + filterCaption + '"',
+            enableRtl: this.parent.enableRtl,
+            cssClass: EDITOR_SEARCH_CLASS,
+            showClearButton: true,
+            change: (e) => {
+                if (this.parent.dataType === 'olap') {
+                    this.searchOlapTreeView(e, promptDiv, fieldCaption);
+                }
+                else {
+                    this.parent.eventBase.searchTreeNodes(e, this.memberTreeView, false);
+                    let filterDialog = this.dialogPopUp.element;
+                    let liList = [].slice.call(this.memberTreeView.element.querySelectorAll('li'));
+                    if (liList.length === 0) {
+                        this.allMemberSelect.disableNodes([this.allMemberSelect.element.querySelector('li')]);
+                        filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                        removeClass([promptDiv], ICON_DISABLE);
+                    }
+                    else {
+                        this.allMemberSelect.enableNodes([this.allMemberSelect.element.querySelector('li')]);
+                        filterDialog.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
+                        addClass([promptDiv], ICON_DISABLE);
+                    }
+                    this.updateCheckedState(fieldCaption);
+                }
+            }
+        });
+        this.editorSearch.isStringTemplate = true;
+        this.editorSearch.appendTo(editorSearch);
+        let nodeAttr = { 'data-fieldName': fieldName };
+        let data = [{ id: 'all', name: 'All', isSelected: true, htmlAttributes: nodeAttr }];
+        this.allMemberSelect = new TreeView({
+            fields: { dataSource: data, id: 'id', text: 'name', isChecked: 'isSelected' },
+            showCheckBox: true,
+            expandOn: 'None',
+            enableRtl: this.parent.enableRtl,
+            nodeClicked: this.nodeCheck.bind(this, true),
+            keyPress: this.nodeCheck.bind(this, true)
+        });
+        this.allMemberSelect.isStringTemplate = true;
+        this.allMemberSelect.appendTo(selectAllContainer);
+        treeOuterDiv.appendChild(treeViewContainer);
+        editorTreeWrapper.appendChild(treeOuterDiv);
+        this.memberTreeView = new TreeView({
+            fields: { dataSource: treeData, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' },
+            showCheckBox: true,
+            enableRtl: this.parent.enableRtl,
+            nodeChecking: this.validateTreeNode.bind(this),
+            nodeClicked: this.nodeCheck.bind(this, false),
+            keyPress: this.nodeCheck.bind(this, false),
+            nodeExpanding: this.updateChildNodes.bind(this),
+            expandOn: 'None'
+        });
+        this.memberTreeView.isStringTemplate = true;
+        this.memberTreeView.appendTo(treeViewContainer);
+        editorTreeWrapper.appendChild(labelWrapper);
+        return editorTreeWrapper;
+    }
+    createLevelWrapper(levelWrapper, fieldName) {
+        let engineModule = this.parent.engineModule;
+        let levels = engineModule.fieldList[fieldName].levels;
+        let levelCount = engineModule.fieldList[fieldName].levelCount;
+        let items = [];
+        for (let i = 0, cnt = levels.length; i < cnt; i++) {
+            items.push({ id: levels[i].id, text: levels[i].name });
+        }
+        this.dropMenu = new DropDownButton({
+            cssClass: 'e-level-drop',
+            items: items, iconCss: 'e-icons e-dropdown-icon',
+            disabled: (levelCount === levels.length),
+            beforeOpen: (args) => {
+                let items = [].slice.call(args.element.querySelectorAll('li'));
+                let engineModule = this.parent.engineModule;
+                let levelCount = engineModule.fieldList[fieldName].levelCount;
+                removeClass(items, MENU_DISABLE);
+                for (let i = 0, cnt = items.length; i < cnt; i++) {
+                    if (i < levelCount) {
+                        addClass([items[i]], MENU_DISABLE);
+                    }
+                }
+            },
+            select: (args) => {
+                let fieldName = this.dialogPopUp.element.getAttribute('data-fieldname');
+                let engineModule = this.parent.engineModule;
+                let selectedLevel;
+                for (let i = 0, cnt = items.length; i < cnt; i++) {
+                    if (items[i].id === args.item.id) {
+                        selectedLevel = i;
+                    }
+                }
+                engineModule.getFilterMembers(this.parent.dataSourceSettings, fieldName, selectedLevel + 1, false, true);
+            },
+            close: () => {
+                let engineModule = this.parent.engineModule;
+                let levels = engineModule.fieldList[fieldName].levels;
+                let levelCount = engineModule.fieldList[fieldName].levelCount;
+                if (levelCount === levels.length) {
+                    this.dropMenu.disabled = true;
+                    this.dropMenu.dataBind();
+                }
+                else {
+                    this.dropMenu.disabled = false;
+                }
+            }
+        });
+        this.dropMenu.appendTo(levelWrapper);
+    }
+    searchOlapTreeView(e, promptDiv, fieldCaption) {
+        let popupInstance = this;
+        clearTimeout(this.timeOutObj);
+        this.timeOutObj = setTimeout(function () {
+            let engineModule = popupInstance.parent.engineModule;
+            let filterDialog = popupInstance.dialogPopUp.element;
+            let fieldName = filterDialog.getAttribute('data-fieldname');
+            let nodeLimit = popupInstance.parent.control.maxNodeLimitInMemberEditor ?
+                popupInstance.parent.control.maxNodeLimitInMemberEditor : 5000;
+            if (!engineModule.fieldList[fieldName].isHierarchy) {
+                if (popupInstance.dropMenu && e.value !== '') {
+                    popupInstance.dropMenu.disabled = true;
+                }
+                else {
+                    popupInstance.dropMenu.disabled = false;
+                }
+                if (!popupInstance.parent.control.loadOnDemandInMemberEditor) {
+                    engineModule.getSearchMembers(popupInstance.parent.dataSourceSettings, fieldName, e.value.toLowerCase(), nodeLimit, true);
+                }
+                else {
+                    let levelCount = engineModule.fieldList[fieldName].levelCount ? engineModule.fieldList[fieldName].levelCount : 1;
+                    engineModule.getSearchMembers(popupInstance.parent.dataSourceSettings, fieldName, e.value.toLowerCase(), nodeLimit, false, levelCount);
+                }
+                popupInstance.parent.eventBase.searchTreeNodes(e, popupInstance.memberTreeView, false, false);
+            }
+            else {
+                popupInstance.parent.eventBase.searchTreeNodes(e, popupInstance.memberTreeView, false, true);
+            }
+            let liList = [].slice.call(popupInstance.memberTreeView.element.querySelectorAll('li'));
+            // for (let element of liList) {
+            //     if (element.querySelector('.interaction')) {
+            //         setStyleAttribute(element.querySelector('.interaction'), { display: 'none' });
+            //     }
+            // }
+            if (liList.length === 0) {
+                popupInstance.allMemberSelect.disableNodes([popupInstance.allMemberSelect.element.querySelector('li')]);
+                filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                removeClass([promptDiv], ICON_DISABLE);
+            }
+            else {
+                popupInstance.allMemberSelect.enableNodes([popupInstance.allMemberSelect.element.querySelector('li')]);
+                filterDialog.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
+                addClass([promptDiv], ICON_DISABLE);
+            }
+            popupInstance.updateCheckedState(fieldCaption);
+        }, 500);
+    }
+    /* tslint:enable */
+    /* tslint:disable:no-any */
+    nodeCheck(isAllMember, args) {
+        let checkedNode = [args.node];
+        if (args.event.target.classList.contains('e-fullrow') || args.event.key === 'Enter') {
+            let memberObj = isAllMember ? this.allMemberSelect : this.memberTreeView;
+            let getNodeDetails = memberObj.getNode(args.node);
+            if (getNodeDetails.isChecked === 'true') {
+                memberObj.uncheckAll(checkedNode);
+            }
+            else {
+                memberObj.checkAll(checkedNode);
+            }
+        }
+    }
+    updateChildNodes(args) {
+        if (this.parent.dataType === 'olap') {
+            let engineModule = this.parent.engineModule;
+            let fieldName = args.node.getAttribute('data-fieldname');
+            let fieldList = engineModule.fieldList[fieldName];
+            let filterItems = [];
+            if (fieldList && fieldList.filterMembers.length > 0 && !this.isSearchEnabled &&
+                !fieldList.members[args.nodeData.id].isNodeExpand) {
+                let childNodes = [];
+                for (let item of fieldList.filterMembers) {
+                    if (item.pid === args.nodeData.id.toString()) {
+                        childNodes.push(item);
+                    }
+                }
+                if (childNodes.length === 0) {
+                    fieldList.childMembers = [];
+                    engineModule.getChildMembers(this.parent.dataSourceSettings, args.nodeData.id.toString(), fieldName);
+                    childNodes = fieldList.childMembers;
+                    fieldList.childMembers = [];
+                }
+                let treeData = PivotUtil.getClonedData(childNodes);
+                let curTreeData = this.memberTreeView.fields.dataSource;
+                let isInclude = false;
+                if (!isNullOrUndefined(this.filterObject)) {
+                    isInclude = this.filterObject.type === 'Include' ? true : false;
+                    filterItems = this.filterObject.items ? this.filterObject.items : [];
+                }
+                treeData = this.updateChildData(isInclude, treeData, filterItems, fieldName, args.nodeData);
+                treeData = this.parent.eventBase.sortOlapFilterData(treeData, engineModule.fieldList[fieldName].sort);
+                for (let node of treeData) {
+                    curTreeData.push(node);
+                }
+                fieldList.members[args.nodeData.id].isNodeExpand = true;
+                this.memberTreeView.addNodes(treeData, args.node);
+            }
+        }
+    }
+    /* tslint:disable-next-line:max-line-length */
+    updateChildData(isInclude, members, filterItems, fieldName, parentNode) {
+        let memberCount = Object.keys(this.parent.currentTreeItemsPos).length;
+        let fieldList = this.parent.engineModule.fieldList[fieldName];
+        let list = [];
+        let childMemberCount = 1;
+        for (let member of members) {
+            let obj = member;
+            let memberName = member.id.toString();
+            fieldList.members[memberName].isNodeExpand = false;
+            member.isSelected = (parentNode.isChecked === 'true');
+            if (childMemberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
+                list.push(obj);
+            }
+            this.parent.currentTreeItems.push(obj);
+            this.parent.searchTreeItems.push(obj);
+            this.parent.currentTreeItemsPos[memberName] = memberCount;
+            memberCount++;
+            childMemberCount++;
+        }
+        this.parent.isDataOverflow = false;
+        return list;
+    }
+    createTabMenu(treeData, fieldCaption, fieldName) {
+        let wrapper = createElement('div', {
+            className: 'e-filter-tab-wrapper'
+        });
+        this.dialogPopUp.content = wrapper;
+        this.dialogPopUp.dataBind();
+        let types = ['Label', 'Value', 'Include', 'Exclude'];
+        let regx = '((-|\\+)?[0-9]+(\\.[0-9]+)?)+';
+        let member = Object.keys(this.parent.engineModule.fieldList[fieldName].members)[0];
+        let fieldType = this.parent.engineModule.fieldList[fieldName].type;
+        let formatObj = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.formatSettings);
+        let items = [
+            {
+                header: {
+                    text: this.parent.localeObj.getConstant('member'),
+                    iconCss: (this.filterObject && types.indexOf(this.filterObject.type) > 1 ? SELECTED_OPTION_ICON_CLASS : '')
+                },
+                content: this.createTreeView(treeData, fieldCaption, fieldName)
+            }
+        ];
+        for (let type of types) {
+            if (((type === 'Label') && this.parent.dataSourceSettings.allowLabelFilter) ||
+                (type === 'Value' && this.parent.dataSourceSettings.allowValueFilter)) {
+                let filterType = (type === 'Label' && member && ((member).match(regx) &&
+                    (member).match(regx)[0].length === (member).length) && fieldType === 'number') ? 'Number' :
+                    (type === 'Label' && member && (new Date(member).toString() !== 'Invalid Date') &&
+                        ((formatObj && formatObj.type) || (this.filterObject && this.filterObject.type === 'Date'))) ? 'Date' : type;
+                let item = {
+                    header: {
+                        text: (filterType === 'Number' ? this.parent.localeObj.getConstant('label') :
+                            this.parent.localeObj.getConstant(filterType.toLowerCase())),
+                        iconCss: (this.filterObject && this.filterObject.type === filterType ? SELECTED_OPTION_ICON_CLASS : '')
+                    },
+                    /* tslint:disable-next-line:max-line-length */
+                    content: this.createCustomFilter(fieldName, (this.filterObject && this.filterObject.type === filterType ? this.filterObject : undefined), filterType.toLowerCase())
+                };
+                items.push(item);
+            }
+        }
+        let selectedIndex = (this.filterObject ? (['Label', 'Date', 'Number'].indexOf(this.filterObject.type) >= 0) ?
+            1 : this.filterObject.type === 'Value' ?
+            (this.parent.dataSourceSettings.allowLabelFilter && this.parent.dataSourceSettings.allowValueFilter) ? 2 : 1 : 0 : 0);
+        selectedIndex = (!this.parent.dataSourceSettings.allowMemberFilter && selectedIndex === 0) ? 1 : selectedIndex;
+        this.tabObj = new Tab({
+            heightAdjustMode: 'Auto',
+            items: items,
+            height: '100%',
+            selectedItem: selectedIndex,
+            enableRtl: this.parent.enableRtl
+        });
+        this.tabObj.isStringTemplate = true;
+        this.tabObj.appendTo(wrapper);
+        if (!this.parent.dataSourceSettings.allowMemberFilter) {
+            this.tabObj.hideTab(0);
+        }
+        if (selectedIndex > 0) {
+            /* tslint:disable-next-line:max-line-length */
+            addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (selectedIndex === 1 && this.parent.dataSourceSettings.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
+        }
+    }
+    /* tslint:disable */
+    createCustomFilter(fieldName, filterObject, type) {
+        let dataSource = [];
+        let valueOptions = [];
+        let levelOptions = [];
+        let measures = this.parent.dataSourceSettings.values;
+        let selectedOption = 'DoesNotEquals';
+        let selectedValueIndex = 0;
+        let selectedLevelIndex = 0;
+        let options = {
+            label: ['Equals', 'DoesNotEquals', 'BeginWith', 'DoesNotBeginWith', 'EndsWith',
+                'DoesNotEndsWith', 'Contains', 'DoesNotContains', 'GreaterThan',
+                'GreaterThanOrEqualTo', 'LessThan', 'LessThanOrEqualTo', 'Between', 'NotBetween'],
+            date: ['Equals', 'DoesNotEquals', 'Before', 'BeforeOrEqualTo', 'After', 'AfterOrEqualTo',
+                'Between', 'NotBetween'],
+            value: ['Equals', 'DoesNotEquals', 'GreaterThan', 'GreaterThanOrEqualTo', 'LessThan',
+                'LessThanOrEqualTo', 'Between', 'NotBetween']
+        };
+        let betweenOperators = ['Between', 'NotBetween'];
+        let operatorCollection = (type === 'label' ? options.label : type === 'date' ? options.date : options.value);
+        for (let operator of operatorCollection) {
+            selectedOption = ((filterObject && operator === filterObject.condition) ?
+                operatorCollection.indexOf(filterObject.condition) >= 0 ?
+                    filterObject.condition : operatorCollection[0] : selectedOption);
+            dataSource.push({ value: operator, text: this.parent.localeObj.getConstant(operator) });
+        }
+        let len = measures.length;
+        while (len--) {
+            valueOptions.unshift({ value: measures[len].name, text: (measures[len].caption ? measures[len].caption : measures[len].name) });
+            selectedValueIndex = filterObject && filterObject.type === 'Value' &&
+                filterObject.measure === measures[len].name &&
+                filterObject.condition === selectedOption ? len : selectedValueIndex;
+        }
+        if (this.parent.dataType === 'olap') {
+            let engineModule = this.parent.engineModule;
+            let levels = engineModule.fieldList[fieldName].levels;
+            if (this.parent.engineModule.fieldList[fieldName].isHierarchy) {
+                let levelObj;
+                let fieldlistData = this.parent.engineModule.fieldListData;
+                for (let item of fieldlistData) {
+                    if (item && item.pid === fieldName) {
+                        levelObj = item;
+                        break;
+                    }
+                }
+                levelOptions.push({
+                    value: levelObj ? levelObj.id : fieldName,
+                    text: levelObj ? levelObj.caption : engineModule.fieldList[fieldName].name
+                });
+                selectedLevelIndex = 0;
+                if (filterObject && filterObject.name === fieldName && filterObject.type.toLowerCase() === type) {
+                    levelOptions[levelOptions.length - 1]['iconClass'] = ICON + ' ' + SELECTED_LEVEL_ICON_CLASS;
+                }
+            }
+            else {
+                for (let i = 0, cnt = levels.length; i < cnt; i++) {
+                    selectedLevelIndex = (filterObject &&
+                        filterObject.selectedField === levels[i].id ? i : selectedLevelIndex);
+                    levelOptions.push({ value: levels[i].id, text: levels[i].name });
+                    for (let field of this.parent.dataSourceSettings.filterSettings) {
+                        if (field.name === fieldName && field.selectedField === levels[i].id && field.type.toLowerCase() === type) {
+                            levelOptions[levelOptions.length - 1]['iconClass'] = ICON + ' ' + SELECTED_LEVEL_ICON_CLASS;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        let mainDiv = createElement('div', {
+            className: FILTER_DIV_CONTENT_CLASS + ' e-' + ((['date', 'number']).indexOf(type) >= 0 ? 'label' : type) + '-filter',
+            id: this.parent.parentID + '_' + type + '_filter_div_content',
+            attrs: {
+                'data-type': type, 'data-fieldName': fieldName, 'data-operator': selectedOption,
+                'data-selectedField': (this.parent.dataType === 'olap' &&
+                    levelOptions.length > 0 ? levelOptions[selectedLevelIndex].value.toString() : ''),
+                'data-measure': (this.parent.dataSourceSettings.values.length > 0 ?
+                    this.parent.dataSourceSettings.values[selectedValueIndex].name : ''),
+                'data-value1': (filterObject && selectedOption === filterObject.condition ?
+                    filterObject.value1 ? filterObject.value1.toString() : '' : ''),
+                'data-value2': (filterObject && selectedOption === filterObject.condition ?
+                    filterObject.value2 ? filterObject.value2.toString() : '' : '')
+            }
+        });
+        let textContentdiv = createElement('div', {
+            className: FILTER_TEXT_DIV_CLASS,
+            innerHTML: this.parent.localeObj.getConstant(type + 'TextContent')
+        });
+        let betweenTextContentdiv = createElement('div', {
+            className: BETWEEN_TEXT_DIV_CLASS + ' ' +
+                (betweenOperators.indexOf(selectedOption) === -1 ? ICON_DISABLE : ''),
+            innerHTML: this.parent.localeObj.getConstant('And')
+        });
+        let separatordiv = createElement('div', { className: SEPARATOR_DIV_CLASS });
+        let filterWrapperDiv1 = createElement('div', { className: FILTER_OPTION_WRAPPER_1_CLASS });
+        let levelWrapperDiv = createElement('div', {
+            className: 'e-level-option-wrapper' + ' ' +
+                (this.parent.dataType === 'olap' ? '' : ICON_DISABLE),
+        });
+        let optionWrapperDiv1 = createElement('div', {
+            className: 'e-measure-option-wrapper' + ' ' + (((['label', 'date', 'number']).indexOf(type) >= 0) ? ICON_DISABLE : ''),
+        });
+        let optionWrapperDiv2 = createElement('div', { className: 'e-condition-option-wrapper' });
+        let filterWrapperDiv2 = createElement('div', { className: FILTER_OPTION_WRAPPER_2_CLASS });
+        let levelDropOption = createElement('div', { id: this.parent.parentID + '_' + type + '_level_option_wrapper' });
+        let dropOptionDiv1 = createElement('div', { id: this.parent.parentID + '_' + type + '_measure_option_wrapper' });
+        let dropOptionDiv2 = createElement('div', { id: this.parent.parentID + '_' + type + '_contition_option_wrapper' });
+        let inputDiv1 = createElement('div', { className: FILTER_INPUT_DIV_1_CLASS });
+        let inputDiv2 = createElement('div', {
+            className: FILTER_INPUT_DIV_2_CLASS + ' ' +
+                (betweenOperators.indexOf(selectedOption) === -1 ? ICON_DISABLE : '')
+        });
+        let inputField1 = createElement('input', {
+            id: this.parent.parentID + '_' + type + '_input_option_1', attrs: { 'type': 'text' }
+        });
+        let inputField2 = createElement('input', {
+            id: this.parent.parentID + '_' + type + '_input_option_2', attrs: { 'type': 'text' }
+        });
+        inputDiv1.appendChild(inputField1);
+        inputDiv2.appendChild(inputField2);
+        levelWrapperDiv.appendChild(levelDropOption);
+        levelWrapperDiv.appendChild(separatordiv.cloneNode(true));
+        optionWrapperDiv1.appendChild(dropOptionDiv1);
+        optionWrapperDiv1.appendChild(separatordiv);
+        optionWrapperDiv2.appendChild(dropOptionDiv2);
+        filterWrapperDiv1.appendChild(levelWrapperDiv);
+        filterWrapperDiv1.appendChild(optionWrapperDiv1);
+        filterWrapperDiv1.appendChild(optionWrapperDiv2);
+        filterWrapperDiv2.appendChild(inputDiv1);
+        filterWrapperDiv2.appendChild(betweenTextContentdiv);
+        filterWrapperDiv2.appendChild(inputDiv2);
+        /* tslint:disable-next-line:max-line-length */
+        this.createElements(filterObject, betweenOperators, dropOptionDiv1, dropOptionDiv2, inputField1, inputField2, valueOptions, dataSource, selectedValueIndex, selectedOption, type, levelDropOption, levelOptions, selectedLevelIndex);
+        mainDiv.appendChild(textContentdiv);
+        mainDiv.appendChild(filterWrapperDiv1);
+        mainDiv.appendChild(filterWrapperDiv2);
+        return mainDiv;
+    }
+    createElements(filterObj, operators, optionDiv1, optionDiv2, inputDiv1, inputDiv2, vDataSource, oDataSource, valueIndex, option, type, levelDropOption, lDataSource, levelIndex) {
+        let popupInstance = this;
+        if (this.parent.dataType === 'olap') {
+            let levelWrapper = new DropDownList({
+                dataSource: lDataSource, enableRtl: this.parent.enableRtl,
+                fields: { value: 'value', text: 'text', iconCss: 'iconClass' },
+                index: levelIndex,
+                cssClass: LEVEL_OPTIONS_CLASS, width: '100%',
+                change(args) {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    let fieldName = element.getAttribute('data-fieldName');
+                    let type = element.getAttribute('data-type');
+                    if (!isNullOrUndefined(element)) {
+                        popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                        setStyleAndAttributes(element, { 'data-selectedField': args.value });
+                        let filterObj;
+                        for (let field of popupInstance.parent.dataSourceSettings.filterSettings) {
+                            if (field.name === fieldName && field.selectedField === args.value) {
+                                filterObj = field;
+                                break;
+                            }
+                        }
+                        if (filterObj) {
+                            if (type === 'value' && filterObj.measure && filterObj.measure !== '') {
+                                optionWrapper1.value = filterObj.measure ? filterObj.measure : vDataSource[0].value;
+                            }
+                            else {
+                            }
+                            if (filterObj.condition) {
+                                optionWrapper.value = filterObj.condition ? filterObj.condition : 'DoesNotEquals';
+                            }
+                            else {
+                                optionWrapper.value = 'DoesNotEquals';
+                            }
+                            let inputObj1;
+                            let inputObj2;
+                            if (type === 'value') {
+                                inputObj1 = inputDiv1.ej2_instances[0];
+                                inputObj2 = inputDiv2.ej2_instances[0];
+                                if (inputObj1) {
+                                    inputObj1.value = filterObj.value1 ? parseInt(filterObj.value1, 10) : undefined;
+                                }
+                                if (inputObj2) {
+                                    inputObj2.value = filterObj.value2 ? parseInt(filterObj.value2, 10) : undefined;
+                                }
+                            }
+                            else {
+                                inputObj1 = inputDiv1.ej2_instances[0];
+                                inputObj2 = inputDiv2.ej2_instances[0];
+                                if (inputObj1) {
+                                    inputObj1.value = filterObj.value1 ? filterObj.value1 : '';
+                                }
+                                if (inputObj2) {
+                                    inputObj2.value = filterObj.value2 ? filterObj.value2 : '';
+                                }
+                            }
+                        }
+                        popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    }
+                    else {
+                        return;
+                    }
+                }
+            });
+            levelWrapper.isStringTemplate = true;
+            levelWrapper.appendTo(levelDropOption);
+        }
+        let optionWrapper1 = new DropDownList({
+            dataSource: vDataSource, enableRtl: this.parent.enableRtl,
+            fields: { value: 'value', text: 'text' }, index: valueIndex,
+            cssClass: VALUE_OPTIONS_CLASS, width: '100%',
+            change(args) {
+                let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                if (!isNullOrUndefined(element)) {
+                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    setStyleAndAttributes(element, { 'data-measure': args.value });
+                }
+                else {
+                    return;
+                }
+            }
+        });
+        optionWrapper1.isStringTemplate = true;
+        optionWrapper1.appendTo(optionDiv1);
+        let optionWrapper = new DropDownList({
+            dataSource: oDataSource, enableRtl: this.parent.enableRtl,
+            fields: { value: 'value', text: 'text' }, value: option,
+            cssClass: FILTER_OPERATOR_CLASS, width: '100%',
+            change(args) {
+                let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                if (!isNullOrUndefined(element)) {
+                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    let disabledClasses = [BETWEEN_TEXT_DIV_CLASS, FILTER_INPUT_DIV_2_CLASS];
+                    for (let className of disabledClasses) {
+                        if (operators.indexOf(args.value) >= 0) {
+                            removeClass([element.querySelector('.' + className)], ICON_DISABLE);
+                        }
+                        else {
+                            addClass([element.querySelector('.' + className)], ICON_DISABLE);
+                        }
+                    }
+                    setStyleAndAttributes(element, { 'data-operator': args.value });
+                }
+                else {
+                    return;
+                }
+            }
+        });
+        optionWrapper.isStringTemplate = true;
+        optionWrapper.appendTo(optionDiv2);
+        if (type === 'date') {
+            let inputObj1 = new DateTimePicker({
+                placeholder: this.parent.localeObj.getConstant('chooseDate'),
+                enableRtl: this.parent.enableRtl,
+                format: 'dd/MM/yyyy hh:mm:ss a',
+                showClearButton: true,
+                value: (filterObj && option === filterObj.condition ?
+                    (typeof (filterObj.value1) === 'string' ? new Date(filterObj.value1) : filterObj.value1) : null),
+                change: (e) => {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    }
+                    else {
+                        return;
+                    }
+                },
+                width: '100%',
+            });
+            let inputObj2 = new DateTimePicker({
+                placeholder: this.parent.localeObj.getConstant('chooseDate'),
+                enableRtl: this.parent.enableRtl,
+                format: 'dd/MM/yyyy hh:mm:ss a',
+                showClearButton: true,
+                value: (filterObj && option === filterObj.condition ?
+                    (typeof (filterObj.value2) === 'string' ? new Date(filterObj.value2) : filterObj.value2) : null),
+                change: (e) => {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    }
+                    else {
+                        return;
+                    }
+                },
+                width: '100%',
+            });
+            inputObj1.isStringTemplate = true;
+            inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
+            inputObj2.appendTo(inputDiv2);
+        }
+        else if (type === 'value') {
+            let inputObj1 = new NumericTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                format: '###.##',
+                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value1, 10) : undefined),
+                change: (e) => {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, {
+                            'data-value1': (e.value ? e.value.toString() : '0'),
+                            'data-value2': (inputObj2.value ? inputObj2.value.toString() : '0')
+                        });
+                    }
+                    else {
+                        return;
+                    }
+                }, width: '100%'
+            });
+            let inputObj2 = new NumericTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                format: '###.##',
+                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value2, 10) : undefined),
+                change: (e) => {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, {
+                            'data-value1': (inputObj1.value ? inputObj1.value.toString() : '0'),
+                            'data-value2': (e.value ? e.value.toString() : '0')
+                        });
+                    }
+                    else {
+                        return;
+                    }
+                }, width: '100%'
+            });
+            inputObj1.isStringTemplate = true;
+            inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
+            inputObj2.appendTo(inputDiv2);
+        }
+        else {
+            let inputObj1 = new MaskedTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                value: (filterObj && option === filterObj.condition ? filterObj.value1 : ''),
+                change: (e) => {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
+                    }
+                    else {
+                        return;
+                    }
+                }, width: '100%'
+            });
+            let inputObj2 = new MaskedTextBox({
+                placeholder: this.parent.localeObj.getConstant('enterValue'),
+                enableRtl: this.parent.enableRtl,
+                showClearButton: true,
+                value: (filterObj && option === filterObj.condition ? filterObj.value2 : ''),
+                change: (e) => {
+                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    if (!isNullOrUndefined(element)) {
+                        setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
+                    }
+                    else {
+                        return;
+                    }
+                }, width: '100%'
+            });
+            inputObj1.isStringTemplate = true;
+            inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
+            inputObj2.appendTo(inputDiv2);
+        }
+    }
+    /* tslint:enable */
+    updateInputValues(element, type, inputDiv1, inputDiv2) {
+        let value1;
+        let value2;
+        if (type === 'date') {
+            let inputObj1 = inputDiv1.ej2_instances[0];
+            let inputObj2 = inputDiv2.ej2_instances[0];
+            value1 = !isNullOrUndefined(inputObj1.value) ? inputObj1.value.toString() : '';
+            value2 = !isNullOrUndefined(inputObj2.value) ? inputObj2.value.toString() : '';
+        }
+        else {
+            let inputObj1 = inputDiv1.ej2_instances[0];
+            let inputObj2 = inputDiv2.ej2_instances[0];
+            value1 = inputObj1.value;
+            value2 = inputObj2.value;
+        }
+        setStyleAndAttributes(element, { 'data-value1': value1, 'data-value2': value2 });
+    }
+    validateTreeNode(e) {
+        if (e.node.classList.contains(ICON_DISABLE)) {
+            e.cancel = true;
+        }
+        else {
+            return;
+        }
+    }
+    /**
+     * Update filter state while Member check/uncheck.
+     * @hidden
+     */
+    updateCheckedState(fieldCaption) {
+        let filterDialog = this.dialogPopUp.element;
+        setStyleAndAttributes(filterDialog, { 'role': 'menu', 'aria-haspopup': 'true' });
+        let list = [].slice.call(this.memberTreeView.element.querySelectorAll('li'));
+        let fieldName = filterDialog.getAttribute('data-fieldname');
+        let uncheckedNodes = this.getUnCheckedNodes(fieldName);
+        let checkedNodes = this.getCheckedNodes(fieldName);
+        let firstNode = this.allMemberSelect.element.querySelector('li').querySelector('span.' + CHECK_BOX_FRAME_CLASS);
+        if (list.length > 0) {
+            if (checkedNodes > 0) {
+                if (uncheckedNodes > 0) {
+                    removeClass([firstNode], NODE_CHECK_CLASS);
+                    addClass([firstNode], NODE_STOP_CLASS);
+                }
+                else if (uncheckedNodes === 0) {
+                    removeClass([firstNode], NODE_STOP_CLASS);
+                    addClass([firstNode], NODE_CHECK_CLASS);
+                }
+                this.dialogPopUp.buttons[0].buttonModel.disabled = false;
+                filterDialog.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
+            }
+            else if (uncheckedNodes > 0 && checkedNodes === 0) {
+                removeClass([firstNode], [NODE_CHECK_CLASS, NODE_STOP_CLASS]);
+                if (this.getCheckedNodes(fieldName) === checkedNodes) {
+                    this.dialogPopUp.buttons[0].buttonModel.disabled = true;
+                    filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                }
+            }
+        }
+        else {
+            this.dialogPopUp.buttons[0].buttonModel.disabled = true;
+            filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+        }
+    }
+    getCheckedNodes(fieldName) {
+        let engineModule = this.parent.engineModule;
+        let nodeList = [];
+        let checkeNodes = [];
+        if (this.parent.dataType === 'olap' && engineModule &&
+            !engineModule.fieldList[fieldName].isHierarchy) {
+            nodeList = this.memberTreeView.getAllCheckedNodes();
+            return nodeList.length;
+        }
+        else {
+            for (let item of this.parent.searchTreeItems) {
+                if (item.isSelected) {
+                    checkeNodes.push(item);
+                }
+            }
+            return checkeNodes.length;
+        }
+    }
+    getUnCheckedNodes(fieldName) {
+        let unCheckeNodes = [];
+        let nodeList = [];
+        let engineModule = this.parent.engineModule;
+        if (this.parent.dataType === 'olap' && engineModule && !engineModule.fieldList[fieldName].isHierarchy) {
+            nodeList = this.memberTreeView.getAllCheckedNodes();
+            return (this.memberTreeView.fields.dataSource.length -
+                nodeList.length);
+        }
+        else {
+            // unCheckeNodes = this.parent.searchTreeItems.filter((item: { [key: string]: object }) => {
+            //     return !item.isSelected;
+            // });
+            for (let item of this.parent.searchTreeItems) {
+                if (!item.isSelected) {
+                    unCheckeNodes.push(item);
+                }
+            }
+            return unCheckeNodes.length;
+        }
+    }
+    isExcelFilter(fieldName) {
+        let isFilterField = false;
+        for (let field of this.parent.dataSourceSettings.filters) {
+            if (field.name === fieldName) {
+                isFilterField = true;
+                break;
+            }
+        }
+        if (!isFilterField && (this.parent.dataSourceSettings.allowLabelFilter || this.parent.dataSourceSettings.allowValueFilter)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    getFilterObject(fieldName) {
+        let filterObj = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
+        if (filterObj && (((['Label', 'Date', 'Number'].indexOf(filterObj.type) >= 0) &&
+            this.parent.dataSourceSettings.allowLabelFilter) ||
+            (filterObj.type === 'Value' && this.parent.dataSourceSettings.allowValueFilter) ||
+            (['Include', 'Exclude'].indexOf(filterObj.type) >= 0 &&
+                this.parent.eventBase.isValidFilterItemsAvail(fieldName, filterObj)))) {
+            return filterObj;
+        }
+        return undefined;
+    }
+    /**
+     * To close filter dialog.
+     * @hidden
+     */
+    closeFilterDialog() {
+        if (this.allowExcelLikeFilter) {
+            if (this.tabObj && !this.tabObj.isDestroyed) {
+                this.tabObj.destroy();
+            }
+        }
+        if (this.dropMenu && !this.dropMenu.isDestroyed) {
+            this.dropMenu.destroy();
+        }
+        if (document.getElementById(this.parent.parentID + '_LevelDiv-popup')) {
+            remove(document.getElementById(this.parent.parentID + '_LevelDiv-popup'));
+        }
+        this.dialogPopUp.close();
+    }
+    removeFilterDialog() {
+        if (this.dialogPopUp && !this.dialogPopUp.isDestroyed) {
+            this.dialogPopUp.destroy();
+        }
+        if (document.getElementById(this.parent.parentID + '_EditorTreeView')) {
+            remove(document.getElementById(this.parent.parentID + '_EditorTreeView'));
+        }
+    }
+}
+
+/**
+ * PivotCommon is used to manipulate the relational or Multi-Dimensional public methods by using their dataSource
+ * @hidden
+ */
+/** @hidden */
+class PivotCommon {
+    /**
+     * Constructor for Pivot Common class
+     * @param  {CommonArgs} control?
+     * @hidden
+     */
+    constructor(control) {
+        /** @hidden */
+        this.currentTreeItems = [];
+        /** @hidden */
+        this.savedTreeFilterPos = {};
+        /** @hidden */
+        this.currentTreeItemsPos = {};
+        /** @hidden */
+        this.searchTreeItems = [];
+        /** @hidden */
+        this.isDataOverflow = false;
+        /** @hidden */
+        this.isDateField = false;
+        this.element = control.element;
+        this.moduleName = control.moduleName;
+        this.dataSourceSettings = control.dataSourceSettings;
+        this.engineModule = control.pivotEngine;
+        this.enableRtl = control.enableRtl;
+        this.isAdaptive = control.isAdaptive;
+        this.renderMode = control.renderMode;
+        this.parentID = control.id;
+        this.localeObj = control.localeObj;
+        this.dataType = control.dataType;
+        this.nodeStateModified = new NodeStateModified(this);
+        this.dataSourceUpdate = new DataSourceUpdate(this);
+        this.eventBase = new EventBase(this);
+        this.filterDialog = new FilterDialog(this);
+        this.errorDialog = new ErrorDialog(this);
+        this.keyboardModule = new CommonKeyboardInteraction(this);
+        return this;
+    }
+    /**
+     * To destroy the groupingbar
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
+    }
+}
+
+/**
+ * Module for PivotCommon rendering
+ */
+/** @hidden */
+class Common {
+    /** Constructor for Common module */
+    constructor(parent) {
+        this.parent = parent;
+        this.parent.commonModule = this;
+        this.addEventListener();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'common';
+    }
+    initiateCommonModule() {
+        if (!this.parent.pivotCommon) {
+            let args = {
+                pivotEngine: this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule,
+                dataSourceSettings: this.parent.dataSourceSettings.properties ?
+                    this.parent.dataSourceSettings.properties : this.parent.dataSourceSettings,
+                id: this.parent.element.id,
+                element: this.parent.element,
+                moduleName: this.parent.getModuleName(),
+                enableRtl: this.parent.enableRtl,
+                isAdaptive: Browser.isDevice,
+                renderMode: 'Popup',
+                localeObj: this.parent.localeObj,
+                dataType: this.parent.dataType
+            };
+            this.parent.pivotCommon = new PivotCommon(args);
+        }
+        else {
+            this.parent.pivotCommon.element = this.parent.element;
+            this.parent.pivotCommon.engineModule = this.parent.dataType === 'olap' ?
+                this.parent.olapEngineModule : this.parent.engineModule;
+            this.parent.pivotCommon.parentID = this.parent.element.id;
+            this.parent.pivotCommon.dataSourceSettings = this.parent.dataSourceSettings.properties ?
+                this.parent.dataSourceSettings.properties : this.parent.dataSourceSettings;
+            this.parent.pivotCommon.moduleName = this.parent.getModuleName();
+            this.parent.pivotCommon.enableRtl = this.parent.enableRtl;
+            this.parent.pivotCommon.isAdaptive = Browser.isDevice;
+            this.parent.pivotCommon.renderMode = 'Popup';
+            this.parent.pivotCommon.localeObj = this.parent.localeObj;
+            this.parent.pivotCommon.dataType = this.parent.dataType;
+        }
+        this.parent.pivotCommon.control = this.parent;
+    }
+    /**
+     * @hidden
+     */
+    addEventListener() {
+        this.handlers = {
+            load: this.initiateCommonModule
+        };
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        if (this.parent.gridSettings.contextMenuItems) {
+            if ((!this.parent.showFieldList) || (!this.parent.showGroupingBar)) {
+                this.parent.on(initialLoad, this.handlers.load, this);
+            }
+        }
+        this.parent.on(uiUpdate, this.handlers.load, this);
+    }
+    /**
+     * @hidden
+     */
+    removeEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(uiUpdate, this.handlers.load);
+    }
+    /**
+     * To destroy the groupingbar
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        this.removeEventListener();
+        if (this.parent.pivotCommon) {
+            this.parent.pivotCommon.destroy();
         }
     }
 }
@@ -15565,30 +17684,20 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      */
     requiredModules() {
         let modules = [];
-        let isCommonRequire;
-        isCommonRequire = true;
         modules.push({ args: [this], member: 'groupingbar' });
         if (this.allowConditionalFormatting) {
             modules.push({ args: [this], member: 'conditionalformatting' });
         }
         if (this.allowNumberFormatting) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'numberformatting' });
         }
         if (this.allowCalculatedField) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'calculatedfield' });
         }
-        // if (this.showGroupingBar || !this.showGroupingBar) {
-        //     isCommonRequire = true;
-        //     modules.push({ args: [this], member: 'grouping' });
-        // }
         if (this.showToolbar && this.toolbar.length > 0) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'toolbar' });
         }
         if (this.showFieldList) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'fieldlist' });
         }
         if (this.allowExcelExport) {
@@ -15601,16 +17710,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             modules.push({ args: [this], member: 'virtualscroll' });
         }
         if (this.allowGrouping) {
-            isCommonRequire = true;
             modules.push({ args: [this], member: 'grouping' });
-        }
-        if (this.gridSettings) {
-            if (this.gridSettings.contextMenuItems) {
-                isCommonRequire = true;
-            }
-        }
-        if (isCommonRequire) {
-            modules.push({ args: [this], member: 'common' });
         }
         return modules;
     }
@@ -15633,6 +17733,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.keyboardModule = new KeyboardInteraction(this);
         this.contextMenuModule = new PivotContextMenu(this);
         this.globalize = new Internationalization(this.locale);
+        if (this.showGroupingBar || this.showFieldList || this.allowNumberFormatting || this.showToolbar ||
+            this.allowCalculatedField || this.allowGrouping || this.gridSettings.contextMenuItems) {
+            this.commonModule = new Common(this);
+        }
         this.defaultLocale = {
             grandTotal: 'Grand Total',
             total: 'Total',
@@ -16444,7 +18548,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 addClass([this.chart.element], PIVOTCHART_LTR);
             }
         }
-        if (this.showFieldList || this.showGroupingBar) {
+        if (this.showFieldList || this.showGroupingBar || this.allowNumberFormatting || this.allowCalculatedField ||
+            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
             this.notify(uiUpdate, this);
             if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
                 this.pivotFieldListModule.clonedDataSource = extend({}, this.dataSourceSettings, null, true);
@@ -16515,7 +18620,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      * @hidden
      */
     showWaitingPopup() {
-        if (this.grid && this.grid.element) {
+        if (this.grid && this.grid.element && !this.spinnerTemplate) {
             showSpinner(this.grid.element);
         }
         else {
@@ -16526,7 +18631,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      * @hidden
      */
     hideWaitingPopup() {
-        if (this.grid && this.grid.element) {
+        if (this.grid && this.grid.element && !this.spinnerTemplate) {
             hideSpinner(this.grid.element);
         }
         else {
@@ -18671,2035 +20776,6 @@ PivotView = PivotView_1 = __decorate([
 /**
  * PivotGrid component exported items
  */
-
-/**
- * Keyboard interaction
- */
-/** @hidden */
-class CommonKeyboardInteraction {
-    /**
-     * Constructor
-     */
-    constructor(parent) {
-        this.keyConfigs = {
-            shiftF: 'shift+F',
-            shiftS: 'shift+S',
-            delete: 'delete',
-            enter: 'enter'
-        };
-        this.parent = parent;
-        this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
-        this.keyboardModule = new KeyboardEvents(this.parent.element, {
-            keyAction: this.keyActionHandler.bind(this),
-            keyConfigs: this.keyConfigs,
-            eventName: 'keydown'
-        });
-    }
-    keyActionHandler(e) {
-        switch (e.action) {
-            case 'shiftF':
-                this.processFilter(e);
-                break;
-            case 'shiftS':
-                this.processSort(e);
-                break;
-            case 'delete':
-                this.processDelete(e);
-                break;
-            case 'enter':
-                this.processOpenContextMenu(e);
-                break;
-        }
-    }
-    processOpenContextMenu(e) {
-        let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) &&
-            closest(target, '.' + VALUE_AXIS_CLASS)) {
-            target.querySelector('.' + AXISFIELD_ICON_CLASS).click();
-            e.preventDefault();
-            return;
-        }
-    }
-    processSort(e) {
-        let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) &&
-            !closest(target, '.' + VALUE_AXIS_CLASS) && !closest(target, '.' + AXIS_FILTER_CLASS)) {
-            target.querySelector('.' + SORT_CLASS).click();
-            e.preventDefault();
-            return;
-        }
-    }
-    processFilter(e) {
-        let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) && !closest(target, '.' + VALUE_AXIS_CLASS)) {
-            target.querySelector('.' + FILTER_COMMON_CLASS).click();
-            e.preventDefault();
-            return;
-        }
-    }
-    processDelete(e) {
-        let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS)) {
-            target.querySelector('.' + REMOVE_CLASS).click();
-            e.preventDefault();
-            return;
-        }
-    }
-    /**
-     * To destroy the keyboard module.
-     * @return {void}
-     * @private
-     */
-    destroy() {
-        if (this.keyboardModule) {
-            this.keyboardModule.destroy();
-        }
-        else {
-            return;
-        }
-    }
-}
-
-/**
- * `EventBase` for active fields action.
- */
-/** @hidden */
-class EventBase {
-    /**
-     * Constructor for the dialog action.
-     * @hidden
-     */
-    constructor(parent) {
-        this.parent = parent;
-    }
-    /**
-     * Updates sorting order for the selected field.
-     * @method updateSorting
-     * @param  {Event} args - Contains clicked element information to update dataSource.
-     * @return {void}
-     * @hidden
-     */
-    updateSorting(args) {
-        if (!(args.target.classList.contains(FILTER_COMMON_CLASS)) &&
-            !(args.target.classList.contains(REMOVE_CLASS))) {
-            if (this.parent.filterDialog.dialogPopUp) {
-                this.parent.filterDialog.dialogPopUp.close();
-            }
-            let target = args.target;
-            let fieldName;
-            let checkisDescending;
-            let isDescending;
-            if (target.id) {
-                fieldName = target.id;
-                checkisDescending = [].slice.call(target.querySelectorAll('.' + SORT_DESCEND_CLASS));
-            }
-            else {
-                fieldName = target.parentElement.id;
-                checkisDescending = [].slice.call(target.parentElement.querySelectorAll('.' + SORT_DESCEND_CLASS));
-            }
-            if (checkisDescending.length === 0) {
-                isDescending = false;
-            }
-            else {
-                isDescending = true;
-            }
-            //isDescending = (target.querySelectorAll(cls.SORT_DESCEND_CLASS));
-            let sortObj = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.sortSettings);
-            if (!isNullOrUndefined(sortObj)) {
-                for (let i = 0; i < this.parent.dataSourceSettings.sortSettings.length; i++) {
-                    if (this.parent.dataSourceSettings.sortSettings[i].name === fieldName) {
-                        this.parent.dataSourceSettings.sortSettings.splice(i, 1);
-                        break;
-                    }
-                }
-                let newSortObj = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
-                // let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending' };
-                this.parent.dataSourceSettings.sortSettings.push(newSortObj);
-            }
-            else {
-                let newSortObj = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
-                //let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending'  };
-                this.parent.dataSourceSettings.sortSettings.push(newSortObj);
-            }
-            this.parent.control.lastSortInfo =
-                this.parent.dataSourceSettings.sortSettings[this.parent.dataSourceSettings.sortSettings.length - 1];
-            isDescending ? removeClass([target], SORT_DESCEND_CLASS) : addClass([target], SORT_DESCEND_CLASS);
-            // if (isDescending) {
-            //     removeClass([target], cls.SORT_DESCEND_CLASS);
-            //     addClass([target], cls.SORTING);
-            // } else if (!isDescending && !isNone) {
-            //     addClass([target], cls.SORT_DESCEND_CLASS);
-            // } else if (isNone) {
-            //     removeClass([target], cls.SORTING);
-            // } else if (!isNone) {
-            //     removeClass([target], cls.SORT_DESCEND_CLASS);
-            //     removeClass([target], cls.SORTING);
-            //    //addClass([target], cls.SORT_CLASS);
-            // }
-        }
-    }
-    /**
-     * Updates sorting order for the selected field.
-     * @method updateFiltering
-     * @param  {Event} args - Contains clicked element information to update dataSource.
-     * @return {void}
-     * @hidden
-     */
-    updateFiltering(args) {
-        let target = args.target;
-        let fieldName = target.parentElement.id;
-        let fieldCaption = target.parentElement.textContent;
-        let isInclude = false;
-        let filterItems = [];
-        let treeData = [];
-        if (this.parent.dataSourceSettings.allowMemberFilter) {
-            if (this.parent.dataType === 'olap') {
-                treeData = this.getOlapData(fieldName, isInclude);
-            }
-            else {
-                let members = PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember);
-                /* tslint:disable:typedef */
-                members =
-                    this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
-                        (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
-                            ((b.actualText > a.actualText) ? -1 : 0))) :
-                        this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
-                            (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
-                                ((b.actualText < a.actualText) ? -1 : 0))) :
-                            members;
-                /* tslint:enable:typedef */
-                let filterObj = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
-                if (!isNullOrUndefined(filterObj)) {
-                    isInclude = this.isValidFilterItemsAvail(fieldName, filterObj) && filterObj.type === 'Include' ? true : false;
-                    filterItems = filterObj.items ? filterObj.items : [];
-                }
-                treeData =
-                    this.getTreeData(isInclude, members, filterItems, fieldName);
-            }
-        }
-        if (this.parent.filterDialog.dialogPopUp) {
-            this.parent.filterDialog.dialogPopUp.close();
-        }
-        let popupTarget;
-        popupTarget = this.parent.moduleName !== 'pivotfieldlist' ?
-            popupTarget = this.parent.element : popupTarget = document.getElementById(this.parent.parentID + '_Wrapper');
-        this.parent.filterDialog.createFilterDialog(treeData, fieldName, fieldCaption, popupTarget);
-    }
-    /**
-     * Returns boolean by checing the valid filter members from the selected filter settings.
-     * @method isValidFilterItemsAvail
-     * @param  {string} fieldName - Gets filter members for the given field name.
-     * @return {boolean}
-     * @hidden
-     */
-    isValidFilterItemsAvail(fieldName, filterObj) {
-        let isItemAvail = false;
-        let filterTypes = ['Include', 'Exclude'];
-        if (filterObj && filterTypes.indexOf(filterObj.type) >= 0) {
-            let engineModule = this.parent.engineModule;
-            let field = engineModule.fieldList[fieldName];
-            let members = (engineModule.formatFields[fieldName] &&
-                (['date', 'dateTime', 'time'].indexOf(engineModule.formatFields[fieldName].type) > -1)) ?
-                field.formattedMembers : field.members;
-            for (let item of filterObj.items) {
-                if (members[item]) {
-                    isItemAvail = true;
-                    break;
-                }
-            }
-        }
-        return isItemAvail;
-    }
-    getOlapData(fieldName, isInclude) {
-        let treeData = [];
-        let filterItems = [];
-        this.parent.filterDialog.isSearchEnabled = false;
-        let updatedTreeData = [];
-        let engineModule = this.parent.engineModule;
-        let filterObj = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
-        if (engineModule.fieldList[fieldName].filterMembers.length === 0) {
-            if (!this.parent.control.loadOnDemandInMemberEditor) {
-                engineModule.getMembers(this.parent.dataSourceSettings, fieldName, true);
-            }
-            else if (filterObj && filterObj.levelCount > 1 && engineModule.fieldList[fieldName].levels.length > 1) {
-                engineModule.getFilterMembers(this.parent.dataSourceSettings, fieldName, filterObj.levelCount);
-            }
-            else {
-                engineModule.fieldList[fieldName].levelCount = 1;
-                engineModule.getMembers(this.parent.dataSourceSettings, fieldName);
-            }
-        }
-        else {
-            engineModule.fieldList[fieldName].currrentMembers = {};
-            engineModule.fieldList[fieldName].searchMembers = [];
-        }
-        let isHierarchy = engineModule.fieldList[fieldName].isHierarchy;
-        treeData = engineModule.fieldList[fieldName].filterMembers;
-        if (!isNullOrUndefined(filterObj)) {
-            isInclude = filterObj.type ? filterObj.type === 'Include' ? true : false : true;
-            filterItems = filterObj.items ? filterObj.items : [];
-        }
-        let filterItemObj = {};
-        let dummyfilterItems = {};
-        let memberObject = engineModule.fieldList[fieldName].members;
-        for (let item of filterItems) {
-            filterItemObj[item] = item;
-            dummyfilterItems[item] = item;
-            if (memberObject[item]) {
-                dummyfilterItems = this.getParentNode(fieldName, item, dummyfilterItems);
-            }
-        }
-        treeData = this.getFilteredTreeNodes(fieldName, treeData, dummyfilterItems, updatedTreeData, isHierarchy);
-        treeData = this.getOlapTreeData(isInclude, PivotUtil.getClonedData(treeData), filterItemObj, fieldName, isHierarchy);
-        treeData = this.sortOlapFilterData(treeData, engineModule.fieldList[fieldName].sort);
-        return treeData;
-    }
-    /**
-     * Gets sorted filter members for the selected field.
-     * @method sortFilterData
-     * @param  {{ [key: string]: Object }[]} treeData - Gets filter members for the given field name.
-     * @return {{ [key: string]: Object }[]}
-     * @hidden
-     */
-    sortOlapFilterData(treeData, order) {
-        if (treeData.length > 0) {
-            /* tslint:disable:typedef */
-            treeData = order === 'Ascending' ?
-                (treeData.sort((a, b) => (a.caption > b.caption) ? 1 :
-                    ((b.caption > a.caption) ? -1 : 0))) : order === 'Descending' ?
-                (treeData.sort((a, b) => (a.caption < b.caption) ? 1 :
-                    ((b.caption < a.caption) ? -1 : 0))) : treeData;
-            /* tslint:enable:typedef */
-        }
-        return treeData;
-    }
-    getParentIDs(treeObj, id, parent) {
-        let data = treeObj.fields.dataSource;
-        let pid;
-        for (let li of data) {
-            if (li.id === id) {
-                pid = li.pid;
-                break;
-            }
-        }
-        if (pid) {
-            parent.push(pid);
-            this.getParentIDs(treeObj, pid, parent);
-        }
-        return parent;
-    }
-    getChildIDs(treeObj, id, children) {
-        let data = treeObj.fields.dataSource;
-        let cID;
-        for (let li of data) {
-            if (li.pid === id) {
-                cID = li.id;
-                break;
-            }
-        }
-        if (cID) {
-            children.push(cID);
-            this.getParentIDs(treeObj, cID, children);
-        }
-        return children;
-    }
-    /**
-     * show tree nodes using search text.
-     * @hidden
-     */
-    /* tslint:disable:max-func-body-length */
-    searchTreeNodes(args, treeObj, isFieldCollection, isHierarchy) {
-        if (isFieldCollection) {
-            let searchList = [];
-            let nonSearchList = [];
-            let list = [].slice.call(treeObj.element.querySelectorAll('li'));
-            for (let element of list) {
-                if ((element.querySelector('.e-list-text').textContent.toLowerCase()).indexOf(args.value.toLowerCase()) > -1) {
-                    searchList.push(element);
-                }
-                else {
-                    nonSearchList.push(element);
-                }
-            }
-            treeObj.enableNodes(searchList);
-            removeClass(searchList, ICON_DISABLE);
-            treeObj.disableNodes(nonSearchList);
-            addClass(nonSearchList, ICON_DISABLE);
-            if (searchList.length > 0 && nonSearchList.length > 0) {
-                for (let currentNode of searchList) {
-                    let id = currentNode.getAttribute('data-uid');
-                    let parentIDs = this.getParentIDs(treeObj, id, []);
-                    let childIDs = this.getChildIDs(treeObj, id, []);
-                    let pNodes = [];
-                    if (parentIDs.length > 0) {
-                        for (let li of nonSearchList) {
-                            if (PivotUtil.inArray(li.getAttribute('data-uid'), parentIDs) !== -1) {
-                                pNodes.push(li);
-                            }
-                        }
-                    }
-                    if (childIDs.length > 0) {
-                        for (let li of nonSearchList) {
-                            if (PivotUtil.inArray(li.getAttribute('data-uid'), childIDs) !== -1) {
-                                pNodes.push(li);
-                            }
-                        }
-                    }
-                    treeObj.enableNodes(pNodes);
-                    removeClass(pNodes, ICON_DISABLE);
-                }
-            }
-            if ([].slice.call(treeObj.element.querySelectorAll('li.' + ICON_DISABLE)).length === 0) {
-                treeObj.collapseAll();
-            }
-            else {
-                treeObj.expandAll(undefined, undefined, true);
-            }
-        }
-        else {
-            this.parent.searchTreeItems = [];
-            if (this.parent.dataType === 'olap' && !isHierarchy) {
-                this.updateOlapSearchTree(args, treeObj, isHierarchy);
-            }
-            else {
-                let searchList = [];
-                let memberCount = 0;
-                memberCount = 1;
-                for (let item of this.parent.currentTreeItems) {
-                    if (item.name.toLowerCase().indexOf(args.value.toLowerCase()) > -1) {
-                        this.parent.searchTreeItems.push(item);
-                        if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
-                            searchList.push(item);
-                        }
-                        memberCount++;
-                    }
-                }
-                memberCount--;
-                if (memberCount > this.parent.control.maxNodeLimitInMemberEditor) {
-                    this.parent.editorLabelElement.innerText = (memberCount - this.parent.control.maxNodeLimitInMemberEditor) +
-                        this.parent.control.localeObj.getConstant('editorDataLimitMsg');
-                    this.parent.filterDialog.dialogPopUp.height = (this.parent.filterDialog.allowExcelLikeFilter ? '440px' : '400px');
-                    this.parent.isDataOverflow = true;
-                }
-                else {
-                    this.parent.editorLabelElement.innerText = '';
-                    this.parent.filterDialog.dialogPopUp.height = (this.parent.filterDialog.allowExcelLikeFilter ? '400px' : '350px');
-                    this.parent.isDataOverflow = false;
-                }
-                this.parent.isDataOverflow = (memberCount > this.parent.control.maxNodeLimitInMemberEditor);
-                this.parent.editorLabelElement.parentElement.style.display = this.parent.isDataOverflow ? 'block' : 'none';
-                treeObj.fields = { dataSource: searchList, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' };
-                treeObj.dataBind();
-            }
-        }
-    }
-    updateOlapSearchTree(args, treeObj, isHierarchy) {
-        let treeData = [];
-        let filterDialog = this.parent.filterDialog.dialogPopUp.element;
-        let fieldName = filterDialog.getAttribute('data-fieldname');
-        if (args.value.toLowerCase() === '') {
-            this.parent.filterDialog.isSearchEnabled = false;
-            this.parent.engineModule.fieldList[fieldName].searchMembers = [];
-            // (this.parent.engineModule.fieldList[fieldName] as IOlapField).currrentMembers = {};
-            let updatedTreeData = [];
-            let filterItemObj = {};
-            let dummyfilterItems = {};
-            let memberObject = this.parent.engineModule.fieldList[fieldName].members;
-            let members = Object.keys(memberObject);
-            let filterItems = [];
-            for (let item of members) {
-                if (memberObject[item].isSelected) {
-                    if (!(memberObject[item].parent && memberObject[memberObject[item].parent].isSelected)) {
-                        filterItems.push(item);
-                    }
-                }
-            }
-            for (let item of filterItems) {
-                filterItemObj[item] = item;
-                dummyfilterItems[item] = item;
-                if (memberObject[item]) {
-                    dummyfilterItems = this.getParentNode(fieldName, item, dummyfilterItems);
-                }
-            }
-            let searchData = this.parent.engineModule.fieldList[fieldName].filterMembers;
-            treeData = this.getFilteredTreeNodes(fieldName, searchData, dummyfilterItems, updatedTreeData, isHierarchy);
-            treeData = this.getOlapTreeData(true, PivotUtil.getClonedData(treeData), filterItemObj, fieldName, isHierarchy, true);
-        }
-        else {
-            this.parent.filterDialog.isSearchEnabled = true;
-            let searchData = this.parent.engineModule.fieldList[fieldName].searchMembers;
-            treeData = PivotUtil.getClonedData(searchData);
-            treeData = this.getOlapSearchTreeData(true, treeData, fieldName);
-        }
-        treeObj.fields = { dataSource: treeData, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' };
-        treeObj.dataBind();
-    }
-    getTreeData(isInclude, members, filterItems, fieldName) {
-        this.parent.currentTreeItems = [];
-        this.parent.searchTreeItems = [];
-        this.parent.currentTreeItemsPos = {};
-        this.parent.savedTreeFilterPos = {};
-        let engineModule = this.parent.engineModule;
-        this.parent.isDateField = engineModule.formatFields[fieldName] &&
-            ((['date', 'dateTime', 'time']).indexOf(engineModule.formatFields[fieldName].type) > -1);
-        let list = [];
-        let memberCount = 1;
-        let filterObj = {};
-        for (let item of filterItems) {
-            filterObj[item] = item;
-        }
-        for (let member of members) {
-            let memberName = this.parent.isDateField ? member.formattedText : member.actualText.toString();
-            /* tslint:disable */
-            let obj = {
-                id: member.actualText.toString(),
-                name: memberName,
-                isSelected: isInclude ? false : true
-            };
-            /* tslint:disable */
-            if (filterObj[memberName] !== undefined) {
-                obj.isSelected = isInclude ? true : false;
-            }
-            if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
-                list.push(obj);
-            }
-            if (!obj.isSelected) {
-                this.parent.savedTreeFilterPos[memberCount - 1] = memberName;
-            }
-            this.parent.currentTreeItems.push(obj);
-            this.parent.searchTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[member.actualText] = memberCount - 1;
-            memberCount++;
-        }
-        this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);
-        return list;
-    }
-    /* tslint:disable-next-line:max-line-length */
-    getOlapTreeData(isInclude, members, filterObj, fieldName, isHierarchy, isSearchRender) {
-        let engineModule = this.parent.engineModule;
-        let fieldList = engineModule.fieldList[fieldName];
-        this.parent.currentTreeItems = [];
-        this.parent.searchTreeItems = [];
-        this.parent.currentTreeItemsPos = {};
-        let list = [];
-        let memberCount = 1;
-        for (let member of members) {
-            let obj = member;
-            let memberName = member.id.toString();
-            if (!isSearchRender) {
-                obj.isSelected = isInclude ? false : true;
-            }
-            if (filterObj[memberName] !== undefined) {
-                obj.isSelected = isInclude ? true : false;
-            }
-            if (!isSearchRender && member.hasChildren) {
-                this.updateChildNodeStates(fieldList.filterMembers, fieldName, member.id, obj.isSelected);
-            }
-            fieldList.members[memberName].isSelected = obj.isSelected;
-            if (fieldList.currrentMembers && fieldList.currrentMembers[memberName]) {
-                fieldList.currrentMembers[memberName].isSelected = obj.isSelected;
-            }
-            if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor && isHierarchy) {
-                list.push(obj);
-            }
-            this.parent.currentTreeItems.push(obj);
-            this.parent.searchTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[memberName] = memberCount - 1;
-            memberCount++;
-        }
-        this.parent.isDataOverflow = isHierarchy ? ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor) : false;
-        return isHierarchy ? list : members;
-    }
-    /* tslint:disable-next-line:max-line-length */
-    getOlapSearchTreeData(isInclude, members, fieldName) {
-        let cMembers = this.parent.engineModule.fieldList[fieldName].members;
-        for (let member of members) {
-            let memberName = member.id.toString();
-            if (cMembers[memberName]) {
-                member.isSelected = cMembers[memberName].isSelected;
-            }
-            this.parent.searchTreeItems.push(member);
-        }
-        return members;
-    }
-    updateChildNodeStates(members, fieldName, node, state) {
-        let cMembers = this.parent.engineModule.fieldList[fieldName].members;
-        let sMembers = this.parent.engineModule.fieldList[fieldName].currrentMembers;
-        for (let member of members) {
-            if (member.pid && member.pid.toString() === node) {
-                cMembers[member.id].isSelected = state;
-                if (sMembers && sMembers[member.id]) {
-                    sMembers[member.id].isSelected = state;
-                }
-                if (member.hasChildren) {
-                    this.updateChildNodeStates(members, fieldName, member.id, state);
-                }
-            }
-        }
-    }
-    /**
-     * get the parent node of particular filter members.
-     * @hidden
-     */
-    getParentNode(fieldName, item, filterObj) {
-        let members = this.parent.engineModule.fieldList[fieldName].members;
-        if (members[item].parent && item !== members[item].parent) {
-            let parentItem = members[item].parent;
-            filterObj[parentItem] = parentItem;
-            this.getParentNode(fieldName, parentItem, filterObj);
-        }
-        return filterObj;
-    }
-    /* tslint:disable-next-line:max-line-length */
-    getFilteredTreeNodes(fieldName, members, filterObj, treeData, isHierarchy) {
-        let parentNodes = [];
-        let memberObject = this.parent.engineModule.fieldList[fieldName].members;
-        let selectedNodes = filterObj ? Object.keys(filterObj) : [];
-        for (let node of selectedNodes) {
-            let parent = memberObject[node].parent;
-            if (parent !== undefined && PivotUtil.inArray(parent, parentNodes) === -1) {
-                parentNodes.push(parent);
-            }
-        }
-        for (let member of members) {
-            if (isNullOrUndefined(member.pid) || PivotUtil.inArray(member.pid, parentNodes) !== -1) {
-                treeData.push(member);
-                if (isNullOrUndefined(member.pid) && PivotUtil.inArray(member.id, parentNodes) !== -1) {
-                    memberObject[member.id].isNodeExpand = true;
-                }
-                else if (!isNullOrUndefined(member.pid) && PivotUtil.inArray(member.pid, parentNodes) !== -1) {
-                    memberObject[member.id].isNodeExpand = false;
-                    memberObject[member.pid].isNodeExpand = true;
-                }
-                else {
-                    memberObject[member.id].isNodeExpand = false;
-                }
-            }
-            else {
-                memberObject[member.id].isNodeExpand = false;
-            }
-        }
-        return treeData;
-    }
-}
-
-/**
- * `DialogAction` module is used to handle field list dialog related behaviour.
- */
-/** @hidden */
-class NodeStateModified {
-    /**
-     * Constructor for the dialog action.
-     * @hidden
-     */
-    constructor(parent) {
-        this.parent = parent;
-    }
-    /**
-     * Updates the dataSource by drag and drop the selected field from either field list or axis table with dropped target position.
-     * @method onStateModified
-     * @param  {DragEventArgs & DragAndDropEventArgs} args -  Contains both pivot button and field list drag and drop information.
-     * @param  {string} fieldName - Defines dropped field name to update dataSource.
-     * @return {void}
-     * @hidden
-     */
-    onStateModified(args, fieldName) {
-        let droppedClass = '';
-        let nodeDropped = true;
-        let target = closest(args.target, '.' + DROPPABLE_CLASS);
-        let droppedPosition = -1;
-        this.parent.dataSourceUpdate.btnElement = args.element ? args.element.parentElement : undefined;
-        if (target) {
-            droppedClass = target.classList[1] === ROW_AXIS_CLASS ?
-                'rows' : target.classList[1] === COLUMN_AXIS_CLASS ? 'columns' : target.classList[1] === VALUE_AXIS_CLASS ?
-                'values' : target.classList[1] === FILTER_AXIS_CLASS ? 'filters' : '';
-        }
-        if (this.parent.dataType === 'olap') {
-            let actualFieldName = (this.parent.engineModule.fieldList[fieldName] &&
-                this.parent.engineModule.fieldList[fieldName].isCalculatedField ?
-                this.parent.engineModule.fieldList[fieldName].tag : fieldName);
-            if (args.cancel && droppedClass === '') {
-                nodeDropped = false;
-                return nodeDropped;
-            }
-            else if ((this.parent.dataSourceUpdate.btnElement &&
-                (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
-                    (droppedClass === 'filters' || droppedClass === 'values'))) ||
-                (this.parent.dataSourceUpdate.btnElement &&
-                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
-                        actualFieldName.toLowerCase().indexOf('[measures].') > -1 &&
-                        (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns'))) ||
-                (this.parent.dataSourceUpdate.btnElement &&
-                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
-                        actualFieldName.toLowerCase().indexOf('[measures].') === -1 &&
-                        this.parent.engineModule.fieldList[fieldName] &&
-                        this.parent.engineModule.fieldList[fieldName].isNamedSets &&
-                        (droppedClass === 'filters' || droppedClass === 'values'))) ||
-                (this.parent.dataSourceUpdate.btnElement &&
-                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
-                        actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values'))) {
-                let title = this.parent.localeObj.getConstant('warning');
-                let description = this.parent.localeObj.getConstant('fieldDropErrorAction');
-                this.parent.errorDialog.createErrorDialog(title, description);
-                nodeDropped = false;
-                return nodeDropped;
-            }
-        }
-        else {
-            if ((args.cancel && droppedClass === '') ||
-                (this.parent.dataSourceUpdate.btnElement && this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
-                    ((droppedClass === 'filters' || droppedClass === 'values') ||
-                        droppedClass.indexOf(this.parent.dataSourceSettings.valueAxis) > -1))) {
-                nodeDropped = false;
-                return nodeDropped;
-            }
-        }
-        if (droppedClass !== '') {
-            if (this.parent.dataType === 'olap') {
-                let actualFieldName = (this.parent.engineModule.fieldList[fieldName] &&
-                    this.parent.engineModule.fieldList[fieldName].isCalculatedField ?
-                    this.parent.engineModule.fieldList[fieldName].tag : fieldName);
-                if ((actualFieldName.toLowerCase().indexOf('[measures].') > -1 &&
-                    (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns')) ||
-                    (this.parent.engineModule.fieldList[fieldName] &&
-                        this.parent.engineModule.fieldList[fieldName].isNamedSets && droppedClass === 'filters') ||
-                    (actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values')) {
-                    let title = this.parent.localeObj.getConstant('warning');
-                    let description = this.parent.localeObj.getConstant('fieldDropErrorAction');
-                    this.parent.errorDialog.createErrorDialog(title, description);
-                    nodeDropped = false;
-                    return nodeDropped;
-                }
-            }
-            if (this.parent.dataType === 'pivot' && this.parent.engineModule.fieldList[fieldName] &&
-                this.parent.engineModule.fieldList[fieldName].aggregateType === 'CalculatedField' && droppedClass !== 'values') {
-                let title = this.parent.localeObj.getConstant('warning');
-                let description = this.parent.localeObj.getConstant('dropAction');
-                this.parent.errorDialog.createErrorDialog(title, description);
-                nodeDropped = false;
-                return nodeDropped;
-            }
-            droppedPosition = this.getButtonPosition(args.target, droppedClass);
-        }
-        else if (this.parent.engineModule.fieldList[fieldName]) {
-            this.parent.engineModule.fieldList[fieldName].isSelected = false;
-            if (this.parent.dataType === 'olap') {
-                this.parent.engineModule.updateFieldlistData(fieldName);
-            }
-        }
-        this.parent.dataSourceUpdate.updateDataSource(fieldName, droppedClass, droppedPosition);
-        return isBlazor() ? false : nodeDropped;
-    }
-    getButtonPosition(target, droppedClass) {
-        let droppedPosition = -1;
-        let targetBtn = closest(target, '.' + PIVOT_BUTTON_WRAPPER_CLASS);
-        if (!isNullOrUndefined(targetBtn)) {
-            targetBtn = targetBtn.querySelector('.' + PIVOT_BUTTON_CLASS);
-            let axisPanel = this.parent.element.querySelector('.e-' + droppedClass);
-            let pivotButtons = [].slice.call(axisPanel.querySelectorAll('.' + PIVOT_BUTTON_CLASS));
-            for (let i = 0, n = pivotButtons.length; i < n; i++) {
-                if (pivotButtons[i].id === targetBtn.id) {
-                    droppedPosition = i;
-                    break;
-                }
-            }
-        }
-        return droppedPosition;
-    }
-}
-
-/**
- * `DataSourceUpdate` module is used to update the dataSource.
- */
-/** @hidden */
-class DataSourceUpdate {
-    /**
-     * Constructor for the dialog action.
-     * @hidden
-     */
-    constructor(parent) {
-        this.parent = parent;
-    }
-    /**
-     * Updates the dataSource by adding the given field along with field dropped position to the dataSource.
-     * @param  {string} fieldName - Defines dropped field name to update dataSource.
-     * @param  {string} droppedClass -  Defines dropped field axis name to update dataSource.
-     * @param  {number} fieldCaption - Defines dropped position to the axis based on field position.
-     * @method updateDataSource
-     * @return {void}
-     * @hidden
-     */
-    updateDataSource(fieldName, droppedClass, droppedPosition) {
-        let dataSourceItem;
-        let draggedClass;
-        let row = this.parent.dataSourceSettings.rows;
-        let column = this.parent.dataSourceSettings.columns;
-        let value = this.parent.dataSourceSettings.values;
-        let filter = this.parent.dataSourceSettings.filters;
-        let field = [row, column, value, filter];
-        for (let len = 0, lnt = field.length; len < lnt; len++) {
-            if (field[len]) {
-                for (let i = 0, n = field[len].length; i < n; i++) {
-                    if (field[len][i].name === fieldName || (this.parent.dataType === 'olap' &&
-                        field[len][i].name.toLowerCase() === '[measures]' && field[len][i].name.toLowerCase() === fieldName)) {
-                        draggedClass = len === 0 ? 'rows' : len === 1 ? 'columns' : len === 2 ? 'values' : 'filters';
-                    }
-                    if (!draggedClass) {
-                        draggedClass = 'fieldList';
-                    }
-                }
-            }
-        }
-        let eventdrop = {
-            'droppedField': this.parent.engineModule.fieldList[fieldName.toString()], 'dataSourceSettings': this.parent.dataSourceSettings,
-            'droppedAxis': droppedClass, 'draggedAxis': draggedClass, 'cancel': false
-        };
-        this.control.trigger(fieldDrop, eventdrop, (observedArgs) => {
-            if (!observedArgs.cancel) {
-                if (this.control && this.btnElement && this.btnElement.getAttribute('isvalue') === 'true') {
-                    switch (droppedClass) {
-                        case '':
-                            this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
-                            break;
-                        case 'rows':
-                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
-                            break;
-                        case 'columns':
-                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'column' } }, true);
-                            break;
-                    }
-                }
-                else {
-                    dataSourceItem = this.removeFieldFromReport(fieldName.toString());
-                    dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
-                    if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
-                        droppedClass = 'values';
-                    }
-                }
-                if (this.parent.dataType === 'olap') {
-                    dataSourceItem = this.removeFieldFromReport(fieldName.toString());
-                    dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
-                    if (this.parent.dataSourceSettings.values.length === 0) {
-                        this.removeFieldFromReport('[measures]');
-                    }
-                    if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
-                        droppedClass = 'values';
-                    }
-                }
-                if (this.control) {
-                    let eventArgs = {
-                        'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
-                    };
-                    /* tslint:disable */
-                    let dataSourceUpdate = this;
-                    this.control.trigger(onFieldDropped, eventArgs, (observedArgs) => {
-                        eventArgs = observedArgs;
-                        if (dataSourceItem) {
-                            dataSourceItem = observedArgs.droppedField;
-                            switch (droppedClass) {
-                                case 'filters':
-                                    droppedPosition !== -1 ?
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem)) :
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.push(dataSourceItem) : this.parent.dataSourceSettings.filters.push(dataSourceItem));
-                                    break;
-                                case 'rows':
-                                    droppedPosition !== -1 ?
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem)) :
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.push(dataSourceItem) : this.parent.dataSourceSettings.rows.push(dataSourceItem));
-                                    break;
-                                case 'columns':
-                                    droppedPosition !== -1 ?
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem)) :
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.push(dataSourceItem) : this.parent.dataSourceSettings.columns.push(dataSourceItem));
-                                    break;
-                                case 'values':
-                                    droppedPosition !== -1 ?
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem)) :
-                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.push(dataSourceItem) : this.parent.dataSourceSettings.values.push(dataSourceItem));
-                                    if (isBlazor()) {
-                                        if (dataSourceUpdate.parent.dataType === 'olap' && !dataSourceUpdate.parent.engineModule.isMeasureAvail) {
-                                            let measureField = {
-                                                name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
-                                            };
-                                            let fieldAxis = dataSourceUpdate.parent.dataSourceSettings.valueAxis === 'row' ?
-                                                dataSourceUpdate.parent.dataSourceSettings.rows : dataSourceUpdate.parent.dataSourceSettings.columns;
-                                            fieldAxis.push(measureField);
-                                        }
-                                    }
-                                    else {
-                                        if (this.parent.dataType === 'olap' && !this.parent.engineModule.isMeasureAvail) {
-                                            let measureField = {
-                                                name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
-                                            };
-                                            let fieldAxis = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                                                this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                                            fieldAxis.push(measureField);
-                                        }
-                                    }
-                                    break;
-                            }
-                            if (isBlazor()) {
-                                dataSourceUpdate.parent.control.pivotButtonModule.updateDataSource();
-                                dataSourceUpdate.parent.control.axisFieldModule.render();
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
-    /* tslint:enable */
-    /**
-     * Updates the dataSource by removing the given field from the dataSource.
-     * @param  {string} fieldName - Defines dropped field name to remove dataSource.
-     * @method removeFieldFromReport
-     * @return {void}
-     * @hidden
-     */
-    removeFieldFromReport(fieldName) {
-        let dataSourceItem;
-        let isDataSource = false;
-        let rows = this.parent.dataSourceSettings.rows;
-        let columns = this.parent.dataSourceSettings.columns;
-        let values = this.parent.dataSourceSettings.values;
-        let filters = this.parent.dataSourceSettings.filters;
-        let fields = [rows, columns, values, filters];
-        let field = this.parent.engineModule.fieldList[fieldName];
-        for (let len = 0, lnt = fields.length; len < lnt; len++) {
-            if (!isDataSource && fields[len]) {
-                for (let i = 0, n = fields[len].length; i < n; i++) {
-                    if (fields[len][i].name === fieldName || (this.parent.dataType === 'olap' &&
-                        fields[len][i].name.toLowerCase() === '[measures]' && fields[len][i].name.toLowerCase() === fieldName)) {
-                        dataSourceItem = fields[len][i].properties ?
-                            fields[len][i].properties : fields[len][i];
-                        dataSourceItem.type = (field && field.type === 'number') ? dataSourceItem.type :
-                            'Count';
-                        fields[len].splice(i, 1);
-                        if (this.parent.dataType === 'olap') {
-                            let engineModule = this.parent.engineModule;
-                            if (engineModule && engineModule.fieldList[fieldName]) {
-                                engineModule.fieldList[fieldName].currrentMembers = {};
-                                engineModule.fieldList[fieldName].searchMembers = [];
-                            }
-                        }
-                        isDataSource = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return dataSourceItem;
-    }
-    /**
-     * Creates new field object given field name from the field list data.
-     * @param  {string} fieldName - Defines dropped field name to add dataSource.
-     * @method getNewField
-     * @return {void}
-     * @hidden
-     */
-    getNewField(fieldName) {
-        let newField;
-        if (this.parent.dataType === 'olap') {
-            let field = this.parent.engineModule.fieldList[fieldName];
-            newField = {
-                name: fieldName,
-                caption: field.caption,
-                isNamedSet: field.isNamedSets,
-                isCalculatedField: field.isCalculatedField,
-                type: (field.aggregateType === undefined ? field.type === 'number' ? 'Sum' :
-                    'Count' : field.aggregateType),
-            };
-        }
-        else {
-            let field = this.parent.engineModule.fieldList[fieldName];
-            newField = {
-                name: fieldName,
-                caption: field.caption,
-                type: ((field.aggregateType === undefined || field.aggregateType === null) ?
-                    field.type === 'number' ? 'Sum' :
-                        'Count' : field.aggregateType),
-                showNoDataItems: field.showNoDataItems,
-                baseField: field.baseField,
-                baseItem: field.baseItem,
-            };
-        }
-        return newField;
-    }
-}
-
-/**
- * `ErrorDialog` module to create error dialog.
- */
-/** @hidden */
-class ErrorDialog {
-    /**
-     * Constructor for the dialog action.
-     * @hidden
-     */
-    constructor(parent) {
-        this.parent = parent;
-    }
-    /**
-     * Creates the error dialog for the unexpected action done.
-     * @method createErrorDialog
-     * @return {void}
-     * @hidden
-     */
-    createErrorDialog(title, description, target) {
-        let errorDialog = createElement('div', {
-            id: this.parent.parentID + '_ErrorDialog',
-            className: ERROR_DIALOG_CLASS
-        });
-        this.parent.element.appendChild(errorDialog);
-        let zIndex = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
-            this.parent.renderMode === 'Popup' && this.parent.control ?
-            this.parent.control.dialogRenderer.fieldListDialog.zIndex + 1 : 1000001);
-        this.errorPopUp = new Dialog({
-            animationSettings: { effect: 'Fade' },
-            allowDragging: false,
-            header: title,
-            content: description,
-            isModal: true,
-            visible: true,
-            showCloseIcon: true,
-            enableRtl: this.parent.enableRtl,
-            width: 'auto',
-            height: 'auto',
-            zIndex: zIndex,
-            position: { X: 'center', Y: 'center' },
-            buttons: [
-                {
-                    click: this.closeErrorDialog.bind(this),
-                    buttonModel: { cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
-                }
-            ],
-            closeOnEscape: true,
-            target: document.body,
-            close: this.removeErrorDialog.bind(this)
-        });
-        this.errorPopUp.isStringTemplate = true;
-        this.errorPopUp.appendTo(errorDialog);
-    }
-    closeErrorDialog() {
-        this.errorPopUp.close();
-    }
-    removeErrorDialog() {
-        if (this.errorPopUp && !this.errorPopUp.isDestroyed) {
-            this.errorPopUp.destroy();
-        }
-        if (document.getElementById(this.parent.parentID + '_ErrorDialog')) {
-            remove(document.getElementById(this.parent.parentID + '_ErrorDialog'));
-        }
-    }
-}
-
-/**
- * `FilterDialog` module to create filter dialog.
- */
-/** @hidden */
-class FilterDialog {
-    /**
-     * Constructor for the dialog action.
-     * @hidden
-     */
-    constructor(parent) {
-        this.parent = parent;
-    }
-    /**
-     * Creates the member filter dialog for the selected field.
-     * @method createFilterDialog
-     * @return {void}
-     * @hidden
-     */
-    createFilterDialog(treeData, fieldName, fieldCaption, target) {
-        let editorDialog = createElement('div', {
-            id: this.parent.parentID + '_EditorTreeView',
-            className: MEMBER_EDITOR_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
-            attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
-        });
-        let filterCaption = this.parent.engineModule.fieldList[fieldName].caption;
-        let headerTemplate = this.parent.localeObj.getConstant('filter') + ' ' +
-            '"' + fieldCaption + '"' + ' ' + this.parent.localeObj.getConstant('by');
-        this.filterObject = this.getFilterObject(fieldName);
-        this.isSearchEnabled = false;
-        this.allowExcelLikeFilter = this.isExcelFilter(fieldName);
-        this.parent.element.appendChild(editorDialog);
-        this.dialogPopUp = new Dialog({
-            animationSettings: { effect: (this.allowExcelLikeFilter ? 'None' : 'Fade') },
-            allowDragging: false,
-            header: (this.allowExcelLikeFilter ? headerTemplate : filterCaption),
-            content: (this.allowExcelLikeFilter ? '' : this.createTreeView(treeData, fieldCaption, fieldName)),
-            isModal: this.parent.renderMode === 'Popup' ? true : this.parent.isAdaptive ? true : false,
-            visible: true,
-            showCloseIcon: this.allowExcelLikeFilter ? true : false,
-            enableRtl: this.parent.enableRtl,
-            width: 'auto',
-            height: this.parent.isDataOverflow ? (this.allowExcelLikeFilter ? '440px' : '400px') :
-                (this.allowExcelLikeFilter ? '400px' : '350px'),
-            position: { X: 'center', Y: 'center' },
-            buttons: [
-                {
-                    buttonModel: {
-                        cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
-                    }
-                },
-                {
-                    buttonModel: {
-                        cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + ICON_DISABLE),
-                        iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
-                        content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.filterObject ? false : true)
-                    }
-                },
-                {
-                    click: this.closeFilterDialog.bind(this),
-                    buttonModel: { cssClass: CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
-                }
-            ],
-            closeOnEscape: true,
-            target: target,
-            close: this.removeFilterDialog.bind(this)
-        });
-        this.dialogPopUp.isStringTemplate = true;
-        this.dialogPopUp.appendTo(editorDialog);
-        // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = (this.allowExcelLikeFilter ? headerTemplate : filterCaption);
-        if (this.allowExcelLikeFilter) {
-            this.createTabMenu(treeData, fieldCaption, fieldName);
-            addClass([this.dialogPopUp.element], 'e-excel-filter');
-            this.updateCheckedState(fieldCaption);
-        }
-        else {
-            this.updateCheckedState(fieldCaption);
-        }
-        setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
-        if (this.allowExcelLikeFilter) {
-            this.dialogPopUp.element.querySelector('.e-dlg-closeicon-btn').focus();
-        }
-        else {
-            return;
-        }
-    }
-    /* tslint:disable */
-    createTreeView(treeData, fieldCaption, fieldName) {
-        let editorTreeWrapper = createElement('div', {
-            id: this.parent.parentID + 'EditorDiv',
-            className: EDITOR_TREE_WRAPPER_CLASS + (this.allowExcelLikeFilter ? ' e-excelfilter' : '')
-        });
-        let levelWrapper = createElement('button', {
-            id: this.parent.parentID + '_LevelDiv',
-            className: 'e-level-wrapper-class'
-        });
-        let searchWrapper = createElement('div', {
-            id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
-            className: EDITOR_SEARCH_WRAPPER_CLASS
-        });
-        let filterCaption = this.parent.engineModule.fieldList[fieldName].caption;
-        let editorSearch = createElement('input', { attrs: { 'type': 'text' } });
-        let nodeLimitText = this.parent.isDataOverflow ?
-            ((this.parent.currentTreeItems.length - this.parent.control.maxNodeLimitInMemberEditor) +
-                this.parent.control.localeObj.getConstant('editorDataLimitMsg')) : '';
-        let labelWrapper = createElement('div', {
-            id: this.parent.parentID + '_LabelDiv',
-            attrs: { 'tabindex': '-1', 'title': nodeLimitText },
-            className: EDITOR_LABEL_WRAPPER_CLASS
-        });
-        this.parent.editorLabelElement = createElement('label', { className: EDITOR_LABEL_CLASS });
-        this.parent.editorLabelElement.innerText = nodeLimitText;
-        labelWrapper.style.display = this.parent.isDataOverflow ? 'block' : 'none';
-        labelWrapper.appendChild(this.parent.editorLabelElement);
-        searchWrapper.appendChild(editorSearch);
-        searchWrapper.appendChild(levelWrapper);
-        let selectAllWrapper = createElement('div', {
-            id: this.parent.parentID + '_AllDiv', attrs: { 'tabindex': '-1' },
-            className: SELECT_ALL_WRAPPER_CLASS
-        });
-        let selectAllContainer = createElement('div', { className: SELECT_ALL_CLASS });
-        let treeOuterDiv = createElement('div', { className: EDITOR_TREE_CONTAINER_CLASS + '-outer-div' });
-        let treeViewContainer = createElement('div', { className: EDITOR_TREE_CONTAINER_CLASS });
-        let promptDiv = createElement('div', {
-            className: EMPTY_MEMBER_CLASS + ' ' + ICON_DISABLE,
-            innerHTML: this.parent.localeObj.getConstant('noMatches')
-        });
-        if (this.parent.dataType === 'olap' && this.parent.control.loadOnDemandInMemberEditor &&
-            !this.parent.engineModule.fieldList[fieldName].isHierarchy &&
-            !this.parent.engineModule.fieldList[fieldName].isNamedSets) {
-            this.createLevelWrapper(levelWrapper, fieldName);
-        }
-        else {
-            levelWrapper.style.display = 'none';
-        }
-        selectAllWrapper.appendChild(selectAllContainer);
-        editorTreeWrapper.appendChild(searchWrapper);
-        editorTreeWrapper.appendChild(selectAllWrapper);
-        editorTreeWrapper.appendChild(promptDiv);
-        this.editorSearch = new MaskedTextBox({
-            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + filterCaption + '"',
-            enableRtl: this.parent.enableRtl,
-            cssClass: EDITOR_SEARCH_CLASS,
-            showClearButton: true,
-            change: (e) => {
-                if (this.parent.dataType === 'olap') {
-                    this.searchOlapTreeView(e, promptDiv, fieldCaption);
-                }
-                else {
-                    this.parent.eventBase.searchTreeNodes(e, this.memberTreeView, false);
-                    let filterDialog = this.dialogPopUp.element;
-                    let liList = [].slice.call(this.memberTreeView.element.querySelectorAll('li'));
-                    if (liList.length === 0) {
-                        this.allMemberSelect.disableNodes([this.allMemberSelect.element.querySelector('li')]);
-                        filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
-                        removeClass([promptDiv], ICON_DISABLE);
-                    }
-                    else {
-                        this.allMemberSelect.enableNodes([this.allMemberSelect.element.querySelector('li')]);
-                        filterDialog.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
-                        addClass([promptDiv], ICON_DISABLE);
-                    }
-                    this.updateCheckedState(fieldCaption);
-                }
-            }
-        });
-        this.editorSearch.isStringTemplate = true;
-        this.editorSearch.appendTo(editorSearch);
-        let nodeAttr = { 'data-fieldName': fieldName };
-        let data = [{ id: 'all', name: 'All', isSelected: true, htmlAttributes: nodeAttr }];
-        this.allMemberSelect = new TreeView({
-            fields: { dataSource: data, id: 'id', text: 'name', isChecked: 'isSelected' },
-            showCheckBox: true,
-            expandOn: 'None',
-            enableRtl: this.parent.enableRtl,
-            nodeClicked: this.nodeCheck.bind(this, true),
-            keyPress: this.nodeCheck.bind(this, true)
-        });
-        this.allMemberSelect.isStringTemplate = true;
-        this.allMemberSelect.appendTo(selectAllContainer);
-        treeOuterDiv.appendChild(treeViewContainer);
-        editorTreeWrapper.appendChild(treeOuterDiv);
-        this.memberTreeView = new TreeView({
-            fields: { dataSource: treeData, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' },
-            showCheckBox: true,
-            enableRtl: this.parent.enableRtl,
-            nodeChecking: this.validateTreeNode.bind(this),
-            nodeClicked: this.nodeCheck.bind(this, false),
-            keyPress: this.nodeCheck.bind(this, false),
-            nodeExpanding: this.updateChildNodes.bind(this),
-            expandOn: 'None'
-        });
-        this.memberTreeView.isStringTemplate = true;
-        this.memberTreeView.appendTo(treeViewContainer);
-        editorTreeWrapper.appendChild(labelWrapper);
-        return editorTreeWrapper;
-    }
-    createLevelWrapper(levelWrapper, fieldName) {
-        let engineModule = this.parent.engineModule;
-        let levels = engineModule.fieldList[fieldName].levels;
-        let levelCount = engineModule.fieldList[fieldName].levelCount;
-        let items = [];
-        for (let i = 0, cnt = levels.length; i < cnt; i++) {
-            items.push({ id: levels[i].id, text: levels[i].name });
-        }
-        this.dropMenu = new DropDownButton({
-            cssClass: 'e-level-drop',
-            items: items, iconCss: 'e-icons e-dropdown-icon',
-            disabled: (levelCount === levels.length),
-            beforeOpen: (args) => {
-                let items = [].slice.call(args.element.querySelectorAll('li'));
-                let engineModule = this.parent.engineModule;
-                let levelCount = engineModule.fieldList[fieldName].levelCount;
-                removeClass(items, MENU_DISABLE);
-                for (let i = 0, cnt = items.length; i < cnt; i++) {
-                    if (i < levelCount) {
-                        addClass([items[i]], MENU_DISABLE);
-                    }
-                }
-            },
-            select: (args) => {
-                let fieldName = this.dialogPopUp.element.getAttribute('data-fieldname');
-                let engineModule = this.parent.engineModule;
-                let selectedLevel;
-                for (let i = 0, cnt = items.length; i < cnt; i++) {
-                    if (items[i].id === args.item.id) {
-                        selectedLevel = i;
-                    }
-                }
-                engineModule.getFilterMembers(this.parent.dataSourceSettings, fieldName, selectedLevel + 1, false, true);
-            },
-            close: () => {
-                let engineModule = this.parent.engineModule;
-                let levels = engineModule.fieldList[fieldName].levels;
-                let levelCount = engineModule.fieldList[fieldName].levelCount;
-                if (levelCount === levels.length) {
-                    this.dropMenu.disabled = true;
-                    this.dropMenu.dataBind();
-                }
-                else {
-                    this.dropMenu.disabled = false;
-                }
-            }
-        });
-        this.dropMenu.appendTo(levelWrapper);
-    }
-    searchOlapTreeView(e, promptDiv, fieldCaption) {
-        let popupInstance = this;
-        clearTimeout(this.timeOutObj);
-        this.timeOutObj = setTimeout(function () {
-            let engineModule = popupInstance.parent.engineModule;
-            let filterDialog = popupInstance.dialogPopUp.element;
-            let fieldName = filterDialog.getAttribute('data-fieldname');
-            let nodeLimit = popupInstance.parent.control.maxNodeLimitInMemberEditor ?
-                popupInstance.parent.control.maxNodeLimitInMemberEditor : 5000;
-            if (!engineModule.fieldList[fieldName].isHierarchy) {
-                if (popupInstance.dropMenu && e.value !== '') {
-                    popupInstance.dropMenu.disabled = true;
-                }
-                else {
-                    popupInstance.dropMenu.disabled = false;
-                }
-                if (!popupInstance.parent.control.loadOnDemandInMemberEditor) {
-                    engineModule.getSearchMembers(popupInstance.parent.dataSourceSettings, fieldName, e.value.toLowerCase(), nodeLimit, true);
-                }
-                else {
-                    let levelCount = engineModule.fieldList[fieldName].levelCount ? engineModule.fieldList[fieldName].levelCount : 1;
-                    engineModule.getSearchMembers(popupInstance.parent.dataSourceSettings, fieldName, e.value.toLowerCase(), nodeLimit, false, levelCount);
-                }
-                popupInstance.parent.eventBase.searchTreeNodes(e, popupInstance.memberTreeView, false, false);
-            }
-            else {
-                popupInstance.parent.eventBase.searchTreeNodes(e, popupInstance.memberTreeView, false, true);
-            }
-            let liList = [].slice.call(popupInstance.memberTreeView.element.querySelectorAll('li'));
-            // for (let element of liList) {
-            //     if (element.querySelector('.interaction')) {
-            //         setStyleAttribute(element.querySelector('.interaction'), { display: 'none' });
-            //     }
-            // }
-            if (liList.length === 0) {
-                popupInstance.allMemberSelect.disableNodes([popupInstance.allMemberSelect.element.querySelector('li')]);
-                filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
-                removeClass([promptDiv], ICON_DISABLE);
-            }
-            else {
-                popupInstance.allMemberSelect.enableNodes([popupInstance.allMemberSelect.element.querySelector('li')]);
-                filterDialog.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
-                addClass([promptDiv], ICON_DISABLE);
-            }
-            popupInstance.updateCheckedState(fieldCaption);
-        }, 500);
-    }
-    /* tslint:enable */
-    /* tslint:disable:no-any */
-    nodeCheck(isAllMember, args) {
-        let checkedNode = [args.node];
-        if (args.event.target.classList.contains('e-fullrow') || args.event.key === 'Enter') {
-            let memberObj = isAllMember ? this.allMemberSelect : this.memberTreeView;
-            let getNodeDetails = memberObj.getNode(args.node);
-            if (getNodeDetails.isChecked === 'true') {
-                memberObj.uncheckAll(checkedNode);
-            }
-            else {
-                memberObj.checkAll(checkedNode);
-            }
-        }
-    }
-    updateChildNodes(args) {
-        if (this.parent.dataType === 'olap') {
-            let engineModule = this.parent.engineModule;
-            let fieldName = args.node.getAttribute('data-fieldname');
-            let fieldList = engineModule.fieldList[fieldName];
-            let filterItems = [];
-            if (fieldList && fieldList.filterMembers.length > 0 && !this.isSearchEnabled &&
-                !fieldList.members[args.nodeData.id].isNodeExpand) {
-                let childNodes = [];
-                for (let item of fieldList.filterMembers) {
-                    if (item.pid === args.nodeData.id.toString()) {
-                        childNodes.push(item);
-                    }
-                }
-                if (childNodes.length === 0) {
-                    fieldList.childMembers = [];
-                    engineModule.getChildMembers(this.parent.dataSourceSettings, args.nodeData.id.toString(), fieldName);
-                    childNodes = fieldList.childMembers;
-                    fieldList.childMembers = [];
-                }
-                let treeData = PivotUtil.getClonedData(childNodes);
-                let curTreeData = this.memberTreeView.fields.dataSource;
-                let isInclude = false;
-                if (!isNullOrUndefined(this.filterObject)) {
-                    isInclude = this.filterObject.type === 'Include' ? true : false;
-                    filterItems = this.filterObject.items ? this.filterObject.items : [];
-                }
-                treeData = this.updateChildData(isInclude, treeData, filterItems, fieldName, args.nodeData);
-                treeData = this.parent.eventBase.sortOlapFilterData(treeData, engineModule.fieldList[fieldName].sort);
-                for (let node of treeData) {
-                    curTreeData.push(node);
-                }
-                fieldList.members[args.nodeData.id].isNodeExpand = true;
-                this.memberTreeView.addNodes(treeData, args.node);
-            }
-        }
-    }
-    /* tslint:disable-next-line:max-line-length */
-    updateChildData(isInclude, members, filterItems, fieldName, parentNode) {
-        let memberCount = Object.keys(this.parent.currentTreeItemsPos).length;
-        let fieldList = this.parent.engineModule.fieldList[fieldName];
-        let list = [];
-        let childMemberCount = 1;
-        for (let member of members) {
-            let obj = member;
-            let memberName = member.id.toString();
-            fieldList.members[memberName].isNodeExpand = false;
-            member.isSelected = (parentNode.isChecked === 'true');
-            if (childMemberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
-                list.push(obj);
-            }
-            this.parent.currentTreeItems.push(obj);
-            this.parent.searchTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[memberName] = memberCount;
-            memberCount++;
-            childMemberCount++;
-        }
-        this.parent.isDataOverflow = false;
-        return list;
-    }
-    createTabMenu(treeData, fieldCaption, fieldName) {
-        let wrapper = createElement('div', {
-            className: 'e-filter-tab-wrapper'
-        });
-        this.dialogPopUp.content = wrapper;
-        this.dialogPopUp.dataBind();
-        let types = ['Label', 'Value', 'Include', 'Exclude'];
-        let regx = '((-|\\+)?[0-9]+(\\.[0-9]+)?)+';
-        let member = Object.keys(this.parent.engineModule.fieldList[fieldName].members)[0];
-        let fieldType = this.parent.engineModule.fieldList[fieldName].type;
-        let formatObj = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.formatSettings);
-        let items = [
-            {
-                header: {
-                    text: this.parent.localeObj.getConstant('member'),
-                    iconCss: (this.filterObject && types.indexOf(this.filterObject.type) > 1 ? SELECTED_OPTION_ICON_CLASS : '')
-                },
-                content: this.createTreeView(treeData, fieldCaption, fieldName)
-            }
-        ];
-        for (let type of types) {
-            if (((type === 'Label') && this.parent.dataSourceSettings.allowLabelFilter) ||
-                (type === 'Value' && this.parent.dataSourceSettings.allowValueFilter)) {
-                let filterType = (type === 'Label' && member && ((member).match(regx) &&
-                    (member).match(regx)[0].length === (member).length) && fieldType === 'number') ? 'Number' :
-                    (type === 'Label' && member && (new Date(member).toString() !== 'Invalid Date') &&
-                        ((formatObj && formatObj.type) || (this.filterObject && this.filterObject.type === 'Date'))) ? 'Date' : type;
-                let item = {
-                    header: {
-                        text: (filterType === 'Number' ? this.parent.localeObj.getConstant('label') :
-                            this.parent.localeObj.getConstant(filterType.toLowerCase())),
-                        iconCss: (this.filterObject && this.filterObject.type === filterType ? SELECTED_OPTION_ICON_CLASS : '')
-                    },
-                    /* tslint:disable-next-line:max-line-length */
-                    content: this.createCustomFilter(fieldName, (this.filterObject && this.filterObject.type === filterType ? this.filterObject : undefined), filterType.toLowerCase())
-                };
-                items.push(item);
-            }
-        }
-        let selectedIndex = (this.filterObject ? (['Label', 'Date', 'Number'].indexOf(this.filterObject.type) >= 0) ?
-            1 : this.filterObject.type === 'Value' ?
-            (this.parent.dataSourceSettings.allowLabelFilter && this.parent.dataSourceSettings.allowValueFilter) ? 2 : 1 : 0 : 0);
-        selectedIndex = (!this.parent.dataSourceSettings.allowMemberFilter && selectedIndex === 0) ? 1 : selectedIndex;
-        this.tabObj = new Tab({
-            heightAdjustMode: 'Auto',
-            items: items,
-            height: '100%',
-            selectedItem: selectedIndex,
-            enableRtl: this.parent.enableRtl
-        });
-        this.tabObj.isStringTemplate = true;
-        this.tabObj.appendTo(wrapper);
-        if (!this.parent.dataSourceSettings.allowMemberFilter) {
-            this.tabObj.hideTab(0);
-        }
-        if (selectedIndex > 0) {
-            /* tslint:disable-next-line:max-line-length */
-            addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (selectedIndex === 1 && this.parent.dataSourceSettings.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
-        }
-    }
-    /* tslint:disable */
-    createCustomFilter(fieldName, filterObject, type) {
-        let dataSource = [];
-        let valueOptions = [];
-        let levelOptions = [];
-        let measures = this.parent.dataSourceSettings.values;
-        let selectedOption = 'DoesNotEquals';
-        let selectedValueIndex = 0;
-        let selectedLevelIndex = 0;
-        let options = {
-            label: ['Equals', 'DoesNotEquals', 'BeginWith', 'DoesNotBeginWith', 'EndsWith',
-                'DoesNotEndsWith', 'Contains', 'DoesNotContains', 'GreaterThan',
-                'GreaterThanOrEqualTo', 'LessThan', 'LessThanOrEqualTo', 'Between', 'NotBetween'],
-            date: ['Equals', 'DoesNotEquals', 'Before', 'BeforeOrEqualTo', 'After', 'AfterOrEqualTo',
-                'Between', 'NotBetween'],
-            value: ['Equals', 'DoesNotEquals', 'GreaterThan', 'GreaterThanOrEqualTo', 'LessThan',
-                'LessThanOrEqualTo', 'Between', 'NotBetween']
-        };
-        let betweenOperators = ['Between', 'NotBetween'];
-        let operatorCollection = (type === 'label' ? options.label : type === 'date' ? options.date : options.value);
-        for (let operator of operatorCollection) {
-            selectedOption = ((filterObject && operator === filterObject.condition) ?
-                operatorCollection.indexOf(filterObject.condition) >= 0 ?
-                    filterObject.condition : operatorCollection[0] : selectedOption);
-            dataSource.push({ value: operator, text: this.parent.localeObj.getConstant(operator) });
-        }
-        let len = measures.length;
-        while (len--) {
-            valueOptions.unshift({ value: measures[len].name, text: (measures[len].caption ? measures[len].caption : measures[len].name) });
-            selectedValueIndex = filterObject && filterObject.type === 'Value' &&
-                filterObject.measure === measures[len].name &&
-                filterObject.condition === selectedOption ? len : selectedValueIndex;
-        }
-        if (this.parent.dataType === 'olap') {
-            let engineModule = this.parent.engineModule;
-            let levels = engineModule.fieldList[fieldName].levels;
-            if (this.parent.engineModule.fieldList[fieldName].isHierarchy) {
-                let levelObj;
-                let fieldlistData = this.parent.engineModule.fieldListData;
-                for (let item of fieldlistData) {
-                    if (item && item.pid === fieldName) {
-                        levelObj = item;
-                        break;
-                    }
-                }
-                levelOptions.push({
-                    value: levelObj ? levelObj.id : fieldName,
-                    text: levelObj ? levelObj.caption : engineModule.fieldList[fieldName].name
-                });
-                selectedLevelIndex = 0;
-                if (filterObject && filterObject.name === fieldName && filterObject.type.toLowerCase() === type) {
-                    levelOptions[levelOptions.length - 1]['iconClass'] = ICON + ' ' + SELECTED_LEVEL_ICON_CLASS;
-                }
-            }
-            else {
-                for (let i = 0, cnt = levels.length; i < cnt; i++) {
-                    selectedLevelIndex = (filterObject &&
-                        filterObject.selectedField === levels[i].id ? i : selectedLevelIndex);
-                    levelOptions.push({ value: levels[i].id, text: levels[i].name });
-                    for (let field of this.parent.dataSourceSettings.filterSettings) {
-                        if (field.name === fieldName && field.selectedField === levels[i].id && field.type.toLowerCase() === type) {
-                            levelOptions[levelOptions.length - 1]['iconClass'] = ICON + ' ' + SELECTED_LEVEL_ICON_CLASS;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        let mainDiv = createElement('div', {
-            className: FILTER_DIV_CONTENT_CLASS + ' e-' + ((['date', 'number']).indexOf(type) >= 0 ? 'label' : type) + '-filter',
-            id: this.parent.parentID + '_' + type + '_filter_div_content',
-            attrs: {
-                'data-type': type, 'data-fieldName': fieldName, 'data-operator': selectedOption,
-                'data-selectedField': (this.parent.dataType === 'olap' &&
-                    levelOptions.length > 0 ? levelOptions[selectedLevelIndex].value.toString() : ''),
-                'data-measure': (this.parent.dataSourceSettings.values.length > 0 ?
-                    this.parent.dataSourceSettings.values[selectedValueIndex].name : ''),
-                'data-value1': (filterObject && selectedOption === filterObject.condition ?
-                    filterObject.value1 ? filterObject.value1.toString() : '' : ''),
-                'data-value2': (filterObject && selectedOption === filterObject.condition ?
-                    filterObject.value2 ? filterObject.value2.toString() : '' : '')
-            }
-        });
-        let textContentdiv = createElement('div', {
-            className: FILTER_TEXT_DIV_CLASS,
-            innerHTML: this.parent.localeObj.getConstant(type + 'TextContent')
-        });
-        let betweenTextContentdiv = createElement('div', {
-            className: BETWEEN_TEXT_DIV_CLASS + ' ' +
-                (betweenOperators.indexOf(selectedOption) === -1 ? ICON_DISABLE : ''),
-            innerHTML: this.parent.localeObj.getConstant('And')
-        });
-        let separatordiv = createElement('div', { className: SEPARATOR_DIV_CLASS });
-        let filterWrapperDiv1 = createElement('div', { className: FILTER_OPTION_WRAPPER_1_CLASS });
-        let levelWrapperDiv = createElement('div', {
-            className: 'e-level-option-wrapper' + ' ' +
-                (this.parent.dataType === 'olap' ? '' : ICON_DISABLE),
-        });
-        let optionWrapperDiv1 = createElement('div', {
-            className: 'e-measure-option-wrapper' + ' ' + (((['label', 'date', 'number']).indexOf(type) >= 0) ? ICON_DISABLE : ''),
-        });
-        let optionWrapperDiv2 = createElement('div', { className: 'e-condition-option-wrapper' });
-        let filterWrapperDiv2 = createElement('div', { className: FILTER_OPTION_WRAPPER_2_CLASS });
-        let levelDropOption = createElement('div', { id: this.parent.parentID + '_' + type + '_level_option_wrapper' });
-        let dropOptionDiv1 = createElement('div', { id: this.parent.parentID + '_' + type + '_measure_option_wrapper' });
-        let dropOptionDiv2 = createElement('div', { id: this.parent.parentID + '_' + type + '_contition_option_wrapper' });
-        let inputDiv1 = createElement('div', { className: FILTER_INPUT_DIV_1_CLASS });
-        let inputDiv2 = createElement('div', {
-            className: FILTER_INPUT_DIV_2_CLASS + ' ' +
-                (betweenOperators.indexOf(selectedOption) === -1 ? ICON_DISABLE : '')
-        });
-        let inputField1 = createElement('input', {
-            id: this.parent.parentID + '_' + type + '_input_option_1', attrs: { 'type': 'text' }
-        });
-        let inputField2 = createElement('input', {
-            id: this.parent.parentID + '_' + type + '_input_option_2', attrs: { 'type': 'text' }
-        });
-        inputDiv1.appendChild(inputField1);
-        inputDiv2.appendChild(inputField2);
-        levelWrapperDiv.appendChild(levelDropOption);
-        levelWrapperDiv.appendChild(separatordiv.cloneNode(true));
-        optionWrapperDiv1.appendChild(dropOptionDiv1);
-        optionWrapperDiv1.appendChild(separatordiv);
-        optionWrapperDiv2.appendChild(dropOptionDiv2);
-        filterWrapperDiv1.appendChild(levelWrapperDiv);
-        filterWrapperDiv1.appendChild(optionWrapperDiv1);
-        filterWrapperDiv1.appendChild(optionWrapperDiv2);
-        filterWrapperDiv2.appendChild(inputDiv1);
-        filterWrapperDiv2.appendChild(betweenTextContentdiv);
-        filterWrapperDiv2.appendChild(inputDiv2);
-        /* tslint:disable-next-line:max-line-length */
-        this.createElements(filterObject, betweenOperators, dropOptionDiv1, dropOptionDiv2, inputField1, inputField2, valueOptions, dataSource, selectedValueIndex, selectedOption, type, levelDropOption, levelOptions, selectedLevelIndex);
-        mainDiv.appendChild(textContentdiv);
-        mainDiv.appendChild(filterWrapperDiv1);
-        mainDiv.appendChild(filterWrapperDiv2);
-        return mainDiv;
-    }
-    createElements(filterObj, operators, optionDiv1, optionDiv2, inputDiv1, inputDiv2, vDataSource, oDataSource, valueIndex, option, type, levelDropOption, lDataSource, levelIndex) {
-        let popupInstance = this;
-        if (this.parent.dataType === 'olap') {
-            let levelWrapper = new DropDownList({
-                dataSource: lDataSource, enableRtl: this.parent.enableRtl,
-                fields: { value: 'value', text: 'text', iconCss: 'iconClass' },
-                index: levelIndex,
-                cssClass: LEVEL_OPTIONS_CLASS, width: '100%',
-                change(args) {
-                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    let fieldName = element.getAttribute('data-fieldName');
-                    let type = element.getAttribute('data-type');
-                    if (!isNullOrUndefined(element)) {
-                        popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                        setStyleAndAttributes(element, { 'data-selectedField': args.value });
-                        let filterObj;
-                        for (let field of popupInstance.parent.dataSourceSettings.filterSettings) {
-                            if (field.name === fieldName && field.selectedField === args.value) {
-                                filterObj = field;
-                                break;
-                            }
-                        }
-                        if (filterObj) {
-                            if (type === 'value' && filterObj.measure && filterObj.measure !== '') {
-                                optionWrapper1.value = filterObj.measure ? filterObj.measure : vDataSource[0].value;
-                            }
-                            else {
-                            }
-                            if (filterObj.condition) {
-                                optionWrapper.value = filterObj.condition ? filterObj.condition : 'DoesNotEquals';
-                            }
-                            else {
-                                optionWrapper.value = 'DoesNotEquals';
-                            }
-                            let inputObj1;
-                            let inputObj2;
-                            if (type === 'value') {
-                                inputObj1 = inputDiv1.ej2_instances[0];
-                                inputObj2 = inputDiv2.ej2_instances[0];
-                                if (inputObj1) {
-                                    inputObj1.value = filterObj.value1 ? parseInt(filterObj.value1, 10) : undefined;
-                                }
-                                if (inputObj2) {
-                                    inputObj2.value = filterObj.value2 ? parseInt(filterObj.value2, 10) : undefined;
-                                }
-                            }
-                            else {
-                                inputObj1 = inputDiv1.ej2_instances[0];
-                                inputObj2 = inputDiv2.ej2_instances[0];
-                                if (inputObj1) {
-                                    inputObj1.value = filterObj.value1 ? filterObj.value1 : '';
-                                }
-                                if (inputObj2) {
-                                    inputObj2.value = filterObj.value2 ? filterObj.value2 : '';
-                                }
-                            }
-                        }
-                        popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                    }
-                    else {
-                        return;
-                    }
-                }
-            });
-            levelWrapper.isStringTemplate = true;
-            levelWrapper.appendTo(levelDropOption);
-        }
-        let optionWrapper1 = new DropDownList({
-            dataSource: vDataSource, enableRtl: this.parent.enableRtl,
-            fields: { value: 'value', text: 'text' }, index: valueIndex,
-            cssClass: VALUE_OPTIONS_CLASS, width: '100%',
-            change(args) {
-                let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                if (!isNullOrUndefined(element)) {
-                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                    setStyleAndAttributes(element, { 'data-measure': args.value });
-                }
-                else {
-                    return;
-                }
-            }
-        });
-        optionWrapper1.isStringTemplate = true;
-        optionWrapper1.appendTo(optionDiv1);
-        let optionWrapper = new DropDownList({
-            dataSource: oDataSource, enableRtl: this.parent.enableRtl,
-            fields: { value: 'value', text: 'text' }, value: option,
-            cssClass: FILTER_OPERATOR_CLASS, width: '100%',
-            change(args) {
-                let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                if (!isNullOrUndefined(element)) {
-                    popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
-                    let disabledClasses = [BETWEEN_TEXT_DIV_CLASS, FILTER_INPUT_DIV_2_CLASS];
-                    for (let className of disabledClasses) {
-                        if (operators.indexOf(args.value) >= 0) {
-                            removeClass([element.querySelector('.' + className)], ICON_DISABLE);
-                        }
-                        else {
-                            addClass([element.querySelector('.' + className)], ICON_DISABLE);
-                        }
-                    }
-                    setStyleAndAttributes(element, { 'data-operator': args.value });
-                }
-                else {
-                    return;
-                }
-            }
-        });
-        optionWrapper.isStringTemplate = true;
-        optionWrapper.appendTo(optionDiv2);
-        if (type === 'date') {
-            let inputObj1 = new DateTimePicker({
-                placeholder: this.parent.localeObj.getConstant('chooseDate'),
-                enableRtl: this.parent.enableRtl,
-                format: 'dd/MM/yyyy hh:mm:ss a',
-                showClearButton: true,
-                value: (filterObj && option === filterObj.condition ?
-                    (typeof (filterObj.value1) === 'string' ? new Date(filterObj.value1) : filterObj.value1) : null),
-                change: (e) => {
-                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    if (!isNullOrUndefined(element)) {
-                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
-                    }
-                    else {
-                        return;
-                    }
-                },
-                width: '100%',
-            });
-            let inputObj2 = new DateTimePicker({
-                placeholder: this.parent.localeObj.getConstant('chooseDate'),
-                enableRtl: this.parent.enableRtl,
-                format: 'dd/MM/yyyy hh:mm:ss a',
-                showClearButton: true,
-                value: (filterObj && option === filterObj.condition ?
-                    (typeof (filterObj.value2) === 'string' ? new Date(filterObj.value2) : filterObj.value2) : null),
-                change: (e) => {
-                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    if (!isNullOrUndefined(element)) {
-                        setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
-                    }
-                    else {
-                        return;
-                    }
-                },
-                width: '100%',
-            });
-            inputObj1.isStringTemplate = true;
-            inputObj1.appendTo(inputDiv1);
-            inputObj2.isStringTemplate = true;
-            inputObj2.appendTo(inputDiv2);
-        }
-        else if (type === 'value') {
-            let inputObj1 = new NumericTextBox({
-                placeholder: this.parent.localeObj.getConstant('enterValue'),
-                enableRtl: this.parent.enableRtl,
-                showClearButton: true,
-                format: '###.##',
-                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value1, 10) : undefined),
-                change: (e) => {
-                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    if (!isNullOrUndefined(element)) {
-                        setStyleAndAttributes(element, {
-                            'data-value1': (e.value ? e.value.toString() : '0'),
-                            'data-value2': (inputObj2.value ? inputObj2.value.toString() : '0')
-                        });
-                    }
-                    else {
-                        return;
-                    }
-                }, width: '100%'
-            });
-            let inputObj2 = new NumericTextBox({
-                placeholder: this.parent.localeObj.getConstant('enterValue'),
-                enableRtl: this.parent.enableRtl,
-                showClearButton: true,
-                format: '###.##',
-                value: (filterObj && option === filterObj.condition ? parseInt(filterObj.value2, 10) : undefined),
-                change: (e) => {
-                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    if (!isNullOrUndefined(element)) {
-                        setStyleAndAttributes(element, {
-                            'data-value1': (inputObj1.value ? inputObj1.value.toString() : '0'),
-                            'data-value2': (e.value ? e.value.toString() : '0')
-                        });
-                    }
-                    else {
-                        return;
-                    }
-                }, width: '100%'
-            });
-            inputObj1.isStringTemplate = true;
-            inputObj1.appendTo(inputDiv1);
-            inputObj2.isStringTemplate = true;
-            inputObj2.appendTo(inputDiv2);
-        }
-        else {
-            let inputObj1 = new MaskedTextBox({
-                placeholder: this.parent.localeObj.getConstant('enterValue'),
-                enableRtl: this.parent.enableRtl,
-                showClearButton: true,
-                value: (filterObj && option === filterObj.condition ? filterObj.value1 : ''),
-                change: (e) => {
-                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    if (!isNullOrUndefined(element)) {
-                        setStyleAndAttributes(element, { 'data-value1': e.value, 'data-value2': inputObj2.value });
-                    }
-                    else {
-                        return;
-                    }
-                }, width: '100%'
-            });
-            let inputObj2 = new MaskedTextBox({
-                placeholder: this.parent.localeObj.getConstant('enterValue'),
-                enableRtl: this.parent.enableRtl,
-                showClearButton: true,
-                value: (filterObj && option === filterObj.condition ? filterObj.value2 : ''),
-                change: (e) => {
-                    let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
-                    if (!isNullOrUndefined(element)) {
-                        setStyleAndAttributes(element, { 'data-value1': inputObj1.value, 'data-value2': e.value });
-                    }
-                    else {
-                        return;
-                    }
-                }, width: '100%'
-            });
-            inputObj1.isStringTemplate = true;
-            inputObj1.appendTo(inputDiv1);
-            inputObj2.isStringTemplate = true;
-            inputObj2.appendTo(inputDiv2);
-        }
-    }
-    /* tslint:enable */
-    updateInputValues(element, type, inputDiv1, inputDiv2) {
-        let value1;
-        let value2;
-        if (type === 'date') {
-            let inputObj1 = inputDiv1.ej2_instances[0];
-            let inputObj2 = inputDiv2.ej2_instances[0];
-            value1 = !isNullOrUndefined(inputObj1.value) ? inputObj1.value.toString() : '';
-            value2 = !isNullOrUndefined(inputObj2.value) ? inputObj2.value.toString() : '';
-        }
-        else {
-            let inputObj1 = inputDiv1.ej2_instances[0];
-            let inputObj2 = inputDiv2.ej2_instances[0];
-            value1 = inputObj1.value;
-            value2 = inputObj2.value;
-        }
-        setStyleAndAttributes(element, { 'data-value1': value1, 'data-value2': value2 });
-    }
-    validateTreeNode(e) {
-        if (e.node.classList.contains(ICON_DISABLE)) {
-            e.cancel = true;
-        }
-        else {
-            return;
-        }
-    }
-    /**
-     * Update filter state while Member check/uncheck.
-     * @hidden
-     */
-    updateCheckedState(fieldCaption) {
-        let filterDialog = this.dialogPopUp.element;
-        setStyleAndAttributes(filterDialog, { 'role': 'menu', 'aria-haspopup': 'true' });
-        let list = [].slice.call(this.memberTreeView.element.querySelectorAll('li'));
-        let fieldName = filterDialog.getAttribute('data-fieldname');
-        let uncheckedNodes = this.getUnCheckedNodes(fieldName);
-        let checkedNodes = this.getCheckedNodes(fieldName);
-        let firstNode = this.allMemberSelect.element.querySelector('li').querySelector('span.' + CHECK_BOX_FRAME_CLASS);
-        if (list.length > 0) {
-            if (checkedNodes > 0) {
-                if (uncheckedNodes > 0) {
-                    removeClass([firstNode], NODE_CHECK_CLASS);
-                    addClass([firstNode], NODE_STOP_CLASS);
-                }
-                else if (uncheckedNodes === 0) {
-                    removeClass([firstNode], NODE_STOP_CLASS);
-                    addClass([firstNode], NODE_CHECK_CLASS);
-                }
-                this.dialogPopUp.buttons[0].buttonModel.disabled = false;
-                filterDialog.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
-            }
-            else if (uncheckedNodes > 0 && checkedNodes === 0) {
-                removeClass([firstNode], [NODE_CHECK_CLASS, NODE_STOP_CLASS]);
-                if (this.getCheckedNodes(fieldName) === checkedNodes) {
-                    this.dialogPopUp.buttons[0].buttonModel.disabled = true;
-                    filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
-                }
-            }
-        }
-        else {
-            this.dialogPopUp.buttons[0].buttonModel.disabled = true;
-            filterDialog.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
-        }
-    }
-    getCheckedNodes(fieldName) {
-        let engineModule = this.parent.engineModule;
-        let nodeList = [];
-        let checkeNodes = [];
-        if (this.parent.dataType === 'olap' && engineModule &&
-            !engineModule.fieldList[fieldName].isHierarchy) {
-            nodeList = this.memberTreeView.getAllCheckedNodes();
-            return nodeList.length;
-        }
-        else {
-            for (let item of this.parent.searchTreeItems) {
-                if (item.isSelected) {
-                    checkeNodes.push(item);
-                }
-            }
-            return checkeNodes.length;
-        }
-    }
-    getUnCheckedNodes(fieldName) {
-        let unCheckeNodes = [];
-        let nodeList = [];
-        let engineModule = this.parent.engineModule;
-        if (this.parent.dataType === 'olap' && engineModule && !engineModule.fieldList[fieldName].isHierarchy) {
-            nodeList = this.memberTreeView.getAllCheckedNodes();
-            return (this.memberTreeView.fields.dataSource.length -
-                nodeList.length);
-        }
-        else {
-            // unCheckeNodes = this.parent.searchTreeItems.filter((item: { [key: string]: object }) => {
-            //     return !item.isSelected;
-            // });
-            for (let item of this.parent.searchTreeItems) {
-                if (!item.isSelected) {
-                    unCheckeNodes.push(item);
-                }
-            }
-            return unCheckeNodes.length;
-        }
-    }
-    isExcelFilter(fieldName) {
-        let isFilterField = false;
-        for (let field of this.parent.dataSourceSettings.filters) {
-            if (field.name === fieldName) {
-                isFilterField = true;
-                break;
-            }
-        }
-        if (!isFilterField && (this.parent.dataSourceSettings.allowLabelFilter || this.parent.dataSourceSettings.allowValueFilter)) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    getFilterObject(fieldName) {
-        let filterObj = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
-        if (filterObj && (((['Label', 'Date', 'Number'].indexOf(filterObj.type) >= 0) &&
-            this.parent.dataSourceSettings.allowLabelFilter) ||
-            (filterObj.type === 'Value' && this.parent.dataSourceSettings.allowValueFilter) ||
-            (['Include', 'Exclude'].indexOf(filterObj.type) >= 0 &&
-                this.parent.eventBase.isValidFilterItemsAvail(fieldName, filterObj)))) {
-            return filterObj;
-        }
-        return undefined;
-    }
-    /**
-     * To close filter dialog.
-     * @hidden
-     */
-    closeFilterDialog() {
-        if (this.allowExcelLikeFilter) {
-            if (this.tabObj && !this.tabObj.isDestroyed) {
-                this.tabObj.destroy();
-            }
-        }
-        if (this.dropMenu && !this.dropMenu.isDestroyed) {
-            this.dropMenu.destroy();
-        }
-        if (document.getElementById(this.parent.parentID + '_LevelDiv-popup')) {
-            remove(document.getElementById(this.parent.parentID + '_LevelDiv-popup'));
-        }
-        this.dialogPopUp.close();
-    }
-    removeFilterDialog() {
-        if (this.dialogPopUp && !this.dialogPopUp.isDestroyed) {
-            this.dialogPopUp.destroy();
-        }
-        if (document.getElementById(this.parent.parentID + '_EditorTreeView')) {
-            remove(document.getElementById(this.parent.parentID + '_EditorTreeView'));
-        }
-    }
-}
-
-/**
- * PivotCommon is used to manipulate the relational or Multi-Dimensional public methods by using their dataSource
- * @hidden
- */
-/** @hidden */
-class PivotCommon {
-    /**
-     * Constructor for Pivot Common class
-     * @param  {CommonArgs} control?
-     * @hidden
-     */
-    constructor(control) {
-        /** @hidden */
-        this.currentTreeItems = [];
-        /** @hidden */
-        this.savedTreeFilterPos = {};
-        /** @hidden */
-        this.currentTreeItemsPos = {};
-        /** @hidden */
-        this.searchTreeItems = [];
-        /** @hidden */
-        this.isDataOverflow = false;
-        /** @hidden */
-        this.isDateField = false;
-        this.element = control.element;
-        this.moduleName = control.moduleName;
-        this.dataSourceSettings = control.dataSourceSettings;
-        this.engineModule = control.pivotEngine;
-        this.enableRtl = control.enableRtl;
-        this.isAdaptive = control.isAdaptive;
-        this.renderMode = control.renderMode;
-        this.parentID = control.id;
-        this.localeObj = control.localeObj;
-        this.dataType = control.dataType;
-        this.nodeStateModified = new NodeStateModified(this);
-        this.dataSourceUpdate = new DataSourceUpdate(this);
-        this.eventBase = new EventBase(this);
-        this.filterDialog = new FilterDialog(this);
-        this.errorDialog = new ErrorDialog(this);
-        this.keyboardModule = new CommonKeyboardInteraction(this);
-        return this;
-    }
-    /**
-     * To destroy the groupingbar
-     * @return {void}
-     * @hidden
-     */
-    destroy() {
-        if (this.keyboardModule) {
-            this.keyboardModule.destroy();
-        }
-    }
-}
 
 /**
  * Module to render Pivot Field List Dialog
@@ -25889,96 +25965,6 @@ class FieldList {
 }
 
 /**
- * Module for PivotCommon rendering
- */
-/** @hidden */
-class Common {
-    /** Constructor for Common module */
-    constructor(parent) {
-        this.parent = parent;
-        this.parent.commonModule = this;
-        this.addEventListener();
-    }
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    getModuleName() {
-        return 'common';
-    }
-    initiateCommonModule() {
-        if (!this.parent.pivotCommon) {
-            let args = {
-                pivotEngine: this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule,
-                dataSourceSettings: this.parent.dataSourceSettings.properties ?
-                    this.parent.dataSourceSettings.properties : this.parent.dataSourceSettings,
-                id: this.parent.element.id,
-                element: this.parent.element,
-                moduleName: this.parent.getModuleName(),
-                enableRtl: this.parent.enableRtl,
-                isAdaptive: Browser.isDevice,
-                renderMode: 'Popup',
-                localeObj: this.parent.localeObj,
-                dataType: this.parent.dataType
-            };
-            this.parent.pivotCommon = new PivotCommon(args);
-        }
-        else {
-            this.parent.pivotCommon.element = this.parent.element;
-            this.parent.pivotCommon.engineModule = this.parent.dataType === 'olap' ?
-                this.parent.olapEngineModule : this.parent.engineModule;
-            this.parent.pivotCommon.parentID = this.parent.element.id;
-            this.parent.pivotCommon.dataSourceSettings = this.parent.dataSourceSettings.properties ?
-                this.parent.dataSourceSettings.properties : this.parent.dataSourceSettings;
-            this.parent.pivotCommon.moduleName = this.parent.getModuleName();
-            this.parent.pivotCommon.enableRtl = this.parent.enableRtl;
-            this.parent.pivotCommon.isAdaptive = Browser.isDevice;
-            this.parent.pivotCommon.renderMode = 'Popup';
-            this.parent.pivotCommon.localeObj = this.parent.localeObj;
-            this.parent.pivotCommon.dataType = this.parent.dataType;
-        }
-        this.parent.pivotCommon.control = this.parent;
-    }
-    /**
-     * @hidden
-     */
-    addEventListener() {
-        this.handlers = {
-            load: this.initiateCommonModule
-        };
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        if (this.parent.gridSettings.contextMenuItems) {
-            if ((!this.parent.showFieldList) || (!this.parent.showGroupingBar)) {
-                this.parent.on(initialLoad, this.handlers.load, this);
-            }
-        }
-        this.parent.on(uiUpdate, this.handlers.load, this);
-    }
-    /**
-     * @hidden
-     */
-    removeEventListener() {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.off(uiUpdate, this.handlers.load);
-    }
-    /**
-     * To destroy the groupingbar
-     * @return {void}
-     * @hidden
-     */
-    destroy() {
-        this.removeEventListener();
-        if (this.parent.pivotCommon) {
-            this.parent.pivotCommon.destroy();
-        }
-    }
-}
-
-/**
  * Module to render Axis Fields
  */
 /** @hidden */
@@ -26034,7 +26020,6 @@ class AxisFields {
     }
 }
 
-PivotView.Inject(Common);
 /**
  * Module for GroupingBar rendering
  */
@@ -27004,7 +26989,6 @@ class ConditionalFormatting {
     }
 }
 
-PivotView.Inject(Common);
 /**
  * Module for Toolbar
  */
@@ -28059,7 +28043,6 @@ class Toolbar$2 {
     }
 }
 
-PivotView.Inject(Common);
 /**
  * Module to render NumberFormatting Dialog
  */
@@ -28414,7 +28397,6 @@ class NumberFormatting {
     }
 }
 
-PivotView.Inject(Common);
 /**
  * `Grouping` module to create grouping option for date, number and custom in popup.
  */

@@ -19,7 +19,8 @@ import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './../primitives/matrix';
 import { cloneObject as clone, cloneObject, getBounds, getFunction, getIndex } from './../utility/base-util';
 import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition } from './../utility/diagram-util';
-import { updatePathElement, cloneBlazorObject, getUserHandlePosition } from './../utility/diagram-util';
+import { updatePathElement, cloneBlazorObject, getUserHandlePosition, cloneSelectedObjects } from './../utility/diagram-util';
+import { updateDefaultValues } from './../utility/diagram-util';
 import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
 import { SelectorModel } from '../objects/node-model';
 import { Selector } from '../objects/node';
@@ -30,7 +31,7 @@ import { HistoryEntry } from '../diagram/history';
 import { canSelect, canMove, canRotate, canDragSourceEnd, canDragTargetEnd, canSingleSelect, canDrag } from './../utility/constraints-util';
 import { canMultiSelect, canContinuousDraw } from './../utility/constraints-util';
 import { canPanX, canPanY, canPageEditable } from './../utility/constraints-util';
-import { SnapConstraints, DiagramTools, DiagramAction } from '../enum/enum';
+import { SnapConstraints, DiagramTools, DiagramAction, RealAction } from '../enum/enum';
 import { Snapping } from '../objects/snapping';
 import { LayoutAnimation } from '../objects/layout-animation';
 import { Container } from '../core/containers/container';
@@ -235,7 +236,7 @@ export class CommandHandler {
                 return;
             }
             if (event === DiagramEvent.drop) {
-                (args as IDropEventArgs).source = this.diagram;
+                (args as IDropEventArgs).source = cloneBlazorObject(this.diagram);
             }
             if (this.diagram.currentDrawingObject && event !== DiagramEvent.positionChange) {
                 return;
@@ -1330,12 +1331,17 @@ export class CommandHandler {
         if (getObjectType(this.diagram.drawingObject) === Node) {
             newObj = new Node(this.diagram, 'nodes', cloneObject, true);
             newObj.id = (this.diagram.drawingObject.id || 'node') + randomId();
-            this.diagram.initObject(newObj as Node);
         } else {
             newObj = new Connector(this.diagram, 'connectors', cloneObject, true);
             newObj.id = (this.diagram.drawingObject.id || 'connector') + randomId();
-            this.diagram.initObject(newObj as Connector);
         }
+        if (isBlazor()) {
+            updateDefaultValues(
+                newObj, cloneObject,
+                (getObjectType(this.diagram.drawingObject) === Node) ? this.diagram.nodeDefaults : this.diagram.connectorDefaults
+            );
+        }
+        this.diagram.initObject(newObj as Node | Connector);
         this.diagram.updateDiagramObject(newObj);
         this.diagram.currentDrawingObject = newObj;
         if (isBlazor()) {
@@ -1476,13 +1482,13 @@ export class CommandHandler {
                 }
             }
             arg = {
-                oldValue: cloneBlazorObject(oldValue ? oldValue : []) as NodeModel[],
-                newValue: cloneBlazorObject(this.getSelectedObject()) as NodeModel[],
+                oldValue: oldValue ? oldValue : [] as NodeModel[],
+                newValue: this.getSelectedObject() as NodeModel[],
                 cause: this.diagram.diagramActions, state: 'Changed', type: 'Addition', cancel: false,
             };
             this.diagram.renderSelector(multipleSelection || (obj && obj.length > 1));
             this.updateBlazorSelectorModel(oldValue);
-            if (isBlazor()) {
+            if (isBlazor() && this.diagram.selectionChange) {
                 arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
             }
             this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
@@ -1493,7 +1499,7 @@ export class CommandHandler {
     /** @private */
     public updateBlazorSelector(): void {
         if (isBlazor()) {
-            this.newSelectedObjects = cloneObject(this.diagram.selectedItems);
+            this.newSelectedObjects = cloneSelectedObjects(this.diagram);
             let result: object = this.deepDiffer.map(cloneObject(this.newSelectedObjects), this.oldSelectedObjects);
             let diffValue: object = this.deepDiffer.frameObject({}, result);
             let diff: object = this.deepDiffer.removeEmptyValues(diffValue);
@@ -2155,12 +2161,18 @@ export class CommandHandler {
             let oldNodeObject: Node[] = this.diagram.oldNodeObjects;
             for (let i: number = 0; i < oldNodeObject.length; i++) {
                 if (oldNodeObject[i].id) {
+                    if (this.diagram.oldNodeObjects[i] instanceof Node) {
+                        this.diagram.oldNodeObjects[i] = cloneBlazorObject(this.diagram.oldNodeObjects[i]) as Node;
+                    }
                     this.deepDiffer.getDifferenceValues(this.diagram.nameTable[oldNodeObject[i].id], args, labelDrag, this.diagram);
                 }
             }
             let oldConnectorObject: Connector[] = this.diagram.oldConnectorObjects;
             for (let i: number = 0; i < oldConnectorObject.length; i++) {
                 if (oldConnectorObject[i].id) {
+                    if (this.diagram.oldConnectorObjects[i] instanceof Connector) {
+                        this.diagram.oldConnectorObjects[i] = cloneBlazorObject(this.diagram.oldConnectorObjects[i]) as Connector;
+                    }
                     this.deepDiffer.getDifferenceValues(this.diagram.nameTable[oldConnectorObject[i].id], args, labelDrag, this.diagram);
                 }
             }
@@ -2524,7 +2536,9 @@ export class CommandHandler {
         if (!preventUpdate) {
             this.updateEndPoint(connector as Connector, oldChanges);
         }
-        this.diagram.refreshCanvasLayers();
+        if (!(this.diagram.realActions & RealAction.AnimationClick)) {
+            this.diagram.refreshCanvasLayers();
+        }
         return checkBoundaryConstraints;
     }
 
@@ -2893,7 +2907,9 @@ export class CommandHandler {
         if (!preventUpdate) {
             this.updateEndPoint(connector as Connector, oldChanges);
         }
-        this.diagram.refreshCanvasLayers();
+        if (!(this.diagram.realActions & RealAction.AnimationClick)) {
+            this.diagram.refreshCanvasLayers();
+        }
         return boundaryConstraints;
     }
 
@@ -3020,7 +3036,7 @@ export class CommandHandler {
     }
 
     /** @private */
-    public scale(obj: NodeModel | ConnectorModel, sw: number, sh: number, pivot: PointModel, refObject?: IElement): boolean {
+    public scale(obj: NodeModel | ConnectorModel, sw: number, sh: number, pivot: PointModel, refObject?: IElement, isOutsideBoundary?: boolean): boolean {
         let node: IElement = this.diagram.nameTable[obj.id];
         let tempNode: Node = node as Node;
         let elements: (NodeModel | ConnectorModel)[] = [];
@@ -3047,8 +3063,8 @@ export class CommandHandler {
             }
             let bounds: Rect = getBounds(obj.wrapper);
             let checkBoundaryConstraints: boolean = this.checkBoundaryConstraints(undefined, undefined, bounds);
-            if (!checkBoundaryConstraints) {
-                this.scale(obj, 1 / sw, 1 / sh, pivot);
+            if (!checkBoundaryConstraints && isOutsideBoundary) {
+                this.scale(obj, 1 / sw, 1 / sh, pivot, undefined, true);
                 return false;
             }
             this.diagram.updateDiagramObject(obj);

@@ -9,11 +9,12 @@ import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, gaugeMou
 import { LinearGaugeModel } from './linear-gauge-model';
 import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';
 import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';
-import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs } from './model/interface';
+import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, IPointerDragEventArgs } from './model/interface';
 import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange } from './utils/helper';
 import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';
 import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';
 import { Orientation, LinearGaugeTheme } from './utils/enum';
+import { dragEnd, dragMove, dragStart } from './model/constant';
 import { AxisLayoutPanel } from './axes/axis-panel';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { AxisRenderer } from './axes/axis-renderer';
@@ -207,7 +208,32 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
+    /**
+     * Triggers before the pointer is dragged.
+     * @event
+     * @blazorProperty 'OnDragStart'
+     */
 
+    @Event()
+    public dragStart: EmitType<IPointerDragEventArgs>;
+
+    /**
+     * Triggers while dragging the pointers.
+     * @event
+     * @blazorProperty 'OnDragMove'
+     */
+
+    @Event()
+    public dragMove: EmitType<IPointerDragEventArgs>;
+
+    /**
+     * Triggers after the pointer is dragged.
+     * @event
+     * @blazorProperty 'OnDragEnd'
+     */
+
+    @Event()
+    public dragEnd: EmitType<IPointerDragEventArgs>;
     /**
      * Triggers before each annotation gets rendered.
      * @event
@@ -292,6 +318,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public beforePrint: EmitType<IPrintEventArgs>;
 
     /** @private */
+    public activePointer: Pointer;
+    /** @private */
+    public activeAxis: Axis;
+    /** @private */
     public renderer: SvgRenderer;
     /** @private */
     public svgObject: Element;
@@ -303,6 +333,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public intl: Internationalization;
     /** @private* */
     public containerBounds: Rect;
+    /** @private */
+    public isTouch: boolean;
+    /** @private */
+    public isDrag: boolean = false;
     /**
      * @private
      * Calculate the axes bounds for gauge.
@@ -692,6 +726,27 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
+     * Method to set mouse x, y from events
+     */
+    private setMouseXY(e: PointerEvent): void {
+        let pageX: number;
+        let pageY: number;
+        let svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        let rect: ClientRect = this.element.getBoundingClientRect();
+        if (e.type.indexOf('touch') > -1) {
+            this.isTouch = true;
+            let touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
+            pageY = touchArg.changedTouches[0].clientY;
+            pageX = touchArg.changedTouches[0].clientX;
+        } else {
+            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
+            pageX = e.clientX;
+            pageY = e.clientY;
+        }
+        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+    }
+    /**
      * Handles the mouse down on gauge.
      * @return {boolean}
      * @private
@@ -705,16 +760,42 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let axis: Axis; let isPointer: boolean = false;
         let pointer: Pointer;
         let current: IMoveCursor;
+        let currentPointer: IVisiblePointer;
+        this.setMouseXY(e);
         let top: number; let left: number;
         let pointerElement: Element; let svgPath: SVGPathElement;
         let dragProcess: boolean = false;
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger(gaugeMouseDown, args, (mouseArgs: IMouseEventArgs) => {
+        this.trigger(gaugeMouseDown, args, (observedArgs: IMouseEventArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
             if (args.target) {
                 if (!args.cancel && ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1))) {
                     current = this.moveOnPointer(args.target as HTMLElement);
+                    currentPointer = getPointer(args.target as HTMLElement, this);
+                    this.activeAxis = <Axis>this.axes[currentPointer.axisIndex];
+                    this.activePointer = <Pointer>this.activeAxis.pointers[currentPointer.pointerIndex];
+                    if (isNullOrUndefined(this.activePointer.pathElement)) {
+                        this.activePointer.pathElement = [e.target as Element];
+                    }
+                    let pointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+                    let axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+                    if (currentPointer.pointer.enableDrag) {
+                        this.trigger(dragStart, this.isBlazor ? {
+                            name: dragStart,
+                            currentValue: this.activePointer.currentValue,
+                            pointerIndex: pointInd,
+                            axisIndex: axisInd
+                        } as IPointerDragEventArgs : {
+                            axis: this.activeAxis,
+                            name: dragStart,
+                            pointer: this.activePointer,
+                            currentValue: this.activePointer.currentValue,
+                            pointerIndex: pointInd,
+                            axisIndex: axisInd
+                        } as IPointerDragEventArgs);
+                    }
+                    this.svgObject.setAttribute('cursor', 'pointer');
                     if (!(isNullOrUndefined(current)) && current.pointer) {
                         this.pointerDrag = true;
                         this.mouseElement = args.target;
@@ -722,7 +803,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 }
             }
         });
-        return true;
+        return false;
     }
 
     /**
@@ -733,15 +814,49 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public mouseMove(e: PointerEvent): boolean {
         let current: IMoveCursor;
         let element: Element;
+        this.setMouseXY(e);
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger(gaugeMouseMove, args, (mouseArgs: IMouseEventArgs) => {
+        this.trigger(gaugeMouseMove, args, (observedArgs: IMouseEventArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
+            let dragArgs: IPointerDragEventArgs; let currentPointerDrag : Boolean = false;
+            let dragBlazorArgs: IPointerDragEventArgs;
             if (args.target && !args.cancel) {
                 if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
-                    current = this.moveOnPointer(args.target as HTMLElement);
-                    if (!(isNullOrUndefined(current)) && current.pointer) {
-                        this.element.style.cursor = current.style;
+                    if (this.axes[this.axes.length - 1].pointers[this.axes[this.axes.length - 1].pointers.length - 1].enableDrag) {
+                        current = this.moveOnPointer(args.target as HTMLElement);
+                        if (!(isNullOrUndefined(current)) && current.pointer) {
+                            this.element.style.cursor = current.style;
+                            currentPointerDrag = current.pointer;
+                        }
+                        if (this.activePointer && currentPointerDrag) {
+                            this.isDrag = true;
+                            let dragPointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+                            let dragAxisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+                            dragArgs = {
+                                axis: this.activeAxis,
+                                pointer: this.activePointer,
+                                previousValue: this.activePointer.currentValue,
+                                name: dragMove,
+                                currentValue: null,
+                                axisIndex: dragAxisInd,
+                                pointerIndex: dragPointInd
+                            };
+                            dragBlazorArgs = {
+                                previousValue: this.activePointer.currentValue,
+                                name: dragMove,
+                                currentValue: null,
+                                pointerIndex: dragPointInd,
+                                axisIndex: dragAxisInd
+                            };
+                            if (args.target.id.indexOf('MarkerPointer') > -1) {
+                                this.markerDrag(this.activeAxis, (this.activeAxis.pointers[dragPointInd]) as Pointer);
+                            } else {
+                                this.barDrag(this.activeAxis, (this.activeAxis.pointers[dragPointInd]) as Pointer);
+                            }
+                            dragArgs.currentValue = dragBlazorArgs.currentValue = this.activePointer.currentValue;
+                            this.trigger(dragMove, this.isBlazor ? dragBlazorArgs : dragArgs);
+                        }
                     }
                 } else {
                     this.element.style.cursor = (this.pointerDrag) ? this.element.style.cursor : 'auto';
@@ -819,6 +934,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     public mouseLeave(e: PointerEvent): boolean {
         let parentNode: HTMLElement;
+        this.activeAxis = null;
+        this.activePointer = null;
+        this.svgObject.setAttribute('cursor', 'auto');
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
         if (!isNullOrUndefined(this.mouseElement)) {
             parentNode = <HTMLElement>this.element;
@@ -851,17 +969,47 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @private
      */
     public mouseEnd(e: PointerEvent): boolean {
+        this.setMouseXY(e);
         let parentNode: HTMLElement;
         let tooltipInterval: number;
         let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
-        this.trigger(gaugeMouseUp, args);
+        let blazorArgs: IMouseEventArgs = {
+            cancel: args.cancel, target: args.target, name: args.name, x: args.x, y: args.y
+        };
+        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
+        if (this.activeAxis && this.activePointer) {
+            let pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+            let axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+            if (this.activePointer.enableDrag) {
+                this.trigger(dragEnd, this.isBlazor ? {
+                    name: dragEnd,
+                    currentValue: this.activePointer.currentValue,
+                    pointerIndex: pointerInd,
+                    axisIndex: axisInd
+                } as IPointerDragEventArgs : {
+                    name: dragEnd,
+                    axis: this.activeAxis,
+                    pointer: this.activePointer,
+                    currentValue: this.activePointer.currentValue,
+                    axisIndex: axisInd,
+                    pointerIndex: pointerInd
+                } as IPointerDragEventArgs);
+                this.activeAxis = null;
+                this.activePointer = null;
+                this.isDrag = false;
+                if (!isNullOrUndefined(this.mouseElement)) {
+                    this.triggerDragEvent(this.mouseElement);
+                }
+            }
+        }
         if (!isNullOrUndefined(this.mouseElement)) {
             parentNode = <HTMLElement>this.element;
             parentNode.style.cursor = '';
             this.mouseElement = null;
             this.pointerDrag = false;
         }
+        this.svgObject.setAttribute('cursor', 'auto');
         this.notify(Browser.touchEndEvent, e);
         return true;
     }
@@ -914,7 +1062,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.element, this.mouseElement, this.orientation, axis, 'drag', new GaugeLocation(this.mouseX, this.mouseY));
         let process: boolean = withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer');
         if (withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer')) {
-            this.triggerDragEvent(this.mouseElement);
             options = new PathOption(
                 'pointerID', pointer.color || this.themeStyle.pointerColor,
                 pointer.border.width, pointer.border.color, pointer.opacity, null, null, '');
@@ -984,7 +1131,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             }
         }
         if (isDrag && this.mouseElement.tagName === 'path') {
-            this.triggerDragEvent(this.mouseElement);
             path = getBox(
                 pointer.bounds, this.container.type, this.orientation,
                 new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.container.width, axis, pointer.roundedCornerRadius);
@@ -998,20 +1144,26 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
 
     private triggerDragEvent(activeElement: Element): void {
-        let active: IVisiblePointer = getPointer(this.mouseElement as HTMLElement, this);
+        let active: IVisiblePointer = getPointer(activeElement as HTMLElement, this);
         let value: number = convertPixelToValue(
-            this.element, this.mouseElement, this.orientation, active.axis, 'tooltip', null);
+            this.element, activeElement, this.orientation, active.axis, 'tooltip', null);
         let dragArgs: IValueChangeEventArgs = {
             name: 'valueChange',
             gauge: !this.isBlazor ? this : null,
-            element: this.mouseElement,
+            element: activeElement,
             axisIndex: active.axisIndex,
-            axis: active.axis,
+            axis: !this.isBlazor ? active.axis : null,
             pointerIndex: active.pointerIndex,
-            pointer: active.pointer,
+            pointer: !this.isBlazor ? active.pointer : null,
             value: value
         };
-        this.trigger(valueChange, dragArgs);
+        if (this.isBlazor) {
+            const { gauge, axis, pointer, ...blazorArgsData } : IValueChangeEventArgs = dragArgs;
+            dragArgs = blazorArgsData;
+        }
+        this.trigger(valueChange, dragArgs, (pointerArgs : IValueChangeEventArgs) => {
+            this.setPointerValue(pointerArgs.axisIndex, pointerArgs.pointerIndex, pointerArgs.value);
+        });
     }
 
     /**

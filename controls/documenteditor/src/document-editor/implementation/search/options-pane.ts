@@ -105,11 +105,11 @@ export class OptionsPane {
         this.optionsPane.appendChild(this.searchDiv);
         // tslint:disable-next-line:max-line-length
         this.closeButton = createElement('button', {
-            className: 'e-de-op-close-button e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
+            className: 'e-de-op-close-button e-de-close-icon e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         });
         this.optionsPane.appendChild(this.closeButton);
-        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
+        let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.focusedElement.push(this.closeButton);
         //Find tab header

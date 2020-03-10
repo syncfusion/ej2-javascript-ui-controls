@@ -1,7 +1,7 @@
 import { isNullOrUndefined, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
 import { IModelGenerator, ICell, IRow, IGrid } from '../base/interface';
 import { Row } from '../models/row';
-import { CellType } from '../base/enum';
+import { CellType, Action } from '../base/enum';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { getUid } from '../base/util';
@@ -24,9 +24,9 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         this.parent = parent;
     }
 
-    public generateRows(data: Object, args?: { startIndex?: number, requestType?: string }): Row<Column>[] {
+    public generateRows(data: Object, args?: { startIndex?: number, requestType?: Action }): Row<Column>[] {
         let rows: Row<Column>[] = [];
-        let isInifiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
+        let isInifiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'infiniteScroll';
         let startIndex: number = this.parent.enableVirtualization || isInifiniteScroll ? args.startIndex : 0;
         for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++ , startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);

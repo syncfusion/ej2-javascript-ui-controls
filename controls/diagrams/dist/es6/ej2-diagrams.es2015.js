@@ -2400,6 +2400,8 @@ var RealAction;
     RealAction[RealAction["hScrollbarMoved"] = 16] = "hScrollbarMoved";
     /** Indicates when the diagram is scrolled vertical using scroll bar */
     RealAction[RealAction["vScrollbarMoved"] = 32] = "vScrollbarMoved";
+    /** Indicates whether animation happens or not  */
+    RealAction[RealAction["AnimationClick"] = 64] = "AnimationClick";
 })(RealAction || (RealAction = {}));
 /** @private */
 var NoOfSegments;
@@ -14151,6 +14153,21 @@ let alignElement = (element, offsetX, offsetY, diagram, flip) => {
     }
 };
 /** @private */
+let cloneSelectedObjects = (diagram) => {
+    let nodes = diagram.selectedItems.nodes;
+    let connectors = diagram.selectedItems.connectors;
+    diagram.selectedItems.nodes = [];
+    diagram.selectedItems.connectors = [];
+    let clonedSelectedItems = cloneObject(diagram.selectedItems);
+    for (let i = 0; i < nodes.length; i++) {
+        diagram.selectedItems.nodes.push(diagram.nameTable[nodes[i].id]);
+    }
+    for (let i = 0; i < connectors.length; i++) {
+        diagram.selectedItems.connectors.push(diagram.nameTable[connectors[i].id]);
+    }
+    return clonedSelectedItems;
+};
+/** @private */
 let updatePathElement = (anglePoints, connector) => {
     let pathElement = new PathElement();
     let pathseqData;
@@ -18953,15 +18970,15 @@ class DiagramRenderer {
         return { g: gElement, svg: svgElement };
     }
     /**   @private  */
-    renderElement(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue) {
+    renderElement(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode) {
         if (element instanceof Container) {
-            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue);
+            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode);
         }
         else if (element instanceof ImageElement) {
             this.renderImageElement(element, canvas, transform, parentSvg, fromPalette);
         }
         else if (element instanceof PathElement) {
-            this.renderPathElement(element, canvas, transform, parentSvg, fromPalette);
+            this.renderPathElement(element, canvas, transform, parentSvg, fromPalette, isPreviewNode);
         }
         else if (element instanceof TextElement) {
             this.renderTextElement(element, canvas, transform, parentSvg, fromPalette);
@@ -18973,7 +18990,7 @@ class DiagramRenderer {
             this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette, indexValue);
         }
         else {
-            this.renderRect(element, canvas, transform, parentSvg);
+            this.renderRect(element, canvas, transform, parentSvg, isPreviewNode);
         }
     }
     /**   @private  */
@@ -19295,7 +19312,7 @@ class DiagramRenderer {
         options.height *= transform.scale;
         options.fill = 'transparent';
         options.stroke = '#097F7F';
-        options.strokeWidth = 0.6;
+        options.strokeWidth = 1.2;
         options.dashArray = '6,3';
         options.class = 'e-diagram-border';
         if (isSwimlane) {
@@ -19458,8 +19475,8 @@ class DiagramRenderer {
         this.svgRenderer.drawPath(canvas, options, this.diagramId, true, undefined, { 'aria-label': 'Thumb to rotate the selected object' });
     }
     /**   @private  */
-    renderPathElement(element, canvas, transform, parentSvg, fromPalette) {
-        let options = this.getBaseAttributes(element, transform);
+    renderPathElement(element, canvas, transform, parentSvg, fromPalette, isPreviewNode) {
+        let options = this.getBaseAttributes(element, transform, isPreviewNode);
         options.data = element.absolutePath;
         options.data = element.absolutePath;
         let ariaLabel = element.description ? element.description : element.id;
@@ -19862,7 +19879,7 @@ class DiagramRenderer {
         this.renderer.drawImage(canvas, options, parentSvg, fromPalette);
     }
     /**   @private  */
-    renderContainer(group, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue) {
+    renderContainer(group, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode) {
         let svgParent = { svg: parentSvg, g: canvas };
         if (this.diagramId) {
             parentSvg = this.getParentSvg(group) || parentSvg;
@@ -19904,7 +19921,7 @@ class DiagramRenderer {
                 if (!this.isSvgMode) {
                     child.flip = group.flip;
                 }
-                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue);
+                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue, isPreviewNode);
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
                     this.renderFlipElement(child, parentG, flip);
@@ -19960,7 +19977,8 @@ class DiagramRenderer {
                     (getHTMLLayer(this.diagramId).children[0]);
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
                 if (canvas) {
-                    canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
+                    canvas.style.transform =
+                        'scale(' + scaleX + ',' + scaleY + ')' + 'rotate(' + (element.rotateAngle + element.parentTransform) + 'deg)';
                 }
             }
             else {
@@ -19982,8 +20000,8 @@ class DiagramRenderer {
         return undefined;
     }
     /**   @private  */
-    renderRect(element, canvas, transform, parentSvg) {
-        let options = this.getBaseAttributes(element, transform);
+    renderRect(element, canvas, transform, parentSvg, isPreviewNode) {
+        let options = this.getBaseAttributes(element, transform, isPreviewNode);
         options.cornerRadius = element.cornerRadius || 0;
         let ariaLabel = element.description ? element.description : element.id;
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg, ariaLabel);
@@ -19994,7 +20012,7 @@ class DiagramRenderer {
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
     }
     /**   @private  */
-    getBaseAttributes(element, transform) {
+    getBaseAttributes(element, transform, isPreviewNode) {
         let options = {
             width: element.actualSize.width, height: element.actualSize.height,
             x: element.offsetX - element.actualSize.width * element.pivot.x + 0.5,
@@ -20005,6 +20023,10 @@ class DiagramRenderer {
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
             canApplyStyle: element.canApplyStyle
         };
+        if (isPreviewNode) {
+            options.x = options.x - .5;
+            options.y = options.y - .5;
+        }
         if (element.isExport) {
             options.width *= element.exportScaleValue.x;
             options.height *= element.exportScaleValue.y;
@@ -21006,7 +21028,7 @@ let cursors = {
     'BezierTargetThumb': 'move',
     'OrthoThumb': 'move',
     'SegmentEnd': 'move',
-    'Pan': 'pointer',
+    'Pan': 'grab',
     'Hyperlink': 'pointer',
     'PortDrag': 'pointer',
     'LabelSelect': 'pointer',
@@ -24239,7 +24261,8 @@ class DiagramEventHandler {
                     }
                     let element = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_userhandle');
                     if (eventName === DiagramEvent.onUserHandleMouseUp) {
-                        if (element && element.id === this.userHandleObject + '_userhandle') {
+                        if (this.commandHandler.isUserHandle(this.currentPosition)
+                            && element && element.id === this.userHandleObject + '_userhandle') {
                             this.diagram.triggerEvent(eventName, arg);
                         }
                     }
@@ -24671,7 +24694,7 @@ class DiagramEventHandler {
                     position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
                     actualObject: cloneBlazorObject(this.eventArgs.actualObject)
                 };
-                if (isBlazor()) {
+                if (isBlazor() && this.diagram.click) {
                     arg = this.getBlazorClickEventArgs(arg);
                 }
                 this.diagram.triggerEvent(DiagramEvent.click, arg);
@@ -24847,6 +24870,7 @@ class DiagramEventHandler {
         this.focus = false;
         this.touchStartList = null;
         this.touchMoveList = null;
+        this.elementLeave();
         this.commandHandler.removeSnap();
         this.inAction = false;
         this.eventArgs = {};
@@ -25108,7 +25132,9 @@ class DiagramEventHandler {
                 target.splice(i, 1);
             }
         }
-        let arg;
+        let arg = {
+            targets: {}
+        };
         if (!isBlazor()) {
             arg = {
                 targets: cloneBlazorObject(target),
@@ -25962,6 +25988,7 @@ class ObjectFinder {
         //we have to choose the object to be interacted with from the given wrapper
         //Find the object that is under mouse
         let eventHandler = 'eventHandler';
+        let endPoint = 'endPoint';
         let inPort;
         let outPort;
         let actualTarget = null;
@@ -25976,7 +26003,11 @@ class ObjectFinder {
                 let connector = diagram.selectedItems.connectors[0];
                 for (let i = objects.length - 1; i >= 0; i--) {
                     outPort = getInOutConnectPorts(objects[i], false);
-                    if (objects[i] instanceof Node && (canOutConnect(objects[i]) || (canPortOutConnect(outPort)))) {
+                    inPort = getInOutConnectPorts(objects[i], true);
+                    let tool = diagram[eventHandler].tool;
+                    if (objects[i] instanceof Node && ((canOutConnect(objects[i]) || (canPortOutConnect(outPort))) ||
+                        (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] == 'ConnectorTargetEnd' &&
+                            (canInConnect(objects[i]) || (canPortInConnect(inPort)))))) {
                         actualTarget = objects[i];
                         if (connector) {
                             actualTarget = this.isTarget(actualTarget, diagram, action);
@@ -26028,7 +26059,7 @@ class ObjectFinder {
                 }
                 return actualTarget;
             }
-            else if (action === 'Select' && diagram[eventHandler].tool) {
+            else if ((action === 'Select' || action === 'Pan') && diagram[eventHandler].tool) {
                 for (let i = objects.length - 1; i >= 0; i--) {
                     if (objects[i] instanceof Connector) {
                         let objj1 = objects[i - 1];
@@ -26326,7 +26357,7 @@ class CommandHandler {
                     return;
                 }
                 if (event === DiagramEvent.drop) {
-                    args.source = this.diagram;
+                    args.source = cloneBlazorObject(this.diagram);
                 }
                 if (this.diagram.currentDrawingObject && event !== DiagramEvent.positionChange) {
                     return;
@@ -27397,13 +27428,15 @@ class CommandHandler {
         if (getObjectType(this.diagram.drawingObject) === Node) {
             newObj = new Node(this.diagram, 'nodes', cloneObject$$1, true);
             newObj.id = (this.diagram.drawingObject.id || 'node') + randomId();
-            this.diagram.initObject(newObj);
         }
         else {
             newObj = new Connector(this.diagram, 'connectors', cloneObject$$1, true);
             newObj.id = (this.diagram.drawingObject.id || 'connector') + randomId();
-            this.diagram.initObject(newObj);
         }
+        if (isBlazor()) {
+            updateDefaultValues(newObj, cloneObject$$1, (getObjectType(this.diagram.drawingObject) === Node) ? this.diagram.nodeDefaults : this.diagram.connectorDefaults);
+        }
+        this.diagram.initObject(newObj);
         this.diagram.updateDiagramObject(newObj);
         this.diagram.currentDrawingObject = newObj;
         if (isBlazor()) {
@@ -27537,13 +27570,13 @@ class CommandHandler {
                 }
             }
             arg = {
-                oldValue: cloneBlazorObject(oldValue ? oldValue : []),
-                newValue: cloneBlazorObject(this.getSelectedObject()),
+                oldValue: oldValue ? oldValue : [],
+                newValue: this.getSelectedObject(),
                 cause: this.diagram.diagramActions, state: 'Changed', type: 'Addition', cancel: false,
             };
             this.diagram.renderSelector(multipleSelection || (obj && obj.length > 1));
             this.updateBlazorSelectorModel(oldValue);
-            if (isBlazor()) {
+            if (isBlazor() && this.diagram.selectionChange) {
                 arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
             }
             this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
@@ -27553,7 +27586,7 @@ class CommandHandler {
     /** @private */
     updateBlazorSelector() {
         if (isBlazor()) {
-            this.newSelectedObjects = cloneObject(this.diagram.selectedItems);
+            this.newSelectedObjects = cloneSelectedObjects(this.diagram);
             let result = this.deepDiffer.map(cloneObject(this.newSelectedObjects), this.oldSelectedObjects);
             let diffValue = this.deepDiffer.frameObject({}, result);
             let diff = this.deepDiffer.removeEmptyValues(diffValue);
@@ -28209,12 +28242,18 @@ class CommandHandler {
             let oldNodeObject = this.diagram.oldNodeObjects;
             for (let i = 0; i < oldNodeObject.length; i++) {
                 if (oldNodeObject[i].id) {
+                    if (this.diagram.oldNodeObjects[i] instanceof Node) {
+                        this.diagram.oldNodeObjects[i] = cloneBlazorObject(this.diagram.oldNodeObjects[i]);
+                    }
                     this.deepDiffer.getDifferenceValues(this.diagram.nameTable[oldNodeObject[i].id], args, labelDrag, this.diagram);
                 }
             }
             let oldConnectorObject = this.diagram.oldConnectorObjects;
             for (let i = 0; i < oldConnectorObject.length; i++) {
                 if (oldConnectorObject[i].id) {
+                    if (this.diagram.oldConnectorObjects[i] instanceof Connector) {
+                        this.diagram.oldConnectorObjects[i] = cloneBlazorObject(this.diagram.oldConnectorObjects[i]);
+                    }
                     this.deepDiffer.getDifferenceValues(this.diagram.nameTable[oldConnectorObject[i].id], args, labelDrag, this.diagram);
                 }
             }
@@ -28556,7 +28595,9 @@ class CommandHandler {
         if (!preventUpdate) {
             this.updateEndPoint(connector, oldChanges);
         }
-        this.diagram.refreshCanvasLayers();
+        if (!(this.diagram.realActions & RealAction.AnimationClick)) {
+            this.diagram.refreshCanvasLayers();
+        }
         return checkBoundaryConstraints;
     }
     /**
@@ -28934,7 +28975,9 @@ class CommandHandler {
         if (!preventUpdate) {
             this.updateEndPoint(connector, oldChanges);
         }
-        this.diagram.refreshCanvasLayers();
+        if (!(this.diagram.realActions & RealAction.AnimationClick)) {
+            this.diagram.refreshCanvasLayers();
+        }
         return boundaryConstraints;
     }
     /** @private */
@@ -29052,7 +29095,7 @@ class CommandHandler {
         this.diagram.protectPropertyChange(protectChange);
     }
     /** @private */
-    scale(obj, sw, sh, pivot, refObject) {
+    scale(obj, sw, sh, pivot, refObject, isOutsideBoundary) {
         let node = this.diagram.nameTable[obj.id];
         let tempNode = node;
         let elements = [];
@@ -29080,8 +29123,8 @@ class CommandHandler {
             }
             let bounds = getBounds(obj.wrapper);
             let checkBoundaryConstraints = this.checkBoundaryConstraints(undefined, undefined, bounds);
-            if (!checkBoundaryConstraints) {
-                this.scale(obj, 1 / sw, 1 / sh, pivot);
+            if (!checkBoundaryConstraints && isOutsideBoundary) {
+                this.scale(obj, 1 / sw, 1 / sh, pivot, undefined, true);
                 return false;
             }
             this.diagram.updateDiagramObject(obj);
@@ -33237,6 +33280,7 @@ class Diagram extends Component {
     pan(horizontalOffset, verticalOffset, focusedPoint) {
         let attribute = this.getZoomingAttribute();
         this.updateBlazorDiagramProperties(attribute);
+        this.setCursor('grabbing');
         this.scroller.zoom(1, horizontalOffset, verticalOffset, focusedPoint);
         this.updateBlazorDiagramProperties(attribute, true);
     }
@@ -33411,7 +33455,21 @@ class Diagram extends Component {
      * @param obj returns the history stack values
      */
     getHistoryStack(isUndoStack) {
-        return isUndoStack ? this.historyManager.undoStack : this.historyManager.redoStack;
+        let temp;
+        let historyEntry = [];
+        temp = isUndoStack ? this.historyManager.undoStack : this.historyManager.redoStack;
+        if (this.historyManager.stackLimit !== undefined) {
+            for (let i = temp.length - 1; i >= 0; i--) {
+                historyEntry.push(temp[i]);
+                if (historyEntry.length > this.historyManager.stackLimit) {
+                    return historyEntry;
+                }
+            }
+        }
+        else {
+            historyEntry = temp;
+        }
+        return historyEntry;
     }
     /* tslint:disable */
     /**
@@ -34421,6 +34479,9 @@ class Diagram extends Component {
                 this.preventUpdate = true;
                 let connectors = {};
                 let updatedNodes = nodes;
+                if (isBlazor()) {
+                    this.updateTemplate();
+                }
                 for (let obj of updatedNodes) {
                     let node = obj;
                     if (!this.preventNodesUpdate && (!this.diagramActions || !(this.diagramActions & DiagramAction.PreventIconsUpdate))) {
@@ -35103,6 +35164,8 @@ class Diagram extends Component {
     initLayerObjects() {
         let hasLayers = this.layers.length > 1;
         let connectors = [];
+        let blazor = 'Blazor';
+        let canCloneObject = window && window[blazor] && this.diagramActions && !this.dataSourceSettings.dataSource;
         let tempTabel = {};
         let bpmnTable = {};
         let groups = [];
@@ -35112,7 +35175,7 @@ class Diagram extends Component {
         let updateConnectorObject = [];
         let changeNodes = [];
         let changeConnectors = [];
-        if (isBlazor()) {
+        if (isBlazor() && canCloneObject) {
             for (let obj of this.nodes) {
                 previousNodeObject.push(cloneObject(obj, undefined, undefined, true));
             }
@@ -35182,7 +35245,7 @@ class Diagram extends Component {
             let layer = this.commandHandler.getObjectLayer(connector.id);
             this.initConnectors(connector, layer);
         }
-        if (isBlazor()) {
+        if (isBlazor() && canCloneObject) {
             for (let obj of this.nodes) {
                 updateNodeObject.push(cloneObject(obj, undefined, undefined, true));
             }
@@ -35192,12 +35255,12 @@ class Diagram extends Component {
             this.commandHandler.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
             this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
             let ejsInterop = 'ejsInterop';
-            let blazor = 'Blazor';
             let diagramObject = { nodes: changeNodes, connectors: changeConnectors };
-            if (window && window[blazor] && this.diagramActions && !this.dataSourceSettings.dataSource) {
-                let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
-                window[ejsInterop].updateBlazorProperties(obj, this);
-            }
+            let obj = {
+                'methodName': 'UpdateBlazorProperties',
+                'diagramobj': diagramObject
+            };
+            window[ejsInterop].updateBlazorProperties(obj, this);
         }
     }
     addToLayer(obj, hasLayers) {
@@ -35256,7 +35319,7 @@ class Diagram extends Component {
             arg = {
                 oldValue: oldValue,
                 newValue: newValue,
-                source: cloneBlazorObject(this)
+                sourceId: this.element.id
             };
         }
         this.triggerEvent(DiagramEvent.scrollChange, arg);
@@ -35530,7 +35593,9 @@ class Diagram extends Component {
                     this.commandHandler.rotateObjects(obj, [obj], obj.rotateAngle, { x: obj.offsetX, y: obj.offsetY }, false);
                 }
             }
-            this.updateQuad(obj);
+            if (this['enterObject'] === undefined) {
+                this.updateQuad(obj);
+            }
         }
         if (obj.visible === false) {
             this.updateElementVisibility(obj.wrapper, obj, false);
@@ -36626,8 +36691,10 @@ class Diagram extends Component {
     }
     /** @private */
     renderSelector(multipleSelection, isSwimLane) {
+        let isProtectedOnChangeValue = this.isProtectedOnChange;
         if (isBlazor()) {
-            this.commandHandler.oldSelectedObjects = cloneObject(this.selectedItems);
+            this.isProtectedOnChange = true;
+            this.commandHandler.oldSelectedObjects = cloneSelectedObjects(this, true);
         }
         let size = new Size();
         let selectorModel = this.selectedItems;
@@ -36701,6 +36768,7 @@ class Diagram extends Component {
             }
         }
         this.commandHandler.updateBlazorSelector();
+        this.isProtectedOnChange = isProtectedOnChangeValue;
     }
     /** @private */
     updateSelector() {
@@ -37305,7 +37373,7 @@ class Diagram extends Component {
     /** @private */
     nodePropertyChange(actualObject, oldObject, node, isLayout, rotate, propertyChange) {
         if (this.canEnableBlazorObject) {
-            let node = cloneObject(actualObject);
+            let node = !this.diagramActions ? cloneObject(actualObject) : actualObject;
             this.insertValue(node, true);
         }
         let existingBounds = actualObject.wrapper.outerBounds;
@@ -37601,10 +37669,10 @@ class Diagram extends Component {
         if (!propertyChange) {
             let element = actualObject;
             let args = {
-                element: cloneBlazorObject(element), cause: this.diagramActions,
-                oldValue: cloneBlazorObject(oldObject), newValue: cloneBlazorObject(node)
+                element: element, cause: this.diagramActions,
+                oldValue: oldObject, newValue: node
             };
-            if (isBlazor()) {
+            if (isBlazor() && this.propertyChange) {
                 args.element = { node: cloneBlazorObject(element) };
                 args.oldValue = { node: cloneBlazorObject(oldObject) };
                 args.newValue = { node: cloneBlazorObject(node) };
@@ -37703,7 +37771,7 @@ class Diagram extends Component {
     /** @private */
     connectorPropertyChange(actualObject, oldProp, newProp, disableBridging, propertyChange) {
         if (this.canEnableBlazorObject) {
-            let node = cloneObject(actualObject);
+            let node = !this.diagramActions ? cloneObject(actualObject) : actualObject;
             this.insertValue(node, false);
         }
         let existingBounds = actualObject.wrapper.bounds;
@@ -38093,7 +38161,7 @@ class Diagram extends Component {
                 if ((annotationWrapper.constraints & AnnotationConstraints.Select) &&
                     (!(changedObject.constraints & AnnotationConstraints.Select)) &&
                     isSelected(this, actualObject, false, annotationWrapper)) {
-                    updateSelector = true;
+                    //updateSelector = true;
                 }
                 annotationWrapper.constraints = changedObject.constraints;
                 if (updateSelector) {
@@ -38231,6 +38299,7 @@ class Diagram extends Component {
                 if (portWrapper) {
                     let pathdata = getPortShape(changedObject.shape);
                     portWrapper.data = pathdata;
+                    portWrapper.canMeasurePath = true;
                 }
             }
             if (changedObject.pathData !== undefined) {
@@ -38805,7 +38874,7 @@ class Diagram extends Component {
     }
     getBlazorDragLeaveEventArgs(args) {
         args = {
-            diagram: cloneBlazorObject(this),
+            diagramId: this.element.id,
             element: getObjectType(args.element) === Connector ? { connector: cloneBlazorObject(args.element) }
                 : { node: cloneBlazorObject(args.element) }
         };
@@ -38817,7 +38886,7 @@ class Diagram extends Component {
             arg.target = getObjectType(object) === Connector ? { connector: cloneBlazorObject(object) } : { node: cloneBlazorObject(object) };
         }
         else {
-            arg.target.diagram = cloneBlazorObject(this);
+            arg.target.diagramId = this.element.id;
         }
     }
     removeChildInNodes(node) {
@@ -38837,7 +38906,7 @@ class Diagram extends Component {
         args = {
             source: cloneBlazorObject(args.source), element: getObjectType(args.element) === Connector ? { connector: cloneBlazorObject(args.element) }
                 : { node: cloneBlazorObject(args.element) },
-            cancel: args.cancel, diagram: cloneBlazorObject(this)
+            cancel: args.cancel, diagramId: this.element.id
         };
         return args;
     }
@@ -46056,6 +46125,7 @@ class LayoutAnimation {
         let setIntervalObject = {};
         let i = 0;
         let j = 0;
+        diagram.realActions = diagram.realActions | RealAction.AnimationClick;
         setIntervalObject[i] = setInterval(() => {
             j++;
             return this.layoutAnimation(objects, setIntervalObject, j === 6, diagram, node);
@@ -46091,6 +46161,8 @@ class LayoutAnimation {
         }
         if (stop) {
             clearInterval(layoutTimer[0]);
+            diagram.realActions = diagram.realActions & ~RealAction.AnimationClick;
+            diagram.refreshCanvasLayers();
             diagram.protectPropertyChange(true);
             diagram.triggerEvent(DiagramEvent.animationComplete, undefined);
             diagram.organizationalChartModule.isAnimation = false;
@@ -46243,7 +46315,7 @@ class LineRouting {
                 grid.tested = undefined;
                 grid.nodeId = [];
                 for (k = 0; k < diagramNodes.length; k++) {
-                    isContains = this.intersectRect(rectangle, diagramNodes[k].wrapper.outerBounds);
+                    isContains = this.intersectRect(rectangle, diagramNodes[k].wrapper.bounds);
                     if (isContains) {
                         grid.nodeId.push(diagramNodes[k].id);
                         grid.walkable = false;
@@ -46259,7 +46331,7 @@ class LineRouting {
         return !(r2.left >= r1.right || r2.right <= r1.left ||
             r2.top >= r1.bottom || r2.bottom <= r1.top);
     }
-    findEndPoint(connector, isSource) {
+    findEndPoint(connector, isSource, isPortBounds) {
         let endPoint;
         let portDirection;
         if ((isSource && connector.sourcePortID !== '') || (!isSource && connector.targetPortID !== '')) {
@@ -46267,17 +46339,22 @@ class LineRouting {
                 { x: connector.targetPortWrapper.offsetX, y: connector.targetPortWrapper.offsetY };
             portDirection = getPortDirection(endPoint, undefined, (isSource) ? connector.sourceWrapper.bounds : connector.targetWrapper.bounds, false);
             let bounds = (isSource) ? connector.sourcePortWrapper.bounds : connector.targetPortWrapper.bounds;
-            if (portDirection === 'Top') {
-                endPoint = { x: bounds.topCenter.x, y: bounds.topCenter.y };
-            }
-            else if (portDirection === 'Left') {
-                endPoint = { x: bounds.middleLeft.x, y: bounds.middleLeft.y };
-            }
-            else if (portDirection === 'Right') {
-                endPoint = { x: bounds.middleRight.x, y: bounds.middleRight.y };
+            if (isPortBounds) {
+                if (portDirection === 'Top') {
+                    endPoint = { x: bounds.topCenter.x, y: bounds.topCenter.y };
+                }
+                else if (portDirection === 'Left') {
+                    endPoint = { x: bounds.middleLeft.x, y: bounds.middleLeft.y };
+                }
+                else if (portDirection === 'Right') {
+                    endPoint = { x: bounds.middleRight.x, y: bounds.middleRight.y };
+                }
+                else {
+                    endPoint = { x: bounds.bottomCenter.x, y: bounds.bottomCenter.y };
+                }
             }
             else {
-                endPoint = { x: bounds.bottomCenter.x, y: bounds.bottomCenter.y };
+                endPoint = { x: bounds.center.x, y: bounds.center.y };
             }
         }
         else {
@@ -46347,7 +46424,7 @@ class LineRouting {
                             (targetPortDirection === 'Left' || targetPortDirection === 'Top')) ? this.targetGrid : grid;
                     }
                     if (!sourcePortID && this.startNode) {
-                        let bounds = this.startNode.wrapper.outerBounds;
+                        let bounds = this.startNode.wrapper.bounds;
                         if (rectangle.containsPoint(bounds.topCenter) && !sourceTop) {
                             sourceTop = grid;
                         }
@@ -46362,7 +46439,7 @@ class LineRouting {
                         }
                     }
                     if (!targetPortID && this.targetNode) {
-                        let bounds = this.targetNode.wrapper.outerBounds;
+                        let bounds = this.targetNode.wrapper.bounds;
                         if (rectangle.containsPoint(bounds.topCenter) && !targetTop) {
                             targetTop = grid;
                         }
@@ -46397,6 +46474,7 @@ class LineRouting {
                             startGridNode = this.startArray.pop();
                         }
                         else {
+                            this.considerWalkable = [];
                             break renderPathElement;
                         }
                     }
@@ -46511,6 +46589,7 @@ class LineRouting {
         }
     }
     // Connector rendering
+    /* tslint:disable */
     updateConnectorSegments(diagram, intermediatePoints, gridCollection, connector, isUpdate) {
         let segments = [];
         let seg;
@@ -46525,9 +46604,9 @@ class LineRouting {
         let prevDirection;
         let targetWrapper = connector.targetWrapper;
         let sourceWrapper = connector.sourceWrapper;
-        let sourcePoint = this.findEndPoint(connector, true);
+        let sourcePoint = this.findEndPoint(connector, true, true);
         if (connector.targetPortID !== '' || !connector.targetWrapper) {
-            targetPoint = this.findEndPoint(connector, false);
+            targetPoint = this.findEndPoint(connector, false, true);
         }
         for (let i = 0; i < intermediatePoints.length; i++) {
             node = gridCollection[intermediatePoints[i].x][intermediatePoints[i].y];
@@ -46560,6 +46639,14 @@ class LineRouting {
                     points[j].y = points[j + 1].y = sourcePoint.y;
                 }
                 if (j === points.length - 2 && targetPoint) {
+                    if (((targetPoint.x - points[j + 1].x) < 0) &&
+                        (Math.abs(targetPoint.x - points[j].x) < connector.targetDecorator.width + 1)) {
+                        points[j].x = points[j - 1].x -= this.size / 2;
+                    }
+                    if (((targetPoint.x - points[j + 1].x) > 0) &&
+                        (Math.abs(targetPoint.x - points[j].x) < connector.targetDecorator.width + 1)) {
+                        points[j].x = points[j - 1].x += this.size / 2;
+                    }
                     points[j + 1].x = targetPoint.x;
                     points[j].y = points[j + 1].y = targetPoint.y;
                 }
@@ -46576,6 +46663,14 @@ class LineRouting {
                     points[j].x = points[j + 1].x = sourcePoint.x;
                 }
                 if (j === points.length - 2 && targetPoint) {
+                    if (((targetPoint.y - points[j + 1].y) < 0) &&
+                        (Math.abs(targetPoint.y - points[j].y) < connector.targetDecorator.height + 1)) {
+                        points[j].y = points[j - 1].y -= this.size / 2;
+                    }
+                    if (((targetPoint.y - points[j + 1].y) > 0) &&
+                        (Math.abs(targetPoint.y - points[j].y) < connector.targetDecorator.width + 1)) {
+                        points[j].y = points[j - 1].y += this.size / 2;
+                    }
                     points[j + 1].y = targetPoint.y;
                     points[j].x = points[j + 1].x = targetPoint.x;
                 }
@@ -46624,6 +46719,7 @@ class LineRouting {
         }
         return false;
     }
+    /* tslint:enable */
     // Shortest path
     findPath(startGrid) {
         let intermediatePoint;
@@ -46767,7 +46863,12 @@ class LineRouting {
                 }
             }
             if (x > 0 && y > 0) {
-                i++;
+                if (direction === 'top' || direction === 'left') {
+                    i--;
+                }
+                else {
+                    i++;
+                }
             }
             else {
                 break;
@@ -52050,7 +52151,7 @@ class SymbolPalette extends Component {
                     index = 1.9;
                 }
                 canvas.getContext('2d').setTransform(index, 0, 0, index, 0, 0);
-                this.diagramRenderer.renderElement(symbol.wrapper, gElement || canvas, undefined, undefined, undefined, undefined, true);
+                this.diagramRenderer.renderElement(symbol.wrapper, gElement || canvas, undefined, undefined, undefined, undefined, true, undefined, true);
             }
         }
         if (!preview) {
@@ -52741,7 +52842,7 @@ class Overview extends Component {
         }
         let attribute = {
             'id': this.element.id + '_canvas', 'class': 'drawing',
-            'style': 'position:relative; height:' + this.getSizeValue(this.model.height) + '; width:' +
+            'style': 'position:relative; margin-top:6px; height:' + this.getSizeValue(this.model.height) + '; width:' +
                 this.getSizeValue(this.model.width) +
                 ';style:-ms-touch-action: none;touch-action: none;'
         };
@@ -53100,14 +53201,14 @@ class Overview extends Component {
         let rect = document.getElementById(this.canvas.id + 'overviewrect');
         let attr = { x: x, y: y, width: Math.max(1, width), height: Math.max(1, height) };
         setAttributeHtml(rect, attr);
-        this.updateOverviewCorner('top', x + 8, y - 2, Math.max(0, width - 16), 2);
-        this.updateOverviewCorner('bottom', x + 8, y + height, Math.max(0, width - 16), 2);
-        this.updateOverviewCorner('left', x - 2, y + 8, 2, Math.max(0, height - 16));
-        this.updateOverviewCorner('right', x + width, y + 8, 2, Math.max(0, height - 16));
-        this.updateOverviewCorner('topleft', x, y, 5, 5);
-        this.updateOverviewCorner('topright', x + width, y, 5, 5);
-        this.updateOverviewCorner('bottomleft', x, y + height, 5, 5);
-        this.updateOverviewCorner('bottomright', x + width, y + height, 5, 5);
+        this.updateOverviewCorner('top', x + 8, y + 1, Math.max(0, width - 16), 2);
+        this.updateOverviewCorner('bottom', x + 8, y + height + 3, Math.max(0, width - 16), 2);
+        this.updateOverviewCorner('left', x - 2, y + 11, 2, Math.max(0, height - 16));
+        this.updateOverviewCorner('right', x + width, y + 11, 2, Math.max(0, height - 16));
+        this.updateOverviewCorner('topleft', x, y + 3, 5, 5);
+        this.updateOverviewCorner('topright', x + width, y + 3, 5, 5);
+        this.updateOverviewCorner('bottomleft', x, y + height + 3, 5, 5);
+        this.updateOverviewCorner('bottomright', x + width, y + height + 3, 5, 5);
     }
     updateOverviewCorner(name, x, y, width, height) {
         let attr;
@@ -53549,5 +53650,5 @@ __decorate$25([
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es2015.js.map

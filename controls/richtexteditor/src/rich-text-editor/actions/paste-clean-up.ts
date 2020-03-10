@@ -12,7 +12,7 @@ import * as EVENTS from './../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { RenderType } from '../base/enum';
 import { DialogRenderer } from '../renderer/dialog-renderer';
-import { Uploader, MetaData } from '@syncfusion/ej2-inputs';
+import { Uploader, MetaData, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
 import { sanitizeHelper, convertToBlob } from '../base/util';
@@ -265,11 +265,11 @@ export class PasteCleanup {
         allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
         success: (e: object) => {
           setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900); },
+        uploading: (e: UploadingEventArgs) => {
+            this.parent.trigger(events.imageUploading, e);
+        },
         failure: (e: Object) => {
-          if (popupObj) {
-            popupObj.close();
-          }
-          this.parent.trigger(events.imageUploadFailed, e);
+          setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
         }
       });
       uploadObj.appendTo(popupObj.element.childNodes[0] as HTMLElement);
@@ -290,11 +290,18 @@ export class PasteCleanup {
       (popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
       detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
   }
+  private uploadFailure(imgElem: Element, uploadObj: Uploader, popupObj: Popup, e: Object): void {
+    detach(imgElem);
+    if (popupObj) {
+      popupObj.close();
+    }
+    this.parent.trigger(events.imageUploadFailed, e);
+    uploadObj.destroy();
+  }
   private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: Object): void {
     this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
       if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-          let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name + '.' +
-          (e as MetaData).file.type.split('image/')[1];
+          let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
           (imgElem as HTMLImageElement).src = url;
           imgElem.setAttribute('alt', (e as MetaData).file.name);
       }
@@ -321,13 +328,14 @@ export class PasteCleanup {
   private base64ToFile(base64: string, filename: string): File {
     let baseStr: string[] = base64.split(',');
     let typeStr: string = baseStr[0].match(/:(.*?);/)[1];
+    let extension: string = typeStr.split('/')[1];
     let decodeStr: string = atob(baseStr[1]);
     let strLen: number = decodeStr.length;
     let decodeArr: Uint8Array = new Uint8Array(strLen);
     while (strLen--) {
         decodeArr[strLen] = decodeStr.charCodeAt(strLen);
     }
-    return new File([decodeArr], filename, {type: typeStr});
+    return new File([decodeArr], filename + '.' + (!isNOU(extension) ? extension : ''), {type: extension});
   }
   /**
    * Method for image formatting when pasting

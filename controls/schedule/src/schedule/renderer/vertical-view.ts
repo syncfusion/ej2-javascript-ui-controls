@@ -552,6 +552,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         let wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         let tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
+        this.addIgnoreWhitespaceClass(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
         wrap.appendChild(tbl);

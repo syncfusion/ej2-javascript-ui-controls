@@ -3187,7 +3187,7 @@ describe('EJ2-18684 - RTE - Focus event not raised in readonly mode', () => {
     });
     it('check focus event trigger', (done) => {
         rteObj.focusIn();
-        expect(argsName).toBe('');
+        expect(argsName).toBe('focus');
         done();
     });
     afterAll(() => {

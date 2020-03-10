@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.55 (2020-03-10)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`I264424`- Cross tab formula issue fixed.
+
 ## 17.4.51 (2020-02-25)
 
 ### Spreadsheet

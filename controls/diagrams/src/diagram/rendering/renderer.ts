@@ -152,16 +152,16 @@ export class DiagramRenderer {
     /**   @private  */
     public renderElement(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement, transform?: Transforms,
-        parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number):
+        parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, isPreviewNode?: boolean):
         void {
         let isElement: boolean = true;
         if (element instanceof Container) {
             isElement = false;
-            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue);
+            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode);
         } else if (element instanceof ImageElement) {
             this.renderImageElement(element, canvas, transform, parentSvg, fromPalette);
         } else if (element instanceof PathElement) {
-            this.renderPathElement(element, canvas, transform, parentSvg, fromPalette);
+            this.renderPathElement(element, canvas, transform, parentSvg, fromPalette, isPreviewNode);
         } else if (element instanceof TextElement) {
             this.renderTextElement(element, canvas, transform, parentSvg, fromPalette);
         } else if (element instanceof DiagramNativeElement) {
@@ -169,7 +169,7 @@ export class DiagramRenderer {
         } else if (element instanceof DiagramHtmlElement) {
             this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette, indexValue);
         } else {
-            this.renderRect(element, canvas, transform, parentSvg);
+            this.renderRect(element, canvas, transform, parentSvg, isPreviewNode);
         }
     }
 
@@ -582,7 +582,7 @@ export class DiagramRenderer {
         options.width *= transform.scale;
         options.height *= transform.scale;
         options.fill = 'transparent'; options.stroke = '#097F7F';
-        options.strokeWidth = 0.6;
+        options.strokeWidth = 1.2;
         options.dashArray = '6,3';
         options.class = 'e-diagram-border';
         if (isSwimlane) { options.class += ' e-diagram-lane'; }
@@ -754,9 +754,9 @@ export class DiagramRenderer {
     /**   @private  */
     public renderPathElement(
         element: PathElement, canvas: HTMLCanvasElement | SVGElement,
-        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
+        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean, isPreviewNode?: boolean):
         void {
-        let options: BaseAttributes = this.getBaseAttributes(element, transform);
+        let options: BaseAttributes = this.getBaseAttributes(element, transform, isPreviewNode);
         (options as PathAttributes).data = element.absolutePath;
         (options as PathAttributes).data = element.absolutePath;
         let ariaLabel: Object = element.description ? element.description : element.id;
@@ -1202,7 +1202,7 @@ export class DiagramRenderer {
     public renderContainer(
         group: Container, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean,
-        indexValue?: number):
+        indexValue?: number, isPreviewNode?: boolean):
         void {
         let svgParent: SvgParent = { svg: parentSvg, g: canvas };
         if (this.diagramId) {
@@ -1245,7 +1245,7 @@ export class DiagramRenderer {
                 if (!this.isSvgMode) {
                     child.flip = group.flip;
                 }
-                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue);
+                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue, isPreviewNode);
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
                     this.renderFlipElement(child, parentG, flip);
@@ -1301,7 +1301,8 @@ export class DiagramRenderer {
                     (getHTMLLayer(this.diagramId).children[0]) as HTMLElement;
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
                 if (canvas) {
-                    canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
+                    canvas.style.transform =
+                     'scale(' + scaleX + ',' + scaleY + ')' + 'rotate(' + (element.rotateAngle + element.parentTransform) + 'deg)';
                 }
             } else {
                 setAttributeSvg(canvas as SVGElement, attr);
@@ -1323,9 +1324,11 @@ export class DiagramRenderer {
     }
 
     /**   @private  */
-    public renderRect(element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms, parentSvg?: SVGSVGElement):
+    public renderRect(
+        element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
+        parentSvg?: SVGSVGElement, isPreviewNode?: boolean):
         void {
-        let options: RectAttributes = this.getBaseAttributes(element, transform);
+        let options: RectAttributes = this.getBaseAttributes(element, transform, isPreviewNode);
         options.cornerRadius = element.cornerRadius || 0;
         let ariaLabel: Object = element.description ? element.description : element.id;
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg, ariaLabel);
@@ -1338,7 +1341,7 @@ export class DiagramRenderer {
     }
 
     /**   @private  */
-    public getBaseAttributes(element: DiagramElement, transform?: Transforms): BaseAttributes {
+    public getBaseAttributes(element: DiagramElement, transform?: Transforms, isPreviewNode?: boolean): BaseAttributes {
         let options: BaseAttributes = {
             width: element.actualSize.width, height: element.actualSize.height,
             x: element.offsetX - element.actualSize.width * element.pivot.x + 0.5,
@@ -1349,6 +1352,10 @@ export class DiagramRenderer {
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
             canApplyStyle: element.canApplyStyle
         };
+        if (isPreviewNode) {
+            options.x = options.x - .5;
+            options.y = options.y - .5;
+        }
         if (element.isExport) {
             options.width *= element.exportScaleValue.x;
             options.height *= element.exportScaleValue.y;

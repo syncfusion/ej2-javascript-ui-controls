@@ -2,7 +2,7 @@ import { extend, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { IGrid, EJ2Intance, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { DropDownList, FilteringEventArgs } from '@syncfusion/ej2-dropdowns';
-import { Query, DataManager, DataUtil } from '@syncfusion/ej2-data';
+import { Query, DataManager, DataUtil, Predicate } from '@syncfusion/ej2-data';
 import { isEditable, getComplexFieldID, getObject } from '../base/util';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import { parentsUntil } from '../base/util';
@@ -39,11 +39,12 @@ export class DropDownEditCell implements IEditCell {
     public write(args: { rowData: Object, element: Element, column: Column, row: HTMLElement, requestType: string }): void {
         this.column = args.column;
         let isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
+        let pred: Predicate = new Predicate(args.column.field, 'notequal', null, true, false);
         this.obj = new DropDownList(extend(
             {
                 dataSource: this.parent.dataSource instanceof DataManager ?
                     this.parent.dataSource : new DataManager(this.parent.dataSource),
-                query: new Query().select(args.column.field), enabled: isEditable(args.column, args.requestType, args.element),
+                query: new Query().where(pred).select(args.column.field), enabled: isEditable(args.column, args.requestType, args.element),
                 fields: { value: args.column.field },
                 value: getObject(args.column.field, args.rowData),
                 enableRtl: this.parent.enableRtl, actionComplete: this.ddActionComplete.bind(this),
@@ -90,5 +91,4 @@ export class DropDownEditCell implements IEditCell {
             this.obj.destroy();
         }
     }
-
 }

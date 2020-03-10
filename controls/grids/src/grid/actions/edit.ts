@@ -210,11 +210,17 @@ export class Edit implements IAction {
         if (!this.parent.editSettings.allowAdding) {
             return;
         }
-        this.parent.element.classList.add('e-editing');
-        this.editModule.addRecord(data, index);
-        if (!isBlazor()) {
-            this.refreshToolbar();
-            this.parent.notify('start-add', {});
+        let args: { startEdit: boolean } = { startEdit: true };
+        if (!data) {
+            this.parent.notify(events.virtualScrollAddActionBegin, args);
+        }
+        if (args.startEdit) {
+            this.parent.element.classList.add('e-editing');
+            this.editModule.addRecord(data, index);
+            if (!isBlazor()) {
+                this.refreshToolbar();
+                this.parent.notify('start-add', {});
+            }
         }
     }
 
@@ -602,11 +608,16 @@ export class Edit implements IAction {
      * @hidden
      */
     public onActionBegin(e: NotifyArgs): void {
-        let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
-        if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
-            && restrictedRequestTypes.indexOf(e.requestType) === -1) {
-            this.destroyWidgets();
-            this.destroyForm();
+        if (e.requestType === 'columnstate' && this.parent.isEdit
+        && this.parent.editSettings.mode !== 'Batch') {
+            this.closeEdit();
+        } else {
+            let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
+            if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
+                && restrictedRequestTypes.indexOf(e.requestType) === -1) {
+                this.destroyWidgets();
+                this.destroyForm();
+            }
         }
     }
 
@@ -936,7 +947,8 @@ export class Edit implements IAction {
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
         if (validationForBottomRowPos) {
-            if (isScroll && !this.parent.getFrozenColumns() && this.parent.height !== 'auto' && !this.parent.frozenRows) {
+            if (isScroll && !this.parent.getFrozenColumns() && this.parent.height !== 'auto' && !this.parent.frozenRows
+                && !this.parent.enableVirtualization) {
                 let scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
                 div.style.bottom = ((this.parent.height as number) - gcontent.querySelector('table').offsetHeight
                     - scrollWidth) + inputClient.height + 9 + 'px';

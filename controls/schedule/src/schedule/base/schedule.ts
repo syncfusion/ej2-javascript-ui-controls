@@ -1003,6 +1003,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
     }
+
+    /** @hidden */
     public onServerDataBind(): void {
         //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
         if (this.bulkChanges && this.bulkChanges.selectedDate) {
@@ -1774,6 +1776,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
                     break;
                 case 'enableRtl':
+                    this.setRtlClass();
                     state.isRefresh = true;
                     break;
                 case 'rowAutoHeight':
@@ -1875,6 +1878,36 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    private setRtlClass(): void {
+        if (this.enableRtl) {
+            addClass([this.element], 'e-rtl');
+        } else {
+            removeClass([this.element], 'e-rtl');
+        }
+    }
+
+    /**
+     * Refreshes the Scheduler
+     */
+    public refresh(): void {
+        if (!this.isServerRenderer()) {
+            super.refresh();
+        } else {
+            if (this.quickPopup) {
+                this.quickPopup.refreshQuickDialog();
+                this.quickPopup.refreshQuickPopup();
+                this.quickPopup.refreshMorePopup();
+            }
+            if (this.eventWindow) { this.eventWindow.refresh(); }
+            this.destroyHeaderModule();
+            if (this.showHeaderBar) {
+                this.headerModule = new HeaderRenderer(this);
+            }
+            this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties() });
+            this.notify(events.dataReady, {});
+        }
+    }
+
     private onGroupSettingsPropertyChanged(newProp: GroupModel, oldProp: GroupModel, state: StateArgs): void {
         for (let prop of Object.keys(newProp)) {
             if (prop === 'headerTooltipTemplate') {
@@ -1931,6 +1964,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     this.notify(events.dataReady, {
                         processedData: this.eventBase.processData(this.eventsData as { [key: string]: Object }[])
                     });
+                    break;
+                case 'ignoreWhitespace':
+                    state.isLayout = true;
                     break;
             }
         }

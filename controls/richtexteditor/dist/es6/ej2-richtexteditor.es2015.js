@@ -2164,10 +2164,12 @@ class ToolbarRenderer {
         this.parent.notify(toolbarCreated, this);
     }
     toolbarClicked(args) {
-        if (this.parent.readonly || !this.parent.enabled) {
+        if (!this.parent.enabled) {
             return;
         }
-        this.parent.notify(toolbarClick, args);
+        if (!this.parent.readonly) {
+            this.parent.notify(toolbarClick, args);
+        }
         this.parent.trigger('toolbarClick', args);
     }
     dropDownSelected(args) {
@@ -5085,7 +5087,7 @@ class Count {
      * @deprecated
      */
     destroy() {
-        if (this.element && !isNullOrUndefined(document.querySelector('.' + CLS_COUNT))) {
+        if (this.element && !isNullOrUndefined(this.parent.element.querySelector('.' + CLS_COUNT))) {
             detach(this.element);
         }
         this.removeEventListener();
@@ -8640,7 +8642,8 @@ class DOMNode {
                 }
                 else {
                     let lastNode = start.lastChild;
-                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text') {
+                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text' &&
+                        lastNode.nodeName !== 'BR') {
                         lastNode = lastNode.lastChild;
                     }
                     start = lastNode;
@@ -9118,6 +9121,9 @@ class Lists {
         this.domNode.setMarker(this.saveSelection);
         let listsNodes = this.domNode.blockNodes();
         for (let i = 0; i < listsNodes.length; i++) {
+            if (listsNodes[i].tagName === 'TABLE') {
+                listsNodes.splice(i, 1);
+            }
             if (listsNodes[i].tagName !== 'LI' && 'LI' === listsNodes[i].parentNode.tagName) {
                 listsNodes[i] = listsNodes[i].parentNode;
             }
@@ -9963,6 +9969,11 @@ class InsertHtml {
     static pasteInsertHTML(nodes, node, range, nodeSelection, nodeCutter, docElement, isCollapsed, closestParentNode, editNode) {
         let isCursor = range.startOffset === range.endOffset &&
             range.startContainer === range.endContainer;
+        if (isCursor && range.startContainer === editNode && editNode.textContent === '') {
+            let currentBlockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            nodeSelection.setSelectionText(docElement, currentBlockNode, currentBlockNode, 0, 0);
+            range = nodeSelection.getRange(docElement);
+        }
         let lasNode;
         let sibNode;
         let isSingleNode;
@@ -10071,6 +10082,9 @@ class InsertHtml {
             }
             node.parentNode.replaceChild(fragment, node);
         }
+        this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+    }
+    static placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode) {
         lastSelectionNode = lastSelectionNode.nodeName === 'BR' ? lastSelectionNode.previousSibling : lastSelectionNode;
         while (!isNullOrUndefined(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
             lastSelectionNode.nodeName !== 'BR') {
@@ -14279,11 +14293,11 @@ class PasteCleanup {
             success: (e) => {
                 setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900);
             },
+            uploading: (e) => {
+                this.parent.trigger(imageUploading, e);
+            },
             failure: (e) => {
-                if (popupObj) {
-                    popupObj.close();
-                }
-                this.parent.trigger(imageUploadFailed, e);
+                setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
             }
         });
         uploadObj.appendTo(popupObj.element.childNodes[0]);
@@ -14303,11 +14317,18 @@ class PasteCleanup {
         popupObj.element.getElementsByClassName('e-file-select-wrap')[0].style.display = 'none';
         detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap'));
     }
+    uploadFailure(imgElem, uploadObj, popupObj, e) {
+        detach(imgElem);
+        if (popupObj) {
+            popupObj.close();
+        }
+        this.parent.trigger(imageUploadFailed, e);
+        uploadObj.destroy();
+    }
     popupClose(popupObj, uploadObj, imgElem, e) {
         this.parent.trigger(imageUploadSuccess, e, (e) => {
             if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-                let url = this.parent.insertImageSettings.path + e.file.name + '.' +
-                    e.file.type.split('image/')[1];
+                let url = this.parent.insertImageSettings.path + e.file.name;
                 imgElem.src = url;
                 imgElem.setAttribute('alt', e.file.name);
             }
@@ -14335,13 +14356,14 @@ class PasteCleanup {
     base64ToFile(base64, filename) {
         let baseStr = base64.split(',');
         let typeStr = baseStr[0].match(/:(.*?);/)[1];
+        let extension = typeStr.split('/')[1];
         let decodeStr = atob(baseStr[1]);
         let strLen = decodeStr.length;
         let decodeArr = new Uint8Array(strLen);
         while (strLen--) {
             decodeArr[strLen] = decodeStr.charCodeAt(strLen);
         }
-        return new File([decodeArr], filename, { type: typeStr });
+        return new File([decodeArr], filename + '.' + (!isNullOrUndefined(extension) ? extension : ''), { type: extension });
     }
     /**
      * Method for image formatting when pasting
@@ -17189,6 +17211,7 @@ class Image {
             this.popupObj.close();
         }
         this.parent.trigger(imageUploadFailed, e);
+        this.uploadObj.destroy();
     }
     /**
      * Called when drop image upload was successful
@@ -20463,7 +20486,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         this.notify(contentscroll, { args: e });
     }
     focusHandler(e) {
-        if ((!this.isRTE || this.isFocusOut) && !this.readonly) {
+        if ((!this.isRTE || this.isFocusOut)) {
             this.isRTE = this.isFocusOut ? false : true;
             this.isFocusOut = false;
             addClass([this.element], [CLS_FOCUS]);
@@ -20555,7 +20578,7 @@ let RichTextEditor = class RichTextEditor extends Component {
                 trg = null;
             }
         }
-        if (this.isBlur && isNullOrUndefined(trg) && !this.readonly) {
+        if (this.isBlur && isNullOrUndefined(trg)) {
             removeClass([this.element], [CLS_FOCUS]);
             this.notify(focusChange, {});
             let value = this.getUpdatedValue();

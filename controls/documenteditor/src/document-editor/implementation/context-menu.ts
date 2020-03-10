@@ -160,7 +160,7 @@ export class ContextMenu {
                 id: id + CONTEXTMENU_UPDATE_FIELD
             },
             {
-                text: localValue.getConstant('Edit Field'),
+                text: localValue.getConstant('Edit Field') + '...',
                 iconCss: 'e-icons e-de-edit_field',
                 id: id + CONTEXTMENU_EDIT_FIELD
             },
@@ -178,7 +178,7 @@ export class ContextMenu {
                 separator: true
             },
             {
-                text: localValue.getConstant('Hyperlink'),
+                text: localValue.getConstant('Hyperlink') + '...',
                 iconCss: 'e-icons e-de-insertlink',
                 id: id + CONTEXTMENU_HYPERLINK
             },
@@ -206,12 +206,12 @@ export class ContextMenu {
                 separator: true
             },
             {
-                text: localValue.getConstant('Font'),
+                text: localValue.getConstant('Font') + '...',
                 iconCss: 'e-icons e-de-fonts',
                 id: id + CONTEXTMENU_FONT_DIALOG
             },
             {
-                text: localValue.getConstant('Paragraph'),
+                text: localValue.getConstant('Paragraph') + '...',
                 iconCss: 'e-icons e-de-paragraph',
                 id: id + CONTEXTMENU_PARAGRAPH
             },
@@ -219,7 +219,7 @@ export class ContextMenu {
                 separator: true,
             },
             {
-                text: localValue.getConstant('Table Properties'),
+                text: localValue.getConstant('Table Properties') + '...',
                 id: id + CONTEXTMENU_TABLE,
                 iconCss: 'e-icons e-de-table'
             },
@@ -484,6 +484,8 @@ export class ContextMenu {
      * @param {MenuItemModel[]} items - To add custom menu item
      * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
      * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
+     * @returns {void}
+     * @blazorArgsType items|List<Syncfusion.EJ2.Blazor.Navigations.MenuItem>,isEnable|Boolean,isBottom|Boolean
      */
     public addCustomMenu(items: MenuItemModel[], isEnable?: boolean, isBottom?: boolean): void {
         let menuItems: MenuItemModel[] = JSON.parse(JSON.stringify(items));
@@ -630,20 +632,20 @@ export class ContextMenu {
                 contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
             }
         }
-        contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_seperator' });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_separator' });
         if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
             contextMenuItems.push({ text: 'More Suggestion', items: splittedSuggestion });
-            contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_seperator' });
+            contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
         } else {
             // tslint:disable-next-line:max-line-length
             contextMenuItems.push({ text: 'Add To Dictionary ', id: '_contextmenu_otherSuggestions_spellcheck_Add To Dictionary', iconCss: '' });
         }
         contextMenuItems.push({ text: 'Ignore Once', id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
         contextMenuItems.push({ text: 'Ignore All', id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
-        contextMenuItems.push({ separator: true, id: '_contextmenu_change_seperator' });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_change_separator' });
         // tslint:disable-next-line:max-line-length
         contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
-        contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_seperator' });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_separator' });
         return contextMenuItems;
     }
 
@@ -768,7 +770,6 @@ export class ContextMenu {
         }
         if (this.documentHelper.owner.selection.start.paragraph.isInsideTable
             && this.documentHelper.owner.selection.end.paragraph.isInsideTable) {
-            (paragraph.nextSibling as HTMLElement).style.display = 'block';
             if (owner.tablePropertiesDialogModule) {
                 tableProperties.style.display = 'block';
             }

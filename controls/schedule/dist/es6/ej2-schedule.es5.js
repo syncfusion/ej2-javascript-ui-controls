@@ -707,6 +707,8 @@ var ICON_DISABLE_CLASS = 'e-icon-disable';
 /** @hidden */
 var AUTO_HEIGHT = 'e-auto-height';
 /** @hidden */
+var IGNORE_WHITESPACE = 'e-ignore-whitespace';
+/** @hidden */
 var EVENT_TEMPLATE = 'e-template';
 /** @hidden */
 var READ_ONLY = 'e-read-only';
@@ -1332,7 +1334,10 @@ var ScheduleTouch = /** @__PURE__ @class */ (function () {
             return;
         }
         this.isScrollTriggered = false;
-        if (e.swipeDirection === 'Left' || e.swipeDirection === 'Right') {
+        var swipeDate = e.swipeDirection === 'Left' ?
+            this.parent.activeView.renderDates[0] : this.parent.activeView.renderDates.slice(-1)[0];
+        if ((e.swipeDirection === 'Left' && swipeDate < this.parent.maxDate) ||
+            (e.swipeDirection === 'Right' && swipeDate >= this.parent.minDate)) {
             var time = Date.now() - this.timeStampStart;
             var offsetDist = (e.distanceX * (Browser.isDevice ? 6 : 1.66));
             if (offsetDist > time || (e.distanceX > (this.parent.element.offsetWidth / 2))) {
@@ -6486,6 +6491,22 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
         this.renderQuickDialog();
     };
+    QuickPopups.prototype.refreshQuickPopup = function () {
+        if (this.quickPopup.element) {
+            this.quickPopup.destroy();
+            remove(this.quickPopup.element);
+            this.quickPopup.element = null;
+        }
+        this.renderQuickPopup();
+    };
+    QuickPopups.prototype.refreshMorePopup = function () {
+        if (this.morePopup.element) {
+            this.morePopup.destroy();
+            remove(this.morePopup.element);
+            this.morePopup.element = null;
+        }
+        this.renderMorePopup();
+    };
     QuickPopups.prototype.destroy = function () {
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
             this.fieldValidator.destroy();
@@ -10018,7 +10039,7 @@ var Crud = /** @__PURE__ @class */ (function () {
     Crud.prototype.saveEvent = function (eventData, action) {
         var _this = this;
         if (this.parent.eventSettings.allowEditing) {
-            if (this.parent.eventBase.isBlockRange(eventData)) {
+            if (this.parent.currentAction !== 'EditFollowingEvents' && this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
                 return;
             }
@@ -10253,8 +10274,10 @@ var Crud = /** @__PURE__ @class */ (function () {
                             if (!_this.parent.uiStateValues.isIgnoreOccurrence) {
                                 childEvent[fields_1.recurrenceException] = null;
                                 if (followData_1.occurrence.length > 0) {
-                                    childEvent[fields_1.recurrenceRule] =
-                                        followData_1.occurrence.slice(-1)[0][fields_1.recurrenceRule];
+                                    var rule = followData_1.occurrence.slice(-1)[0][fields_1.recurrenceRule];
+                                    if (rule.indexOf('COUNT') === -1) {
+                                        childEvent[fields_1.recurrenceRule] = rule;
+                                    }
                                 }
                                 if (followData_1.follow.length > 0) {
                                     childEvent[fields_1.recurrenceRule] =
@@ -10463,7 +10486,7 @@ var Crud = /** @__PURE__ @class */ (function () {
         else {
             endDate = followEvent[fields.startTime];
             var startDate = parentEvent[fields.startTime];
-            var ruleException = followEvent[fields.recurrenceException];
+            var ruleException = (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] : null;
             var dateCollection = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
             var untilDate = new Date(dateCollection.slice(-1)[0]);
             followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
@@ -10813,6 +10836,9 @@ var EventSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$6([
         Property(false)
     ], EventSettings.prototype, "enableIndicator", void 0);
+    __decorate$6([
+        Property(false)
+    ], EventSettings.prototype, "ignoreWhitespace", void 0);
     return EventSettings;
 }(ChildProperty));
 
@@ -10976,6 +11002,9 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], AUTO_HEIGHT);
+        }
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            addClass([tbl], IGNORE_WHITESPACE);
         }
         var tBody = tbl.querySelector('tbody');
         var resData = this.generateTreeData(true);
@@ -11817,9 +11846,22 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
                 })[0];
                 index = this.lastResourceLevel.map(function (e) { return e.resourceData; }).indexOf(resourceData);
             }
-            var td = this.parent.element.querySelector("." + WORK_CELLS_CLASS + "[data-group-index=\"" + index + "\"]");
-            if (td && !td.parentElement.classList.contains(HIDDEN_CLASS)) {
-                scrollElement.scrollTop = td.offsetTop;
+            if (this.parent.virtualScrollModule) {
+                var virtual = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
+                var averageRowHeight = Math.round(virtual.offsetHeight / this.expandedResources.length);
+                if (this.renderedResources[0].resourceData[this.renderedResources[0].resource.idField] > index) {
+                    scrollElement.scrollTop =
+                        (index * averageRowHeight) + ((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight);
+                }
+                else {
+                    scrollElement.scrollTop = (index * averageRowHeight);
+                }
+            }
+            else {
+                var td = this.parent.element.querySelector("." + WORK_CELLS_CLASS + "[data-group-index=\"" + index + "\"]");
+                if (td && !td.parentElement.classList.contains(HIDDEN_CLASS)) {
+                    scrollElement.scrollTop = td.offsetTop;
+                }
             }
         }
         else {
@@ -12209,6 +12251,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
     };
+    /** @hidden */
     Schedule.prototype.onServerDataBind = function () {
         //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
         if (this.bulkChanges && this.bulkChanges.selectedDate) {
@@ -12947,6 +12990,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
                     break;
                 case 'enableRtl':
+                    this.setRtlClass();
                     state.isRefresh = true;
                     break;
                 case 'rowAutoHeight':
@@ -13058,6 +13102,38 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                 break;
         }
     };
+    Schedule.prototype.setRtlClass = function () {
+        if (this.enableRtl) {
+            addClass([this.element], 'e-rtl');
+        }
+        else {
+            removeClass([this.element], 'e-rtl');
+        }
+    };
+    /**
+     * Refreshes the Scheduler
+     */
+    Schedule.prototype.refresh = function () {
+        if (!this.isServerRenderer()) {
+            _super.prototype.refresh.call(this);
+        }
+        else {
+            if (this.quickPopup) {
+                this.quickPopup.refreshQuickDialog();
+                this.quickPopup.refreshQuickPopup();
+                this.quickPopup.refreshMorePopup();
+            }
+            if (this.eventWindow) {
+                this.eventWindow.refresh();
+            }
+            this.destroyHeaderModule();
+            if (this.showHeaderBar) {
+                this.headerModule = new HeaderRenderer(this);
+            }
+            this.notify(scrollUiUpdate, { cssProperties: this.getCssProperties() });
+            this.notify(dataReady, {});
+        }
+    };
     Schedule.prototype.onGroupSettingsPropertyChanged = function (newProp, oldProp, state) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -13122,6 +13198,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                     this.notify(dataReady, {
                         processedData: this.eventBase.processData(this.eventsData)
                     });
+                    break;
+                case 'ignoreWhitespace':
+                    state.isLayout = true;
                     break;
             }
         }
@@ -14340,6 +14419,8 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         _this.withIndicator = _this.parent.eventSettings.enableMaxHeight && _this.parent.eventSettings.enableIndicator
             && !_this.parent.rowAutoHeight;
         _this.maxOrIndicator = (_this.maxHeight || _this.withIndicator);
+        _this.moreIndicatorHeight =
+            (_this.parent.rowAutoHeight && _this.parent.eventSettings.ignoreWhitespace) ? 0 : _this.moreIndicatorHeight;
         _this.addEventListener();
         return _this;
     }
@@ -16883,8 +16964,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
-            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint + this.actionObj.cellHeight :
-                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight) +
+            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint +
+                this.actionObj.cellHeight + window.pageYOffset :
+                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight + window.pageYOffset) +
                     (this.actionObj.clone.offsetHeight - this.heightUptoCursorPoint);
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
@@ -17724,6 +17806,11 @@ var ViewBase = /** @__PURE__ @class */ (function () {
             addClass([element], AUTO_HEIGHT);
         }
     };
+    ViewBase.prototype.addIgnoreWhitespaceClass = function (element) {
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            addClass([element], IGNORE_WHITESPACE);
+        }
+    };
     ViewBase.prototype.getColElements = function () {
         return [].slice.call(this.element.querySelectorAll('.' + CONTENT_WRAP_CLASS
             + ' col, .' + DATE_HEADER_WRAP_CLASS + ' col'));
@@ -18335,6 +18422,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         var wrap = createElement('div', { className: CONTENT_WRAP_CLASS });
         var tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
+        this.addIgnoreWhitespaceClass(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
         wrap.appendChild(tbl);
@@ -19040,6 +19128,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
     Month.prototype.renderContentArea = function () {
         var tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
+        this.addIgnoreWhitespaceClass(tbl);
         if (this.parent.currentView === 'TimelineMonth') {
             this.createColGroup(tbl, this.colLevels[this.colLevels.length - 1]);
         }
@@ -20106,7 +20195,7 @@ var MonthAgenda = /** @__PURE__ @class */ (function (_super) {
         _this.viewClass = 'e-month-agenda-view';
         _this.agendaDates = {};
         _this.agendaBase = new AgendaBase(parent);
-        _this.monthAgendaDate = parent.selectedDate;
+        _this.monthAgendaDate = new Date('' + parent.selectedDate);
         return _this;
     }
     MonthAgenda.prototype.renderAppointmentContainer = function () {

@@ -1783,7 +1783,7 @@ export class Selection implements IAction {
     }
 
     private clearSelAfterRefresh(e: { requestType: string }): void {
-        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'scroll';
+        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfiniteScroll) {
             this.clearSelection();
         }
@@ -2225,7 +2225,8 @@ export class Selection implements IAction {
     }
 
     private updateSelectedRowIndex(index?: number): void {
-        if (this.parent.isCheckBoxSelection && this.parent.enableVirtualization && !this.parent.getDataModule().isRemote()) {
+        if (this.parent.isCheckBoxSelection && (this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll)
+            && !this.parent.getDataModule().isRemote()) {
             if (this.parent.checkAllRows === 'Check') {
                 this.selectedRowIndexes = [];
                 let dataLength: number = this.getData().length;
@@ -2253,8 +2254,9 @@ export class Selection implements IAction {
             if (this.getCheckAllBox()) {
                 let spanEle: HTMLElement = this.getCheckAllBox().nextElementSibling as HTMLElement;
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
-                if (checkedLen === this.totalRecordsCount && this.totalRecordsCount || (this.parent.enableVirtualization
-                    && !this.parent.allowPaging && !this.parent.getDataModule().isRemote() && checkedLen === this.getData().length)) {
+                if (checkedLen === this.totalRecordsCount && this.totalRecordsCount
+                    || ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll)
+                        && !this.parent.allowPaging && !this.parent.getDataModule().isRemote() && checkedLen === this.getData().length)) {
                     addClass([spanEle], ['e-check']);
                     if (isInteraction) {
                         this.getRenderer().setSelection(null, true, true);
@@ -2275,7 +2277,8 @@ export class Selection implements IAction {
                     addClass([spanEle], ['e-stop']);
                     this.parent.checkAllRows = 'Intermediate';
                 }
-                if (this.parent.enableVirtualization && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()) {
+                if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableScroll)
+                    && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()) {
                     this.updateSelectedRowIndex(index);
                 }
             }
@@ -2722,7 +2725,7 @@ export class Selection implements IAction {
     }
 
     public dataReady(e: { requestType: string }): void {
-        let isInfinitecroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'scroll';
+        let isInfinitecroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
             this.disableUI = true;
             this.clearSelection();

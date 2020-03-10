@@ -21,13 +21,13 @@ $de-spellcheck-tlbr-height: 34px !default;
 $de-spellcheck-tlbr-margin-left: 7.5px !default;
 $de-zoom-tlbr-margin-left: calc(100% - 393px) !default;
 $de-zoom-tlbr-margin-left-big: calc(100% - 425px) !default;
-$e-de-statusbar-seperator-color: #dadada;
+$e-de-statusbar-separator-color: #dadada;
 // Subtract toolbar height
 $de-ctnr-editor-height: calc(100% - 118px) !default;
 $de-ctnr-editor-height-big: calc(100% - 118px) !default;
 // Subtract toolbar & statusbar height
-$de-tool-ctnr-editor-height: calc(100% - 113px) !default;
-$de-tool-ctnr-editor-height-big: calc(100% - 118px) !default;
+$de-tool-ctnr-editor-height: calc(100% - 121px) !default;
+$de-tool-ctnr-editor-height-big: calc(100% - 122px) !default;
 // Subtract statusbar height
 $de-ctnr-editor-height: calc(100% - 36px) !default;
 $de-ctnr-editor-height-big: calc(100% - 36px) !default;
@@ -81,3 +81,10 @@ $de-list-button-margin-right-bigger: 0;
 $de-ctnr-padding: 12px;
 $de-pageweb-toggle-color: $neutral-tertiary-alt !default;
 $de-pageweb-toggle-outline: #fafafa 0 solid !default;
+$de-layout-btn-font-size: 14px;
+$de-layout-btn-bgr-font-size: 14px;
+$de-pagenumber-text-border-radius: 0;
+$de-pagenumber-text-margin-top: 0;
+$e-de-pagenumber-input-margin-left: -3px;
+$e-de-ctnr-pg-no-spellout-padd-top: 7px;
+$e-de-pagenumber-bg: $neutral-white;

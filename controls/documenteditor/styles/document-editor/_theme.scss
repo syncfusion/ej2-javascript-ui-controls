@@ -397,7 +397,7 @@
 
   .e-de-op-close-icon {
     @if $skin-name != 'bootstrap' {
-      color: $de-op-close-icon-clr;
+      color: $dialog-btn-clr;
     }
   }
 
@@ -511,7 +511,7 @@
     display: none;
     height: $de-table-separator-line-height;
     left: $de-table-separator-line-left;
-    margin-top: $de-table-dlg-seperator-line-top;
+    margin-top: $de-table-dlg-separator-line-top;
     position: absolute;
     width: $de-table-separator-line-width;
   }
@@ -661,11 +661,9 @@
   }
 
   .e-documenteditor .e-de-op-close-button {
-    height: 20px;
-    left: 267px;
+    left: 260px;
     position: absolute;
     top: 18px;
-    width: 20px;
   }
 
   @if $skin-name == 'bootstrap4' {
@@ -823,7 +821,7 @@
       margin-top: $de-op-dlg-footer-margin-top-bigger;
     }
 
-    .e-split-btn-wrapper .e-btn {
+    .e-de-font-dlg-display .e-split-btn-wrapper .e-btn {
       border-color: $de-style-toggle-btn-color;
     }
   }
@@ -1141,8 +1139,8 @@
     margin-top: $de-tbl-margin-sub-header;
   }
 
-  .e-de-tbl-btn-seperator {
-    width: $de-tbl-btn-seperator;
+  .e-de-tbl-btn-separator {
+    width: $de-tbl-btn-separator;
   }
 
 
@@ -1372,7 +1370,7 @@
     color: $de-checkbox-wrapper-color;
   }
 
-  .e-de-tbl-btn-seperator .e-checkbox-wrapper .e-label {
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label {
     color: $de-checkbox-wrapper-color;
   }
 
@@ -1663,7 +1661,7 @@
   .e-de-table-ppty-options-break .e-checkbox-wrapper .e-frame,
   .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-frame,
   .e-de-table-cell-header-div .e-checkbox-wrapper .e-frame,
-  .e-de-tbl-btn-seperator .e-checkbox-wrapper .e-frame,
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-frame,
   .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-frame,
   .e-de-tbl-margin-sub-header .e-frame {
     height: $de-checkbox-height;
@@ -1676,7 +1674,7 @@
   .e-de-table-ppty-options-break .e-checkbox-wrapper .e-label,
   .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-label ,
   .e-de-table-cell-header-div .e-checkbox-wrapper .e-label,
-  .e-de-tbl-btn-seperator .e-checkbox-wrapper .e-label,
+  .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label,
   .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-label,
   .e-de-tbl-margin-sub-header .e-label {
     font-size: 14px;
@@ -2138,6 +2136,7 @@
     font-size: 13px;
     height: 36px;
     opacity: .87;
+    margin: 0 $de-rp-btn-enforce-margin;
     @if $skin-name == 'bootstrap4' {
         border-color: $de-cmt-separator;
         box-shadow: none;
@@ -2145,6 +2144,13 @@
         opacity: 1;
     }
   }
+
+  .e-bigger .e-de-rp-btn-enforce {
+      margin: 0;
+      width: 100%;
+      padding-left: $de-rp-btn-enforce-padding-big;
+      padding-right: $de-rp-btn-enforce-padding-big;
+    }
 
   .e-de-rp-nav-btn {
     margin: 0 12px;
@@ -2411,7 +2417,12 @@
     line-height: normal;
     min-height: 30px;
     overflow: hidden;
+    padding-top: $e-de-cmt-textarea-padding-top;
     resize: none;
+  }
+
+  .e-bigger .e-de-cmt-textarea.e-input {
+    padding-top: $e-de-cmt-textarea-padding-top-big;
   }
 
   .e-de-cmt-action-button {
@@ -2420,27 +2431,11 @@
   }
 
   .e-de-cmt-post-btn.e-btn.e-flat, .e-de-cmt-cancel-btn.e-btn.e-flat {
-    @if $skin-name != 'bootstrap' {
-      color : $de-op-close-icon-clr;
-    }  
     height: $de-cmt-post-btn-ht;
     margin-left : 8px;
     width: $de-cmt-post-btn-ht;
   }
 
-  @if $skin-name == 'bootstrap4' {
-    .e-de-cmt-cancel-btn.e-btn.e-flat, .e-de-cp-close.e-btn.e-flat {
-      background-color: inherit;
-      border: none;
-    }
-
-    .e-de-cmt-resolve-btn {
-      .e-de-cmt-post-btn.e-btn.e-flat {
-        background-color: inherit;
-        border: none;
-      }
-    }
-  }
 
   .e-de-cmt-resolved {
 
@@ -2600,5 +2595,31 @@
         margin-right : 12px;
       }
     }
+  }
+
+  .e-de-close-icon.e-btn {
+    background-color: $dialog-btn-bg-color;
+    border-color: $dialog-btn-border-color;
+    border-radius: $dialog-headericon-border-radius;
+    color : $dialog-btn-clr;
+    //height: 26px;
+    //width: 26px;
+    border: none;
+    &:active {
+      background-color: $dialog-closeicon-btn-active-color;
+      box-shadow: none;
+    }
+    &:hover {
+      background-color: $dialog-closeicon-btn-hover-color;
+      box-shadow: none;
+      color: $dialog-active-icon-color;
+      cursor: $e-de-close-icon-cursor;
+      border: none;
+    }
+  }
+  
+  .e-btn.e-de-close-icon:hover span {
+    cursor: pointer;
+    color: $dialog-active-icon-color;
   }
 }

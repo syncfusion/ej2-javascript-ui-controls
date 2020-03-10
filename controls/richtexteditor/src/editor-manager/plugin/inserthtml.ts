@@ -128,6 +128,11 @@ export class InsertHtml {
         docElement: Document, isCollapsed: boolean, closestParentNode: Node, editNode?: Element): void {
         let isCursor: boolean = range.startOffset === range.endOffset &&
         range.startContainer === range.endContainer;
+        if (isCursor && range.startContainer === editNode && editNode.textContent === '') {
+            let currentBlockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            nodeSelection.setSelectionText(docElement, currentBlockNode, currentBlockNode, 0, 0);
+            range = nodeSelection.getRange(docElement);
+        }
         let lasNode: Node; let sibNode: Node; let isSingleNode: boolean; let preNode: Node;
         if (editNode !== range.startContainer && ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
             CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) !== -1))
@@ -216,6 +221,10 @@ export class InsertHtml {
             }
             node.parentNode.replaceChild(fragment, node);
         }
+        this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+    }
+    private static placeCursorEnd(
+        lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
         lastSelectionNode = lastSelectionNode.nodeName === 'BR' ? lastSelectionNode.previousSibling : lastSelectionNode;
         while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
         lastSelectionNode.nodeName !== 'BR') { lastSelectionNode = lastSelectionNode.lastChild; }

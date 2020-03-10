@@ -1491,4 +1491,29 @@ describe("Toolbar - Actions Module", () => {
             done();
         });
     });
+    describe("Check toolbar click event in readyOnly", () => {
+        let rteObj: any;
+        let clickEventSpy: jasmine.Spy = jasmine.createSpy('toolbarClick');
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ["Print"]
+                },
+                toolbarClick : clickEventSpy
+            });
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it("Check style", (done) => {
+            expect((rteObj.element.querySelector('[title="Print"]') as HTMLElement).style.pointerEvents).toBe('');
+            rteObj.element.querySelector('[title="Print"]').click();
+            setTimeout(() => {
+                expect(clickEventSpy).toHaveBeenCalled();
+                done();
+            }, 500);
+        });
+    });
 });

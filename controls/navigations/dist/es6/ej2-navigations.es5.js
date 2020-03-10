@@ -7892,7 +7892,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     this.select(trgIndex);
                 }
             }
-            else if (!isNullOrUndefined(trgParent) && trgIndex !== this.selectedItem) {
+            else if (!isNullOrUndefined(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
                 this.select(trgIndex);
             }
         }

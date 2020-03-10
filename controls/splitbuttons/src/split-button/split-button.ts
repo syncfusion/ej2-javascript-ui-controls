@@ -415,8 +415,9 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         this.primaryBtnObj.setProperties(getModel(newProp, model));
         model = ['beforeOpen', 'beforeItemRender', 'select', 'open',
             'close', 'cssClass', 'disabled', 'enableRtl'];
-        if (Object.keys(newProp)[0] === 'items') {
-            this.secondaryBtnObj.onPropertyChanged(newProp, oldProp);
+        if (Object.keys(newProp).indexOf('items') > -1) {
+            this.secondaryBtnObj.items = newProp.items;
+            this.secondaryBtnObj.dataBind();
         }
         this.secondaryBtnObj.setProperties(getModel(newProp, model));
         for (let prop of Object.keys(newProp)) {

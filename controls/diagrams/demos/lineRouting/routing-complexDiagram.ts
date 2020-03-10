@@ -58,7 +58,7 @@ let nodes: NodeModel[] = [{
     style: { fill: "#E3EDF3", strokeWidth: 2, strokeColor: "#7fadc8" }
 },
 {
-    id: 'node6', width: 90, height: 60, offsetX: 829.5, offsetY: 247, ports: portCollection,
+    id: 'node6', width: 90, height: 60, offsetX: 814.5, offsetY: 247, ports: portCollection,
     shape: { type: "Bpmn", shape: "Activity", activity: { activity: 'Task', task: { type: 'User' } } },
     annotations: [{
         id: 'label2', content: 'Validation Round 3', margin: { top: 10, right: 2, bottom: 3, left: 2 }

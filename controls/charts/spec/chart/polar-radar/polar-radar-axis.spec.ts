@@ -7,6 +7,7 @@ import { DataLabel } from '../../../src/chart/series/data-label';
 import { PolarSeries } from '../../../src/chart/series/polar-series';
 import { RadarSeries } from '../../../src/chart/series/radar-series';
 import { LineSeries } from '../../../src/chart/series/line-series';
+import { AreaSeries } from '../../../src/chart/series/area-series';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Logarithmic } from '../../../src/chart/axis/logarithmic-axis';
 import { Category } from '../../../src/chart/axis/category-axis';
@@ -23,7 +24,7 @@ import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { tool1, tool2, datetimeData, categoryData, negativeDataPoint } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(DateTime, Category, Tooltip, Logarithmic, PolarSeries, LineSeries, RadarSeries, DataLabel, Legend);
+Chart.Inject(DateTime, Category, Tooltip, Logarithmic, PolarSeries, AreaSeries, LineSeries, RadarSeries, DataLabel, Legend);
 let data: any = tool1;
 let data2: any = tool2;
 let datetime: any = datetimeData;
@@ -595,9 +596,9 @@ describe('Chart Control', () => {
             chartObj.primaryXAxis.valueType = 'Logarithmic';
             chartObj.refresh();
         });
-        
+
     });
-    
+
     describe('Polar Axis: Smart Labels', () => {
         let chartObj: Chart;
         beforeAll((): void => {
@@ -613,7 +614,7 @@ describe('Chart Control', () => {
                         labelIntersectAction: "None"
                     },
                     margin: {
-                        
+
                     },
                     //Initializing Primary Y Axis
                     primaryYAxis:
@@ -637,21 +638,21 @@ describe('Chart Control', () => {
                                 { x: 'Jul', y: 19.8 }, { x: 'Aug', y: 18.1 },
                                 { x: 'Sep', y: 13.1 }, { x: 'Oct', y: 4.1 },
                                 { x: 'Nov', y: -3.8 }, { x: 'Dec', y: -6.8 },
-            
+
                                 { x: 'Jan1', y: -7.1 }, { x: 'Feb1', y: -3.7 },
                                 { x: 'Mar1', y: 0.8 }, { x: 'Apr1', y: 6.3 },
                                 { x: 'May1', y: 13.3 }, { x: 'Jun1', y: 18.0 },
                                 { x: 'Jul1', y: 19.8 }, { x: 'Aug1', y: 18.1 },
                                 { x: 'Sep1', y: 13.1 }, { x: 'Oct1', y: 4.1 },
                                 { x: 'Nov1', y: -3.8 }, { x: 'Dec1', y: -6.8 },
-            
+
                                 { x: 'Jan2', y: -7.1 }, { x: 'Feb2', y: -3.7 },
                                 { x: 'Mar2', y: 0.8 }, { x: 'Apr2', y: 6.3 },
                                 { x: 'May2', y: 13.3 }, { x: 'Jun2', y: 18.0 },
                                 { x: 'Jul2', y: 19.8 }, { x: 'Aug2', y: 18.1 },
                                 { x: 'Sep2', y: 13.1 }, { x: 'Oct2', y: 4.1 },
                                 { x: 'Nov2', y: -3.8 }, { x: 'Dec2', y: -6.8 },
-            
+
                                 { x: 'Jan3', y: -7.1 }, { x: 'Feb3', y: -3.7 },
                                 { x: 'Mar3', y: 0.8 }, { x: 'Apr3', y: 6.3 },
                                 { x: 'May3', y: 13.3 }, { x: 'Jun3', y: 18.0 },
@@ -665,7 +666,7 @@ describe('Chart Control', () => {
                                 height: 10, width: 10,
                                 shape: 'Pentagon',
                             },
-                            
+
                         }
                     ],
                     //Initializing Chart title
@@ -869,7 +870,7 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
 
-        
+
     });
     describe('Polar Axis: Trim Axis Labels', () => {
         let chartObj: Chart;
@@ -944,6 +945,157 @@ describe('Chart Control', () => {
             };
             chartObj.primaryXAxis.enableTrim = true;
             chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+    });
+    describe('Polar Axis: Trim Axis Labels after legend enabled', () => {
+        let chartObj: Chart;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'Trimcontainer' });
+            document.body.appendChild(ele);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        labelPlacement: 'OnTicks',
+                        interval: 1,
+                        coefficient: 80,
+                        labelIntersectAction:'Hide'
+                    },
+                    primaryYAxis:
+                    {
+                        title: 'Revenue in Millions'
+                    },
+                    series: [
+                        {
+                            type: 'Polar', drawType: 'Area',
+                         dataSource:[{x:"1 rue Alsace-Lorraine",y:592792.0},
+                         {x:"1029 - 12th Ave. S.",y:597520.0},
+                         {x:"12 Orchestra Terrace",y:84108.0},
+                         {x:"12, rue des Bouchers",y:726624.0},
+                         {x:"184, chaussée de Tournai",y:212296.0},
+                         {x:"187 Suffolk Ln.",y:1329576.0},
+                         {x:"2, rue du Commerce",y:423324.0},
+                         {x:"23 Tsawassen Blvd.",y:603052.0},
+                         {x:"2319 Elm St.",y:127700.0},
+                         {x:"24, place Kléber",y:462596.0},
+                         {x:"25, rue Lauriston",y:174608.0},
+                         {x:"2732 Baker Blvd.",y:474184.0},
+                         {x:"2743 Bering St.",y:426904.0},
+                         {x:"2817 Milton Dr.",y:763208.0},{x:"35 King George",y:344544.0},
+                         {x:"43 rue St. Laurent",y:546824.0},
+                         {x:"54, rue Royale",y:130008.0},
+                         {x:"55 Grizzly Peak Rd.",y:129608.0},
+                         {x:"59 rue de l'Abbaye",y:209172.0},
+                         {x:"5ª Ave. Los Palos Grandes",y:84212.0},
+                         {x:"67, avenue de l'Europe",y:174920.0},
+                         {x:"67, rue des Cinquante Otages",y:169972.0},
+                         {x:"722 DaVinci Blvd.",y:127892.0},
+                         {x:"8 Johnstown Road",y:806840.0},
+                         {x:"87 Polk St.\r\nSuite 5",y:171668.0},
+                         {x:"89 Chiaroscuro Rd.",y:341052.0},
+                         {x:"89 Jefferson Way\r\nSuite 2",y:171260.0},
+                         {x:"90 Wadhurst Rd.",y:380556.0},
+                         {x:"Åkergatan 24",y:815032.0},
+                         {x:"Alameda dos Canàrios, 891",y:558012.0},
+                         {x:"Av. Brasil, 442",y:387112.0},
+                         {x:"Av. Copacabana, 267",y:467788.0},{x:"Av. del Libertador 900",y:215708.0},
+                         {x:"Av. dos Lusíadas, 23",y:213044.0},
+                         {x:"Av. Inês de Castro, 414",y:255588.0},
+                         {x:"Avda. Azteca 123",y:423152.0},
+                         {x:"Avda. de la Constitución 2222",y:170472.0},
+                         {x:"Ave. 5 de Mayo Porlamar",y:517476.0},
+                         {x:"Berguvsvägen  8",y:765752.0},
+                         {x:"Berkeley Gardens\r\n12  Brewery",y:126980.0},
+                         {x:"Boulevard Tirou, 255",y:513168.0},
+                         {x:"Brook Farm\r\nStratford St. Mary",y:557016.0},
+                         {x:"C/ Araquil, 67",y:128388.0},
+                         {x:"C/ Romero, 33",y:432084.0},
+                         {x:"Calle Dr. Jorge Cash 321",y:254880.0},
+                         {x:"Carrera 22 con Ave. Carlos Soublette #8-35",y:768888.0},
+                         {x:"Carrera 52 con Ave. Bolívar #65-98 Llano Largo",y:595140.0},
+                         {x:"Cerrito 333",y:259976.0},{x:"City Center Plaza\r\n516 Main St.",y:209776.0},
+                         {x:"Erling Skakkes gate 78",y:257204.0},{x:"Estrada da saúde n. 58",y:210600.0},
+                         {x:"Fauntleroy Circus",y:425644.0},
+                         {x:"Garden House\r\nCrowther Way",y:424124.0},
+                         {x:"Geislweg 14",y:424472.0},{x:"Gran Vía, 1",y:211196.0},
+                         {x:"Hauptstr. 31",y:342624.0},{x:"Ing. Gustavo Moncada 8585\r\nPiso 20-A",y:215128.0},
+                         {x:"Jardim das rosas n. 32",y:337668.0},{x:"Keskuskatu 45",y:302600.0},
+                         {x:"Kirchgasse 6",y:1279460.0},{x:"Mataderos  2312",y:296780.0},{x:"P.O. Box 555",y:378744.0},
+                         {x:"Rambla de Cataluña, 23",y:212700.0},{x:"Rua da Panificadora, 12",y:380356.0},
+                         {x:"Rua do Mercado, 12",y:385028.0},{x:"Rua do Paço, 67",y:581992.0},
+                         {x:"Rua Orós, 92",y:294460.0},{x:"Rue Joseph-Bens 532",y:302832.0},
+                         {x:"Sierras de Granada 9993",y:41036.0},{x:"Smagsløget 45",y:469944.0},
+                         {x:"South House\r\n300 Queensbridge",y:129304.0},{x:"Starenweg 5",y:429504.0},
+                         {x:"Strada Provinciale 124",y:513692.0},{x:"Torikatu 38",y:631052.0},
+                         {x:"ul. Filtrowa 68",y:302380.0},{x:"Via Ludovico il Moro 22",y:425304.0},
+                         {x:"Via Monte Bianco 34",y:259112.0},{x:"Vinbæltet 34",y:298004.0}],
+                            xName: 'x', width: 2,
+                            yName: 'y', name: 'Product A',
+                            border: { color: 'transparent' },
+                            opacity: 0.5,
+                            marker:{ visible: true}
+                        }
+                    ],
+                    legendSettings: {
+                        visible: true
+                    },
+                    title: 'Fruits and Vegetables - Season',
+                    width: '500'
+                },'#Trimcontainer');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('Trimcontainer').remove();
+        });
+
+        it('Check X axis labels trim with label position outside - legend position is in right', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele0: Element = document.getElementById('Trimcontainer0_AxisLabel_18');
+                expect(ele0.innerHTML.indexOf('...') !== -1).toBe(true);
+                let ele1: Element = document.getElementById('Trimcontainer0_AxisLabel_20');
+                expect(ele1.innerHTML.indexOf('...') !== -1).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = true;
+            chartObj.legendSettings.position = 'Right';
+            chartObj.refresh();
+        });
+        it('Check X axis labels trim with label position outside - legend position is in Left', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('Trimcontainer0_AxisLabel_58');
+                expect(ele.innerHTML.indexOf('...') !== -1).toBe(true);
+                let ele1: Element = document.getElementById('Trimcontainer0_AxisLabel_60');
+                expect(ele1.innerHTML.indexOf('...') !== -1).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = true;
+            chartObj.legendSettings.position = 'Left';
+            chartObj.refresh();
+        });
+        it('Check X axis labels trim with label position outside - legend position is in right and chart width is small', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele0: Element = document.getElementById('Trimcontainer0_AxisLabel_18');
+                expect(ele0.innerHTML.indexOf('...') !== -1).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = true;
+            chartObj.legendSettings.position = 'Right';
+            chartObj.width = '400';
+            chartObj.refresh();
+        });
+        it('Check X axis labels trim with label position outside - legend position is in left and chart width is small', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele0: Element = document.getElementById('Trimcontainer0_AxisLabel_58');
+                expect(ele0.innerHTML.indexOf('...') !== -1).toBe(true);
+                let ele1: Element = document.getElementById('Trimcontainer0_AxisLabel_60');
+                expect(ele1.innerHTML.indexOf('...') !== -1).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = true;
+            chartObj.legendSettings.position = 'Left';
+            chartObj.width = '400';
             chartObj.refresh();
         });
     });

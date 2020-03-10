@@ -215,6 +215,8 @@ export class ColumnChooser implements IAction {
             // this.unWireEvents();
             this.hideDialog();
             this.addcancelIcon();
+            this.clearActions();
+            this.refreshCheckboxState();
         }
         this.rtlUpdate();
     }
@@ -362,6 +364,7 @@ export class ColumnChooser implements IAction {
         let uncheckedLength: number = this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
+                this.parent.trigger(events.actionBegin, {requestType: 'columnstate'});
                 if (this.hideColumn.length) {
                     this.columnStateChange(this.hideColumn, false);
                 }

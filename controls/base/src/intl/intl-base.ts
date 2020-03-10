@@ -6,7 +6,7 @@ import { DateFormat, FormatOptions } from './date-formatter';
 import { NumberFormat, FormatParts, CommonOptions } from './number-formatter';
 import { isUndefined } from '../util';
 
-export const blazorCultureFormats: Object  = {
+export const blazorCultureFormats: Object = {
     'en-US': {
         'd': 'M/d/y',
         'D': 'EEEE, MMMM d, y',
@@ -586,7 +586,7 @@ export namespace IntlBase {
 
     export function compareBlazorDateFormats(formatOptions: DateFormatOptions, culture?: string): DateFormatOptions {
         let format: string = formatOptions.format || formatOptions.skeleton;
-        let curFormatMapper : string  = getValue((culture || 'en-US') + '.' + format, blazorCultureFormats);
+        let curFormatMapper: string = getValue((culture || 'en-US') + '.' + format, blazorCultureFormats);
         if (!curFormatMapper) {
             curFormatMapper = getValue('en-US.' + format, blazorCultureFormats);
         }
@@ -822,6 +822,21 @@ export namespace IntlBase {
         return actualPattern;
     }
 
+    // tslint:disable-next-line:no-any
+    function processSymbol(actual: string, option: any): any {
+        for (let i: number = 0; i < actual.length; i++) {
+            let mapper: object = { '.': 'decimal', ',': 'group' };
+            // tslint:disable-next-line:no-any
+            let matched: any = mapper[actual[i]];
+            if (matched === 'decimal') {
+                actual = actual.replace(/\./g, getValue('numberMapper.numberSymbols.decimal', option) || '.');
+            } else if (matched === 'group') {
+                actual = actual.replace(/,/g, getValue('numberMapper.numberSymbols.group', option) || '.');
+            }
+        }
+        return actual;
+    }
+
     /**
      * Returns Native Number pattern
      * @private
@@ -836,8 +851,8 @@ export namespace IntlBase {
         let minFrac: number;
         let curObj: GenericFormatOptions & { hasNegativePattern?: boolean } = {};
         let curMatch: string[] = (options.format || '').match(currencyFormatRegex);
+        let dOptions: CommonOptions = {};
         if (curMatch) {
-            let dOptions: CommonOptions = {};
             dOptions.numberMapper = parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
             let curCode: string = getCurrencySymbol(dependable.numericObject, options.currency || defaultCurrencyCode, options.altSymbol);
             let symbolPattern: string = getSymbolPattern(
@@ -884,6 +899,9 @@ export namespace IntlBase {
             }
         } else {
             actualPattern = options.format.replace(/\'/g, '"');
+        }
+        if (Object.keys(dOptions).length > 0) {
+            actualPattern =   processSymbol(actualPattern, dOptions);
         }
         return actualPattern;
     }
